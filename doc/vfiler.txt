@@ -1,4 +1,4 @@
-vfiler.txt  File manager for Vim.
+*vfiler.txt*  File manager for Vim.
 
 CONTENTS                                       *vfiler-contents*
 
@@ -11,7 +11,7 @@ Interface .............. |vfiler-interface|
   Options ................ |vfiler-options|
 Examples ............... |vfiler-examples|
 About .................. |vfiler-about|
-  Special Thanks ......... |vfiler-special-thanks|
+Special Thanks ......... |vfiler-special-thanks|
 
 ==============================================================================
 INTRODUCTION                                   *vfiler-introduction*
@@ -35,7 +35,7 @@ CONCEPT                                        *vfiler-concept*
 ------------------------------------------------------------------------------
 REQUIREMENTS                                   *vfiler-requirements*
 
-*vfiler* requires Vim (>= 7.4) or Neovim to access full features. It may work in
+vfiler requires Vim (>= 7.4) or Neovim to access full features. It may work in
 earlier version, but not supported.
 
 ==============================================================================
@@ -285,7 +285,7 @@ OPTIONS                                       *vfiler-options*
 
 *g:vfiler_use_default_mappings*
                 (Default: 1)
-                If disabled, Vaffle doesn't set up the default mappings. To
+                If disabled, vfiler doesn't set up the default mappings. To
 		customize key mappings, see
 		|vfiler-example-custom-key-mappings|.
 
@@ -316,7 +316,7 @@ Visit the project page for the latest information:
 
   https://github.com/obaland/vfiler.vim
 
-------------------------------------------------------------------------------
+==============================================================================
 SPECIAL THANKS                                 *vfiler-special-thanks*
 
 When implementing this plug-in, I referred to the following excellent program
