@@ -1,2 +1,2 @@
 # vfiler.vim
-File Manager for vim
+vfiler is a file manager written in Vim script.
