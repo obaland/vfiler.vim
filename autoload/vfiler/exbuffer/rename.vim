@@ -15,17 +15,9 @@ endfunction
 
 function! vfiler#exbuffer#rename#run(context, elements) abort
   " setup rename file list
-  let dir_length = len(a:context.current_path)
-
-  let names = []
-  for element in a:elements
-    let name = element.path[dir_length:]
-    if element.isdirectory
-      " trim '/'
-      let name = name[:len(name) - 2]
-    endif
-    call add(names, name)
-  endfor
+  let names = map(
+        \ copy(a:elements), "fnamemodify(v:val.path, ':t')"
+        \ )
 
   silent vsplit
 
@@ -59,9 +51,7 @@ function! vfiler#exbuffer#rename#run(context, elements) abort
   let b:elements = a:elements
 
   " draw rename targets
-  for lnum in range(1, len(names))
-    call setline(lnum, names[lnum - 1])
-  endfor
+  call setline(1, names)
 
   " clear undo
 	let old_undolevels = &undolevels
@@ -113,7 +103,7 @@ function! s:execute() abort
   endif
 
   setlocal nomodified
-  if !vfiler#buffer#exists_bufnr(b:context.bufnr)
+  if !vfiler#buffer#exists(b:context.bufnr)
     call vfiler#core#error('Not exists filer buffer.')
     return
   endif

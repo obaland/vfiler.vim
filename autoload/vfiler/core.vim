@@ -68,27 +68,17 @@ function! vfiler#core#warning(message) abort
   echohl WarningMsg | echom '[vfiler] WARNING: ' . a:message | echohl None
 endfunction
 
-function! vfiler#core#normalized_path(path, is_directory) abort
-  let path = fnamemodify(
-        \ substitute(a:path, '\\', '/', 'g'), ':p'
-        \ )
-  if a:is_directory
-    let path .= '/'
-  endif
-  return path
-endfunction
-
-function! vfiler#core#get_parent_directory_path(path) abort
-  let mods = ':h'
-  if match(a:path, '/$') >= 0
-    let mods .= ':h'
+function! vfiler#core#normalized_path(path) abort
+  if a:path ==? '/'
+    return '/'
   endif
 
-  let parent = fnamemodify(a:path, mods)
-  if match(parent, '/$') < 0
-    let parent .= '/'
-  endif
-  return parent
+  let result = resolve(a:path)
+
+  " trim trailing path separator
+  return (match(result, '\(/\|\\\)$') >= 0)
+        \ ? fnamemodify(result, ':h')
+        \ : result
 endfunction
 
 function! vfiler#core#get_root_directory_path(path) abort

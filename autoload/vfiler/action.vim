@@ -21,16 +21,17 @@ function! vfiler#action#start(path, options, ...) abort
 endfunction
 
 function! vfiler#action#switch_to_directory(...) abort
-  let path = get(a:000, 0, '')
-  let element = s:get_current_element()
-  let path = empty(path) ? element.path : fnamemodify(path, ':p')
+  let path = get(a:000, 0, s:get_current_element().path)
+  let path = vfiler#core#normalized_path(
+        \ fnamemodify(path, ':p')
+        \ )
 
   if !isdirectory(path)
     call vfiler#core#error('Failed to switch the path - ' . path)
     return
   endif
 
-  call vfiler#context#save_index_cache(b:context, element.path)
+  call vfiler#context#save_index_cache(b:context, path)
   call vfiler#context#switch(b:context, path)
   call s:draw()
 endfunction
@@ -42,6 +43,7 @@ function! vfiler#action#jump_to_directory() abort
     return
   endif
 
+  let path = vfiler#core#normalized_path(path)
   if !isdirectory(path)
     call vfiler#core#error('Not exists the path - ' . path)
     return
@@ -402,14 +404,9 @@ function! vfiler#action#yank_full_path() abort
   let selected = vfiler#context#get_marked_elements(b:context)
 
   if empty(selected)
-    let current = s:get_current_element()
-    let paths = current.isdirectory ?
-          \ fnamemodify(current.path, ':h') : current.path
+    let paths = s:get_current_element().path
   else
-    let paths = join(
-          \ map(selected, "v:val.isdirectory ? fnamemodify(v:val.path, ':h') : v:val.path"),
-          \ "\n"
-          \ )
+    let paths = join(map(selected, "v:val.path"), "\n")
   endif
 
   call vfiler#core#yank(paths)
@@ -431,8 +428,7 @@ function! vfiler#action#get_buffer_directory_path(bufnr) abort
   if vfiler#buffer#exists(a:bufnr)
     let dir = vfiler#context#get_context(a:bufnr).path
   else
-    let path = vfiler#core#normalized_path(bufname(a:bufnr), 0)
-    let dir = vfiler#core#get_parent_directory_path(path)
+    let dir = fnamemodify(bufname(a:bufnr), ':p:h')
   endif
   return dir
 endfunction
@@ -470,16 +466,14 @@ endfunction
 function! vfiler#action#create_file() abort
   call s:operate_file_creation(
         \ 'New file names? (comma separated)',
-        \ 'vfiler#core#create_file',
-        \ 0
+        \ 'vfiler#core#create_file'
         \ )
 endfunction
 
 function! vfiler#action#mkdir() abort
   call s:operate_file_creation(
         \ 'New directory names? (comma separated)',
-        \ 'vfiler#core#mkdir',
-        \ 1
+        \ 'vfiler#core#mkdir'
         \ )
 endfunction
 
@@ -488,7 +482,7 @@ function! vfiler#action#copy_file() abort
 endfunction
 
 function! vfiler#action#move_file() abort
-  call s:operate_file_control('vfiler#core#move_file')
+  call s:operate_file_control('vfiler#core#rename_file')
 endfunction
 
 function! vfiler#action#delete_file() abort
@@ -523,7 +517,7 @@ function! vfiler#action#delete_file() abort
 
   if deleted_count > 0
     let lnum = line('.')
-    call vfiler#action#reload()
+    call vfiler#action#reload_all()
     call vfiler#action#move_cursor(lnum)
   endif
 endfunction
@@ -540,9 +534,13 @@ function! vfiler#action#rename_file() abort
   endif
 
   " multiple rename files
+  call vfiler#context#save_index_cache(
+        \ b:context, s:get_current_element().path
+        \ )
   call vfiler#exbuffer#rename#run(
         \ b:context, marked_elements
         \ )
+  call s:foreach_filer('s:draw')
 endfunction
 
 function! vfiler#action#on_rename_file_callback(context, elements, result_names) abort
@@ -552,27 +550,37 @@ function! vfiler#action#on_rename_file_callback(context, elements, result_names)
   endif
 
   let renamed_count = 0
-  let base_path = a:context.path
+  let base_path = fnamemodify(a:context.path, ':p')
   for index in range(0, len(a:elements) - 1)
-    let from = base_path . a:elements[index].name
-    let to = base_path . a:result_names[index]
+    let element = a:elements[index]
+    let from_name = element.name
+    let to_name = a:result_names[index]
 
-    if vfiler#core#rename_file(from, to)
+    if from_name ==# to_name
       " clear mark
-      let a:elements[index].selected = 0
+      let element.selected = 0
+      continue
+    endif
+
+    let from_path = base_path . from_name
+    let to_path = base_path . to_name
+
+    if vfiler#core#rename_file(from_path, to_path)
+      " clear mark
+      let element.selected = 0
       call vfiler#core#info(
-            \ printf('Renamed file - %s -> %s', from, to)
+            \ printf('Renamed file - %s -> %s', from_path, to_path)
             \ )
       let renamed_count += 1
     else
       call vfiler#core#error(
-            \ printf('Cannot rename file %s -> %s', from, to)
+            \ printf('Cannot rename file %s -> %s', from_path, to_path)
             \ )
     endif
   endfor
 
   if renamed_count > 0
-    call vfiler#actoin#reload()
+    call vfiler#action#reload_all()
   endif
 endfunction
 
@@ -686,7 +694,7 @@ function! s:get_detect_drives() abort
   return filter(detect_drives, 'isdirectory(v:val)')
 endfunction
 
-function! s:operate_file_creation(message, create_func, is_directory) abort
+function! s:operate_file_creation(message, create_func) abort
   let files = vfiler#core#input(a:message, '', 'file')
   if empty(files)
     call vfiler#core#info('Cancelled.')
@@ -695,12 +703,12 @@ function! s:operate_file_creation(message, create_func, is_directory) abort
 
   let current = s:get_current_element()
   let parent_path = current.level == 0 ?
-        \ b:context.path :
-        \ vfiler#core#get_parent_directory_path(current.path)
+        \ b:context.path : fnamemodify(current.path, ':h')
+  let parent_path = fnamemodify(parent_path, ':p')
 
   let new_files = []
   for file in split(files, '\s*,\s*')
-    let path = vfiler#core#normalized_path(parent_path . file, a:is_directory)
+    let path = vfiler#core#normalized_path(parent_path . file)
     if filereadable(path)
       call vfiler#core#error('Skipped, file already exists. - ' . file)
     else
@@ -711,7 +719,9 @@ function! s:operate_file_creation(message, create_func, is_directory) abort
   endfor
 
   if !empty(new_files)
+    let lnum = line('.')
     call vfiler#action#reload_all()
+    call vfiler#action#move_cursor(lnum)
   endif
 endfunction
 
@@ -732,12 +742,12 @@ function! s:operate_file_control(control_func) abort
       return
     endif
 
-    let dest_dir = fnamemodify(dest_dir, ':p')
     if !isdirectory(dest_dir)
       call vfiler#core#error('Invalid directory path - ' . dest_dir)
       return
     endif
   endif
+  let dest_dir = fnamemodify(dest_dir, ':p')
 
   " control files
   let controled_count = 0
@@ -745,11 +755,6 @@ function! s:operate_file_control(control_func) abort
     let src = element.path
     let dest = dest_dir . element.name
     let element.selected = 0
-
-    " trim trailing '/'
-    if match(src, '/$') >= 0
-      let src = fnamemodify(src, ':h')
-    endif
 
     if filereadable(dest) || isdirectory(dest)
       call vfiler#core#warning('File already exists.')
@@ -776,7 +781,9 @@ function! s:operate_file_control(control_func) abort
   endfor
 
   if controled_count > 0
+    let lnum = line('.')
     call vfiler#action#reload_all()
+    call vfiler#action#move_cursor(lnum)
   endif
 endfunction
 

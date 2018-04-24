@@ -7,18 +7,23 @@
 let s:element_parent_directory_word = '../'
 
 function! vfiler#element#create(path, level) abort
-  return {
+  let element = {
         \ 'selected': 0,
         \ 'opened': 0,
-        \ 'path': fnamemodify(a:path, ':p'),
+        \ 'path': vfiler#core#normalized_path(a:path),
         \ 'level': a:level,
         \ 'type': s:get_type(a:path),
         \ 'size': getfsize(a:path),
         \ 'time': getftime(a:path),
-        \ 'name': fnamemodify(a:path, ':t'),
         \ 'isdirectory': isdirectory(a:path),
         \ 'children': []
         \ }
+
+  " set element name
+  let element.name = element.isdirectory ?
+        \ fnamemodify(a:path, ':t') : fnamemodify(a:path, ':p:t')
+
+  return element
 endfunction
 
 function! vfiler#element#create_parent_directory(current_path) abort
@@ -28,7 +33,7 @@ function! vfiler#element#create_parent_directory(current_path) abort
 endfunction
 
 function! vfiler#element#rename(element, name) abort
-  let parent_path = vfiler#core#get_parent_directory_path(a:element.path)
+  let parent_path = fnamemodify(a:element.path, ':h')
   let a:element.path = vfiler#core#normalized_path(
         \ parent_path . a:name, a:element.isdirectory
         \ )
@@ -48,7 +53,7 @@ function! s:get_type(path) abort
   elseif type ==# 'link'
     return 'L'
   else
-    call vfiler#core#error('Unknown file type (' . type ')')
+    call vfiler#core#error('Unknown file type (' . type . ')')
   endif
   return ''
 endfunction

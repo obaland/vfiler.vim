@@ -272,9 +272,10 @@ endfunction
 function! s:create_elements(context, path, ...) abort
   let level = get(a:000, 0, 0)
 
-  let paths = glob(a:path . '*', 1, 1)
+  let target = fnamemodify(a:path, ':p')
+  let paths = glob(target . '*', 1, 1)
   if a:context.visible_hidden_files
-    let hidden_paths = glob(a:path . '.*', 1, 1)
+    let hidden_paths = glob(target . '.*', 1, 1)
     call extend(
           \ paths,
           \ filter(hidden_paths, 'match(v:val, ''\(/\|\\\)\.\.\?$'') < 0')
@@ -288,7 +289,7 @@ function! s:create_elements(context, path, ...) abort
 
   " if top level add special parent directory
   if level == 0
-    let parent = vfiler#core#get_parent_directory_path(a:path)
+    let parent = fnamemodify(a:path, ':h')
     call insert(elements, vfiler#element#create(parent, 0), 0)
   endif
 

@@ -100,10 +100,9 @@ function! s:parse_command_args(args) abort
   " set the rest of argument as path
   let path = empty(args) ? getcwd() : args
   if !isdirectory(path)
-    call vfiler#core#error('Not directory path - ' . options.path)
+    call vfiler#core#error('Not directory path - ' . path)
     let options.path = getcwd()
   endif
-  let path = fnamemodify(path, ':p')
 
   return {
         \ 'path': path,
