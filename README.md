@@ -46,8 +46,8 @@ Basically, after installing in any way, start with the **VFiler** command.
 Please see the [documentation][vim-doc] for details.
 
 ## Special Thanks
-When implementing this plug-in, I referred to the following excellent program and software.
-I would like to express my special appreciation.
+When implementing this plug-in, I referred to the following excellent program and software.  
+I would like to express my special appreciation.  
 In implementing this plugins, I referred to the following products.
 
 * [vimfiler](https://github.com/Shougo/vimfiler.vim)
@@ -59,11 +59,11 @@ In implementing this plugins, I referred to the following products.
 * [xyzzy (filer)](https://github.com/xyzzy-022/xyzzy)
 
 ## Finally
-I am hoping to continually improve it as far as time permits,
+I am hoping to continually improve it as far as time permits,  
 so I'd appreciate it if you can receive various opinions including differences within the script.
 
 ## License
-Paddington is licensed under the MIT license.
+Paddington is licensed under the MIT license.  
 Copyright © 2018, obaland
 
 [vim-doc]: https://github.com/obaland/vfiler.vim/blob/master/doc/vfiler.txt
