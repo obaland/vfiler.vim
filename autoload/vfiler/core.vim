@@ -83,7 +83,12 @@ function! vfiler#core#get_parent_directory_path(path) abort
   if match(a:path, '/$') >= 0
     let mods .= ':h'
   endif
-  return fnamemodify(a:path, mods) . '/'
+
+  let parent = fnamemodify(a:path, mods)
+  if match(parent, '/$') < 0
+    let parent .= '/'
+  endif
+  return parent
 endfunction
 
 function! vfiler#core#get_root_directory_path(path) abort
