@@ -29,7 +29,7 @@ vfiler is a file manager written in Vim script.
 ## Demo
 
 ## Usage
-Start with the **VFiler** command.
+Basically, after installing in any way, start with the **VFiler** command.
 
 :VFiler
 
