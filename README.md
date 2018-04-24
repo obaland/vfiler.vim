@@ -2,7 +2,6 @@
 vfiler is a file manager written in Vim script.
 
 ## Concept
-
 - **File manager**
 
   You can perform basic operations such as selecting, creating, deleting,
@@ -27,7 +26,6 @@ vfiler is a file manager written in Vim script.
   efficiency and their lightweight operation.
 
 ## Demo
-
 ### Basic
 ----------------------------
 ![VFiler basic operations](https://user-images.githubusercontent.com/36218691/39186047-2cdc472e-4804-11e8-8b2c-dc8575dc4832.gif)
@@ -48,9 +46,7 @@ Basically, after installing in any way, start with the **VFiler** command.
 Please see the [documentation][vim-doc] for details.
 
 ## Special Thanks
-
-When implementing this plug-in, I referred to the following excellent program
-and software.
+When implementing this plug-in, I referred to the following excellent program and software.
 I would like to express my special appreciation.
 In implementing this plugins, I referred to the following products.
 
@@ -63,13 +59,10 @@ In implementing this plugins, I referred to the following products.
 * [xyzzy (filer)](https://github.com/xyzzy-022/xyzzy)
 
 ## Finally
-
 I am hoping to continually improve it as far as time permits,
-so I'd appreciate it if you can receive various opinions including
-differences within the script.
+so I'd appreciate it if you can receive various opinions including differences within the script.
 
 ## License
-
 Paddington is licensed under the MIT license.
 Copyright © 2018, obaland
 
