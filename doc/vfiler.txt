@@ -36,6 +36,10 @@ CONCEPT                                        *vfiler-concept*
   - Not depends on other plugins.
     It works independently without relying on other plugins.
 
+  - Required enough feature, lightweight operation
+    Aiming for the necessary and sufficient functions to increase working
+    efficiency and their lightweight operation.
+
 ------------------------------------------------------------------------------
 REQUIREMENTS                                   *vfiler-requirements*
 
@@ -354,6 +358,10 @@ vfiler is developed by obaland and licensed under the MIT License.
 Visit the project page for the latest information:
 
   https://github.com/obaland/vfiler.vim
+
+I am hoping to continually improve it as far as time permits,
+so I'd appreciate it if you can receive various opinions including
+differences within the script.
 
 ==============================================================================
 SPECIAL THANKS                                 *vfiler-special-thanks*
