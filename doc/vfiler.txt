@@ -7,6 +7,7 @@ Introduction ........... |vfiler-introduction|
   Requirements ........... |vfiler-requirements|
 Interface .............. |vfiler-interface|
   Commands ............... |vfiler-commands|
+  Variables .............. |vfiler-variables|
   Key mappings ........... |vfiler-key-mappings|
   Options ................ |vfiler-options|
 Examples ............... |vfiler-examples|
@@ -21,16 +22,23 @@ CONCEPT                                        *vfiler-concept*
 
 *vfiler* is a file manager written in Vim script.
 
-  - file manager >
+  - File manager >
     You can perform basic operations such as selecting, creating, deleting,
     copying, moving, and renaming files.
 <
-  - operation between multiple buffers
+  - Operation between multiple buffers
     It can be treated as 2 window filer. This makes file operations easier to
     handle.
 
-  - explorer mode
+  - Explorer mode
     It supports Explorer mode like "netrw" or modern IDE environment.
+
+  - Not depends on other plugins.
+    It works independently without relying on other plugins.
+
+  - Required enough feature, lightweight operation
+    Aiming for the necessary and sufficient functions to increase working
+    efficiency and their lightweight operation.
 
 ------------------------------------------------------------------------------
 REQUIREMENTS                                   *vfiler-requirements*
@@ -46,11 +54,11 @@ COMMANDS                                       *vfiler-commands*
 
 					       *:VFiler*
 :VFiler [{options}...] [{path}]
-                Runs vfiler. This command reuses a buffer if a vfiler buffer
-                already exists. If you omit {path} and a vfiler buffer do not
+                Runs vfiler. This command reuses a buffer if a filer buffer
+                already exists. If you omit {path} and a filer buffer do not
                 exist, vfiler opens current directory. {path} needs to be a
                 directory.
-                {options} are options for a vfiler buffer:
+                {options} are options for a filer buffer:
                 |vfiler-options|
 
 		Examples:
@@ -66,6 +74,62 @@ COMMANDS                                       *vfiler-commands*
 		buffer directory.
 
 ------------------------------------------------------------------------------
+VARIABLES                                      *vfiler-variables*
+
+*g:vfiler_as_default_explorer*
+                (Default: 0)
+                If this variable is true, Vim use vfiler as file manager
+                instead of |netrw|. Note: This variable disables |netrw|
+                explorer function.
+
+*g:vfiler_visible_hidden_files*
+                (Default: 0)
+                If enabled, Make hidden files visible by default. You can
+                toggle the option with
+                |<Plug>(vfile-toggle-visible-hidden-files)| any time.
+
+*g:vfiler_time_format*
+                (Default: '%Y/%m/%d %H:%M')
+		This variable controls displayed time format.
+		The time format option is compatible |strftime()|.
+
+*g:vfiler_safe_mode*
+                (Default: 1)
+                This variable controls filer enter safe mode by default. In
+                safe mode, dangerous command is disabled.
+
+*g:vfiler_auto_cd*
+                (Default: 0)
+                If enabled, changes the working directory to selected one
+                automatically.
+
+*g:vfiler_marked_file_icon*
+                (Default: '*')
+                This variable controls filer marked file icon.
+
+*g:vfiler_tree_closed_icon*
+                (Default: '+')
+                This variable controls filer closed directory tree icon.
+
+*g:vfiler_tree_opened_icon*
+                (Default: '-')
+                This variable controls filer opened directory tree icon.
+
+*g:vfiler_tree_leaf_icon*
+                (Default: '|')
+                This variable controls filer opened directory tree icon.
+
+*g:vfiler_max_number_of_bookmark*
+                (Default: 50)
+                The maximum number of recordable bookmarks.
+
+*g:vfiler_use_default_mappings*
+                (Default: 1)
+                If disabled, vfiler doesn't set up the default mappings. To
+		customize key mappings, see
+		|vfiler-example-custom-key-mappings|.
+
+------------------------------------------------------------------------------
 KEY MAPPINGS                                   *vfiler-key-mappings*
 
 Normal mode key mappings.
@@ -77,10 +141,10 @@ Normal mode key mappings.
 		Switches to previous line with loop.
 
 *<Plug>(vfiler_move_cursor_bottom)*
-		Moves the cursor to the bottom of the vfiler.
+		Moves the cursor to the bottom of the filer.
 
 *<Plug>(vfiler_move_cursor_top)*
-		Moves the cursor to the top of the vfiler.
+		Moves the cursor to the top of the filer.
 
 *<Plug>(vfiler_switch_to_directory)*
 		Changes to the directory on the cursor.
@@ -104,7 +168,7 @@ Normal mode key mappings.
 		Open cursor file by vsplit.
 
 *<Plug>(vfiler_execute_file)*
-		Executes cursor file by vfiler associated command.
+		Execute the file with an external program.
 
 *<Plug>(vfiler_toggle_directory_tree)*
 		Expand cursor directory.
@@ -236,58 +300,37 @@ m               <Plug>(vfiler_move_file)
 ------------------------------------------------------------------------------
 OPTIONS                                       *vfiler-options*
 
-*g:vfiler_as_default_explorer*
-                (Default: 0)
-                If this variable is true, Vim use vfiler as file manager
-                instead of |netrw|. Note: This variable disables |netrw|
-                explorer function.
+{options} are options for a filer buffer.  You may give the following
+parameters for an option.  You need to escape spaces with "\".
 
-*g:vfiler_visible_hidden_files*
-                (Default: 0)
-                If enabled, Make hidden files visible by default. You can
-                toggle the option with
-                |<Plug>(vfile-toggle-visible-hidden-files)| any time.
 
-*g:vfiler_time_format*
-                (Default: '%Y/%m/%d %H:%M')
-		This variable controls displayed time format.
-		The time format option is compatible |strftime()|.
+                                              *vfiler-options-buffer-name*
+		-buffer-name={buffer-name}
+		Specifies a buffer name.
+		The default buffer name is blank.
+		Note: Buffer name must not contain spaces.
 
-*g:vfiler_safe_mode*
-                (Default: 1)
-                This variable controls filer enter safe mode by default. In
-                safe mode, dangerous command is disabled.
+                                              *vfiler-options-winwidth*
+		-winwidth={window-width}
+		Specifies the width of a filer buffer.
+		Note: If this option is 0, auto resize feature is disabled.
 
-*g:vfiler_auto_cd*
-                (Default: 0)
-                If enabled, changes the working directory to selected one
-                automatically.
+                                              *vfiler-options-simple*
+		-simple
+		Enable vfiler simple mode.
+		Note: It is default in explorer mode.
 
-*g:vfiler_marked_file_icon*
-                (Default: '*')
-                This variable controls filer marked file icon.
+                                              *vfiler-options-split*
+		-split
+		Split filer buffer.
 
-*g:vfiler_tree_closed_icon*
-                (Default: '+')
-                This variable controls filer closed directory tree icon.
+                                              *vfiler-options-auto-cd*
+		-auto-cd
+		Enable auto cd behavior.
 
-*g:vfiler_tree_opened_icon*
-                (Default: '-')
-                This variable controls filer opened directory tree icon.
-
-*g:vfiler_tree_leaf_icon*
-                (Default: '|')
-                This variable controls filer opened directory tree icon.
-
-*g:vfiler_max_number_of_bookmark*
-                (Default: 50)
-                The maximum number of recordable bookmarks.
-
-*g:vfiler_use_default_mappings*
-                (Default: 1)
-                If disabled, vfiler doesn't set up the default mappings. To
-		customize key mappings, see
-		|vfiler-example-custom-key-mappings|.
+                                              *vfiler-options-explorer*
+		-explorer
+                It behaves as Explorer mode.
 
 ==============================================================================
 EXAMPLES                                       *vfiler-examples*
@@ -315,6 +358,10 @@ vfiler is developed by obaland and licensed under the MIT License.
 Visit the project page for the latest information:
 
   https://github.com/obaland/vfiler.vim
+
+I am hoping to continually improve it as far as time permits,
+so I'd appreciate it if you can receive various opinions including
+differences within the script.
 
 ==============================================================================
 SPECIAL THANKS                                 *vfiler-special-thanks*
