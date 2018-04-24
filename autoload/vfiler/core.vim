@@ -145,10 +145,6 @@ function! vfiler#core#copy_file(src, dest) abort
   endif
 endfunction
 
-function! vfiler#core#copy_directory(src, dest) abort
-  return s:SystemFile.copy_dir(a:src, a:dest) != 0
-endfunction
-
 function! vfiler#core#truncate_skipping(str, max, footer_width, separator) abort
   return call(
         \ s:String.truncate_skipping,

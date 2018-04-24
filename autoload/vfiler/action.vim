@@ -746,6 +746,11 @@ function! s:operate_file_control(control_func) abort
     let dest = dest_dir . element.name
     let element.selected = 0
 
+    " trim trailing '/'
+    if match(src, '/$') >= 0
+      let src = fnamemodify(src, ':h')
+    endif
+
     if filereadable(dest) || isdirectory(dest)
       call vfiler#core#warning('File already exists.')
       call vfiler#core#warning('dest: ' . dest)
