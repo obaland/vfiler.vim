@@ -53,9 +53,4 @@ command! -nargs=? -complete=dir VFilerBufferDir
       \   <q-args> . ' ' . vfiler#action#get_buffer_directory_path(bufnr('%'))
       \ )
 
-" DEBUG: profiles
-execute printf('profile start ~/vimfiles/vfiler_profile_%d.txt', localtime())
-profile func vfiler#*
-
-
 let g:loaded_vfiler = 1
