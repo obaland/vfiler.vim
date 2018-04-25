@@ -486,36 +486,38 @@ function! vfiler#action#move_file() abort
 endfunction
 
 function! vfiler#action#delete_file() abort
-  let marked_elements = vfiler#context#get_marked_elements(b:context)
-  let marked_length = len(marked_elements)
-  if marked_length <= 0
+  let targets = vfiler#context#get_marked_elements(b:context)
+  let num_targets = len(targets)
+  if num_targets <= 0
     call vfiler#action#toggle_mark()
     return
   endif
 
-  let answer = (marked_length == 1) ?
-        \ vfiler#core#getchar(printf('Delete - %s (y/N)?', marked_elements[0].name)) :
-        \ vfiler#core#getchar(printf('Delete - %d selected files (y/N)?', marked_length))
-  if answer !=? 'y'
+  let message = (num_targets == 1) ?
+        \ printf('Delete - %s (y/N)?', targets[0].name) :
+        \ printf('Delete - %d selected files (y/N)?', num_targets)
+  if vfiler#core#getchar(message) !=? 'y'
     call vfiler#core#info('Cancelled.')
     return
   endif
 
-  let deleted_count = 0
-  let elements = sort(marked_elements, 's:compare_delete_order')
-  for element in elements
-    let path = element.path
-    let name = element.name
-
-    if vfiler#core#delete_file(path)
-      call vfiler#core#info('Deleted file - ' . name)
-      let deleted_count += 1
+  let num_deleted = 0
+  for element in sort(targets, 's:compare_delete_order')
+    if vfiler#core#delete_file(element.path)
+      let num_deleted += 1
     else
-      call vfiler#core#error('Cannot delete file - ' . name)
+      call vfiler#core#error('Cannot delete file - ' . element.name)
     endif
   endfor
 
-  if deleted_count > 0
+  if num_targets == num_deleted
+    let message = (num_targets == 1) ?
+          \ printf('Deleted - %s', targets[0].name) :
+          \ printf('Deleted - %d files', num_targets)
+    call vfiler#core#info(message)
+  endif
+
+  if num_deleted > 0
     let lnum = line('.')
     call vfiler#action#reload_all()
     call vfiler#action#move_cursor(lnum)
@@ -544,14 +546,15 @@ function! vfiler#action#rename_file() abort
 endfunction
 
 function! vfiler#action#on_rename_file_callback(context, elements, result_names) abort
-  if len(a:elements) != len(a:result_names)
+  let num_elements = len(a:elements)
+  if num_elements != len(a:result_names)
     call vfiler#core#error('Number to rename is a mismatch.')
     return
   endif
 
-  let renamed_count = 0
+  let num_renamed = 0
   let base_path = fnamemodify(a:context.path, ':p')
-  for index in range(0, len(a:elements) - 1)
+  for index in range(0, num_elements - 1)
     let element = a:elements[index]
     let from_name = element.name
     let to_name = a:result_names[index]
@@ -568,10 +571,7 @@ function! vfiler#action#on_rename_file_callback(context, elements, result_names)
     if vfiler#core#rename_file(from_path, to_path)
       " clear mark
       let element.selected = 0
-      call vfiler#core#info(
-            \ printf('Renamed file - %s -> %s', from_path, to_path)
-            \ )
-      let renamed_count += 1
+      let num_renamed += 1
     else
       call vfiler#core#error(
             \ printf('Cannot rename file %s -> %s', from_path, to_path)
@@ -579,7 +579,8 @@ function! vfiler#action#on_rename_file_callback(context, elements, result_names)
     endif
   endfor
 
-  if renamed_count > 0
+  if num_renamed > 0
+    call vfiler#core#info(printf('Renamed - %d files', num_renamed))
     call vfiler#action#reload_all()
   endif
 endfunction
@@ -606,7 +607,7 @@ function! vfiler#action#rename_one_file() abort
   " redraw line
   call vfiler#view#draw_line(b:context, line('.') - 1)
   call vfiler#core#info(
-        \ printf('Renamed file - %s -> %s', element.name, current.name)
+        \ printf('Renamed - %s -> %s', element.name, current.name)
         \ )
 endfunction
 
@@ -706,19 +707,23 @@ function! s:operate_file_creation(message, create_func) abort
         \ b:context.path : fnamemodify(current.path, ':h')
   let parent_path = fnamemodify(parent_path, ':p')
 
-  let new_files = []
+  let num_newfiles = 0
   for file in split(files, '\s*,\s*')
     let path = vfiler#core#normalized_path(parent_path . file)
     if filereadable(path)
       call vfiler#core#error('Skipped, file already exists. - ' . file)
     else
       call call(a:create_func, [path])
-      call vfiler#core#info('Created file - ' . file)
-      call add(new_files, path)
+      let num_newfiles += 1
     endif
   endfor
 
-  if !empty(new_files)
+  if num_newfiles > 0
+    let message = (num_newfiles == 1) ?
+          \ printf('Created - %s', files[0]) :
+          \ printf('Created - %d files', num_newfiles)
+    call vfiler#core#info(message)
+
     let lnum = line('.')
     call vfiler#action#reload_all()
     call vfiler#action#move_cursor(lnum)
@@ -726,8 +731,8 @@ function! s:operate_file_creation(message, create_func) abort
 endfunction
 
 function! s:operate_file_control(control_func) abort
-  let marked_elements = vfiler#context#get_marked_elements(b:context)
-  if empty(marked_elements)
+  let targets = vfiler#context#get_marked_elements(b:context)
+  if empty(targets)
     call vfiler#action#toggle_mark()
     return
   endif
@@ -750,8 +755,8 @@ function! s:operate_file_control(control_func) abort
   let dest_dir = fnamemodify(dest_dir, ':p')
 
   " control files
-  let controled_count = 0
-  for element in marked_elements
+  let num_controled = 0
+  for element in targets
     let src = element.path
     let dest = dest_dir . element.name
     let element.selected = 0
@@ -761,18 +766,14 @@ function! s:operate_file_control(control_func) abort
       call vfiler#core#warning('dest: ' . dest)
       call vfiler#core#warning('src : ' . src)
 
-      let answer = vfiler#core#getchar('Do you want to overwrite (y/N)?')
-      if answer !=? 'y'
+      if vfiler#core#getchar('Do you want to overwrite (y/N)?') !=? 'y'
         call vfiler#core#info('Skipped.')
         continue
       endif
     endif
 
     if call(a:control_func, [src, dest])
-      call vfiler#core#info(
-            \ printf('Done - %s -> %s', src, dest)
-            \ )
-      let controled_count += 1
+      let num_controled += 1
     else
       call vfiler#core#error(
             \ printf('Failed - %s -> %s', src, dest)
@@ -780,7 +781,11 @@ function! s:operate_file_control(control_func) abort
     endif
   endfor
 
-  if controled_count > 0
+  if num_controled == len(targets)
+    call vfiler#core#info('Done.')
+  endif
+
+  if num_controled > 0
     let lnum = line('.')
     call vfiler#action#reload_all()
     call vfiler#action#move_cursor(lnum)
