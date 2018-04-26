@@ -38,3 +38,17 @@ function! vfiler#get_status_string() abort
 
   return status
 endfunction
+
+function! vfiler#get_buffer_directory_path(bufnr) abort
+  if vfiler#buffer#exists(a:bufnr)
+    let dir = vfiler#context#get_context(a:bufnr).path
+  else
+    let dir = fnamemodify(bufname(a:bufnr), ':p:h')
+  endif
+  return dir
+endfunction
+
+function! vfiler#complete_command(ArgLead, CmdLine, CursorPos) abort
+  let cmdoptions = vfiler#configs#get_command_options()
+endfunction
+

@@ -50,7 +50,7 @@ command! -nargs=? -complete=dir VFilerCurrentDir
       \ call vfiler#start_command(<q-args> . ' ' . getcwd())
 command! -nargs=? -complete=dir VFilerBufferDir
       \ call vfiler#start_command(
-      \   <q-args> . ' ' . vfiler#action#get_buffer_directory_path(bufnr('%'))
+      \   <q-args> . ' ' . vfiler#get_buffer_directory_path(bufnr('%'))
       \ )
 
 let g:loaded_vfiler = 1

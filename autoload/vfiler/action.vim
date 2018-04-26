@@ -424,15 +424,6 @@ function! vfiler#action#quit() abort
   endif
 endfunction
 
-function! vfiler#action#get_buffer_directory_path(bufnr) abort
-  if vfiler#buffer#exists(a:bufnr)
-    let dir = vfiler#context#get_context(a:bufnr).path
-  else
-    let dir = fnamemodify(bufname(a:bufnr), ':p:h')
-  endif
-  return dir
-endfunction
-
 function! vfiler#action#move_cursor(lnum) abort
   " adjustment window
   if a:lnum <= winheight(0)
