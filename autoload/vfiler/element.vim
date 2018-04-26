@@ -35,7 +35,7 @@ endfunction
 function! vfiler#element#rename(element, name) abort
   let parent_path = fnamemodify(a:element.path, ':h')
   let a:element.path = vfiler#core#normalized_path(
-        \ parent_path . a:name, a:element.isdirectory
+        \ fnamemodify(parent_path, ':p') . a:name
         \ )
   let a:element.name = a:name
 endfunction

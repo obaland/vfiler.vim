@@ -434,6 +434,16 @@ function! vfiler#action#get_buffer_directory_path(bufnr) abort
 endfunction
 
 function! vfiler#action#move_cursor(lnum) abort
+  " adjustment window
+  if a:lnum <= winheight(0)
+    let scroll = 'zb'
+  elseif (line('$') - a:lnum) > winheight(0)
+    let scrool = 'zz'
+  else
+    let scroll = line('$') . 'zb'
+  endif
+  execute 'normal! ' . scroll
+
   call cursor(a:lnum, 1)
 endfunction
 
