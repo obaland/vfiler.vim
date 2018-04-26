@@ -45,7 +45,6 @@ Please see the [documentation][vim-doc] for details.
 ## Special Thanks
 When implementing this plug-in, I referred to the following excellent program and software.  
 I would like to express my special appreciation.  
-In implementing this plugins, I referred to the following products.
 
 * [vimfiler](https://github.com/Shougo/vimfiler.vim)
 
