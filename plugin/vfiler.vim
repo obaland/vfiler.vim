@@ -44,11 +44,11 @@ if g:vfiler_as_default_explorer
 endif
 
 " define commands
-command! -nargs=? -complete=dir VFiler call
+command! -nargs=? -complete=customlist,vfiler#complete VFiler call
       \ vfiler#start_command(<q-args>)
-command! -nargs=? -complete=dir VFilerCurrentDir
+command! -nargs=? -complete=customlist,vfiler#complete VFilerCurrentDir
       \ call vfiler#start_command(<q-args> . ' ' . getcwd())
-command! -nargs=? -complete=dir VFilerBufferDir
+command! -nargs=? -complete=customlist,vfiler#complete VFilerBufferDir
       \ call vfiler#start_command(
       \   <q-args> . ' ' . vfiler#get_buffer_directory_path(bufnr('%'))
       \ )

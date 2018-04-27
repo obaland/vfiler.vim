@@ -47,3 +47,17 @@ function! vfiler#get_buffer_directory_path(bufnr) abort
   endif
   return dir
 endfunction
+
+function! vfiler#complete(arglead, cmdline, cursorpos) abort
+  " complete option
+  if len(a:arglead) > 0 && a:arglead[0] ==# '-'
+    let options = vfiler#configs#get_command_options()
+    return sort(filter(options, 'stridx(v:val, a:arglead) == 0'))
+  endif
+
+  " complete dir
+  let condidate_files = glob(a:arglead . '*', 1, 1, 1)
+  return sort(map(filter(
+        \ condidate_files, 'isdirectory(v:val)'),
+        \ "v:val . '/'"))
+endfunction

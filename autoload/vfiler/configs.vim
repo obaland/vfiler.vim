@@ -21,6 +21,16 @@ let s:default_options = {
       \ 'safe_mode': g:vfiler_safe_mode
       \ }
 
+let s:command_options =
+      \ map(keys(extend(
+      \   copy(s:default_key_value_options),
+      \   s:default_flag_options
+      \ )), "'-' . substitute(v:val, '_', '-', 'g')")
+
+function! vfiler#configs#get_command_options() abort
+  return copy(s:command_options)
+endfunction
+
 function! vfiler#configs#create_options() abort
   " combine default options
   let options = copy(s:default_options)
