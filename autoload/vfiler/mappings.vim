@@ -28,7 +28,7 @@ function! s:define_default(context) abort "{{{
   nnoremap <buffer><silent><expr> <Plug>(vfiler_loop_cursor_down)
         \ (line('.') == line('$')) ? '2Gzb' : 'j'
   nnoremap <buffer><silent><expr> <Plug>(vfiler_loop_cursor_up)
-        \ (line('.') == 1) ? 'G0' : 'k'
+        \ (line('.') == 2) ? 'G0' : 'k'
   nnoremap <buffer><silent><expr> <Plug>(vfiler_move_cursor_bottom)
         \ 'G0'
   nnoremap <buffer><silent><expr> <Plug>(vfiler_move_cursor_top)

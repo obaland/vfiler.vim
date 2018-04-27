@@ -311,7 +311,7 @@ function! vfiler#action#switch_to_parent_directory() abort
   call vfiler#context#save_index_cache(b:context, element.path)
 
   let prev_path = b:context.path
-  let dest_path = vfiler#context#get_element(b:context, 0).path
+  let dest_path = fnamemodify(b:context.path, ':h')
 
   call vfiler#context#switch(b:context, dest_path)
   call vfiler#context#save_index_cache(b:context, prev_path)

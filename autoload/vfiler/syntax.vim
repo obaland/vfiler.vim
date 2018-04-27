@@ -60,8 +60,8 @@ function! vfiler#syntax#define() abort
           \ )
   endfor
 
-  " define parent directory special word
-  syntax match vfilerDirectory_SpecialWord '^\.\./'
+  " define current directory
+  syntax match vfilerCurrentDirectory /\%1l.*/
 
   " define ignore marks
   let ignores = []
@@ -82,7 +82,6 @@ function! vfiler#syntax#define() abort
   highlight! link vfilerDirectory_Icon vfilerDirectory
   highlight! link vfilerDirectory_Name vfilerDirectory
   highlight! link vfilerDirectory_Type vfilerDirectory
-  highlight! link vfilerDirectory_SpecialWord vfilerDirectory
 
   highlight! link vfilerLink_Name vfilerLink
   highlight! link vfilerLink_Type vfilerLink

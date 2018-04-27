@@ -287,10 +287,9 @@ function! s:create_elements(context, path, ...) abort
         \ map(paths, 'vfiler#element#create(v:val, level)')
         \ )
 
-  " if top level add special parent directory
+  " if top level add special element (current directory path)
   if level == 0
-    let parent = fnamemodify(a:path, ':h')
-    call insert(elements, vfiler#element#create(parent, 0), 0)
+    call insert(elements, vfiler#element#create(a:path, 0))
   endif
 
   return elements

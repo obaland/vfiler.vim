@@ -9,7 +9,7 @@ function! vfiler#view#draw(context) abort
 
   " first parent directoy word
   let elements = b:context.view_elements
-  let lines = [vfiler#element#parent_directory_word()]
+  let lines = [fnamemodify(elements[0].path, ':p')]
   for index in range(1, len(elements) - 1)
     call add(lines, s:print_line(elements[index], columns))
   endfor

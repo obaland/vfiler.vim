@@ -4,8 +4,6 @@
 " License: MIT license
 "=============================================================================
 
-let s:element_parent_directory_word = '../'
-
 function! vfiler#element#create(path, level) abort
   let element = {
         \ 'selected': 0,
@@ -26,22 +24,12 @@ function! vfiler#element#create(path, level) abort
   return element
 endfunction
 
-function! vfiler#element#create_parent_directory(current_path) abort
-  let element = vfiler#element#create(a:current_path, 0)
-  let element.name = s:element_parent_directory_word
-  return element
-endfunction
-
 function! vfiler#element#rename(element, name) abort
   let parent_path = fnamemodify(a:element.path, ':h')
   let a:element.path = vfiler#core#normalized_path(
         \ fnamemodify(parent_path, ':p') . a:name
         \ )
   let a:element.name = a:name
-endfunction
-
-function! vfiler#element#parent_directory_word() abort
-  return s:element_parent_directory_word
 endfunction
 
 function! s:get_type(path) abort
