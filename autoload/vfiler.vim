@@ -48,7 +48,8 @@ function! vfiler#get_buffer_directory_path(bufnr) abort
   return dir
 endfunction
 
-function! vfiler#complete_command(ArgLead, CmdLine, CursorPos) abort
+function! vfiler#complete(ArgLead, CmdLine, CursorPos) abort
   let cmdoptions = vfiler#configs#get_command_options()
+  echo cmdoptions
 endfunction
 

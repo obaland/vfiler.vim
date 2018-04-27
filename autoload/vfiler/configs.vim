@@ -108,7 +108,7 @@ function! s:parse_command_args(args) abort
   endwhile
 
   " set the rest of argument as path
-  let path = empty(args) ? getcwd() : args
+  let path = empty(args) ? getcwd() : expand(args)
   if !isdirectory(path)
     call vfiler#core#error('Not directory path - ' . path)
     let options.path = getcwd()

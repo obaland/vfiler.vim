@@ -44,7 +44,7 @@ if g:vfiler_as_default_explorer
 endif
 
 " define commands
-command! -nargs=? -complete=dir VFiler call
+command! -nargs=? -complete=customlist,vfiler#complete VFiler call
       \ vfiler#start_command(<q-args>)
 command! -nargs=? -complete=dir VFilerCurrentDir
       \ call vfiler#start_command(<q-args> . ' ' . getcwd())
