@@ -26,7 +26,6 @@ let s:command_options =
       \   copy(s:default_key_value_options),
       \   s:default_flag_options
       \ )), "'-' . substitute(v:val, '_', '-', 'g')")
-echo s:command_options
 
 function! vfiler#configs#get_command_options() abort
   return s:command_options
