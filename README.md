@@ -27,13 +27,13 @@ vfiler is a file manager written in Vim script.
 
 ## Demo
 ### Basic
-![VFiler basic operations](https://user-images.githubusercontent.com/36218691/39186047-2cdc472e-4804-11e8-8b2c-dc8575dc4832.gif)
+![VFiler basic operations](https://user-images.githubusercontent.com/36218691/39357916-3e202e90-4a4f-11e8-8827-e7813f08f1a6.gif)
 
 ### Operation with two buffers
-![VFiler operations with two buffers](https://user-images.githubusercontent.com/36218691/39186056-304d7b6c-4804-11e8-947e-9e025750d594.gif)
+![VFiler operations with two buffers](https://user-images.githubusercontent.com/36218691/39357922-41f9855c-4a4f-11e8-9bfb-826e2b11f7f5.gif)
 
 ### Explorer mode
-![VFiler explorer mode](https://user-images.githubusercontent.com/36218691/39186060-32a38014-4804-11e8-8ab0-67e3d3637b22.gif)
+![VFiler explorer mode](https://user-images.githubusercontent.com/36218691/39357927-455acbac-4a4f-11e8-872b-7f717a9f5b81.gif)
 
 ## Usage
 Basically, after installing in any way, start with the **VFiler** command.
