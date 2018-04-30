@@ -1,5 +1,6 @@
 # vfiler.vim
-vfiler is a file manager written in Vim script.
+vfiler is a file manager written in Vim script.  
+vfilerは、Vimスクリプトで記述されたファイルマネージャーです。
 
 ## Concept
 - **File manager**
