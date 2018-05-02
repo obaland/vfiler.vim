@@ -10,14 +10,14 @@ function! vfiler#action#start(path, options, ...) abort
   let b:context = vfiler#context#create(a:path, a:options)
   call vfiler#mappings#define(b:context)
 
-  " draw
-  call vfiler#view#draw(b:context)
-  call vfiler#action#move_cursor_top()
-
   " resize window
   if a:options.winwidth > 0
     call vfiler#core#resize_window_width(a:options.winwidth)
   endif
+
+  " draw
+  call vfiler#view#draw(b:context)
+  call vfiler#action#move_cursor_top()
 endfunction
 
 function! vfiler#action#switch_to_directory(...) abort

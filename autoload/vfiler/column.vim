@@ -27,17 +27,9 @@ let s:default_attributes = [
       \ {'type': 'type', 'width': s:type_width, 'offset': 1}
       \ ]
 
-function! vfiler#column#create(context) abort
-  " calculate window width
-  let wwidth = winwidth(0)
-  if &l:number || (exists('&relativenumber') && &l:relativenumber)
-    let wwidth -= &l:numberwidth
-  endif
-  let wwidth -= &l:foldcolumn
-  let wwidth -= 1 " offset for window right edge
-
+function! vfiler#column#create(context, wwidth) abort
   " load columns cache
-  let cached_colums = vfiler#context#load_columns_cache(a:context, wwidth)
+  let cached_colums = vfiler#context#load_columns_cache(a:context, a:wwidth)
   if !empty(cached_colums)
     return cached_colums
   endif
@@ -45,9 +37,9 @@ function! vfiler#column#create(context) abort
   let columns = s:create_columns(
         \ a:context,
         \ deepcopy(s:default_attributes),
-        \ wwidth
+        \ a:wwidth
         \ )
-  call vfiler#context#save_columns_cache(a:context, wwidth, columns)
+  call vfiler#context#save_columns_cache(a:context, a:wwidth, columns)
   return columns
 endfunction
 

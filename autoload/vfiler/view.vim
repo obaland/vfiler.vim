@@ -5,11 +5,17 @@
 "=============================================================================
 
 function! vfiler#view#draw(context) abort
-  let columns = vfiler#column#create(a:context)
-
-  " first parent directoy word
+  let wwidth = s:get_wwidth()
+  let columns = vfiler#column#create(a:context, wwidth)
   let elements = b:context.view_elements
-  let lines = [fnamemodify(elements[0].path, ':p')]
+
+  " first element is current directory
+  let current_path = vfiler#core#truncate_skipping(
+        \ fnamemodify(elements[0].path, ':p'),
+        \ wwidth, wwidth, '<'
+        \ )
+
+  let lines = [current_path]
   for index in range(1, len(elements) - 1)
     call add(lines, s:print_line(elements[index], columns))
   endfor
@@ -31,7 +37,8 @@ function! vfiler#view#draw(context) abort
 endfunction
 
 function! vfiler#view#draw_line(context, index) abort
-  let columns = vfiler#column#create(a:context)
+  let wwidth = s:get_wwidth()
+  let columns = vfiler#column#create(a:context, wwidth)
   let line = s:print_line(
         \ vfiler#context#get_element(a:context, a:index),
         \ columns
@@ -49,6 +56,18 @@ function! vfiler#view#draw_line(context, index) abort
 endfunction
 
 " internal functions "{{{
+
+function! s:get_wwidth() abort
+  " calculate window width
+  let wwidth = winwidth(0)
+  if &l:number || (exists('&relativenumber') && &l:relativenumber)
+    let wwidth -= &l:numberwidth
+  endif
+  let wwidth -= &l:foldcolumn
+
+  " offset for window right edge
+  return wwidth - 1
+endfunction
 
 function! s:print_line(element, columns) abort
   " print header
