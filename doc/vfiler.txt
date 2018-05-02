@@ -86,7 +86,7 @@ VARIABLES                                      *vfiler-variables*
                 (Default: 0)
                 If enabled, Make hidden files visible by default. You can
                 toggle the option with
-                |<Plug>(vfile-toggle-visible-hidden-files)| any time.
+                |<Plug>(vfiler_toggle_visible_hidden_files)| any time.
 
 *g:vfiler_time_format*
                 (Default: '%Y/%m/%d %H:%M')
