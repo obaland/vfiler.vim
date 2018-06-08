@@ -404,13 +404,14 @@ function! vfiler#action#yank_full_path() abort
   let selected = vfiler#context#get_marked_elements(b:context)
 
   if empty(selected)
-    let paths = s:get_current_element().path
+    let path = s:get_current_element().path
+    call vfiler#core#yank(path)
+    call vfiler#core#info('Yanked file path - ' . path)
   else
     let paths = join(map(selected, "v:val.path"), "\n")
+    call vfiler#core#yank(paths)
+    call vfiler#core#info('Yanked file paths')
   endif
-
-  call vfiler#core#yank(paths)
-  echo 'Yanked: ' . paths
 endfunction
 
 function! vfiler#action#quit() abort
