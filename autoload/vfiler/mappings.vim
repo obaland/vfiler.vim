@@ -44,6 +44,8 @@ function! s:define_default(context) abort "{{{
         \ )
   nnoremap <buffer><silent> <Plug>(vfiler_yank_full_path)
         \ :<C-u>call vfiler#action#yank_full_path()<CR>
+  nnoremap <buffer><silent> <Plug>(vfiler_yank_filename)
+        \ :<C-u>call vfiler#action#yank_filename()<CR>
   nnoremap <buffer><silent> <Plug>(vfiler_open_by_tabpage)
         \ :<C-u>call vfiler#action#open_file_by_tabpage()<CR>
   nnoremap <buffer><silent> <Plug>(vfiler_open_by_split)
@@ -144,6 +146,7 @@ function! s:define_keymap() abort "{{{
   call vfiler#core#map_key('v',         'vfiler_open_by_vsplit')
   call vfiler#core#map_key('x',         'vfiler_execute_file')
   call vfiler#core#map_key('yy',        'vfiler_yank_full_path')
+  call vfiler#core#map_key('YY',        'vfiler_yank_filename')
   call vfiler#core#map_key('P',         'vfiler_sync_with_current_filer')
   call vfiler#core#map_key('L',         'vfiler_switch_to_drive')
   call vfiler#core#map_key('S',         'vfiler_select_sort_type')

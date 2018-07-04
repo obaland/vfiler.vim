@@ -414,6 +414,20 @@ function! vfiler#action#yank_full_path() abort
   endif
 endfunction
 
+function! vfiler#action#yank_filename() abort
+  let selected = vfiler#context#get_marked_elements(b:context)
+
+  if empty(selected)
+    let name = fnamemodify(s:get_current_element().path, ':t')
+    call vfiler#core#yank(name)
+    call vfiler#core#info('Yanked filename - ' . name)
+  else
+    let names = join(map(selected, "fnamemodify(v:val.path, ':t')"), "\n")
+    call vfiler#core#yank(names)
+    call vfiler#core#info('Yanked filenames')
+  endif
+endfunction
+
 function! vfiler#action#quit() abort
   let bufnr = b:context.bufnr
   unlet b:context

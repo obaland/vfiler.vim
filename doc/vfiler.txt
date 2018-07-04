@@ -158,6 +158,9 @@ Normal mode key mappings.
 *<Plug>(vfiler_yank_full_path)*
 		Yanks full path to clipboard register and unnamed register.
 
+*<Plug>(vfiler_yank_filename)*
+		Yanks filename to clipboard register and unnamed register.
+
 *<Plug>(vfiler_open_by_tabpage)*
 		Open cursor file by tabpage.
 
