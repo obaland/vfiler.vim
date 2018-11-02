@@ -9,7 +9,7 @@ endif
 
 call vfiler#syntax#define()
 
-highlight! def link vfilerFile              Normal
+highlight! def link vfilerFile              None
 highlight! def link vfilerDirectory         Directory
 highlight! def link vfilerCurrentDirectory  Statement
 highlight! def link vfilerLink              Constant
@@ -19,7 +19,7 @@ highlight! def link vfilerNothing           Directory
 
 highlight! def link vfilerSize              Statement
 
-highlight! def link vfilerTime              Normal
+highlight! def link vfilerTime              None
 highlight! def link vfilerTimeToday         Special
 highlight! def link vfilerTimeWeek          Type
 
