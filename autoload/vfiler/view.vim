@@ -32,8 +32,9 @@ function! vfiler#view#draw(context) abort
   finally
     setlocal nomodifiable
     setlocal readonly
-    call winrestview(saved_view)
   endtry
+
+  call winrestview(saved_view)
 endfunction
 
 function! vfiler#view#draw_line(context, index) abort
