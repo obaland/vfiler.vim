@@ -43,7 +43,8 @@ function! vfiler#get_buffer_directory_path(bufnr) abort
   if vfiler#buffer#exists(a:bufnr)
     let dir = vfiler#context#get_context(a:bufnr).path
   else
-    let dir = fnamemodify(bufname(a:bufnr), ':p:h')
+    let dir = bufname(a:bufnr)
+    let dir = fnamemodify(isdirectory(dir) ? dir : getcwd(), ':p:h')
   endif
   return dir
 endfunction
