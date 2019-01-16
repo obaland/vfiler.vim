@@ -151,6 +151,14 @@ function! vfiler#action#add_bookmark() abort
     call add(elements, s:get_current_element())
   endif
 
+  let message = (len(elements) == 1) ?
+        \ printf('Add to bookmark - %s (y/N)?', elements[0].path) :
+        \ printf('Add to bookmark - %d selected paths (y/N)?', len(elements))
+  if vfiler#core#getchar(message) !=? 'y'
+    call vfiler#core#info('Cancelled.')
+    return
+  endif
+  
   let paths = []
   for element in elements
     call vfiler#core#info('Add bookmark - ' . element.path)

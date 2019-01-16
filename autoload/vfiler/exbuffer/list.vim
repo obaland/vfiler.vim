@@ -210,6 +210,12 @@ function! s:delete() abort
   endif
 
   let index = line('.') - 1
+  let message = printf('Delete - %s (y/N)?', b:items[index])
+  if vfiler#core#getchar(message) !=? 'y'
+    call vfiler#core#info('Cancelled.')
+    return
+  endif
+
   call remove(b:items, index)
   call s:draw(b:options.bufname, b:items)
   call cursor(index + 1, 1)
