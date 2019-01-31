@@ -663,8 +663,8 @@ function! s:get_detect_drives() abort
 endfunction
 
 function! s:operate_file_creation(message, create_func) abort
-  let files = vfiler#core#input(a:message, '', 'file')
-  if empty(files)
+  let filestr = vfiler#core#input(a:message, '', 'file')
+  if empty(filestr)
     call vfiler#core#info('Cancelled.')
     return
   endif
@@ -674,20 +674,21 @@ function! s:operate_file_creation(message, create_func) abort
         \ b:context.path : fnamemodify(current.path, ':h')
   let parent_path = fnamemodify(parent_path, ':p')
 
-  let num_newfiles = 0
-  for file in split(files, '\s*,\s*')
+  let newfiles = []
+  for file in split(filestr, '\s*,\s*') 
     let path = vfiler#core#normalized_path(parent_path . file)
     if filereadable(path)
       call vfiler#core#error('Skipped, file already exists. - ' . file)
     else
       call call(a:create_func, [path])
-      let num_newfiles += 1
+      call add(newfiles, file)
     endif
   endfor
 
+  let num_newfiles = len(newfiles)
   if num_newfiles > 0
     let message = (num_newfiles == 1) ?
-          \ printf('Created - %s', files[0]) :
+          \ printf('Created - %s', newfiles[0]) :
           \ printf('Created - %d files', num_newfiles)
     call vfiler#core#info(message)
 
@@ -891,11 +892,11 @@ function! s:rename_files(context, from_elements, to_names) abort
   endfor
 
   let num_renames = len(renames)
-  if num_renames == 1
-    call vfiler#core#info(printf('Renamed - %s -> %s', renames[0].from, renames[0].to))
-    call vfiler#action#reload_all()
-  elseif num_renames > 1
-    call vfiler#core#info(printf('Renamed - %d files', num_renamed))
+  if num_renames > 0
+    let message = num_renames == 1 ?
+          \ printf('Renamed - %s -> %s', renames[0].from, renames[0].to) :
+          \ printf('Renamed - %d files', num_renamed)
+    call vfiler#core#info(message)
     call vfiler#action#reload_all()
   endif
 endfunction
