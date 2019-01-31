@@ -582,7 +582,10 @@ function! vfiler#action#on_rename_file_callback(context, elements, result_names)
     let from_path = base_path . from_name
     let to_path = base_path . to_name
 
-    if vfiler#core#rename_file(from_path, to_path)
+    let result = s:rename_file(from_path, to_path)
+    if result < 0
+      call vfiler#core#info('Skipped.')
+    elseif result
       " clear mark
       let element.selected = 0
       let num_renamed += 1
@@ -601,27 +604,30 @@ endfunction
 
 function! vfiler#action#rename_one_file() abort
   let current = s:get_current_element()
+  let from_name = current.name
+
   " rename one file
-  let rename = vfiler#core#input(
-        \ 'New file name - ' . current.name, current.name, 'file')
-  if empty(rename)
+  let to_name = vfiler#core#input(
+        \ 'New file name - ' . from_name, from_name, 'file')
+  if empty(to_name)
     call vfiler#core#info('Cancelled.')
     return
   endif
 
-  let element = copy(current)
-  call vfiler#element#rename(current, rename)
-  if !vfiler#core#rename_file(element.path, current.path)
-    call vfiler#core#error('Cannot rename file - ' . element.name . ' -> ' . rename)
-    " recovery
-    call vfiler#element#rename(current, element.name)
+  let to_path = fnamemodify(b:context.path, ':p') . to_name
+  let result = s:rename_file(current.path, to_path)
+  if result < 0
+    call vfiler#core#info('Cancelled.')
+    return
+  elseif !result
+    call vfiler#core#error('Cannot rename file - ' . from_name . ' -> ' . to_name)
     return
   endif
 
-  " redraw line
-  call vfiler#view#draw_line(b:context, line('.') - 1)
+  call vfiler#element#rename(current, to_name)
+  call vfiler#action#reload_all()
   call vfiler#core#info(
-        \ printf('Renamed - %s -> %s', element.name, current.name)
+        \ printf('Renamed - %s -> %s', from_name, to_name)
         \ )
 endfunction
 
@@ -780,6 +786,7 @@ function! s:operate_file_control(control_func) abort
       call vfiler#core#warning('dest: ' . dest)
       call vfiler#core#warning('src : ' . src)
 
+      echom ''
       if vfiler#core#getchar('Do you want to overwrite (y/N)?') !=? 'y'
         call vfiler#core#info('Skipped.')
         continue
@@ -881,6 +888,24 @@ endfunction
 function! s:is_filer_window(winnr) abort
   return getwinvar(a:winnr, '&filetype') ==# 'vfiler' &&
         \ !empty(vfiler#context#get_context(winbufnr(a:winnr)))
+endfunction
+
+" return:
+"   < 0: Skipped
+"   = 1: Success
+"   = 0: Failed
+function! s:rename_file(from_path, to_path) abort
+  " double check
+  echom a:from_path . '|' . a:to_path
+  if filereadable(a:to_path)
+    call vfiler#core#warning('File already exists. - ' . fnamemodify(a:to_path, ':t'))
+    echom ''
+
+    if vfiler#core#getchar('Do you want to overwrite (y/N)?') !=? 'y'
+      return -1
+    endif
+  endif
+  return vfiler#core#rename_file(a:from_path, a:to_path) ? 1 : 0
 endfunction
 
 "}}}
