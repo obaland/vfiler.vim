@@ -73,7 +73,7 @@ function! s:exit() abort
   " clear prompt message
   echo
 
-  silent execute 'bwipeout ' . bufnr('%')
+  silent execute 'bwipeout! ' . bufnr('%')
 endfunction
 
 function! s:define_syntexes(names) abort
@@ -114,27 +114,42 @@ function! s:execute() abort
         \ getline(1, line('$'))
         \ )
 
-  " return rename buffer window
-  let winnr = winbufnr(bufnr('%'))
-  call vfiler#core#move_window(winnr)
+  call s:exit()
+  call vfiler#action#reload() 
 endfunction
 
 function! s:check_buffer() abort
   let line_len = line('$')
   let element_len = len(b:elements)
   if line_len < element_len
-    call vfiler#core#warning('Invalid rename buffer! - Too few lines.')
+    call vfiler#core#error('Too few lines.')
     return 0
   elseif line_len > element_len
-    call vfiler#core#warning('Invalid rename buffer! - Too many lines.')
+    call vfiler#core#error('Too many lines.')
     return 0
   endif
 
+  let lines = getline(1, line_len)
   for lnum in range(1, line_len)
-    if empty(getline(lnum))
-      call vfiler#core#warning('Invalid rename buffer! - blank line (' . lnum . ')')
+    let line = getline(lnum)
+    if empty(line)
+      call vfiler#core#error('Blank line (' . lnum . ')')
       return 0
     endif
+
+    " double check
+    if lnum >= line_len
+      continue
+    endif
+
+    for target_lnum in range(lnum + 1, line_len)
+      if line ==# getline(target_lnum) 
+        call vfiler#core#error(
+              \ printf('Dupulicated names (line:%d and %d)', lnum, target_lnum)
+              \ )
+        return 0
+      endif
+    endfor
   endfor
 
   return 1

@@ -838,10 +838,6 @@ function! s:is_filer_window(winnr) abort
         \ !empty(vfiler#context#get_context(winbufnr(a:winnr)))
 endfunction
 
-" return:
-"   < 0: Skipped
-"   = 1: Success
-"   = 0: Failed
 function! s:rename_files(context, from_elements, to_names) abort
   let num_elements = len(a:from_elements)
   if num_elements != len(a:to_names)
@@ -895,7 +891,7 @@ function! s:rename_files(context, from_elements, to_names) abort
   if num_renames > 0
     let message = num_renames == 1 ?
           \ printf('Renamed - %s -> %s', renames[0].from, renames[0].to) :
-          \ printf('Renamed - %d files', num_renamed)
+          \ printf('Renamed - %d files', num_renames)
     call vfiler#core#info(message)
     call vfiler#action#reload_all()
   endif
