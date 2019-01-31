@@ -559,47 +559,8 @@ function! vfiler#action#rename_file() abort
   call s:foreach_filer('s:draw')
 endfunction
 
-function! vfiler#action#on_rename_file_callback(context, elements, result_names) abort
-  let num_elements = len(a:elements)
-  if num_elements != len(a:result_names)
-    call vfiler#core#error('Number to rename is a mismatch.')
-    return
-  endif
-
-  let num_renamed = 0
-  let base_path = fnamemodify(a:context.path, ':p')
-  for index in range(0, num_elements - 1)
-    let element = a:elements[index]
-    let from_name = element.name
-    let to_name = a:result_names[index]
-
-    if from_name ==# to_name
-      " clear mark
-      let element.selected = 0
-      continue
-    endif
-
-    let from_path = base_path . from_name
-    let to_path = base_path . to_name
-
-    let result = s:rename_file(from_path, to_path)
-    if result < 0
-      call vfiler#core#info('Skipped.')
-    elseif result
-      " clear mark
-      let element.selected = 0
-      let num_renamed += 1
-    else
-      call vfiler#core#error(
-            \ printf('Cannot rename file %s -> %s', from_path, to_path)
-            \ )
-    endif
-  endfor
-
-  if num_renamed > 0
-    call vfiler#core#info(printf('Renamed - %d files', num_renamed))
-    call vfiler#action#reload_all()
-  endif
+function! vfiler#action#on_rename_file_callback(context, from_elements, to_names) abort
+  call s:rename_files(a:context, a:from_elements, a:to_names)
 endfunction
 
 function! vfiler#action#rename_one_file() abort
@@ -614,21 +575,7 @@ function! vfiler#action#rename_one_file() abort
     return
   endif
 
-  let to_path = fnamemodify(b:context.path, ':p') . to_name
-  let result = s:rename_file(current.path, to_path)
-  if result < 0
-    call vfiler#core#info('Cancelled.')
-    return
-  elseif !result
-    call vfiler#core#error('Cannot rename file - ' . from_name . ' -> ' . to_name)
-    return
-  endif
-
-  call vfiler#element#rename(current, to_name)
-  call vfiler#action#reload_all()
-  call vfiler#core#info(
-        \ printf('Renamed - %s -> %s', from_name, to_name)
-        \ )
+  call s:rename_files(b:context, [current], [to_name])
 endfunction
 
 "}}}
@@ -894,18 +841,63 @@ endfunction
 "   < 0: Skipped
 "   = 1: Success
 "   = 0: Failed
-function! s:rename_file(from_path, to_path) abort
-  " double check
-  echom a:from_path . '|' . a:to_path
-  if filereadable(a:to_path)
-    call vfiler#core#warning('File already exists. - ' . fnamemodify(a:to_path, ':t'))
-    echom ''
-
-    if vfiler#core#getchar('Do you want to overwrite (y/N)?') !=? 'y'
-      return -1
-    endif
+function! s:rename_files(context, from_elements, to_names) abort
+  let num_elements = len(a:from_elements)
+  if num_elements != len(a:to_names)
+    call vfiler#core#error('Number to rename is a mismatch.')
+    return
   endif
-  return vfiler#core#rename_file(a:from_path, a:to_path) ? 1 : 0
+
+  let renames = []
+  let base_path = fnamemodify(a:context.path, ':p')
+
+  for index in range(0, num_elements - 1)
+    let element = a:from_elements[index]
+    let from_name = element.name
+    let to_name = a:to_names[index]
+
+    " clear mark
+    let element.selected = 0
+
+    if from_name ==# to_name
+      continue
+    endif
+
+    let from_path = base_path . from_name
+    let to_path = base_path . to_name
+
+    " double check
+    if filereadable(to_path)
+      call vfiler#core#warning('File already exists. - ' . fnamemodify(to_path, ':t'))
+      echom ''
+
+      if vfiler#core#getchar('Do you want to overwrite (y/N)?') !=? 'y'
+        call vfiler#core#info("Skipped.")
+        continue
+      endif
+    endif
+
+    if vfiler#core#rename_file(from_path, to_path)
+      let rename = {
+            \ 'from': from_name, 'to': to_name
+            \ }
+      call add(renames, rename)
+      call vfiler#element#rename(element, to_name)
+    else
+      call vfiler#core#error(
+            \ printf('Cannot rename file %s -> %s', from_path, to_path)
+            \ )
+    endif
+  endfor
+
+  let num_renames = len(renames)
+  if num_renames == 1
+    call vfiler#core#info(printf('Renamed - %s -> %s', renames[0].from, renames[0].to))
+    call vfiler#action#reload_all()
+  elseif num_renames > 1
+    call vfiler#core#info(printf('Renamed - %d files', num_renamed))
+    call vfiler#action#reload_all()
+  endif
 endfunction
 
 "}}}
