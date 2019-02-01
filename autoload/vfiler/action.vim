@@ -576,6 +576,7 @@ function! vfiler#action#rename_one_file() abort
   endif
 
   call s:rename_files(b:context, [current], [to_name])
+  call vfiler#action#reload_all()
 endfunction
 
 "}}}
@@ -842,7 +843,6 @@ function! s:rename_files(context, from_elements, to_names) abort
   let num_elements = len(a:from_elements)
   if num_elements != len(a:to_names)
     call vfiler#core#error('Number to rename is a mismatch.')
-    return
   endif
 
   let renames = []
@@ -893,7 +893,6 @@ function! s:rename_files(context, from_elements, to_names) abort
           \ printf('Renamed - %s -> %s', renames[0].from, renames[0].to) :
           \ printf('Renamed - %d files', num_renames)
     call vfiler#core#info(message)
-    call vfiler#action#reload_all()
   endif
 endfunction
 
