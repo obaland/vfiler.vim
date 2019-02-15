@@ -6,7 +6,8 @@
 
 let s:default_key_value_options = {
       \ 'buffer_name': '',
-      \ 'winwidth': 0
+      \ 'winwidth': 0,
+      \ 'offset': g:vfiler_display_current_directory_on_top ? 1 : 0
       \ }
 
 let s:default_flag_options = {

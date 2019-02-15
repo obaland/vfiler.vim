@@ -8,15 +8,18 @@ function! vfiler#view#draw(context) abort
   let wwidth = s:get_wwidth()
   let columns = vfiler#column#create(a:context, wwidth)
   let elements = b:context.view_elements
+
   let lines = []
+  if a:context.display_current_directory_on_top
+    " first element is current directory
+    let current_path = vfiler#core#truncate_skipping(
+          \ fnamemodify(a:context.path, ':p'),
+          \ wwidth, wwidth, '<'
+          \ )
 
-  " first element is current directory
-  let current_path = vfiler#core#truncate_skipping(
-        \ fnamemodify(a:context.path, ':p'),
-        \ wwidth, wwidth, '<'
-        \ )
+    call add(lines, current_path)
+  endif
 
-  call add(lines, current_path)
   for index in range(0, len(elements) - 1)
     call add(lines, s:print_line(elements[index], columns))
   endfor

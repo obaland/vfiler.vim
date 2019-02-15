@@ -280,18 +280,10 @@ function! s:create_elements(context, path, ...) abort
           \ )
   endif
 
-  let elements = s:sort(
+  return s:sort(
         \ a:context,
         \ map(paths, 'vfiler#element#create(v:val, level)')
         \ )
-
-  " TODO:
-  " if top level add special element (current directory path)
-  "if level == 0
-  "  call insert(elements, vfiler#element#create(a:path, 0))
-  "endif
-
-  return elements
 endfunction
 
 function! s:to_view_elements(elements) abort

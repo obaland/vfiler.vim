@@ -129,6 +129,10 @@ VARIABLES                                      *vfiler-variables*
 		customize key mappings, see
 		|vfiler-example-custom-key-mappings|.
 
+*g:vfiler_display_current_directory_on_top
+                (Default: 1)
+                If disabled, the top current directory is not displayed.
+
 ------------------------------------------------------------------------------
 KEY MAPPINGS                                   *vfiler-key-mappings*
 

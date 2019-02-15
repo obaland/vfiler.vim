@@ -26,13 +26,13 @@ function! s:define_default(context) abort "{{{
   endif
 
   nnoremap <buffer><silent><expr> <Plug>(vfiler_loop_cursor_down)
-        \ (line('.') == line('$')) ? '2G0zb' : 'j'
+        \ (line('.') == line('$')) ? vfiler#action#get_file_offset() . 'G0zb' : 'j'
   nnoremap <buffer><silent><expr> <Plug>(vfiler_loop_cursor_up)
-        \ (line('.') == 2) ? 'G0' : 'k'
+        \ (line('.') == vfiler#action#get_file_offset()) ? 'G0' : 'k'
   nnoremap <buffer><silent><expr> <Plug>(vfiler_move_cursor_bottom)
         \ 'G0'
   nnoremap <buffer><silent><expr> <Plug>(vfiler_move_cursor_top)
-        \ '2G0zb'
+        \ vfiler#action#get_file_offset() . 'G0zb'
   nnoremap <buffer><silent> <Plug>(vfiler_switch_to_directory)
         \ :<C-u>call vfiler#action#switch_to_directory()<CR>
   nnoremap <buffer><silent> <Plug>(vfiler_open_file)

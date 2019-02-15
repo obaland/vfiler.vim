@@ -21,10 +21,10 @@ function! vfiler#action#start(path, options, ...) abort
 endfunction
 
 function! vfiler#action#get_current_element() abort
-  let index = s:to_element_index(line('.'))
-  return index < 0 ?
-        \ vfiler#element#create(b:context.path, 0) :
-        \ vfiler#context#get_element(b:context, index)
+  let index = s:to_index(b:context, line('.'))
+  return vfiler#context#get_element_count(b:context) > 0 ?
+        \ vfiler#context#get_element(b:context, index) :
+        \ vfiler#element#create(b:context.path, 0)
 endfunction
 
 function! vfiler#action#switch_to_directory(...) abort
@@ -41,6 +41,7 @@ function! vfiler#action#switch_to_directory(...) abort
   call vfiler#context#save_index_cache(b:context, path)
   call vfiler#context#switch(b:context, path)
   call s:draw()
+  normal! zb
 endfunction
 
 function! vfiler#action#jump_to_directory() abort
@@ -281,7 +282,9 @@ endfunction
 
 function! vfiler#action#toggle_directory_tree(...) abort
   let lnum = get(a:000, 0, line('.'))
-  let target = vfiler#context#get_element(b:context, s:to_element_index(lnum))
+  let target = vfiler#context#get_element(
+        \ b:context, s:to_index(b:context, lnum)
+        \ )
 
   if target.isdirectory && target.opened
     call vfiler#action#unexpand_directory_tree(lnum)
@@ -291,7 +294,9 @@ function! vfiler#action#toggle_directory_tree(...) abort
 endfunction
 
 function! vfiler#action#unexpand_directory_tree(...) abort
-  let index = s:to_element_index(get(a:000, 0, line('.')))
+  let index = s:to_index(
+        \ b:context, get(a:000, 0, line('.'))
+        \ )
   let current = vfiler#context#get_element(b:context, index)
 
   let parent = vfiler#context#unexpand_directory_tree(b:context, index)
@@ -302,7 +307,9 @@ function! vfiler#action#unexpand_directory_tree(...) abort
 endfunction
 
 function! vfiler#action#expand_directory_tree(...) abort
-  let index = s:to_element_index(get(a:000, 0, line('.')))
+  let index = s:to_index(
+        \ b:context, get(a:000, 0, line('.'))
+        \ )
   let target = vfiler#context#get_element(b:context, index)
   if !target.isdirectory
     return
@@ -453,12 +460,16 @@ function! vfiler#action#quit() abort
   endif
 endfunction
 
+function! vfiler#action#get_file_offset() abort
+  return b:context.offset + 1
+endfunction
+
 function! vfiler#action#move_cursor(lnum) abort
   call cursor(a:lnum, 1)
 endfunction
 
 function! vfiler#action#move_cursor_top() abort
-  call vfiler#action#move_cursor(s:to_line_number(0))
+  call vfiler#action#move_cursor(s:to_lnum(b:context, 0))
 endfunction
 
 function! vfiler#action#move_cursor_bottom() abort
@@ -468,13 +479,15 @@ endfunction
 function! vfiler#action#move_cursor_up() abort
   let lnum = line('.')
   call vfiler#action#move_cursor(
-        \ s:to_element_index(lnum) <= 2 ? lnum : lnum - 1)
+        \ s:to_index(b:context, lnum) <= 0 ? lnum : lnum - 1
+        \ )
 endfunction
 
 function! vfiler#action#move_cursor_down() abort
   let lnum = line('.')
   call vfiler#action#move_cursor(
-        \ lnum == line('$') ? lnum : lnum + 1)
+        \ lnum == line('$') ? lnum : lnum + 1
+        \ )
 endfunction
 
 " file operation actions "{{{
@@ -589,14 +602,12 @@ endfunction
 
 " internal functions "{{{
 
-function! s:to_element_index(line_number) abort
-  " TODO:
-  return a:line_number - 2
+function! s:to_index(context, lnum) abort
+  return a:lnum - vfiler#action#get_file_offset()
 endfunction
 
-function! s:to_line_number(element_index) abort
-  " TODO:
-  return a:element_index + 2
+function! s:to_lnum(context, index) abort
+  return a:index + vfiler#action#get_file_offset()
 endfunction
 
 function! s:foreach_filer(function, ...) abort
@@ -655,9 +666,8 @@ function! s:restore_cursor(context) abort
   if index < 0
     call vfiler#action#move_cursor_top()
   else
-    call vfiler#action#move_cursor(s:to_line_number(index))
+    call vfiler#action#move_cursor(s:to_lnum(a:context, index))
   endif
-  normal! zb
 endfunction
 
 function! s:get_detect_drives() abort

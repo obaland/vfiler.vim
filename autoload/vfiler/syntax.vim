@@ -61,7 +61,9 @@ function! vfiler#syntax#define() abort
   endfor
 
   " define current directory
-  syntax match vfilerCurrentDirectory /\%1l.*/
+  if g:vfiler_display_current_directory_on_top
+    syntax match vfilerCurrentDirectory /\%1l.*/
+  endif
 
   " define ignore marks
   let ignores = []
