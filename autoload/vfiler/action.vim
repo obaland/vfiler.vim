@@ -348,14 +348,11 @@ endfunction
 
 function! vfiler#action#toggle_mark(...) abort
   let cursor_func = get(a:000, 0, '')
-  let index = line('.') - 1
-  if index == 0
-    " skipped special element
-    return
-  endif
+  let lnum = line('.')
+  let index = s:to_index(b:context, lnum)
 
-  call vfiler#context#toggle_mark(b:context, index)
-  call vfiler#view#draw_line(b:context, index)
+  let element = vfiler#context#toggle_mark(b:context, index)
+  call vfiler#view#draw_line(b:context, element, lnum)
   if !empty(cursor_func)
     execute 'call ' . cursor_func
   endif

@@ -207,7 +207,6 @@ function! vfiler#context#load_index_cache(context)
     return -1
   endif
 
-  " exclude special element
   let path = a:context.caches.index[current_path]
   let elements = a:context.view_elements
   for index in range(0, len(elements) - 1)
@@ -225,12 +224,9 @@ function! vfiler#context#toggle_visible_hidden_files(context) abort
 endfunction
 
 function! vfiler#context#toggle_mark(context, index) abort
-  " exclude special element
-  if a:index == 0
-    return
-  endif
   let element = a:context.view_elements[a:index]
   let element.selected = !element.selected
+  return element
 endfunction
 
 function! vfiler#context#toggle_mark_all(context) abort

@@ -41,19 +41,16 @@ function! vfiler#view#draw(context) abort
   call winrestview(saved_view)
 endfunction
 
-function! vfiler#view#draw_line(context, index) abort
+function! vfiler#view#draw_line(context, element, lnum) abort
   let wwidth = s:get_wwidth()
   let columns = vfiler#column#create(a:context, wwidth)
-  let line = s:print_line(
-        \ vfiler#context#get_element(a:context, a:index),
-        \ columns
-        \ )
+  let line = s:print_line(a:element, columns)
 
   setlocal modifiable
   setlocal noreadonly
 
   try
-    call setline(a:index + 1, line)
+    call setline(a:lnum, line)
   finally
     setlocal nomodifiable
     setlocal readonly
