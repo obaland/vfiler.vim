@@ -35,6 +35,8 @@ let g:vfiler_max_number_of_bookmark =
       \ get(g:, 'vfiler_max_number_of_bookmark', 50)
 let g:vfiler_use_default_mappings =
       \ get(g:, 'vfiler_use_default_mappings', 1)
+let g:vfiler_display_current_directory_on_top =
+      \ get(g:, 'vfiler_display_current_directory_on_top', 1)
 
 " Disable netrw.
 if g:vfiler_as_default_explorer
