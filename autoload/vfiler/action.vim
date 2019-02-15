@@ -657,6 +657,7 @@ function! s:restore_cursor(context) abort
   else
     call vfiler#action#move_cursor(s:to_line_number(index))
   endif
+  normal! zb
 endfunction
 
 function! s:get_detect_drives() abort
