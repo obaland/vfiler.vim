@@ -197,9 +197,8 @@ function! vfiler#context#load_columns_cache(context, winwidth)
 endfunction
 
 function! vfiler#context#save_index_cache(context, path)
-  let index_cache = a:context.caches.index
   let current_path = a:context.path
-  let index_cache[current_path] = a:path
+  let a:context.caches.index[current_path] = a:path
 endfunction
 
 function! vfiler#context#load_index_cache(context)
@@ -211,7 +210,7 @@ function! vfiler#context#load_index_cache(context)
   " exclude special element
   let path = a:context.caches.index[current_path]
   let elements = a:context.view_elements
-  for index in range(1, len(elements) - 1)
+  for index in range(0, len(elements) - 1)
     if elements[index].path ==# path
       return index
     endif
@@ -237,8 +236,7 @@ endfunction
 function! vfiler#context#toggle_mark_all(context) abort
   let elements = a:context.view_elements
 
-  " exclude special element
-  for index in range(1, len(elements) - 1)
+  for index in range(0, len(elements) - 1)
     let element = elements[index]
     let element.selected = !element.selected
   endfor
@@ -287,10 +285,11 @@ function! s:create_elements(context, path, ...) abort
         \ map(paths, 'vfiler#element#create(v:val, level)')
         \ )
 
+  " TODO:
   " if top level add special element (current directory path)
-  if level == 0
-    call insert(elements, vfiler#element#create(a:path, 0))
-  endif
+  "if level == 0
+  "  call insert(elements, vfiler#element#create(a:path, 0))
+  "endif
 
   return elements
 endfunction

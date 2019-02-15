@@ -20,8 +20,15 @@ function! vfiler#action#start(path, options, ...) abort
   call vfiler#action#move_cursor_top()
 endfunction
 
+function! vfiler#action#get_current_element() abort
+  let index = s:to_element_index(line('.'))
+  return index < 0 ?
+        \ vfiler#element#create(b:context.path, 0) :
+        \ vfiler#context#get_element(b:context, index)
+endfunction
+
 function! vfiler#action#switch_to_directory(...) abort
-  let path = get(a:000, 0, s:get_current_element().path)
+  let path = get(a:000, 0, vfiler#action#get_current_element().path)
   let path = vfiler#core#normalized_path(
         \ fnamemodify(path, ':p')
         \ )
@@ -91,7 +98,7 @@ endfunction
 function! vfiler#action#reload() abort
   call vfiler#context#save_index_cache(
         \ b:context,
-        \ s:get_current_element().path
+        \ vfiler#action#get_current_element().path
         \ )
   call vfiler#context#update(b:context)
   call s:draw()
@@ -104,7 +111,7 @@ endfunction
 function! vfiler#action#redraw() abort
   call vfiler#context#save_index_cache(
         \ b:context,
-        \ s:get_current_element().path
+        \ vfiler#action#get_current_element().path
         \ )
   call s:draw()
 endfunction
@@ -134,21 +141,20 @@ function! vfiler#action#switch_to_buffer() abort
     call vfiler#action#reload()
   else
     " create alternate buffer (source -> destination)
-    let lnum = line('.')
-    let element = vfiler#context#get_element(b:context, lnum - 1)
+    let element = vfiler#action#get_current_element()
     call vfiler#context#save_index_cache(b:context, element.path)
     call vfiler#context#update(b:context)
 
     call s:create_alternate_buffer(b:context)
     call s:foreach_filer('s:draw')
-    call vfiler#action#move_cursor(lnum)
+    call vfiler#action#move_cursor(line('.'))
   endif
 endfunction
 
 function! vfiler#action#add_bookmark() abort
   let elements = vfiler#context#get_marked_elements(b:context)
   if empty(elements) && line('.') > 1
-    call add(elements, s:get_current_element())
+    call add(elements, vfiler#action#get_current_element())
   endif
 
   let message = (len(elements) == 1) ?
@@ -169,7 +175,7 @@ function! vfiler#action#add_bookmark() abort
 
   if !empty(paths)
     call vfiler#context#save_index_cache(
-          \ b:context, s:get_current_element().path
+          \ b:context, vfiler#action#get_current_element().path
           \ )
     call s:draw()
   endif
@@ -224,7 +230,7 @@ function! vfiler#action#on_selected_sort_callback(context, selected_line) abort
     return
   endif
 
-  let current = s:get_current_element()
+  let current = vfiler#action#get_current_element()
   call vfiler#context#save_index_cache(a:context, current.path)
   if vfiler#context#change_sort(a:context, type, order)
     call s:draw()
@@ -275,7 +281,7 @@ endfunction
 
 function! vfiler#action#toggle_directory_tree(...) abort
   let lnum = get(a:000, 0, line('.'))
-  let target = vfiler#context#get_element(b:context, lnum - 1)
+  let target = vfiler#context#get_element(b:context, s:to_element_index(lnum))
 
   if target.isdirectory && target.opened
     call vfiler#action#unexpand_directory_tree(lnum)
@@ -285,7 +291,7 @@ function! vfiler#action#toggle_directory_tree(...) abort
 endfunction
 
 function! vfiler#action#unexpand_directory_tree(...) abort
-  let index = get(a:000, 0, line('.')) - 1
+  let index = s:to_element_index(get(a:000, 0, line('.')))
   let current = vfiler#context#get_element(b:context, index)
 
   let parent = vfiler#context#unexpand_directory_tree(b:context, index)
@@ -296,7 +302,7 @@ function! vfiler#action#unexpand_directory_tree(...) abort
 endfunction
 
 function! vfiler#action#expand_directory_tree(...) abort
-  let index = get(a:000, 0, line('.')) - 1
+  let index = s:to_element_index(get(a:000, 0, line('.')))
   let target = vfiler#context#get_element(b:context, index)
   if !target.isdirectory
     return
@@ -309,7 +315,7 @@ function! vfiler#action#expand_directory_tree(...) abort
 endfunction
 
 function! vfiler#action#switch_to_parent_directory() abort
-  let element = s:get_current_element()
+  let element = vfiler#action#get_current_element()
   if element.level > 0 || element.opened
     call vfiler#action#unexpand_directory_tree()
     return
@@ -327,7 +333,7 @@ function! vfiler#action#switch_to_parent_directory() abort
 endfunction
 
 function! vfiler#action#toggle_visible_hidden_files() abort
-  let element = s:get_current_element()
+  let element = vfiler#action#get_current_element()
   call vfiler#context#save_index_cache(b:context, element.path)
   call vfiler#context#toggle_visible_hidden_files(b:context)
   call s:draw()
@@ -349,21 +355,21 @@ function! vfiler#action#toggle_mark(...) abort
 endfunction
 
 function! vfiler#action#toggle_mark_all_lines() abort
-  let element = s:get_current_element()
+  let element = vfiler#action#get_current_element()
   call vfiler#context#save_index_cache(b:context, element.path)
   call vfiler#context#toggle_mark_all(b:context)
   call s:draw()
 endfunction
 
 function! vfiler#action#clear_mark_all_lines() abort
-  let element = s:get_current_element()
+  let element = vfiler#action#get_current_element()
   call vfiler#context#save_index_cache(b:context, element.path)
   call vfiler#context#clear_mark_all(b:context)
   call s:draw()
 endfunction
 
 function! vfiler#action#open_file(...) abort
-  let path = get(a:000, 0, s:get_current_element().path)
+  let path = get(a:000, 0, vfiler#action#get_current_element().path)
   if !b:context.explorer
     call vfiler#action#open_file_by_action('edit', path)
     return
@@ -378,27 +384,27 @@ function! vfiler#action#open_file(...) abort
 endfunction
 
 function! vfiler#action#open_file_by_tabpage(...) abort
-  let path = get(a:000, 0, s:get_current_element().path)
+  let path = get(a:000, 0, vfiler#action#get_current_element().path)
   call vfiler#action#open_file_by_action('tabnew', path)
 endfunction
 
 function! vfiler#action#open_file_by_split(...) abort
-  let path = get(a:000, 0, s:get_current_element().path)
+  let path = get(a:000, 0, vfiler#action#get_current_element().path)
   call vfiler#action#open_file_by_action('belowright split', path)
 endfunction
 
 function! vfiler#action#open_file_by_vsplit(...) abort
-  let path = get(a:000, 0, s:get_current_element().path)
+  let path = get(a:000, 0, vfiler#action#get_current_element().path)
   call vfiler#action#open_file_by_action('belowright vsplit', path)
 endfunction
 
 function! vfiler#action#execute_file() abort
-  let path = get(a:000, 0, s:get_current_element().path)
+  let path = get(a:000, 0, vfiler#action#get_current_element().path)
   call vfiler#core#execute_file(path)
 endfunction
 
 function! vfiler#action#open_file_by_action(action, ...) abort
-  let path = get(a:000, 0, s:get_current_element().path)
+  let path = get(a:000, 0, vfiler#action#get_current_element().path)
   if isdirectory(path)
     call vfiler#action#start(path, b:context, a:action)
     return
@@ -412,7 +418,7 @@ function! vfiler#action#yank_full_path() abort
   let selected = vfiler#context#get_marked_elements(b:context)
 
   if empty(selected)
-    let path = s:get_current_element().path
+    let path = vfiler#action#get_current_element().path
     call vfiler#core#yank(path)
     call vfiler#core#info('Yanked file path - ' . path)
   else
@@ -426,7 +432,7 @@ function! vfiler#action#yank_filename() abort
   let selected = vfiler#context#get_marked_elements(b:context)
 
   if empty(selected)
-    let name = fnamemodify(s:get_current_element().path, ':t')
+    let name = fnamemodify(vfiler#action#get_current_element().path, ':t')
     call vfiler#core#yank(name)
     call vfiler#core#info('Yanked filename - ' . name)
   else
@@ -452,7 +458,7 @@ function! vfiler#action#move_cursor(lnum) abort
 endfunction
 
 function! vfiler#action#move_cursor_top() abort
-  call vfiler#action#move_cursor(2)
+  call vfiler#action#move_cursor(s:to_line_number(0))
 endfunction
 
 function! vfiler#action#move_cursor_bottom() abort
@@ -460,15 +466,15 @@ function! vfiler#action#move_cursor_bottom() abort
 endfunction
 
 function! vfiler#action#move_cursor_up() abort
-  let current = line('.')
+  let lnum = line('.')
   call vfiler#action#move_cursor(
-        \ current <= 2 ? current : current - 1)
+        \ s:to_element_index(lnum) <= 2 ? lnum : lnum - 1)
 endfunction
 
 function! vfiler#action#move_cursor_down() abort
-  let current = line('.')
+  let lnum = line('.')
   call vfiler#action#move_cursor(
-        \ current == line('$') ? current : current + 1)
+        \ lnum == line('$') ? lnum : lnum + 1)
 endfunction
 
 " file operation actions "{{{
@@ -551,7 +557,7 @@ function! vfiler#action#rename_file() abort
 
   " multiple rename files
   call vfiler#context#save_index_cache(
-        \ b:context, s:get_current_element().path
+        \ b:context, vfiler#action#get_current_element().path
         \ )
   call vfiler#exbuffer#rename#run(
         \ b:context, marked_elements
@@ -564,7 +570,7 @@ function! vfiler#action#on_rename_file_callback(context, from_elements, to_names
 endfunction
 
 function! vfiler#action#rename_one_file() abort
-  let current = s:get_current_element()
+  let current = vfiler#action#get_current_element()
   let from_name = current.name
 
   " rename one file
@@ -583,8 +589,14 @@ endfunction
 
 " internal functions "{{{
 
-function! s:get_current_element() abort
-  return vfiler#context#get_element(b:context, line('.') - 1)
+function! s:to_element_index(line_number) abort
+  " TODO:
+  return a:line_number - 2
+endfunction
+
+function! s:to_line_number(element_index) abort
+  " TODO:
+  return a:element_index + 2
 endfunction
 
 function! s:foreach_filer(function, ...) abort
@@ -643,7 +655,7 @@ function! s:restore_cursor(context) abort
   if index < 0
     call vfiler#action#move_cursor_top()
   else
-    call vfiler#action#move_cursor(index + 1)
+    call vfiler#action#move_cursor(s:to_line_number(index))
   endif
 endfunction
 
@@ -670,7 +682,7 @@ function! s:operate_file_creation(message, create_func) abort
     return
   endif
 
-  let current = s:get_current_element()
+  let current = vfiler#action#get_current_element()
   let parent_path = current.level == 0 ?
         \ b:context.path : fnamemodify(current.path, ':h')
   let parent_path = fnamemodify(parent_path, ':p')

@@ -172,7 +172,7 @@ function! s:define_keymap() abort "{{{
 endfunction "}}}
 
 function! s:map_selective(directory_map, file_map) abort
-  let target = vfiler#context#get_element(b:context, line('.') - 1)
+  let target = vfiler#action#get_current_element()
   return target.isdirectory ? a:directory_map : a:file_map
 endfunction
 

@@ -12,12 +12,12 @@ function! vfiler#view#draw(context) abort
 
   " first element is current directory
   let current_path = vfiler#core#truncate_skipping(
-        \ fnamemodify(elements[0].path, ':p'),
+        \ fnamemodify(a:context.path, ':p'),
         \ wwidth, wwidth, '<'
         \ )
 
   call add(lines, current_path)
-  for index in range(1, len(elements) - 1)
+  for index in range(0, len(elements) - 1)
     call add(lines, s:print_line(elements[index], columns))
   endfor
 
