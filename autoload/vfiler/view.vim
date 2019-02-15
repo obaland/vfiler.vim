@@ -8,6 +8,7 @@ function! vfiler#view#draw(context) abort
   let wwidth = s:get_wwidth()
   let columns = vfiler#column#create(a:context, wwidth)
   let elements = b:context.view_elements
+  let lines = []
 
   " first element is current directory
   let current_path = vfiler#core#truncate_skipping(
@@ -15,7 +16,7 @@ function! vfiler#view#draw(context) abort
         \ wwidth, wwidth, '<'
         \ )
 
-  let lines = [current_path]
+  call add(lines, current_path)
   for index in range(1, len(elements) - 1)
     call add(lines, s:print_line(elements[index], columns))
   endfor

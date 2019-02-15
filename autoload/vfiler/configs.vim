@@ -18,7 +18,8 @@ let s:default_flag_options = {
 
 let s:default_options = {
       \ 'visible_hidden_files': g:vfiler_visible_hidden_files,
-      \ 'safe_mode': g:vfiler_safe_mode
+      \ 'safe_mode': g:vfiler_safe_mode,
+      \ 'display_current_directory_on_top': g:vfiler_display_current_directory_on_top
       \ }
 
 let s:command_options =
