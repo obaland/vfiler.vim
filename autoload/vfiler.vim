@@ -4,31 +4,37 @@
 " License: MIT license
 "=============================================================================
 
+function! s:parse_command_args(args) abort
+  let l:configs = {}
+  let l:configs.path = a:args
+  return l:configs
+endfunction
+
 function! vfiler#start_command(args) abort
   let configs = vfiler#configs#parse(a:args)
   let options = configs.options
-  "call vfiler#start(configs.path, options)
+  call vfiler#start_legacy(configs.path, options)
 endfunction
 
 function! vfiler#start(args) abort
-  echom 'argc: ' . argc() . ' argv:' . argv(0)
-  call luaeval('require"vfiler".start_command(_A)', a:args)
+  let l:configs = s:parse_command_args(a:args)
+  call luaeval('require"vfiler".start(_A)', l:configs)
 endfunction
 
-"function! vfiler#start(path, options) abort
-"  let result = vfiler#buffer#open(a:options.buffer_name)
-"  if result.bufnr > 0
-"    if empty(vfiler#context#get_context(result.bufnr))
-"      call vfiler#core#error('Not exists context.')
-"    endif
-"    call vfiler#action#switch_to_directory(a:path)
-"    return
-"  endif
-"
-"  " split window
-"  let open_action = a:options.split ? 'topleft vsplit' : ''
-"  call vfiler#action#start(a:path, a:options, open_action)
-"endfunction
+function! vfiler#start_legacy(path, options) abort
+  let result = vfiler#buffer#open(a:options.buffer_name)
+  if result.bufnr > 0
+    if empty(vfiler#context#get_context(result.bufnr))
+      call vfiler#core#error('Not exists context.')
+    endif
+    call vfiler#action#switch_to_directory(a:path)
+    return
+  endif
+
+  " split window
+  let open_action = a:options.split ? 'topleft vsplit' : ''
+  call vfiler#action#start(a:path, a:options, open_action)
+endfunction
 
 function! vfiler#get_status_string() abort
   if empty(getbufvar(bufnr('%'), 'context'))
