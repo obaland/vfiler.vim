@@ -4,12 +4,10 @@
 " License: MIT license
 "=============================================================================
 
-if exists('g:loaded_vfiler')
-  finish
-elseif v:version < 703
-  echomsg 'vfiler does not work this version of Vim "' . v:version . '".'
+if exists('g:loaded_vfiler') || v:version < 703
   finish
 endif
+let g:loaded_vfiler = 1
 
 " Global options definition.
 
@@ -45,6 +43,11 @@ if g:vfiler_as_default_explorer
   augroup END
 endif
 
+function! s:start(args) abort
+  echom a:args
+  lua require"vfiler".start()
+endfunction
+
 " define commands
 command! -nargs=? -complete=customlist,vfiler#complete VFiler call
       \ vfiler#start_command(<q-args>)
@@ -55,4 +58,4 @@ command! -nargs=? -complete=customlist,vfiler#complete VFilerBufferDir
       \   <q-args> . ' ' . vfiler#get_buffer_directory_path(bufnr('%'))
       \ )
 
-let g:loaded_vfiler = 1
+command! -nargs=? VFilerLua call s:start(<q-args>)
