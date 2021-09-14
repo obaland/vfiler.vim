@@ -45,7 +45,7 @@ endif
 
 function! s:start(args) abort
   echom a:args
-  lua require"vfiler".start()
+  call execute('lua require"vfiler".start(' . a:args . ')')
 endfunction
 
 " define commands
@@ -58,4 +58,4 @@ command! -nargs=? -complete=customlist,vfiler#complete VFilerBufferDir
       \   <q-args> . ' ' . vfiler#get_buffer_directory_path(bufnr('%'))
       \ )
 
-command! -nargs=? VFilerLua call s:start(<q-args>)
+command! -nargs=? VFilerLua call vfiler#start(<q-args>)

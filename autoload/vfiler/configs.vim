@@ -88,8 +88,6 @@ function! vfiler#configs#parse(command_args) abort
         \ }
 endfunction
 
-" internal functions "{{{
-
 function! s:parse_command_args(args) abort
   let args = a:args
 
@@ -121,5 +119,3 @@ function! s:parse_command_args(args) abort
         \ 'options': options
         \ }
 endfunction
-
-"}}}
