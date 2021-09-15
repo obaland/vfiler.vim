@@ -1,43 +1,32 @@
+local vim = require 'vfiler/vim'
+
 local M = {}
 
-M.fn = vim.fn
-if vim.fn.has('nvim') == 1 then
-  M.command = vim.api.nvim_command
-else
-  M.command = vim.command
-end
-
-function M.warning(message)
-  M.api.command(
-    string.format('echohl WarningMsg | echo "%s" | echohl None', message)
-  )
-end
-
---[[
-function! vfiler#core#normalized_path(path) abort
-  if a:path ==? '/'
-    return '/'
-  endif
-
-  let result = resolve(a:path)
-
-  " trim trailing path separator
-  return (match(result, '\(/\|\\\)$') >= 0)
-        \ ? fnamemodify(result, ':h')
-        \ : result
-endfunction
-]]
+M.is_windows = vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1
 
 function M.normalized_path(path)
   if path == '/' then
     return '/'
   end
   -- trim trailing path separator
-  local result = vim.fn.resolve(path)
-  if string.match(result, '/$') or string.match(result, '\\$') then
-    result = vim.fn.fnamemodify(result, ':h')
+  local result = vim.fn.fnamemodify(vim.fn.resolve(path), ':p')
+  local len = result:len()
+
+  if result:match('/$') or result:match('\\$') then
+    result = result:sub(0, len - 1)
   end
+
+  if M.is_windows then
+    result = result:gsub('\\', '/')
+  end
+
   return result
+end
+
+function M.warning(message)
+  vim.command(
+    string.format('echohl WarningMsg | echo "%s" | echohl None', message)
+  )
 end
 
 return M

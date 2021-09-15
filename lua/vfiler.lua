@@ -1,5 +1,7 @@
+local buffer = require 'vfiler/buffer'
 local configs = require 'vfiler/configs'
 local core = require 'vfiler/core'
+local vim = require 'vfiler/vim'
 
 local M = {}
 
@@ -10,9 +12,10 @@ end
 
 function M.start(configs)
   if configs.path == '' then
-    configs.path = core.fn.getcwd()
+    configs.path = vim.fn.getcwd()
   end
   print(core.normalized_path(configs.path))
+  buffer.create('test')
 end
 
 return M
