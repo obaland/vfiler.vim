@@ -43,11 +43,6 @@ if g:vfiler_as_default_explorer
   augroup END
 endif
 
-function! s:start(args) abort
-  echom a:args
-  call execute('lua require"vfiler".start(' . a:args . ')')
-endfunction
-
 " define commands
 command! -nargs=? -complete=customlist,vfiler#complete VFiler call
       \ vfiler#start_command(<q-args>)
