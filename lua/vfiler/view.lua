@@ -3,3 +3,5 @@ View.__index = View
 
 function View.new()
 end
+
+return View

@@ -18,3 +18,5 @@ end
 
 function Context:switch(path)
 end
+
+return Context
