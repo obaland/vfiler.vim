@@ -4,11 +4,6 @@ local M = {}
 
 M.is_windows = vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1
 
-function M.escape_pettern(str)
-  local escaped = str:gsub('([%.%^%$%*%+%-%?])', '%%%1')
-  return escaped
-end
-
 function M.normalized_path(path)
   if path == '/' then
     return '/'

@@ -17,7 +17,7 @@ function! vfiler#start_command(args) abort
 endfunction
 
 function! vfiler#start(args) abort
-  let l:configs = s:parse_command_args(a:args)
+  let l:configs = vfiler#configs#parse(a:args)
   call luaeval('require"vfiler".start(_A)', l:configs)
 endfunction
 

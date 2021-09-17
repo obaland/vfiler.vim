@@ -1,6 +1,7 @@
-local buffer = require 'vfiler/buffer'
+local Buffer = require 'vfiler/buffer'
 local configs = require 'vfiler/configs'
 local core = require 'vfiler/core'
+local repository = require 'vfiler/repository'
 local vim = require 'vfiler/vim'
 
 local M = {}
@@ -14,8 +15,15 @@ function M.start(configs)
   if configs.path == '' then
     configs.path = vim.fn.getcwd()
   end
-  print(core.normalized_path(configs.path))
-  buffer.create('test')
+  configs.path = core.normalized_path(configs.path)
+
+  configs.name = 'test'
+
+  local source = repository.get(configs.name)
+  if not source then
+    local source = repository.create(configs)
+  end
+  -- TODO: do action
 end
 
 return M

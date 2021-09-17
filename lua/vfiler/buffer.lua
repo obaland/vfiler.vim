@@ -1,8 +1,6 @@
 local vim = require 'vfiler/vim'
 local core = require 'vfiler/core'
 
-local M = {}
-
 local BUFNAME_PREFIX = 'vfiler'
 local BUFNAME_SEPARATOR = '-'
 local BUFNUMBER_SEPARATOR = ':'
@@ -12,63 +10,62 @@ local DEAFULT_OPTIONS = {
 }
 
 -- Buffer management table
-local buffer_table = {
-  tabpages = {},
+local buffers = {
+  table = {},
 
-  add = function(self, object)
-    local tabpagenr = vim.fn.tabpagenr()
-    local buffers = self.tabpages[tabpagenr]
-    if not buffers then
-      buffers[object.number] = object
-    end
-    self.tabpages[tabpagenr] = buffers
+  add = function(self, buffer)
+    self.table[buffer.number] = buffer
   end,
 
-  delete = function(self, object)
-    self.tabpages[vim.fn.tabpagenr()][object.number] = nil
+  delete = function(self, buffer)
+    self.table[buffer.number] = nil
   end
 }
 
-local function create_name(basename)
+local Buffer = {}
+Buffer.__index = Buffer
+
+local function generate_name(basename)
   local bufname = BUFNAME_PREFIX
   if basename:len() > 0 then
     bufname = bufname .. BUFNAME_SEPARATOR .. basename
   end
 
-  local tabpages = buffer_table.tabpages[vim.fn.tabpagenr()]
-
-  local bufname_pattern = core.escape_pettern(bufname)
-
   local max_number = -1
-  for t, _ in ipairs(buffers) do
-    if name:match('^' .. bufname_pattern) then
-      local number = name:match(BUFNUMBER_SEPARATOR .. '(%d+)$')
-      if number then
-        max_number = math.max(max_number, tonumber(number))
-      else
-        max_number = 0
-      end
+  for _, buffer in pairs(buffers.table) do
+    if basename == buffer.name then
+      max_number = math.max(buffer._local_number, max_number)
     end
   end
 
+  local number = 0
   if max_number >= 0 then
-    bufname = bufname .. BUFNUMBER_SEPARATOR .. tostring(max_number + 1)
+    number = max_number + 1
+    bufname = bufname .. BUFNUMBER_SEPARATOR .. tostring(number)
   end
-  return bufname
+  return bufname, basename, number
 end
 
-local function create_object(name, number)
-  local object = {
-    name = name,
-    number = number,
-  }
-  buffer_table.add(object)
-  return object
+function Buffer.open(name, ...)
+  local tabpagenr = vim.fn.tabpagenr()
+  for _, buffer in pairs(buffers.table) do
+    if tabpagenr == buffer._tabpagenr and name == buffer.name then
+      local winnr = vim.fn.bufwinnr(buffer.bufnr)
+      if winnr > 0 then
+        -- Move to opened window
+        vim.command(winnr .. 'wincmd w')
+      else
+        vim.command('silent buffer ' .. buffer.bufnr)
+      end
+      return buffer
+    end
+  end
+  return nil
 end
 
-function M.create(name, ...)
+function Buffer.new(name, ...)
   local options = ... or DEAFULT_OPTIONS
-  local bufname = create_name(name)
+  local bufname, basename, local_number = generate_name(name)
 
   -- Save swapfile option
   local swapfile = vim.get_buf_option_boolean('swapfile')
@@ -97,12 +94,18 @@ function M.create(name, ...)
   vim.set_win_option('spell', false)
   vim.set_win_option('wrap', false)
 
-  return create_object(bufname, vim.fn.bufnr('%'))
+  local object = setmetatable({
+      name = name,
+      number = vim.fn.bufnr(),
+      _local_number = local_number,
+      _tabpagenr = vim.fn.tabpagenr(),
+    }, Buffer)
+  buffers:add(object)
+  return object
 end
 
--- Buffer object methods
-local function delete(object)
-  buffer_table.delete(object)
+function Buffer:delete()
+  buffers:delete(self)
 end
 
-return M
+return Buffer
