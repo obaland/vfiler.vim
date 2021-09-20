@@ -1,14 +1,21 @@
 local Buffer = require 'vfiler/buffer'
-local configs = require 'vfiler/configs'
+local config = require 'vfiler/config'
 local core = require 'vfiler/core'
 local repository = require 'vfiler/repository'
 local vim = require 'vfiler/vim'
 
 local M = {}
 
+function M.parse_command_args(args)
+  return config.parse(args)
+end
+
 function M.start_command(args)
-  print(args)
-  local configs = require"vfiler/configs".parse_command_args(args)
+  local configs = M.parse_command_args(args)
+  if not configs then
+    return
+  end
+  M.start(configs)
 end
 
 function M.start(configs)

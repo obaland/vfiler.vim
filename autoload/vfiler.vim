@@ -10,15 +10,22 @@ function! s:parse_command_args(args) abort
   return l:configs
 endfunction
 
-function! vfiler#start_command(args) abort
-  let configs = vfiler#configs#parse(a:args)
+function! vfiler#start_command_legacy(args) abort
+  let configs = vfiler#configs#parse_legacy(a:args)
   let options = configs.options
   call vfiler#start_legacy(configs.path, options)
 endfunction
 
-function! vfiler#start(args) abort
-  let l:configs = vfiler#configs#parse(a:args)
-  call luaeval('require"vfiler".start(_A)', l:configs)
+function! vfiler#parse_command_args(args) abort
+  call luaeval('require"vfiler".parse_command_args(_A)', a:args)
+endfunction
+
+function! vfiler#start_command(args) abort
+  call luaeval('require"vfiler".start_command(_A)', a:args)
+endfunction
+
+function! vfiler#start(configs) abort
+  call luaeval('require"vfiler".start(_A)', a:configs)
 endfunction
 
 function! vfiler#start_legacy(path, options) abort

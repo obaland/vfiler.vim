@@ -42,8 +42,19 @@ function! vfiler#configs#create_options() abort
         \ )
 endfunction
 
+let s:configs = {
+      \ }
+
 function! vfiler#configs#parse(command_args) abort
-  let configs = s:parse_command_args(a:command_args)
+  let args = []
+  for l:index in range(0, len(a:command_args))
+    let l:char = a:command_args[l:index]
+    echom l:char
+  endfor
+endfunction
+
+function! vfiler#configs#parse_legacy(command_args) abort
+  let configs = s:parse_command_args_legacy(a:command_args)
 
   " merge options
   let key_value_options = copy(s:default_key_value_options)
@@ -88,7 +99,7 @@ function! vfiler#configs#parse(command_args) abort
         \ }
 endfunction
 
-function! s:parse_command_args(args) abort
+function! s:parse_command_args_legacy(args) abort
   let args = a:args
 
   " split options and path

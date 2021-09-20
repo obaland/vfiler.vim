@@ -45,12 +45,12 @@ endif
 
 " define commands
 command! -nargs=? -complete=customlist,vfiler#complete VFiler call
-      \ vfiler#start_command(<q-args>)
+      \ vfiler#start_command_legacy(<q-args>)
 command! -nargs=? -complete=customlist,vfiler#complete VFilerCurrentDir
-      \ call vfiler#start_command(<q-args> . ' ' . getcwd())
+      \ call vfiler#start_command_legacy(<q-args> . ' ' . getcwd())
 command! -nargs=? -complete=customlist,vfiler#complete VFilerBufferDir
-      \ call vfiler#start_command(
+      \ call vfiler#start_command_legacy(
       \   <q-args> . ' ' . vfiler#get_buffer_directory_path(bufnr('%'))
       \ )
 
-command! -nargs=? VFilerLua call vfiler#start(<q-args>)
+command! -nargs=? VFilerLua call vfiler#start_command(<q-args>)
