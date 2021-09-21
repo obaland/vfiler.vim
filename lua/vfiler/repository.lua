@@ -1,6 +1,4 @@
-local Context = require 'vfiler/context'
 local Buffer = require 'vfiler/buffer'
-local View = require 'vfiler/view'
 local vim = require 'vfiler/vim'
 
 local BUFNAME_PREFIX = 'vfiler'
@@ -34,15 +32,14 @@ end
 
 function M.create(configs)
   local bufname, name, local_number = generate_name(configs.name)
-  local buffer = Buffer.new(bufname)
+  local buffer = Buffer.new(bufname, configs)
 
   repository_table[buffer.number] = {
-    context = Context.new(buffer, configs),
-    view = View.new(),
+    buffer = buffer,
     _name = name,
     _local_number = local_number,
   }
-  return repository_table[buffer.number]
+  return buffer
 end
 
 function M.delete(bufnr)
@@ -52,9 +49,9 @@ end
 function M.find(name)
   local tabpagenr = vim.fn.tabpagenr()
   for _, source in pairs(repository_table) do
-    local buffer = source.context.buffer
+    local buffer = source.buffer
     if tabpagenr == buffer._tabpagenr and name == buffer.name then
-      return source
+      return buffer
     end
   end
   return nil

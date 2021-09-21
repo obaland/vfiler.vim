@@ -17,7 +17,7 @@ function! vfiler#start_command_legacy(args) abort
 endfunction
 
 function! vfiler#parse_command_args(args) abort
-  call luaeval('require"vfiler".parse_command_args(_A)', a:args)
+  return luaeval('require"vfiler".parse_command_args(_A)', a:args)
 endfunction
 
 function! vfiler#start_command(args) abort

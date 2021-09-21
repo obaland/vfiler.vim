@@ -18,6 +18,13 @@ function M.deepcopy(src)
   return copied
 end
 
+function M.inherit(class, super, ...)
+  local self = (super and super.new(...) or {})
+  setmetatable(self, {__index = class})
+  setmetatable(class, {__index = super})
+  return self
+end
+
 function M.normalized_path(path)
   if path == '/' then
     return '/'

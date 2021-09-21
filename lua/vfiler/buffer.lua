@@ -1,5 +1,7 @@
 local vim = require 'vfiler/vim'
 local core = require 'vfiler/core'
+local Context = require 'vfiler/context'
+local View = require 'vfiler/view'
 
 local DEAFULT_OPTIONS = {
   open_type = '',
@@ -22,9 +24,7 @@ local buffers = {
 local Buffer = {}
 Buffer.__index = Buffer
 
-function Buffer.new(name, ...)
-  local options = ... or DEAFULT_OPTIONS
-
+local function create_buffer(name, configs)
   -- Save swapfile option
   local swapfile = vim.get_buf_option_boolean('swapfile')
   vim.set_buf_option('swapfile', false)
@@ -51,10 +51,15 @@ function Buffer.new(name, ...)
   vim.set_win_option('number', false)
   vim.set_win_option('spell', false)
   vim.set_win_option('wrap', false)
+  return vim.fn.bufnr()
+end
 
+function Buffer.new(name, configs)
   return setmetatable({
+      context = Context.new(configs),
       name = name,
-      number = vim.fn.bufnr(),
+      number = create_buffer(name, configs),
+      view = View.new(),
       _tabpagenr = vim.fn.tabpagenr(),
     }, Buffer)
 end

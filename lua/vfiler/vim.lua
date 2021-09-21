@@ -33,6 +33,13 @@ if vim.fn.has('nvim') == 1 then
   function M.set_win_option(name, value)
     vim.api.nvim_win_set_option(0, name, value)
   end
+
+  function M.convert_list(data)
+    return data
+  end
+  function M.convert_table(data)
+    return data
+  end
 else
   M.command = vim.command --Alias
 
@@ -79,6 +86,13 @@ else
   M.get_win_option_value = M.get_option_value -- Alias
   M.get_win_option_boolean = M.get_option_boolean -- Alias
   M.set_win_option = M.set_buf_option -- Alias
+
+  function M.convert_list(data)
+    return data and vim.list(data) or nil
+  end
+  function M.convert_table(data)
+    return data and vim.dict(data) or nil
+  end
 end
 
 return M

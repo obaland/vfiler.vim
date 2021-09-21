@@ -1,4 +1,4 @@
-local Buffer = require 'vfiler/buffer'
+local action = require 'vfiler/action'
 local config = require 'vfiler/config'
 local core = require 'vfiler/core'
 local repository = require 'vfiler/repository'
@@ -7,15 +7,15 @@ local vim = require 'vfiler/vim'
 local M = {}
 
 function M.parse_command_args(args)
-  return config.parse(args)
+  return vim.convert_table(config.parse(args))
 end
 
 function M.start_command(args)
-  local configs = M.parse_command_args(args)
+  local configs = config.parse(args)
   if not configs then
-    return
+    return false
   end
-  M.start(configs)
+  return M.start(configs)
 end
 
 function M.start(configs)
@@ -27,10 +27,12 @@ function M.start(configs)
   configs.name = 'test'
 
   local source = repository.get(configs.name)
-  if not source then
-    local source = repository.create(configs)
+  if source then
+    -- TODO: open action
   end
-  -- TODO: do action
+  local buffer = repository.create(configs)
+  action.do_action('start', buffer.context, buffer.view, configs.path)
+  return true
 end
 
 return M

@@ -13,10 +13,6 @@ local function error(message)
   core.error('Argument error - ' .. message)
 end
 
-local function normalized_key(str)
-  return str:gsub('%-', '_')
-end
-
 local function normalized_value(value)
   if type(value) ~= 'string' then
     return value
@@ -37,9 +33,7 @@ local function split(str_args)
     if char == ' ' and not (escaped or in_dquote) then
       table.insert(args, str_args:sub(pos, i - 1))
       pos = i + 1 -- reset position
-    end
-
-    if char == '"' then
+    elseif char == '"' then
       in_dquote = not in_dquote
     end
     escaped = char == '\\'
@@ -50,26 +44,24 @@ local function split(str_args)
 end
 
 local function parse_option(arg)
-  arg = arg:sub(2) -- remove start '-'
-  local key, value = arg:match('([%-%w]+)=(.+)')
+  local key, value = arg:match('^%-([%-%w]+)=(.+)')
   if key then
     value = normalized_value(value)
   else
-    key = arg:match('^no%-(%g+)')
+    key = arg:match('^%-no%-(%g+)')
     if key then
       value = false
     else
-      key = arg
+      key = arg:sub(2) -- remove '-'
       value = true
     end
   end
   -- replace for option property name
-  return key:gsub('%-', '_'), value, '-' .. key
+  return key:gsub('%-', '_'), value, key
 end
 
 function M.parse(str_args)
   local args = split(str_args)
-  print(str_args)
 
   -- copy from default
   local configs = core.deepcopy(defalut_configs)
@@ -78,15 +70,17 @@ function M.parse(str_args)
   for _, arg in ipairs(args) do
     if arg:sub(1, 1) == '-' then
       local name, value, key = parse_option(arg)
-      print(name)
       if configs[name] == nil then
         error(string.format("Unknown '%s' option.", key))
+        return nil
+      elseif type(value) ~= type(configs[name]) then
+        error(string.format("Illegal option value. (%s)", value))
         return nil
       end
       configs[name] = value
     else
       if #configs.path > 0 then
-        error(string.format("The path '%s' is duplicated.", arg))
+        error('The path specification is duplicated.')
         return nil
       end
       configs.path = normalized_value(arg)
