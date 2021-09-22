@@ -28,6 +28,22 @@ function! vfiler#start(configs) abort
   call luaeval('require"vfiler".start(_A)', a:configs)
 endfunction
 
+function! vfiler#do_action(name, ...) abort
+  call luaeval(
+        \ 'require"vfiler".do_action(_A.name, _A.args)',
+        \ {'name': a:name, 'args': a:000}
+        \ )
+endfunction
+
+function! vfiler#define_keymap() abort
+  nnoremap <silent><buffer> <CR>
+        \ :<C-u>call vfiler#do_action('open')<CR>
+  nnoremap <silent><buffer> h
+        \ :<C-u>call vfiler#do_action('change_directory', '..')<CR>
+  nnoremap <silent><buffer> l
+        \ :<C-u>call vfiler#do_action('open_tree')<CR>
+endfunction
+
 function! vfiler#start_legacy(path, options) abort
   let result = vfiler#buffer#open(a:options.buffer_name)
   if result.bufnr > 0

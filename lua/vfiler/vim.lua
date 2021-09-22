@@ -3,8 +3,13 @@ local M = {}
 M.fn = vim.fn
 
 if vim.fn.has('nvim') == 1 then
+  ----------------------------------------------------------------------------
+  -- Neovim
+  ----------------------------------------------------------------------------
+
   M.command = vim.api.nvim_command -- Alias
 
+  -- Global option
   M.get_global_option_value = vim.api.nvim_get_option -- Alias
   M.get_global_option_boolean = vim.api.nvim_get_option -- Alias
   M.set_global_option = vim.api.nvim_set_option -- Alias
@@ -18,6 +23,7 @@ if vim.fn.has('nvim') == 1 then
     vim.o[name] = value
   end
 
+  -- Buffer option
   function M.get_buf_option_value(name, value)
     return vim.api.nvim_buf_get_option(0, name)
   end
@@ -26,6 +32,7 @@ if vim.fn.has('nvim') == 1 then
     vim.api.nvim_buf_set_option(0, name, value)
   end
 
+  -- Window option
   function M.get_win_option_value(name)
     return vim.api.nvim_win_get_option(0, name)
   end
@@ -34,15 +41,27 @@ if vim.fn.has('nvim') == 1 then
     vim.api.nvim_win_set_option(0, name, value)
   end
 
+  -- Key mapping
+  function M.set_buf_keymap(mode, lhs, rhs, opts)
+    vim.api.nvim_buf_set_keymap(0, mode, lhs, rhs, opts)
+  end
+
+  -- Convert lua data to vim data
   function M.convert_list(data)
     return data
   end
   function M.convert_table(data)
     return data
   end
+
 else
+  ----------------------------------------------------------------------------
+  -- Vim
+  ----------------------------------------------------------------------------
+
   M.command = vim.command --Alias
 
+  -- Global option
   local function get_option(prefix, name)
     return vim.eval(prefix .. name)
   end
@@ -77,16 +96,23 @@ else
     set_option('set', name, value)
   end
 
+  -- Buffer option
   M.get_buf_option_value = M.get_option_value -- Alias
   M.get_buf_option_boolean = M.get_option_boolean -- Alias
   function M.set_buf_option(name, value)
     set_option('setlocal', name, value)
   end
 
+  -- Window option
   M.get_win_option_value = M.get_option_value -- Alias
   M.get_win_option_boolean = M.get_option_boolean -- Alias
   M.set_win_option = M.set_buf_option -- Alias
 
+  -- Key mapping
+  function M.set_buf_keymap(mode, lhs, rhs, opts)
+  end
+
+  -- Convert lua data to vim data
   function M.convert_list(data)
     return data and vim.list(data) or nil
   end

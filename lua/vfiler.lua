@@ -26,13 +26,23 @@ function M.start(configs)
 
   configs.name = 'test'
 
-  local source = repository.get(configs.name)
-  if source then
+  local buffer = repository.find(configs.name)
+  if buffer then
     -- TODO: open action
   end
-  local buffer = repository.create(configs)
-  action.do_action('start', buffer.context, buffer.view, configs.path)
+  buffer = repository.create(configs)
+  print(configs.path)
+  action.do_action('start', buffer.context, buffer.view, {configs.path})
   return true
+end
+
+function M.do_action(name, args)
+  local buffer = repository.get(vim.fn.bufnr())
+  if not buffer then
+    core.error('Buffer does not exist.')
+    return
+  end
+  action.do_action(name, buffer.context, buffer.view, args)
 end
 
 return M

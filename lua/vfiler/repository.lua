@@ -58,7 +58,7 @@ function M.find(name)
 end
 
 function M.get(bufnr)
-  return repository_table[bufnr]
+  return repository_table[bufnr].buffer
 end
 
 return M
