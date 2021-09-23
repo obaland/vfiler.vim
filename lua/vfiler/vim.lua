@@ -42,6 +42,7 @@ if vim.fn.has('nvim') == 1 then
   end
 
   -- Key mapping
+  M.set_keymap = vim.api.nvim_set_keymap
   function M.set_buf_keymap(mode, lhs, rhs, opts)
     vim.api.nvim_buf_set_keymap(0, mode, lhs, rhs, opts)
   end
@@ -109,7 +110,40 @@ else
   M.set_win_option = M.set_buf_option -- Alias
 
   -- Key mapping
+  local function set_keymap(mode, lhs, rhs, opts)
+    local command = ''
+    if opts.noremap then
+      if mode == '!' then
+        command = 'noremap!'
+      else
+        command = mode .. 'noremap'
+      end
+    elseif mode == '!' then
+      command = 'map!'
+    else
+      command = mode .. 'map'
+    end
+
+    -- special arguments
+    local args = opts._buffer and '<buffer>' or ''
+    local args_keys = {
+      'silent', 'nowait', 'special', 'script', 'expr', 'unique'
+    }
+    for _, arg in ipairs(args_keys) do
+      if opts[arg] then
+        args = args .. string.format('<%s>', arg)
+      end
+    end
+    vim.command(string.format('%s %s %s %s', command, args, lhs, rhs))
+  end
+
+  function M.set_keymap(mode, lhs, rhs, opts)
+    opts._buffer = false
+    set_keymap(mode, lhs, rhs, opts)
+  end
   function M.set_buf_keymap(mode, lhs, rhs, opts)
+    opts._buffer = true
+    set_keymap(mode, lhs, rhs, opts)
   end
 
   -- Convert lua data to vim data

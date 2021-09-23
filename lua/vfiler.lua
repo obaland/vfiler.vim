@@ -1,10 +1,17 @@
 local action = require 'vfiler/action'
 local config = require 'vfiler/config'
 local core = require 'vfiler/core'
+local mapping = require 'vfiler/mapping'
 local repository = require 'vfiler/repository'
 local vim = require 'vfiler/vim'
 
 local M = {}
+
+mapping.setup {
+  ['<CR>'] = ":lua require('vfiler').do_action('open')<CR>",
+  ['h'] = ":lua require'vfiler'.do_action('cd', '..')<CR>",
+  ['l'] = ":lua require'vfiler'.do_action('open_tree')<CR>",
+}
 
 function M.parse_command_args(args)
   return vim.convert_table(config.parse(args))
@@ -31,18 +38,21 @@ function M.start(configs)
     -- TODO: open action
   end
   buffer = repository.create(configs)
-  print(configs.path)
   action.do_action('start', buffer.context, buffer.view, {configs.path})
   return true
 end
 
-function M.do_action(name, args)
+function M.do_action(name, ...)
   local buffer = repository.get(vim.fn.bufnr())
   if not buffer then
     core.error('Buffer does not exist.')
     return
   end
-  action.do_action(name, buffer.context, buffer.view, args)
+  action.do_action(name, buffer.context, buffer.view, ... or {})
+end
+
+function M.set_keymap(key, rhs)
+  mapping.set(key, rhs)
 end
 
 return M

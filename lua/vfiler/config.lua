@@ -3,8 +3,9 @@ local vim = require 'vfiler/vim'
 
 local M = {}
 
-local defalut_configs = {
+local default_configs = {
   auto_cd = false,
+  columns = {'mark', 'indent', 'name'},
   listed = false,
   name = '',
 }
@@ -60,11 +61,25 @@ local function parse_option(arg)
   return key:gsub('%-', '_'), value, key
 end
 
+local function parse_option_value(name, value)
+  if name == 'columns' then
+    local columns = {}
+    for column in value:gmatch('(%w+)') do
+      table.insert(columns, column)
+    end
+    value = columns
+  end
+  if type(value) ~= type(default_configs[name]) then
+    return nil
+  end
+  return value
+end
+
 function M.parse(str_args)
   local args = split(str_args)
 
   -- copy from default
-  local configs = core.deepcopy(defalut_configs)
+  local configs = core.deepcopy(default_configs)
   configs.path = ''
 
   for _, arg in ipairs(args) do
@@ -73,11 +88,14 @@ function M.parse(str_args)
       if configs[name] == nil then
         error(string.format("Unknown '%s' option.", key))
         return nil
-      elseif type(value) ~= type(configs[name]) then
+      end
+
+      local parsed_value = parse_option_value(name, value)
+      if not parsed_value then
         error(string.format("Illegal option value. (%s)", value))
         return nil
       end
-      configs[name] = value
+      configs[name] = parsed_value
     else
       if #configs.path > 0 then
         error('The path specification is duplicated.')

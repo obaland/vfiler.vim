@@ -35,15 +35,6 @@ function! vfiler#do_action(name, ...) abort
         \ )
 endfunction
 
-function! vfiler#define_keymap() abort
-  nnoremap <silent><buffer> <CR>
-        \ :<C-u>call vfiler#do_action('open')<CR>
-  nnoremap <silent><buffer> h
-        \ :<C-u>call vfiler#do_action('change_directory', '..')<CR>
-  nnoremap <silent><buffer> l
-        \ :<C-u>call vfiler#do_action('open_tree')<CR>
-endfunction
-
 function! vfiler#start_legacy(path, options) abort
   let result = vfiler#buffer#open(a:options.buffer_name)
   if result.bufnr > 0

@@ -1,4 +1,5 @@
 local core = require 'vfiler/core'
+local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
 local actions = {}
@@ -21,7 +22,7 @@ function M.undefine(name, func)
   actions[name] = nil
 end
 
-function actions.change_directory(context, view, args)
+function actions.cd(context, view, args)
   -- special path
   local path = args[1]
   if path == '..' then
@@ -44,7 +45,7 @@ function actions.open(context, view, args)
   end
 
   if item.isdirectory then
-    actions.change_directory(context, view, {item.path})
+    actions.cd(context, view, {item.path})
   else
     vim.command('edit ' .. item.path)
   end
@@ -57,8 +58,8 @@ function actions.open_tree(context, view, args)
 end
 
 function actions.start(context, view, args)
-  actions.change_directory(context, view, args)
-  vim.fn['vfiler#define_keymap']()
+  actions.cd(context, view, args)
+  mapping.define()
 end
 
 return M
