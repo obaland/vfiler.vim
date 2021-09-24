@@ -1,6 +1,5 @@
 local IconColumn = require 'vfiler/columns/icon'
-local IndentColumn = require 'vfiler/columns/ident'
-local MarkColumn = require 'vfiler/columns/mark'
+local IndentColumn = require 'vfiler/columns/indent'
 local NameColumn = require 'vfiler/columns/name'
 
 local M = {}
@@ -8,7 +7,6 @@ local M = {}
 local columns = {
   icon = IconColumn.new(),
   indent = IndentColumn.new(),
-  mark = MarkColumn.new(),
   name = NameColumn.new(),
 }
 

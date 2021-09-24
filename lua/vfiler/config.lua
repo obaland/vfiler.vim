@@ -5,7 +5,7 @@ local M = {}
 
 local default_configs = {
   auto_cd = false,
-  columns = {'mark', 'indent', 'name'},
+  columns = 'icon,name',
   listed = false,
   name = '',
 }
@@ -61,20 +61,6 @@ local function parse_option(arg)
   return key:gsub('%-', '_'), value, key
 end
 
-local function parse_option_value(name, value)
-  if name == 'columns' then
-    local columns = {}
-    for column in value:gmatch('(%w+)') do
-      table.insert(columns, column)
-    end
-    value = columns
-  end
-  if type(value) ~= type(default_configs[name]) then
-    return nil
-  end
-  return value
-end
-
 function M.parse(str_args)
   local args = split(str_args)
 
@@ -88,14 +74,11 @@ function M.parse(str_args)
       if configs[name] == nil then
         error(string.format("Unknown '%s' option.", key))
         return nil
-      end
-
-      local parsed_value = parse_option_value(name, value)
-      if not parsed_value then
+      elseif type(value) ~= type(configs[name]) then
         error(string.format("Illegal option value. (%s)", value))
         return nil
       end
-      configs[name] = parsed_value
+      configs[name] = value
     else
       if #configs.path > 0 then
         error('The path specification is duplicated.')

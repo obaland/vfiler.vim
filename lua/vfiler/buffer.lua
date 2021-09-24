@@ -45,6 +45,12 @@ local function create_buffer(name, configs)
   if vim.fn.exists('&colorcolumn') == 1 then
     vim.set_win_option('colorcolumn', '')
   end
+  if vim.fn.has('conceal') == 1 then
+    if vim.get_win_option_value('conceallevel') < 2 then
+      vim.set_win_option('conceallevel', 2)
+    end
+    vim.set_win_option('concealcursor', 'nvc')
+  end
   vim.set_win_option('foldcolumn', '0')
   vim.set_win_option('foldenable', false)
   vim.set_win_option('list', false)
@@ -59,7 +65,7 @@ function Buffer.new(name, configs)
       context = Context.new(configs),
       name = name,
       number = create_buffer(name, configs),
-      view = View.new(),
+      view = View.new(configs),
       _tabpagenr = vim.fn.tabpagenr(),
     }, Buffer)
 end

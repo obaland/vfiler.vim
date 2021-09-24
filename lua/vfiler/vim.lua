@@ -1,6 +1,9 @@
 local M = {}
 
 M.fn = vim.fn
+function M.commands(cmds)
+  M.command(table.concat(cmds, ' | '))
+end
 
 if vim.fn.has('nvim') == 1 then
   ----------------------------------------------------------------------------

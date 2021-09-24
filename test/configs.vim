@@ -39,10 +39,11 @@ function s:suite.parse_command_args_path_duplicated()
 endfunction
 
 function s:suite.parse_command_args_option()
-  let l:args = '-name="Test Name"'
+  let l:args = '-name="Test Name" -columns=indent,name,size'
   let l:configs = vfiler#parse_command_args(l:args)
   let l:message = 'args:' . l:args
   call s:assert.equals(l:configs.name, 'Test Name', l:message)
+  call s:assert.equals(l:configs.columns, 'indent,name,size', l:message)
 endfunction
 
 function s:suite.parse_command_args_illegal_option()

@@ -29,8 +29,9 @@ function actions.cd(context, view, args)
     -- change parent directory
     path = vim.fn.fnamemodify(context.path, ':h')
   end
+  print(path)
   context:switch(path)
-  view.draw(context)
+  view:redraw(context)
 end
 
 function actions.move_cursor(context, view, lnum)
@@ -54,12 +55,15 @@ end
 function actions.open_tree(context, view, args)
   local lnum = args[1] or vim.fn.line('.')
   context:open_directory(lnum)
-  view.draw(context)
+  view:redraw(context)
 end
 
 function actions.start(context, view, args)
-  actions.cd(context, view, args)
   mapping.define()
+
+  local path = args[1]
+  context:switch(path)
+  view:draw(context)
 end
 
 return M

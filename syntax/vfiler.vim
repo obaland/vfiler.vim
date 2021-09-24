@@ -12,6 +12,7 @@ call vfiler#syntax#define()
 highlight! def link vfilerFile              None
 highlight! def link vfilerDirectory         Directory
 highlight! def link vfilerCurrentDirectory  Statement
+highlight! def link vfilerHeader            Statement
 highlight! def link vfilerLink              Constant
 highlight! def link vfilerHidden            Comment
 highlight! def link vfilerSelected          Title

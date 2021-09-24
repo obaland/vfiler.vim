@@ -1,11 +1,20 @@
 local core = require 'vfiler/core'
 local Column = require 'vfiler/columns/column'
 
-local IconColumn = {}
+local IndentColumn = {}
 
-function IconColumn.new()
-  local self = core.inherit(IconColumn, Column, 'icon')
+function IndentColumn.new()
+  local self = core.inherit(IndentColumn, Column, 'indent')
+  self.icon = '|'
   return self
 end
 
-return IconColumn
+function IndentColumn:highlights()
+  return self._syntax:highlights()
+end
+
+function IndentColumn:syntaxes()
+  return self._syntax:syntaxes()
+end
+
+return IndentColumn
