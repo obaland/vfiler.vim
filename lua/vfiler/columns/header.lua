@@ -8,12 +8,8 @@ function HeaderColumn.new()
   return core.inherit(HeaderColumn, Column, 'header')
 end
 
-function HeaderColumn:to_line(context, lnum, width)
+function HeaderColumn:get_text(context, lnum, width)
   return '[path]:' .. context.path
-end
-
-function HeaderColumn:conseal_patterns()
-  return {}
 end
 
 function HeaderColumn:syntaxes()

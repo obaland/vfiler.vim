@@ -12,11 +12,11 @@ function Syntax.new(configs)
 end
 
 function Syntax:syntaxes()
-  local end_mark = core.vim_pattern_escape(self._end_mark)
+  local end_mark = core.vesc(self._end_mark)
   local ignores = {end_mark}
   local commands = {}
   for _, syntax in pairs(self._syntaxes) do
-    local start_mark = core.vim_pattern_escape(syntax.start_mark)
+    local start_mark = core.vesc(syntax.start_mark)
     table.insert(ignores, start_mark)
 
     local pattern = string.format('%s.\\+%s', start_mark, end_mark)
@@ -48,7 +48,7 @@ function Syntax:highlights()
   return commands
 end
 
-function Syntax:surround_string(name, str)
+function Syntax:surround_text(name, str)
   return self._syntaxes[name].start_mark .. str .. self._end_mark
 end
 

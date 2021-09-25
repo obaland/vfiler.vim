@@ -5,10 +5,15 @@ function Column.new(name)
   return setmetatable({
       name = name,
       variable = false,
+      stretch = false,
     }, Column)
 end
 
-function Column:get_width(context, width)
+function Column:get_text(context, lnum, width)
+  return 'Not implemented'
+end
+
+function Column:get_width(context, lnum, width)
   return 0
 end
 
@@ -18,10 +23,6 @@ end
 
 function Column:syntaxes()
   return {}
-end
-
-function Column:to_line(context, lnum, width)
-  return 'Not implemented'
 end
 
 return Column

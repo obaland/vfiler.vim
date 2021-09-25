@@ -5,6 +5,7 @@ local IndentColumn = {}
 
 function IndentColumn.new()
   local self = core.inherit(IndentColumn, Column, 'indent')
+  self.variable = true
   self.icon = '|'
   return self
 end

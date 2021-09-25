@@ -33,12 +33,23 @@ function IconColumn.new()
     end_mark = '\\i',
     ignore_group = 'vfilerIcon_Ignore',
   }
-
   return self
 end
 
-function IconColumn:highlights()
-  return self._syntax:highlights()
+function IconColumn:get_text(context, lnum, width)
+  local item = context:get_item(lnum)
+  local icon_name, syntax_name
+  if item.selected then
+    icon_name = 'selected'
+    syntax_name = 'selected'
+  elseif item.isdirectory then
+    icon_name = item.opened and 'opened_directory' or 'closed_directory'
+    syntax_name = 'directory'
+  else
+    icon_name = 'file'
+    syntax_name = 'file'
+  end
+  return self._syntax:surround_text(syntax_name, self[icon_name])
 end
 
 function IconColumn:get_width(context, lnum, width)
@@ -56,24 +67,12 @@ function IconColumn:get_width(context, lnum, width)
   return icon_width
 end
 
-function IconColumn:syntaxes()
-  return self._syntax:syntaxes()
+function IconColumn:highlights()
+  return self._syntax:highlights()
 end
 
-function IconColumn:to_line(context, lnum, width)
-  local item = context:get_item(lnum)
-  local icon_name, syntax_name
-  if item.selected then
-    icon_name = 'selected'
-    syntax_name = 'selected'
-  elseif item.isdirectory then
-    icon_name = item.opened and 'opened_directory' or 'closed_directory'
-    syntax_name = 'directory'
-  else
-    icon_name = 'file'
-    syntax_name = 'file'
-  end
-  return self._syntax:surround_string(syntax_name, self[icon_name])
+function IconColumn:syntaxes()
+  return self._syntax:syntaxes()
 end
 
 return IconColumn

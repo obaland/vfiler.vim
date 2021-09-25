@@ -76,8 +76,8 @@ function M.warning(message)
 end
 
 -- Escape because of the vim pattern
-function M.vim_pattern_escape(str)
-  return str:gsub('(\\)', '\\%1')
+function M.vesc(s)
+  return s:gsub('([\\^*$.~])', '\\%1')
 end
 
 -- syntax match command

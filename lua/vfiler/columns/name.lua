@@ -7,6 +7,9 @@ local NameColumn = {}
 
 function NameColumn.new()
   local self = core.inherit(NameColumn, Column, 'name')
+  self.variable = true
+  self.stretch = true
+
   self.min_width = 32
   self.max_width = 100
 
@@ -31,19 +34,10 @@ function NameColumn.new()
     end_mark = '\\@',
     ignore_group = 'vfilerName_Ignore',
   }
-
   return self
 end
 
-function NameColumn:highlights()
-  return self._syntax:highlights()
-end
-
-function NameColumn:syntaxes()
-  return self._syntax:syntaxes()
-end
-
-function NameColumn:to_line(context, lnum, width)
+function NameColumn:get_text(context, lnum, width)
   local item = context:get_item(lnum)
   local syntax_name = ''
   if item.selected then
@@ -54,7 +48,15 @@ function NameColumn:to_line(context, lnum, width)
     syntax_name = 'file'
   end
   -- TODO:
-  return self._syntax:surround_string(syntax_name, item.name)
+  return self._syntax:surround_text(syntax_name, item.name)
+end
+
+function NameColumn:highlights()
+  return self._syntax:highlights()
+end
+
+function NameColumn:syntaxes()
+  return self._syntax:syntaxes()
 end
 
 return NameColumn
