@@ -38,18 +38,22 @@ end
 function Syntax:highlights()
   local commands = {}
   for _, syntax in pairs(self._syntaxes) do
+    if syntax.highlight then
+      table.insert(
+        commands, core.link_highlight_command(syntax.group, syntax.highlight)
+      )
+    end
+  end
+  if self._ignore_group then
     table.insert(
-      commands, core.link_highlight_command(syntax.group, syntax.highlight)
+      commands, core.link_highlight_command(self._ignore_group, 'Ignore')
     )
   end
-  table.insert(
-    commands, core.link_highlight_command(self._ignore_group, 'Ignore')
-  )
   return commands
 end
 
 function Syntax:surround_text(name, str)
-  return self._syntaxes[name].start_mark .. str .. self._end_mark
+  return self._syntaxes[name].start_mark .. str .. self._end_mark, #str
 end
 
 return Syntax

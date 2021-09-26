@@ -16,21 +16,21 @@ function IconColumn.new()
     syntaxes = {
       selected = {
         group = 'vfilerIcon_Selected',
-        start_mark = 'is\\',
+        start_mark = 'i@s\\',
         highlight = 'vfilerSelected',
       },
       file = {
         group = 'vfilerIcon_File',
-        start_mark = 'if\\',
+        start_mark = 'i@f\\',
         highlight = 'vfilerFile',
       },
       directory = {
         group = 'vfilerIcon_Directory',
-        start_mark = 'id\\',
+        start_mark = 'i@d\\',
         highlight = 'vfilerDirectory',
       },
     },
-    end_mark = '\\i',
+    end_mark = '\\i@',
     ignore_group = 'vfilerIcon_Ignore',
   }
   return self
@@ -52,7 +52,7 @@ function IconColumn:get_text(context, lnum, width)
   return self._syntax:surround_text(syntax_name, self[icon_name])
 end
 
-function IconColumn:get_width(context, lnum, width)
+function IconColumn:get_width(context, width)
   local icons = {
     self.selected,
     self.file,

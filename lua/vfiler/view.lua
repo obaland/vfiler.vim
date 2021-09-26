@@ -14,7 +14,7 @@ function View.new(configs)
     if column then
       table.insert(columns, column)
     else
-      core.warning(string.format('"%s" is not a valid column.', cname))
+      core.warning(("'%s' is not a valid column."):format(cname))
     end
   end
   if #columns <= 0 then
@@ -25,25 +25,30 @@ function View.new(configs)
   end
 
   return setmetatable({
-    _header_column = HeaderColumn.new(),
+    _cache = {
+      winwidth = 0,
+    },
     _columns = columns,
+    _header_column = HeaderColumn.new(),
     }, View)
 end
 
 function View:draw(context)
   -- syntax and highlight command
-  local syntaxes = {
-    'silent! syntax clear'
-  }
-  local highlights = {
-    'silent! highlight clear'
-  }
+  local syntaxes = {'silent! syntax clear'}
+  local highlights = {'silent! highlight clear'}
 
   core.concat_list(syntaxes, self._header_column:syntaxes())
   core.concat_list(highlights, self._header_column:highlights())
   for _, column in pairs(self._columns) do
-    core.concat_list(syntaxes, column:syntaxes())
-    core.concat_list(highlights, column:highlights())
+    local column_syntaxes = column:syntaxes()
+    if column_syntaxes then
+      core.concat_list(syntaxes, column_syntaxes)
+    end
+    local column_highlights = column:highlights()
+    if column_highlights then
+      core.concat_list(highlights, column_highlights)
+    end
   end
   vim.commands(syntaxes)
   vim.commands(highlights)
@@ -55,29 +60,46 @@ function View:redraw(context)
   self:_draw(context)
 end
 
-function View:_calculate_widths(context, winwidth)
-  local widths = {}
+function View:_create_column_params(context, winwidth)
+  local params = {}
   local variable_columns = {}
+  local rest_width = winwidth
+
   for i, column in ipairs(self._columns) do
     local width = 0
     if column.variable then
       -- calculate later
       table.insert(variable_columns, {index = i, object = column})
     else
-      width = column:get_width(context, winwidth)
-      winwidth = winwidth - width
+      width = column:get_width(context, rest_width)
     end
-    table.insert(widths, width)
+    table.insert(params, {width = width})
+    rest_width = rest_width - width
   end
 
   -- decide variable column width
-  for _, column in ipairs(variable_columns) do
-    local width = column:get_width(context, winwidth)
-    winwidth = winwidth - width
-    widths[column.index] = width
+  if #variable_columns > 0 then
+    local width_by_columns = rest_width / #variable_columns
+    for _, column in ipairs(variable_columns) do
+      params[column.index].width = column.object:get_width(
+        context, width_by_columns
+      )
+    end
   end
 
-  return widths
+  -- decide column base position
+  local pos = 1
+  for _, param in ipairs(params) do
+    param.start_pos = pos
+    if param.width > 0 then
+      param.end_pos = param.start_pos + param.width - 1
+      pos = param.end_pos + 1
+    else
+      param.end_pos = param.start_pos
+      pos = param.start_pos
+    end
+  end
+  return params
 end
 
 function View:_draw(context)
@@ -88,19 +110,47 @@ function View:_draw(context)
   end
   winwidth = winwidth - vim.get_win_option_value('foldcolumn')
 
-  local column_widths = self:_calculate_widths(context, winwidth)
-  local lines = {
-    self._header_column:to_line(context, 1),
-  }
+  --[[ TODO:
+  local cache = self._cache
+  if cache.winwidth ~= winwidth or (not cache.column_widths) then
+    cache.column_params = self:_create_column_params(context, winwidth)
+    cache.winwidth = winwidth
+  end
+  ]]
+  local cache = self._cache
+  cache.column_params = self:_create_column_params(context, winwidth)
+  cache.winwidth = winwidth
+
+  -- create text lines
+  local lines = {self._header_column:get_text(context, 1)}
   for i = 1, #context.items do
     local line = ''
+    local line_length = 0
     local lnum = i + 1 -- +1 for header line
     for j, column in ipairs(self._columns) do
-      line = line .. column:to_line(context, lnum, column_widths[j])
+      local param = cache.column_params[j]
+
+      local column_width = param.width
+      if column.variable then
+        column_width = param.start_pos - line_length - 1
+      end
+
+      local text, length = column:get_text(context, lnum, column_width)
+      line = line .. text
+      line_length = line_length + length
+
+      if column.stretch then
+        -- Adjust to fit column end base position
+        local padding = param.end_pos - line_length - 1
+        if padding > 0 then
+          line = line .. (' '):rep(padding)
+        end
+      end
     end
     table.insert(lines, line)
   end
 
+  -- set buffer lines
   local saved_view = vim.fn.winsaveview()
 
   vim.set_buf_option('modifiable', true)

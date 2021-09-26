@@ -15,6 +15,7 @@ function Item.new(path, level, islink)
       selected = false,
       size = vim.fn.getfsize(path),
       time = vim.fn.getftime(path),
+      mode = vim.fn.getfperm(path),
     }, Item)
 end
 

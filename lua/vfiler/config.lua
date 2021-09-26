@@ -5,7 +5,7 @@ local M = {}
 
 local default_configs = {
   auto_cd = false,
-  columns = 'icon,name',
+  columns = 'indent,sp,icon,sp,name,sp,mode,sp,size,sp,time',
   listed = false,
   name = '',
 }

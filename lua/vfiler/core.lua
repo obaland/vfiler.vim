@@ -63,16 +63,12 @@ end
 
 -- print error message
 function M.error(message)
-  vim.command(
-    string.format('echohl ErrorMsg | echo "%s" | echohl None', message)
-  )
+  vim.command(('echohl ErrorMsg | echo "%s" | echohl None'):format(message))
 end
 
 -- print warning message
 function M.warning(message)
-  vim.command(
-    string.format('echohl WarningMsg | echo "%s" | echohl None', message)
-  )
+  vim.command(('echohl WarningMsg | echo "%s" | echohl None'):format(message))
 end
 
 -- Escape because of the vim pattern
@@ -102,6 +98,11 @@ end
 -- highlight command
 function M.link_highlight_command(from, to)
   return string.format('highlight! default link %s %s', from, to)
+end
+
+-- trancate string
+function M.trancate(str, width, sep, ...)
+  return str
 end
 
 return M

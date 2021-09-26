@@ -10,19 +10,19 @@ function Column.new(name)
 end
 
 function Column:get_text(context, lnum, width)
-  return 'Not implemented'
+  return 'Not implemented', 0
 end
 
-function Column:get_width(context, lnum, width)
+function Column:get_width(context, width)
   return 0
 end
 
 function Column:highlights()
-  return {}
+  return nil
 end
 
 function Column:syntaxes()
-  return {}
+  return nil
 end
 
 return Column
