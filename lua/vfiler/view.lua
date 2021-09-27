@@ -35,9 +35,8 @@ end
 
 function View:draw(context)
   -- syntax and highlight command
-  -- TODO: vim break colorscheme
-  local syntaxes = {'silent! syntax clear'}
-  local highlights = {'silent! highlight clear'}
+  local syntaxes = {}
+  local highlights = {}
 
   core.concat_list(syntaxes, self._header_column:syntaxes())
   core.concat_list(highlights, self._header_column:highlights())
