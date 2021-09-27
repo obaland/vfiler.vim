@@ -51,7 +51,7 @@ function NameColumn:get_text(context, lnum, width)
   end
   -- TODO:
   return self._syntax:surround_text(
-    syntax_name, core.trancate(name, width, '..', width / 2)
+    syntax_name, core.truncate(name, width, '..', width / 2)
   )
 end
 

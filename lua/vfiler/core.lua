@@ -100,9 +100,38 @@ function M.link_highlight_command(from, to)
   return string.format('highlight! default link %s %s', from, to)
 end
 
--- trancate string
-function M.trancate(str, width, sep, ...)
-  return str
+-- truncate string
+local function strwidthpart(str, width)
+  local vcol = width + 2
+  return vim.fn.matchstr(str, [[.*\%<]] .. vcol .. 'v')
+end
+
+local function strwidthpart_reverse(str, strwidth, width)
+  local vcol = strwidth - width
+  return vim.fn.matchstr(str, [[\%>]] .. vcol .. 'v.*')
+end
+
+local function truncate(str, width)
+  local bytes = {str:byte(1, #str)}
+  for _, byte in ipairs(bytes) do
+    if (0 > byte) or (byte > 127) then
+      return strwidthpart(str, width)
+    end
+  end
+  return str:sub(1, width)
+end
+
+function M.truncate(str, width, sep, ...)
+  local strwidth = vim.fn.strwidth(str)
+  if strwidth <= width then
+    return str
+  end
+  local footer_width = ... or 0
+  local header_width = width - vim.fn.strwidth(sep) - footer_width
+  local replaced = str:gsub('\t', '')
+  local result = strwidthpart(replaced, header_width) ..  sep ..
+                 strwidthpart_reverse(replaced, strwidth, footer_width)
+  return truncate(result, width)
 end
 
 return M

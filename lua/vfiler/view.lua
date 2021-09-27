@@ -35,6 +35,7 @@ end
 
 function View:draw(context)
   -- syntax and highlight command
+  -- TODO: vim break colorscheme
   local syntaxes = {'silent! syntax clear'}
   local highlights = {'silent! highlight clear'}
 
