@@ -49,7 +49,6 @@ function NameColumn:get_text(context, lnum, width)
   else
     syntax_name = 'file'
   end
-  -- TODO:
   return self._syntax:surround_text(
     syntax_name, core.truncate(name, width, '..', width / 2)
   )

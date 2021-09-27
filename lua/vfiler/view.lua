@@ -126,23 +126,23 @@ function View:_draw(context)
   local lines = {self._header_column:get_text(context, 1)}
   for i = 1, #context.items do
     local line = ''
-    local line_length = 0
+    local line_width = 0
     local lnum = i + 1 -- +1 for header line
     for j, column in ipairs(self._columns) do
       local param = cache.column_params[j]
 
       local column_width = param.width
       if column.variable then
-        column_width = param.start_pos - line_length - 1
+        column_width = column_width + (param.start_pos - line_width - 1)
       end
 
-      local text, length = column:get_text(context, lnum, column_width)
+      local text, width = column:get_text(context, lnum, column_width)
       line = line .. text
-      line_length = line_length + length
+      line_width = line_width + width
 
       if column.stretch then
         -- Adjust to fit column end base position
-        local padding = param.end_pos - line_length - 1
+        local padding = param.end_pos - line_width - 1
         if padding > 0 then
           line = line .. (' '):rep(padding)
         end

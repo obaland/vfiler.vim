@@ -1,4 +1,5 @@
 local core = require 'vfiler/core'
+local vim = require 'vfiler/vim'
 
 local Column = require 'vfiler/columns/column'
 local Syntax = require 'vfiler/columns/syntax'
@@ -40,7 +41,7 @@ function IndentColumn:get_width(context, width)
       max_level = item.level
     end
   end
-  return max_level > 0 and (max_level + self.icon:len()) or 0
+  return max_level > 0 and (max_level + vim.fn.strwidth(self.icon)) or 0
 end
 
 function IndentColumn:highlights()

@@ -1,4 +1,5 @@
 local core = require 'vfiler/core'
+local vim = require 'vfiler/vim'
 
 local Column = require 'vfiler/columns/column'
 local Syntax = require 'vfiler/columns/syntax'
@@ -62,7 +63,7 @@ function IconColumn:get_width(context, width)
   -- decide width
   local icon_width = -1
   for _, icon in pairs(icons) do
-    icon_width = math.max(icon_width, icon:len())
+    icon_width = math.max(icon_width, vim.fn.strwidth(icon))
   end
   return icon_width
 end

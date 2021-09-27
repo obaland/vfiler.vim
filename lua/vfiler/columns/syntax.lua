@@ -1,4 +1,5 @@
 local core = require 'vfiler/core'
+local vim = require 'vfiler/vim'
 
 local Syntax = {}
 Syntax.__index = Syntax
@@ -53,7 +54,8 @@ function Syntax:highlights()
 end
 
 function Syntax:surround_text(name, str)
-  return self._syntaxes[name].start_mark .. str .. self._end_mark, #str
+  return self._syntaxes[name].start_mark .. str ..
+         self._end_mark, vim.fn.strwidth(str)
 end
 
 return Syntax
