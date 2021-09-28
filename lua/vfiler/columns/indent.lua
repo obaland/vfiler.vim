@@ -26,9 +26,10 @@ end
 
 function IndentColumn:get_text(context, lnum, width)
   local item = context:get_item(lnum)
-  if item.level > 0 then
+  local indent = item.level - 1
+  if indent > 0 then
     return self._syntax:surround_text(
-      'indent', (' '):rep(item.level) .. self.icon
+      'indent', (' '):rep(indent) .. self.icon
     )
   end
   return '', 0

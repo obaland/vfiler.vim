@@ -13,7 +13,11 @@ function HeaderColumn:get_text(context, lnum, width)
 end
 
 function HeaderColumn:syntaxes()
-  return {core.syntax_match_command('vfilerHeader', '\\%1l.*', {})}
+  local group_name = 'vfilerHeader'
+  return {
+    core.syntax_clear_command({group_name}),
+    core.syntax_match_command(group_name, '\\%1l.*', {})
+  }
 end
 
 function HeaderColumn:highlights()

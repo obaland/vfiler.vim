@@ -29,7 +29,6 @@ function actions.cd(context, view, args)
     -- change parent directory
     path = vim.fn.fnamemodify(context.path, ':h')
   end
-  print(path)
   context:switch(path)
   view:draw(context)
 end
@@ -55,10 +54,13 @@ end
 function actions.close_tree(context, view, args)
   local lnum = args[1] or vim.fn.line('.')
   local item = context:get_item(lnum)
-  if item.level <= 0 and not item.opened then
+  if item.level <= 1 and not item.opened then
     actions.cd(context, view, {'..'})
   else
-    context:close_directory(lnum)
+    local pos = context:close_directory(lnum)
+    if pos then
+      vim.fn.cursor(pos, 1)
+    end
   end
   view:draw(context)
 end

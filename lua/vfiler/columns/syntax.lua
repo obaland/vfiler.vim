@@ -15,18 +15,25 @@ end
 function Syntax:syntaxes()
   local end_mark = core.vesc(self._end_mark)
   local ignores = {end_mark}
+  local group_names = {}
   local commands = {}
+
   for _, syntax in pairs(self._syntaxes) do
     local start_mark = core.vesc(syntax.start_mark)
     table.insert(ignores, start_mark)
 
-    local pattern = string.format('%s.\\+%s', start_mark, end_mark)
+    local pattern = ('%s.\\+%s'):format(start_mark, end_mark)
     local command = core.syntax_match_command(
       syntax.group, pattern, {contains = self._ignore_group}
     )
     table.insert(commands, command)
+    table.insert(group_names, syntax.group)
   end
-  -- Ignore syntax
+
+  -- clear syntax (insert at the first of command list)
+  table.insert(commands, 1, core.syntax_clear_command(group_names))
+
+  -- ignore syntax
   local ignore_syntax = core.syntax_match_command(
     self._ignore_group,
     table.concat(ignores, '\\|'),

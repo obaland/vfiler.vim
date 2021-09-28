@@ -51,10 +51,9 @@ function View:draw(context)
 
   -- create text lines
   local lines = {self._header_column:get_text(context, 1)}
-  for i = 1, #context.items do
+  for i = 2, #context.items do
     local line = ''
     local line_width = 0
-    local lnum = i + 1 -- +1 for header line
     for j, column in ipairs(self._columns) do
       local param = cache.column_params[j]
 
@@ -63,7 +62,7 @@ function View:draw(context)
         column_width = column_width + (param.start_pos - line_width - 1)
       end
 
-      local text, width = column:get_text(context, lnum, column_width)
+      local text, width = column:get_text(context, i, column_width)
       line = line .. text
       line_width = line_width + width
 

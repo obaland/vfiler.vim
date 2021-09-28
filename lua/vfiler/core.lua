@@ -76,15 +76,19 @@ function M.vesc(s)
   return s:gsub('([\\^*$.~])', '\\%1')
 end
 
--- syntax match command
+-- syntax command
+function M.syntax_clear_command(names)
+  return ('silent! syntax clear %s'):format(table.concat(names, ' '))
+end
+
 function M.syntax_match_command(name, pattern, ...)
-   local command = string.format('syntax match %s /%s/', name, pattern)
+   local command = ('syntax match %s /%s/'):format(name, pattern)
    if ... then
      local options = {}
      for key, value in pairs(...) do
        local option = ''
-       if type(value) ~= "boolean" then
-         option = string.format('%s=%s', key, value)
+       if type(value) ~= 'boolean' then
+         option = ('%s=%s'):format(key, value)
        else
          option = key
        end
@@ -97,7 +101,7 @@ end
 
 -- highlight command
 function M.link_highlight_command(from, to)
-  return string.format('highlight! default link %s %s', from, to)
+  return ('highlight! default link %s %s'):format(from, to)
 end
 
 -- truncate string
