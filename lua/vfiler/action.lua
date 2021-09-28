@@ -31,7 +31,7 @@ function actions.cd(context, view, args)
   end
   print(path)
   context:switch(path)
-  view:redraw(context)
+  view:draw(context)
 end
 
 function actions.move_cursor(context, view, lnum)
@@ -52,10 +52,21 @@ function actions.open(context, view, args)
   end
 end
 
+function actions.close_tree(context, view, args)
+  local lnum = args[1] or vim.fn.line('.')
+  local item = context:get_item(lnum)
+  if item.level <= 0 and not item.opened then
+    actions.cd(context, view, {'..'})
+  else
+    context:close_directory(lnum)
+  end
+  view:draw(context)
+end
+
 function actions.open_tree(context, view, args)
   local lnum = args[1] or vim.fn.line('.')
   context:open_directory(lnum)
-  view:redraw(context)
+  view:draw(context)
 end
 
 function actions.start(context, view, args)

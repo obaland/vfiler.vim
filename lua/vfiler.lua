@@ -9,7 +9,7 @@ local M = {}
 
 mapping.setup {
   ['<CR>'] = ":lua require('vfiler').do_action('open')<CR>",
-  ['h'] = ":lua require'vfiler'.do_action('cd', {'..'})<CR>",
+  ['h'] = ":lua require'vfiler'.do_action('close_tree')<CR>",
   ['l'] = ":lua require'vfiler'.do_action('open_tree')<CR>",
 }
 

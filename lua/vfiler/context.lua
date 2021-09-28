@@ -24,9 +24,50 @@ function Context:get_item(lnum)
   return self.items[to_index(lnum)]
 end
 
+function Context:close_directory(lnum)
+  local item = self:get_item(lnum)
+  if not item then
+    return
+  end
+  local start_pos, end_pos
+  if item.isdirectory and item.opened then
+    start_pos = to_index(lnum) + 1
+    end_pos = 0
+    for pos = start_pos, #self.items do
+      if item.level >= self.items[pos].level then
+        end_pos = pos - 1
+        break
+      end
+    end
+  else
+    -- find start position
+    start_pos = 0
+    for pos = to_index(lnum) - 1, 1, -1 do
+      if item.level < self.items[pos] then
+        start_pos = pos + 1
+        break
+      end
+    end
+    -- find end position
+    end_pos = 0
+    for pos = to_index(lnum) + 1, #self.items do
+      if item.level < self.items[pos] then
+        end_pos = pos - 1
+        break
+      end
+    end
+  end
+
+  item.opened = false
+  if start_pos >= end_pos then
+    return
+  end
+
+end
+
 function Context:open_directory(lnum)
   local item = self:get_item(lnum)
-  if (not item.isdirectory) or item.opened then
+  if (not (item and item.isdirectory)) or item.opened then
     return
   end
   local pos = to_index(lnum) + 1

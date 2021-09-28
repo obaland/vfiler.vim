@@ -24,16 +24,74 @@ function View.new(configs)
     return nil
   end
 
-  return setmetatable({
+  local object = setmetatable({
     _cache = {
       winwidth = 0,
     },
     _columns = columns,
     _header_column = HeaderColumn.new(),
     }, View)
+  object:_apply_syntaxes()
+  return object
 end
 
 function View:draw(context)
+  local winwidth = vim.fn.winwidth(0)
+  if vim.get_win_option_boolean('number') or
+    vim.get_win_option_boolean('relativenumber') then
+    winwidth = winwidth - vim.get_win_option_value('numberwidth')
+  end
+  winwidth = winwidth - vim.get_win_option_value('foldcolumn')
+
+  local cache = self._cache
+  if cache.winwidth ~= winwidth or (not cache.column_params) then
+    cache.column_params = self:_create_column_params(context, winwidth)
+    cache.winwidth = winwidth
+  end
+
+  -- create text lines
+  local lines = {self._header_column:get_text(context, 1)}
+  for i = 1, #context.items do
+    local line = ''
+    local line_width = 0
+    local lnum = i + 1 -- +1 for header line
+    for j, column in ipairs(self._columns) do
+      local param = cache.column_params[j]
+
+      local column_width = param.width
+      if column.variable then
+        column_width = column_width + (param.start_pos - line_width - 1)
+      end
+
+      local text, width = column:get_text(context, lnum, column_width)
+      line = line .. text
+      line_width = line_width + width
+
+      if column.stretch then
+        -- Adjust to fit column end base position
+        local padding = param.end_pos - line_width - 1
+        if padding > 0 then
+          line = line .. (' '):rep(padding)
+        end
+      end
+    end
+    table.insert(lines, line)
+  end
+
+  -- set buffer lines
+  local saved_view = vim.fn.winsaveview()
+
+  vim.set_buf_option('modifiable', true)
+  vim.set_buf_option('readonly', false)
+  vim.command('silent %delete _')
+  vim.fn.setline(1, vim.convert_list(lines))
+  vim.set_buf_option('modifiable', false)
+  vim.set_buf_option('readonly', true)
+
+  vim.fn.winrestview(saved_view)
+end
+
+function View:_apply_syntaxes()
   -- syntax and highlight command
   local syntaxes = {}
   local highlights = {}
@@ -52,12 +110,6 @@ function View:draw(context)
   end
   vim.commands(syntaxes)
   vim.commands(highlights)
-
-  self:_draw(context)
-end
-
-function View:redraw(context)
-  self:_draw(context)
 end
 
 function View:_create_column_params(context, winwidth)
@@ -100,67 +152,6 @@ function View:_create_column_params(context, winwidth)
     end
   end
   return params
-end
-
-function View:_draw(context)
-  local winwidth = vim.fn.winwidth(0)
-  if vim.get_win_option_boolean('number') or
-    vim.get_win_option_boolean('relativenumber') then
-    winwidth = winwidth - vim.get_win_option_value('numberwidth')
-  end
-  winwidth = winwidth - vim.get_win_option_value('foldcolumn')
-
-  --[[ TODO:
-  local cache = self._cache
-  if cache.winwidth ~= winwidth or (not cache.column_widths) then
-    cache.column_params = self:_create_column_params(context, winwidth)
-    cache.winwidth = winwidth
-  end
-  ]]
-  local cache = self._cache
-  cache.column_params = self:_create_column_params(context, winwidth)
-  cache.winwidth = winwidth
-
-  -- create text lines
-  local lines = {self._header_column:get_text(context, 1)}
-  for i = 1, #context.items do
-    local line = ''
-    local line_width = 0
-    local lnum = i + 1 -- +1 for header line
-    for j, column in ipairs(self._columns) do
-      local param = cache.column_params[j]
-
-      local column_width = param.width
-      if column.variable then
-        column_width = column_width + (param.start_pos - line_width - 1)
-      end
-
-      local text, width = column:get_text(context, lnum, column_width)
-      line = line .. text
-      line_width = line_width + width
-
-      if column.stretch then
-        -- Adjust to fit column end base position
-        local padding = param.end_pos - line_width - 1
-        if padding > 0 then
-          line = line .. (' '):rep(padding)
-        end
-      end
-    end
-    table.insert(lines, line)
-  end
-
-  -- set buffer lines
-  local saved_view = vim.fn.winsaveview()
-
-  vim.set_buf_option('modifiable', true)
-  vim.set_buf_option('readonly', false)
-  vim.command('silent %delete _')
-  vim.fn.setline(1, vim.convert_list(lines))
-  vim.set_buf_option('modifiable', false)
-  vim.set_buf_option('readonly', true)
-
-  vim.fn.winrestview(saved_view)
 end
 
 return View
