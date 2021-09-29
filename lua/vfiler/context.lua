@@ -63,7 +63,7 @@ function Context:close_directory(lnum)
     return nil
   end
   -- delete items
-  for i = 1, (end_pos - start_pos + 1) do
+  for _ = 1, (end_pos - start_pos + 1) do
     table.remove(self.items, start_pos)
   end
   return target_pos
@@ -74,10 +74,17 @@ function Context:open_directory(lnum)
   if (not (item and item.isdirectory)) or item.opened then
     return nil
   end
-  local pos = lnum + 1
-  for new_item in self:_create_items(item.path, item.level + 1) do
-    table.insert(self.items, pos, new_item)
-    pos = pos + 1
+
+  -- create opened item list
+  local opened_items = {}
+  for opened_item in self:_create_items(item.path, item.level + 1) do
+    local pos = self:_search_insert_position(opened_items, opened_item)
+    table.insert(opened_items, pos, opened_item)
+  end
+
+  -- insert opened item
+  for i, opened_item in ipairs(opened_items) do
+    table.insert(self.items, lnum + i, opened_item)
   end
   item.opened = true
   return lnum
@@ -85,14 +92,23 @@ end
 
 function Context:switch(path)
   -- create header item
-  self.items = {Directory.new(path, 0, false)}
+  self.items = {}
   for item in self:_create_items(path, 1) do
-    table.insert(self.items, item)
+    local pos = self:_search_insert_position(self.items, item)
+    table.insert(self.items, pos, item)
   end
-  table.sort(self.items, self.sort_comp)
   -- add header item to top
-  table.insert(Directory.new(path, 0, false), 1)
+  table.insert(self.items, 1, Directory.new(path, 0, false))
   self.path = path
+end
+
+function Context:_search_insert_position(items, target)
+  for i, item in ipairs(items) do
+    if self.sort_comp(target, item) then
+      return i
+    end
+  end
+  return #items + 1
 end
 
 function Context:_create_items(path, level)

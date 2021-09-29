@@ -24,8 +24,29 @@ end
 ------------------------------------------------------------------------------
 
 -- name ascending
-function sorts.name(item2, item1)
+M.set('name', function(item2, item1)
+  if item2.isdirectory and not item1.isdirectory then
+    return true
+  elseif not item2.isdirectory and item1.isdirectory then
+    return false
+  end
   return item2.name < item1.name
-end
+end)
+
+-- size ascending
+M.set('size', function(item2, item1)
+  if item2.size == item1.size then
+    return sorts.name(item2, item1)
+  end
+  return item2.size < item1.size
+end)
+
+-- time ascending
+M.set('time', function(item2, item1)
+  if item2.time == item1.time then
+    return sorts.name(item2, item1)
+  end
+  return item2.time < item1.time
+end)
 
 return M

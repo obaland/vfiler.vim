@@ -22,6 +22,13 @@ function M.undefine(name, func)
   actions[name] = nil
 end
 
+------------------------------------------------------------------------------
+-- actions
+------------------------------------------------------------------------------
+local function move_cursor(lnum)
+  vim.fn.cursor(lnum, 1)
+end
+
 function actions.cd(context, view, args)
   -- special path
   local path = args[1]
@@ -31,9 +38,6 @@ function actions.cd(context, view, args)
   end
   context:switch(path)
   view:draw(context)
-end
-
-function actions.move_cursor(context, view, lnum)
 end
 
 function actions.open(context, view, args)
@@ -59,7 +63,7 @@ function actions.close_tree(context, view, args)
   else
     local pos = context:close_directory(lnum)
     if pos then
-      vim.fn.cursor(pos, 1)
+      move_cursor(pos)
     end
   end
   view:draw(context)
@@ -69,6 +73,7 @@ function actions.open_tree(context, view, args)
   local lnum = args[1] or vim.fn.line('.')
   context:open_directory(lnum)
   view:draw(context)
+  move_cursor(lnum + 1)
 end
 
 function actions.start(context, view, args)
