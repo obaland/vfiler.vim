@@ -33,6 +33,13 @@ function M.inherit(class, super, ...)
   return self
 end
 
+function M.merge(dest, src)
+  for key, value in pairs(src) do
+    dest[key] = value
+  end
+  return dest
+end
+
 function M.normalized_path(path)
   if path == '/' then
     return '/'

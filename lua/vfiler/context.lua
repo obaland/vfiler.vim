@@ -24,7 +24,7 @@ end
 
 function Context:close_directory(lnum)
   local target = self.items[lnum]
-  if not target then
+  if not (target and (target.opened or target.level > 1)) then
     return nil
   end
   local target_pos = lnum

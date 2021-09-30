@@ -57,27 +57,34 @@ end
 
 function actions.close_tree(context, view, args)
   local lnum = args[1] or vim.fn.line('.')
+  local pos = context:close_directory(lnum)
+  if pos then
+    move_cursor(pos)
+    view:draw(context)
+  end
+end
+
+function actions.close_tree_or_cd(context, view, args)
+  local lnum = args[1] or vim.fn.line('.')
   local item = context:get_item(lnum)
   if item.level <= 1 and not item.opened then
     actions.cd(context, view, {'..'})
   else
-    local pos = context:close_directory(lnum)
-    if pos then
-      move_cursor(pos)
-    end
+    actions.close_tree(context, view, {lnum})
   end
-  view:draw(context)
 end
 
 function actions.open_tree(context, view, args)
   local lnum = args[1] or vim.fn.line('.')
-  context:open_directory(lnum)
-  view:draw(context)
-  move_cursor(lnum + 1)
+  local pos = context:open_directory(lnum)
+  if pos then
+    move_cursor(pos + 1)
+    view:draw(context)
+  end
 end
 
 function actions.start(context, view, args)
-  mapping.define()
+  mapping.define('main')
 
   local path = args[1]
   context:switch(path)

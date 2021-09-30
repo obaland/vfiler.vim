@@ -8,9 +8,11 @@ local vim = require 'vfiler/vim'
 local M = {}
 
 mapping.setup {
-  ['<CR>'] = ":lua require('vfiler').do_action('open')<CR>",
-  ['h'] = ":lua require'vfiler'.do_action('close_tree')<CR>",
-  ['l'] = ":lua require'vfiler'.do_action('open_tree')<CR>",
+  main = {
+    ['<CR>'] = ":lua require('vfiler').do_action('open')<CR>",
+    ['h'] = ":lua require'vfiler'.do_action('close_tree')<CR>",
+    ['l'] = ":lua require'vfiler'.do_action('open_tree')<CR>",
+  },
 }
 
 function M.parse_command_args(args)
@@ -51,8 +53,8 @@ function M.do_action(name, ...)
   action.do_action(name, buffer.context, buffer.view, ... or {})
 end
 
-function M.set_keymap(key, rhs)
-  mapping.set(key, rhs)
+function M.set_keymap(name, key, rhs)
+  mapping.set(name, key, rhs)
 end
 
 return M
