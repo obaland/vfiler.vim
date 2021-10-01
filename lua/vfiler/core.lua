@@ -111,6 +111,15 @@ function M.link_highlight_command(from, to)
   return ('highlight! default link %s %s'):format(from, to)
 end
 
+-- resize window
+function M.resize_window_height(height)
+  vim.command('silent! resize ' .. height)
+end
+
+function M.resize_window_width(width)
+  vim.command('silent! vertical resize ' .. width)
+end
+
 -- truncate string
 local function strwidthpart(str, width)
   local vcol = width + 2

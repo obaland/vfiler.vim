@@ -2,6 +2,8 @@ local core = require 'vfiler/core'
 local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
+local ListExtension = require 'vfiler/extensions/list'
+
 local actions = {}
 
 local M = {}
@@ -25,6 +27,20 @@ end
 ------------------------------------------------------------------------------
 -- actions
 ------------------------------------------------------------------------------
+local function detect_drives()
+  if not core.is_windows then
+    return {}
+  end
+  local drives = {}
+  for byte = ('A'):byte(), ('Z'):byte() do
+    local drive = string.char(byte) .. ':/'
+    if vim.fn.isdirectory(drive) then
+      table.insert(drives, drive)
+    end
+  end
+  return drives
+end
+
 local function move_cursor(lnum)
   vim.fn.cursor(lnum, 1)
 end
@@ -89,6 +105,14 @@ function actions.start(context, view, args)
   local path = args[1]
   context:switch(path)
   view:draw(context)
+end
+
+function actions.change_drive(context, view, args)
+  local extension = ListExtension.new('drives')
+  extension.on_selected = function()
+  end
+  extension.run(detect_drives(), context.configs.extensions)
+  context.extension = extension
 end
 
 return M
