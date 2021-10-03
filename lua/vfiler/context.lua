@@ -10,8 +10,8 @@ Context.__index = Context
 
 function Context.new(configs)
   return setmetatable({
-      configs = core.deepcopy(configs),
-      extension = nil,
+      configs = configs,
+      ext = nil,
       items = {},
       path = '',
       show_hidden_files = false,

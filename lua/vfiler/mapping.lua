@@ -3,11 +3,11 @@ local vim = require 'vfiler/vim'
 
 local M = {}
 
-local mappings = {}
+local keymappings = {}
 
-function M.define(name)
-  local mapset = mappings[name]
-  if not mapset then
+function M.define(type)
+  local mappings = keymappings[type]
+  if not mappings then
     return
   end
 
@@ -16,23 +16,20 @@ function M.define(name)
     nowait = true,
     silent = true,
   }
-  for key, rhs in pairs(mapset) do
+  for key, rhs in pairs(mappings) do
     vim.set_buf_keymap('n', key, rhs, options)
   end
 end
 
-function M.set(name, key, rhs)
-  mappings[name][key] = rhs
+function M.set(type, key, rhs)
+  if not keymappings[type] then
+    keymappings[type] = {}
+  end
+  keymappings[type][key] = rhs
 end
 
-function M.setup(maps)
-  for name, mapset in pairs(maps) do
-    if not mappings[name] then
-      mappings[name] = {}
-    end
-    local dest = mappings[name]
-    core.merge(dest, mapset)
-  end
+function M.setup(keymaps)
+  core.merge_table(keymappings, keymaps)
 end
 
 return M

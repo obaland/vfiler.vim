@@ -24,8 +24,8 @@ function! vfiler#start_command(args) abort
   call luaeval('require"vfiler".start_command(_A)', a:args)
 endfunction
 
-function! vfiler#start(configs) abort
-  call luaeval('require"vfiler".start(_A)', a:configs)
+function! vfiler#start(...) abort
+  call luaeval('require"vfiler".start(_A)', get(a:000, 0, {}))
 endfunction
 
 function! vfiler#do_action(name, ...) abort

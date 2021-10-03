@@ -1,8 +1,9 @@
 local core = require 'vfiler/core'
+local exaction = require 'vfiler/exts/action'
 local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
-local ListExtension = require 'vfiler/extensions/list'
+local ExtList = require 'vfiler/exts/list'
 
 local actions = {}
 
@@ -108,11 +109,11 @@ function actions.start(context, view, args)
 end
 
 function actions.change_drive(context, view, args)
-  local extension = ListExtension.new('drives')
-  extension.on_selected = function()
-  end
-  extension.run(detect_drives(), context.configs.extensions)
-  context.extension = extension
+  local list = ExtList.new('drives')
+  list:run(detect_drives())
+
+  exaction.register(list)
+  context.ext = list
 end
 
 return M

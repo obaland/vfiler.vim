@@ -1,8 +1,9 @@
+local config = require 'vfiler/exts/config'
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
-local Extension = {}
-Extension.__index = Extension
+local Ext = {}
+Ext.__index = Ext
 
 local function calcrate_value(value, max)
   local result = 0
@@ -27,8 +28,66 @@ local function get_winheight(winheight, lines, value)
   return calcrate_value(value, winheight)
 end
 
-local function get_winoption(lines, option)
-  local layout = option.layout
+function Ext.new(name, ...)
+  return setmetatable({
+      configs = core.deepcopy(... or config.configs),
+      name = name,
+      number = 0,
+    }, Ext)
+end
+
+function Ext:run(lines)
+  local winoption = self:_get_winoption(lines)
+  if not winoption then
+    return
+  end
+
+  -- split command
+  vim.command(winoption.command)
+
+  local bufname = 'vfiler/' .. self.name
+
+  -- Save swapfile option
+  local swapfile = vim.get_buf_option_boolean('swapfile')
+  vim.set_buf_option('swapfile', false)
+  vim.command('silent edit ' .. bufname)
+  vim.set_buf_option('swapfile', swapfile)
+  self.number = vim.fn.bufnr('%')
+
+  self:_on_set_buf_option()
+  self:_on_set_win_option()
+
+  -- resize window
+  if winoption.width > 0 then
+    core.resize_window_width(winoption.width)
+  end
+  if winoption.height > 0 then
+    core.resize_window_height(winoption.height)
+  end
+
+  self:_on_mapping()
+  self:_on_draw(lines)
+end
+
+function Ext:quit()
+  if self.number > 0 then
+    vim.command('silent bwipeout ' .. self.number)
+  end
+end
+
+function Ext:_define_keymaps(keymaps)
+  local options = {
+    noremap = true,
+    nowait = true,
+    silent = true,
+  }
+  for key, rhs in pairs(keymaps) do
+    vim.set_buf_keymap('n', key, rhs, options)
+  end
+end
+
+function Ext:_get_winoption(lines)
+  local layout = self.configs.layout
   if not layout then
     core.error('There are no layout option.')
     return nil
@@ -50,49 +109,7 @@ local function get_winoption(lines, option)
   return winoption
 end
 
-function Extension.new(name)
-  return setmetatable({
-      name = name,
-      number = 0,
-    }, Extension)
-end
-
-function Extension:run(lines, option)
-  local winoption = get_winoption(lines, option)
-  if not winoption then
-    return
-  end
-
-  -- split command
-  vim.command(winoption.command)
-
-  local bufname = 'vfiler/' .. self.name
-
-  -- Save swapfile option
-  local swapfile = vim.get_buf_option_boolean('swapfile')
-  vim.set_buf_option('swapfile', false)
-  vim.command('silent edit ' .. bufname)
-  vim.set_buf_option('swapfile', swapfile)
-
-  self:_on_set_buf_option()
-  self:_on_set_win_option()
-
-  -- resize window
-  if winoption.width > 0 then
-    core.resize_window_width(winoption.width)
-  end
-  if winoption.height > 0 then
-    core.resize_window_height(winoption.height)
-  end
-end
-
-function Extension:quit()
-  if self.number > 0 then
-    vim.command('silent bwipeout ' .. self.number)
-  end
-end
-
-function Extension:_on_set_buf_option()
+function Ext:_on_set_buf_option()
   vim.set_buf_option('bufhidden', 'hide')
   vim.set_buf_option('buflisted', false)
   vim.set_buf_option('buftype', 'nofile')
@@ -103,7 +120,7 @@ function Extension:_on_set_buf_option()
   vim.set_buf_option('swapfile', false)
 end
 
-function Extension:_on_set_win_option()
+function Ext:_on_set_win_option()
   if vim.fn.exists('&colorcolumn') == 1 then
     vim.set_win_option('colorcolumn', '')
   end
@@ -121,4 +138,13 @@ function Extension:_on_set_win_option()
   vim.set_win_option('wrap', false)
 end
 
-return Extension
+function Ext:_on_mapping()
+end
+
+function Ext:_on_syntax()
+end
+
+function Ext:_on_draw()
+end
+
+return Ext

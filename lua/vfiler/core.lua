@@ -33,9 +33,16 @@ function M.inherit(class, super, ...)
   return self
 end
 
-function M.merge(dest, src)
+function M.merge_table(dest, src)
   for key, value in pairs(src) do
-    dest[key] = value
+    if type(value) == 'table' then
+      if not dest[key] then
+        dest[key] = {}
+      end
+      M.merge_table(dest[key], value)
+    else
+      dest[key] = value
+    end
   end
   return dest
 end

@@ -9,7 +9,7 @@ local M = {}
 
 mapping.setup {
   main = {
-    ['<CR>'] = [[:lua require('vfiler').do_action('open')<CR>]],
+    ['<CR>'] = [[:lua require'vfiler'.do_action('open')<CR>]],
     ['h'] = [[:lua require'vfiler'.do_action('close_tree')<CR>]],
     ['l'] = [[:lua require'vfiler'.do_action('open_tree')<CR>]],
     ['L'] = [[:lua require'vfiler'.do_action('change_drive')<CR>]],
@@ -28,7 +28,10 @@ function M.start_command(args)
   return M.start(configs)
 end
 
-function M.start(configs)
+function M.start(...)
+  local configs = core.merge_table(
+    core.deepcopy(config.configs), ... or {}
+  )
   if configs.path == '' then
     configs.path = vim.fn.getcwd()
   end
@@ -54,8 +57,8 @@ function M.do_action(name, ...)
   action.do_action(name, buffer.context, buffer.view, ... or {})
 end
 
-function M.set_keymap(name, key, rhs)
-  mapping.set(name, key, rhs)
+function M.set_keymap(type, key, rhs)
+  mapping.set(type, key, rhs)
 end
 
 return M
