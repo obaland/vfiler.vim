@@ -4,6 +4,8 @@ local core = require 'vfiler/core'
 local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
+local Buffer = require 'vfiler/buffer'
+
 local M = {}
 
 mapping.setup {
@@ -38,7 +40,7 @@ function M.start(...)
 
   configs.name = 'test'
 
-  local buffer = action.find_buffer(configs.name)
+  local buffer = Buffer.find(configs.name)
   if buffer then
     -- TODO: open action
   end

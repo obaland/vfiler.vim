@@ -7,9 +7,9 @@ local ExtensionList = {}
 
 mapping.setup {
   list = {
-    ['q'] = [[:lua require'vfiler/extensions/list/action'.quit()<CR>]],
-    ['<CR>'] = [[:lua require'vfiler/extensions/list/action'.select()<CR>]],
-    ['<ESC>'] = [[:lua require'vfiler/extensions/list/action'.quit()<CR>]],
+    ['q'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')<CR>]],
+    ['<CR>'] = [[:lua require'vfiler/extensions/list/action'.do_action('select')<CR>]],
+    ['<ESC>'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')<CR>]],
   },
 }
 
@@ -33,7 +33,7 @@ function ExtensionList:select()
   return 'selected text'
 end
 
-function Extension:_on_set_buf_option()
+function ExtensionList:_on_set_buf_option()
   vim.set_buf_option('bufhidden', 'hide')
   vim.set_buf_option('buflisted', false)
   vim.set_buf_option('buftype', 'nofile')
@@ -45,24 +45,28 @@ function Extension:_on_set_buf_option()
 end
 
 function ExtensionList:_on_mapping()
+  print('come.')
   mapping.define('list')
 end
 
-function Extension:_on_draw(lines)
-  local num_lines = #lines
-  local digit = number_of_digit(num_lines)
+function Extension:_on_get_texts()
+  local num_items = #self.items
+  local digit = number_of_digit(num_items)
 
+  local texts = {}
+  for i, item in ipairs(self.items) do
+    local text = ('%' .. tostring(digit) .. 'd: %s'):format(i, item)
+    table.insert(texts, text)
+  end
+  return texts
+end
+
+function Extension:_on_draw(texts, winwidth, winheight)
   vim.set_buf_option('modifiable', true)
   vim.set_buf_option('readonly', false)
   vim.command('silent %delete _')
 
-  local max_width = 0
-  for i, line in ipairs(lines) do
-    local text = ('%' .. tostring(digit) .. 'd: %s'):format(i, line)
-    local width = vim.fn.strwidth(text)
-    if width > max_width then
-      max_width = width
-    end
+  for i, text in ipairs(texts) do
     vim.fn.setline(i, text)
   end
 
@@ -71,7 +75,7 @@ function Extension:_on_draw(lines)
 
   -- display status line
   vim.set_win_option(
-    'statusline', ([[vfiler/%s (%d)]]):format(self.name, num_lines)
+    'statusline', ([[vfiler/%s (%d)]]):format(self.name, #texts)
   )
 
   -- syntax
@@ -86,8 +90,6 @@ function Extension:_on_draw(lines)
     core.link_highlight_command(syntax_name, 'Constant')
   )
   vim.commands(syntax_commands)
-
-  return num_lines, max_width
 end
 
 return ExtensionList

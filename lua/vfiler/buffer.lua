@@ -1,30 +1,19 @@
 local vim = require 'vfiler/vim'
-local core = require 'vfiler/core'
+
 local Context = require 'vfiler/context'
 local View = require 'vfiler/view'
 
-local DEAFULT_OPTIONS = {
-  open_type = '',
-  local_options = {},
-}
-
--- Buffer management table
-local buffers = {
-  table = {},
-
-  add = function(self, buffer)
-    self.table[buffer.number] = buffer
-  end,
-
-  delete = function(self, buffer)
-    self.table[buffer.number] = nil
-  end
-}
+local BUFNAME_PREFIX = 'vfiler'
+local BUFNAME_SEPARATOR = '-'
+local BUFNUMBER_SEPARATOR = ':'
 
 local Buffer = {}
 Buffer.__index = Buffer
 
-local function create_buffer(name, configs)
+-- Buffer resource management table
+local buffer_resources = {}
+
+local function create(name)
   -- Save swapfile option
   local swapfile = vim.get_buf_option_boolean('swapfile')
   vim.set_buf_option('swapfile', false)
@@ -60,21 +49,66 @@ local function create_buffer(name, configs)
   return vim.fn.bufnr()
 end
 
-function Buffer.new(name, configs)
-  return setmetatable({
+local function generate_name(name)
+  local bufname = BUFNAME_PREFIX
+  if name:len() > 0 then
+    bufname = bufname .. BUFNAME_SEPARATOR .. name
+  end
+
+  local max_number = -1
+  for _, source in pairs(buffer_resources) do
+    if name == source.name then
+      max_number = math.max(source.local_number, max_number)
+    end
+  end
+
+  local number = 0
+  if max_number >= 0 then
+    number = max_number + 1
+    bufname = bufname .. BUFNUMBER_SEPARATOR .. tostring(number)
+  end
+  return bufname, name, number
+end
+
+function Buffer.find(name)
+  local tabpagenr = vim.fn.tabpagenr()
+  for _, resource in pairs(buffer_resources) do
+    local buffer = resource.buffer
+    if tabpagenr == buffer._tabpagenr and name == buffer.name then
+      return buffer
+    end
+  end
+  return nil
+end
+
+function Buffer.get(bufnr)
+  return buffer_resources[bufnr].buffer
+end
+
+function Buffer.new(configs)
+  local bufname, name, local_number = generate_name(configs.name)
+  local buffer = setmetatable({
       context = Context.new(configs),
-      name = name,
-      number = create_buffer(name, configs),
+      name = bufname,
+      number = create(bufname),
       view = View.new(configs),
       _tabpagenr = vim.fn.tabpagenr(),
     }, Buffer)
+
+  -- add buffer resource
+  buffer_resources[buffer.number] = {
+    buffer = buffer,
+    name = name,
+    local_number = local_number,
+  }
+  return buffer
 end
 
 function Buffer:delete()
-  buffers:delete(self)
+  buffer_resources[self.number] = nil
 end
 
-function Buffer:open(name)
+function Buffer:open()
   local winnr = vim.fn.bufwinnr(self.number)
   if winnr > 0 then
     -- Move to opened window

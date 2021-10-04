@@ -56,24 +56,8 @@ end
 ------------------------------------------------------------------------------
 -- interfaces
 ------------------------------------------------------------------------------
-function M.create_buffer(configs)
-  local bufname, name, local_number = generate_name(configs.name)
-  local buffer = Buffer.new(bufname, configs)
-
-  buffer_sources[buffer.number] = {
-    buffer = buffer,
-    _name = name,
-    _local_number = local_number,
-  }
-  return buffer
-end
-
-function M.define_action(name, func)
+function M.define(name, func)
   M[name] = func
-end
-
-function M.delete_buffer(bufnr)
-  buffer_sources[bufnr] = nil
 end
 
 function M.do_action(name, args)
@@ -82,7 +66,7 @@ function M.do_action(name, args)
     return
   end
 
-  local buffer = M.get_buffer(vim.fn.bufnr())
+  local buffer = Buffer.get(vim.fn.bufnr())
   if not buffer then
     core.error('Buffer does not exist.')
     return
@@ -90,30 +74,15 @@ function M.do_action(name, args)
   M[name](buffer.context, buffer.view, args)
 end
 
-function M.find_buffer(name)
-  local tabpagenr = vim.fn.tabpagenr()
-  for _, source in pairs(buffer_sources) do
-    local buffer = source.buffer
-    if tabpagenr == buffer._tabpagenr and name == buffer.name then
-      return buffer
-    end
-  end
-  return nil
-end
-
-function M.get_buffer(bufnr)
-  return buffer_sources[bufnr].buffer
-end
-
 function M.start(configs)
-  local buffer = M.create_buffer(configs)
+  local buffer = Buffer.new(configs)
   mapping.define('main')
 
   buffer.context:switch(configs.path)
   buffer.view:draw(buffer.context)
 end
 
-function M.undefine_action(name)
+function M.undefine(name)
   M[name] = nil
 end
 
@@ -175,14 +144,9 @@ function M.open_tree(context, view, args)
 end
 
 function M.change_drive(context, view, args)
-  local list = ExtensionList.new('drives')
-  list.on_selected = function(line)
-    print('context:', context.path, line)
-  end
-
-  list:run(detect_drives())
-
-  exaction.register(list)
+  local list = ExtensionList.new(
+    'drives', context, detect_drives()
+  )
   context.extension = list
 end
 
