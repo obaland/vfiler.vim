@@ -2,7 +2,6 @@ local action = require 'vfiler/action'
 local config = require 'vfiler/config'
 local core = require 'vfiler/core'
 local mapping = require 'vfiler/mapping'
-local repository = require 'vfiler/repository'
 local vim = require 'vfiler/vim'
 
 local M = {}
@@ -39,22 +38,16 @@ function M.start(...)
 
   configs.name = 'test'
 
-  local buffer = repository.find(configs.name)
+  local buffer = action.find_buffer(configs.name)
   if buffer then
     -- TODO: open action
   end
-  buffer = repository.create(configs)
-  action.do_action('start', buffer.context, buffer.view, {configs.path})
+  action.start(configs)
   return true
 end
 
 function M.do_action(name, ...)
-  local buffer = repository.get(vim.fn.bufnr())
-  if not buffer then
-    core.error('Buffer does not exist.')
-    return
-  end
-  action.do_action(name, buffer.context, buffer.view, ... or {})
+  action.do_action(name, ... or {})
 end
 
 function M.set_keymap(type, key, rhs)

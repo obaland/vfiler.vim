@@ -1,19 +1,22 @@
-local config = require 'vfiler/exts/config'
+local config = require 'vfiler/extensions/config'
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
-local Ext = {}
-Ext.__index = Ext
+local Extension = {}
+Extension.__index = Extension
 
 local function calcrate_value(value, max)
   local result = 0
-  local percent = ('^(%d+)%%'):match(value)
+  local percent = value:match('^(%d+)%%$')
   if percent then
     -- percent calculation
-    result = math.tointeger(math.tointeger(percent) * 0.01)
+    print('percent', percent)
+    result = math.tointeger(max * math.tointeger(percent) * 0.01)
   else
+    print('value', value)
     result = math.max(max, math.tointeger(value))
   end
+  print('result', result)
   return result
 end
 
@@ -28,15 +31,15 @@ local function get_winheight(winheight, lines, value)
   return calcrate_value(value, winheight)
 end
 
-function Ext.new(name, ...)
+function Extension.new(name, ...)
   return setmetatable({
       configs = core.deepcopy(... or config.configs),
       name = name,
       number = 0,
-    }, Ext)
+    }, Extension)
 end
 
-function Ext:run(lines)
+function Extension:run(lines)
   local winoption = self:_get_winoption(lines)
   if not winoption then
     return
@@ -69,13 +72,13 @@ function Ext:run(lines)
   self:_on_draw(lines)
 end
 
-function Ext:quit()
+function Extension:quit()
   if self.number > 0 then
     vim.command('silent bwipeout ' .. self.number)
   end
 end
 
-function Ext:_define_keymaps(keymaps)
+function Extension:_define_keymaps(keymaps)
   local options = {
     noremap = true,
     nowait = true,
@@ -86,7 +89,7 @@ function Ext:_define_keymaps(keymaps)
   end
 end
 
-function Ext:_get_winoption(lines)
+function Extension:_get_winoption(lines)
   local layout = self.configs.layout
   if not layout then
     core.error('There are no layout option.')
@@ -109,7 +112,7 @@ function Ext:_get_winoption(lines)
   return winoption
 end
 
-function Ext:_on_set_buf_option()
+function Extension:_on_set_buf_option()
   vim.set_buf_option('bufhidden', 'hide')
   vim.set_buf_option('buflisted', false)
   vim.set_buf_option('buftype', 'nofile')
@@ -120,7 +123,7 @@ function Ext:_on_set_buf_option()
   vim.set_buf_option('swapfile', false)
 end
 
-function Ext:_on_set_win_option()
+function Extension:_on_set_win_option()
   if vim.fn.exists('&colorcolumn') == 1 then
     vim.set_win_option('colorcolumn', '')
   end
@@ -138,13 +141,13 @@ function Ext:_on_set_win_option()
   vim.set_win_option('wrap', false)
 end
 
-function Ext:_on_mapping()
+function Extension:_on_mapping()
 end
 
-function Ext:_on_syntax()
+function Extension:_on_syntax()
 end
 
-function Ext:_on_draw()
+function Extension:_on_draw()
 end
 
-return Ext
+return Extension

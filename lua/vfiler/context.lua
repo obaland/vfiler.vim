@@ -11,7 +11,7 @@ Context.__index = Context
 function Context.new(configs)
   return setmetatable({
       configs = configs,
-      ext = nil,
+      extension = nil,
       items = {},
       path = '',
       show_hidden_files = false,

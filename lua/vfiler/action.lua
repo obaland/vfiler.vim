@@ -1,33 +1,19 @@
 local core = require 'vfiler/core'
-local exaction = require 'vfiler/exts/action'
+local exaction = require 'vfiler/extensions/action'
 local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
-local ExtList = require 'vfiler/exts/list'
+local Buffer = require 'vfiler/buffer'
+local ExtensionList = require 'vfiler/extensions/list'
 
-local actions = {}
+local BUFNAME_PREFIX = 'vfiler'
+local BUFNAME_SEPARATOR = '-'
+local BUFNUMBER_SEPARATOR = ':'
+
+local buffer_sources = {}
 
 local M = {}
 
-function M.do_action(name, context, view, args)
-  if not actions[name] then
-    core.error(string.format('Action "%s" is not defined', name))
-    return
-  end
-  actions[name](context, view, args)
-end
-
-function M.define(name, func)
-  actions[name] = func
-end
-
-function M.undefine(name, func)
-  actions[name] = nil
-end
-
-------------------------------------------------------------------------------
--- actions
-------------------------------------------------------------------------------
 local function detect_drives()
   if not core.is_windows then
     return {}
@@ -35,18 +21,106 @@ local function detect_drives()
   local drives = {}
   for byte = ('A'):byte(), ('Z'):byte() do
     local drive = string.char(byte) .. ':/'
-    if vim.fn.isdirectory(drive) then
+    if vim.fn.isdirectory(drive) == 1 then
       table.insert(drives, drive)
     end
   end
   return drives
 end
 
+local function generate_name(name)
+  local bufname = BUFNAME_PREFIX
+  if name:len() > 0 then
+    bufname = bufname .. BUFNAME_SEPARATOR .. name
+  end
+
+  local max_number = -1
+  for _, source in pairs(buffer_sources) do
+    if name == source._name then
+      max_number = math.max(source._local_number, max_number)
+    end
+  end
+
+  local number = 0
+  if max_number >= 0 then
+    number = max_number + 1
+    bufname = bufname .. BUFNUMBER_SEPARATOR .. tostring(number)
+  end
+  return bufname, name, number
+end
+
 local function move_cursor(lnum)
   vim.fn.cursor(lnum, 1)
 end
 
-function actions.cd(context, view, args)
+------------------------------------------------------------------------------
+-- interfaces
+------------------------------------------------------------------------------
+function M.create_buffer(configs)
+  local bufname, name, local_number = generate_name(configs.name)
+  local buffer = Buffer.new(bufname, configs)
+
+  buffer_sources[buffer.number] = {
+    buffer = buffer,
+    _name = name,
+    _local_number = local_number,
+  }
+  return buffer
+end
+
+function M.define_action(name, func)
+  M[name] = func
+end
+
+function M.delete_buffer(bufnr)
+  buffer_sources[bufnr] = nil
+end
+
+function M.do_action(name, args)
+  if not M[name] then
+    core.error(string.format('Action "%s" is not defined', name))
+    return
+  end
+
+  local buffer = M.get_buffer(vim.fn.bufnr())
+  if not buffer then
+    core.error('Buffer does not exist.')
+    return
+  end
+  M[name](buffer.context, buffer.view, args)
+end
+
+function M.find_buffer(name)
+  local tabpagenr = vim.fn.tabpagenr()
+  for _, source in pairs(buffer_sources) do
+    local buffer = source.buffer
+    if tabpagenr == buffer._tabpagenr and name == buffer.name then
+      return buffer
+    end
+  end
+  return nil
+end
+
+function M.get_buffer(bufnr)
+  return buffer_sources[bufnr].buffer
+end
+
+function M.start(configs)
+  local buffer = M.create_buffer(configs)
+  mapping.define('main')
+
+  buffer.context:switch(configs.path)
+  buffer.view:draw(buffer.context)
+end
+
+function M.undefine_action(name)
+  M[name] = nil
+end
+
+------------------------------------------------------------------------------
+-- actions
+------------------------------------------------------------------------------
+function M.cd(context, view, args)
   -- special path
   local path = args[1]
   if path == '..' then
@@ -57,7 +131,7 @@ function actions.cd(context, view, args)
   view:draw(context)
 end
 
-function actions.open(context, view, args)
+function M.open(context, view, args)
   local lnum = args[1] or vim.fn.line('.')
   local item = context:get_item(lnum)
   if not item then
@@ -66,13 +140,13 @@ function actions.open(context, view, args)
   end
 
   if item.isdirectory then
-    actions.cd(context, view, {item.path})
+    M.cd(context, view, {item.path})
   else
     vim.command('edit ' .. item.path)
   end
 end
 
-function actions.close_tree(context, view, args)
+function M.close_tree(context, view, args)
   local lnum = args[1] or vim.fn.line('.')
   local pos = context:close_directory(lnum)
   if pos then
@@ -81,17 +155,17 @@ function actions.close_tree(context, view, args)
   end
 end
 
-function actions.close_tree_or_cd(context, view, args)
+function M.close_tree_or_cd(context, view, args)
   local lnum = args[1] or vim.fn.line('.')
   local item = context:get_item(lnum)
   if item.level <= 1 and not item.opened then
-    actions.cd(context, view, {'..'})
+    M.cd(context, view, {'..'})
   else
-    actions.close_tree(context, view, {lnum})
+    M.close_tree(context, view, {lnum})
   end
 end
 
-function actions.open_tree(context, view, args)
+function M.open_tree(context, view, args)
   local lnum = args[1] or vim.fn.line('.')
   local pos = context:open_directory(lnum)
   if pos then
@@ -100,20 +174,12 @@ function actions.open_tree(context, view, args)
   end
 end
 
-function actions.start(context, view, args)
-  mapping.define('main')
-
-  local path = args[1]
-  context:switch(path)
-  view:draw(context)
-end
-
-function actions.change_drive(context, view, args)
-  local list = ExtList.new('drives')
+function M.change_drive(context, view, args)
+  local list = ExtensionList.new('drives')
   list:run(detect_drives())
 
   exaction.register(list)
-  context.ext = list
+  context.extension = list
 end
 
 return M

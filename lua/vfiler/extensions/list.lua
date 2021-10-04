@@ -1,18 +1,22 @@
 local core = require 'vfiler/core'
+local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
-local Ext = require 'vfiler/exts/ext'
+local Extension = require 'vfiler/extensions/extension'
+local ExtensionList = {}
 
-local ExtList = {}
-
-function ExtList.new(name, ...)
-  return core.inherit(ExtList, Ext, name, ...)
-end
-
-function ExtList:_on_mapping()
-  self:_define_keymaps {
+mapping.setup {
+  list = {
     ['q'] = [[:lua require'vfiler/extensions/action'.quit()<CR>]],
-  }
+  },
+}
+
+function ExtensionList.new(name, ...)
+  return core.inherit(ExtensionList, Extension, name, ...)
 end
 
-return ExtList
+function ExtensionList:_on_mapping()
+  mapping.define('list')
+end
+
+return ExtensionList

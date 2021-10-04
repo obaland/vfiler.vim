@@ -8,9 +8,6 @@ local function getext()
   return extensions[vim.fn.bufnr()]
 end
 
-function M.do_action(name)
-end
-
 function M.register(ext)
   extensions[ext.number] = ext
 end
