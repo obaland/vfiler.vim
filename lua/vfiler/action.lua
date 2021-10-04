@@ -176,6 +176,10 @@ end
 
 function M.change_drive(context, view, args)
   local list = ExtensionList.new('drives')
+  list.on_selected = function(line)
+    print('context:', context.path, line)
+  end
+
   list:run(detect_drives())
 
   exaction.register(list)

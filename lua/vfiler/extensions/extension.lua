@@ -5,58 +5,40 @@ local vim = require 'vfiler/vim'
 local Extension = {}
 Extension.__index = Extension
 
-local function calcrate_value(value, max)
+local function calculate_size(winvalue, bufvalue, value)
+  if value == 'auto' then
+    local max = winvalue / 2
+    return math.min(bufvalue + 1, max)
+  end
+
   local result = 0
   local percent = value:match('^(%d+)%%$')
   if percent then
     -- percent calculation
-    result = math.floor(max * tonumber(percent) * 0.01 + 0.5)
+    result = math.floor(winvalue * tonumber(percent) * 0.01 + 0.5)
   else
-    result = math.max(max, tonumber(value))
+    result = math.max(winvalue, tonumber(value))
   end
   return result
 end
 
-local function get_winwidth(winwidth, lines, value)
-  if value == 'auto' then
-    -- max line width
-    local max_line_width = 0
-    for _, line in ipairs(lines) do
-      local line_width = vim.fn.strwidth(line)
-      if line_width > max_line_width then
-        max_line_width = line_width
-      end
-    end
-    local max_width = winwidth / 2
-    return math.min(max_line_width, max_width)
-  end
-  return calcrate_value(value, winwidth)
-end
-
-local function get_winheight(winheight, lines, value)
-  if value == 'auto' then
-    local max_height = winheight / 2
-    return math.min(#lines + 1, max_height)
-  end
-  return calcrate_value(value, winheight)
-end
-
 function Extension.new(name, ...)
+  local configs = ... or config.configs
+  if not configs.layout then
+    core.error('There are no layout option.')
+    return nil
+  end
+
   return setmetatable({
-      configs = core.deepcopy(... or config.configs),
+      configs = core.deepcopy(configs),
       name = name,
       number = 0,
     }, Extension)
 end
 
 function Extension:run(lines)
-  local winoption = self:_get_winoption(lines)
-  if not winoption then
-    return
-  end
-
   -- split command
-  vim.command(winoption.command)
+  vim.command(self:_get_wincommand())
 
   local bufname = 'vfiler/' .. self.name
 
@@ -65,21 +47,23 @@ function Extension:run(lines)
   vim.set_buf_option('swapfile', false)
   vim.command('silent edit ' .. bufname)
   vim.set_buf_option('swapfile', swapfile)
-  self.number = vim.fn.bufnr('%')
+  self.number = vim.fn.bufnr()
 
   self:_on_set_buf_option()
   self:_on_set_win_option()
+  self:_on_mapping()
+
+  -- draw line texts and syntax
+  local num_lines, bufwidth = self:_on_draw(lines)
 
   -- resize window
-  if winoption.width > 0 then
-    core.resize_window_width(winoption.width)
+  local winsize = self:_get_winsize(num_lines, bufwidth)
+  if winsize.width > 0 then
+    core.resize_window_width(winsize.width)
   end
-  if winoption.height > 0 then
-    core.resize_window_height(winoption.height)
+  if winsize.height > 0 then
+    core.resize_window_height(winsize.height)
   end
-
-  self:_on_mapping()
-  self:_on_draw(lines)
 end
 
 function Extension:quit()
@@ -88,54 +72,54 @@ function Extension:quit()
   end
 end
 
-function Extension:_define_keymaps(keymaps)
-  local options = {
-    noremap = true,
-    nowait = true,
-    silent = true,
-  }
-  for key, rhs in pairs(keymaps) do
-    vim.set_buf_keymap('n', key, rhs, options)
-  end
-end
-
-function Extension:_get_winoption(lines)
+function Extension:_get_wincommand()
   local layout = self.configs.layout
-  if not layout then
-    core.error('There are no layout option.')
+  local command = ''
+  if layout['top'] then
+    command = 'silent! aboveleft split'
+  elseif layout['bottom'] then
+    command = 'silent! belowright split'
+  elseif layout['left'] then
+    command = 'silent! aboveleft vertical split'
+  elseif layout['right'] then
+    command = 'silent! belowright vertical split'
+  else
+    core.error('Unsupported option.')
     return nil
   end
+  return command
+end
 
-  local winoption = {
+function Extension:_get_winsize(num_lines, bufwidth)
+  local layout = self.configs.layout
+  local winsize = {
     width = 0,
     height = 0,
   }
   if layout['top'] then
-    winoption.command = 'silent! aboveleft split'
-    winoption.height = get_winheight(
-      vim.fn.winheight(0), lines, layout['top']
+    winsize.height = calculate_size(
+      vim.fn.winheight(0), num_lines, layout['top']
+    )
+  elseif layout['bottom'] then
+    winsize.height = calculate_size(
+      vim.fn.winheight(0), num_lines, layout['bottom']
     )
   elseif layout['left'] then
-    winoption.command = 'silent! aboveleft split'
-    winoption.height = get_winwidth(
-      vim.fn.winwidth(0), lines, layout['left']
+    winsize.width = calculate_size(
+      vim.fn.winwidth(0), bufwidth, layout['left']
+    )
+  elseif layout['right'] then
+    winsize.width = calculate_size(
+      vim.fn.winwidth(0), bufwidth, layout['right']
     )
   else
     core.error('Unsupported option.')
     return nil
   end
-  return winoption
+  return winsize
 end
 
 function Extension:_on_set_buf_option()
-  vim.set_buf_option('bufhidden', 'hide')
-  vim.set_buf_option('buflisted', false)
-  vim.set_buf_option('buftype', 'nofile')
-  vim.set_buf_option('filetype', 'vfiler')
-  vim.set_buf_option('modifiable', false)
-  vim.set_buf_option('modified', false)
-  vim.set_buf_option('readonly', false)
-  vim.set_buf_option('swapfile', false)
 end
 
 function Extension:_on_set_win_option()
@@ -159,10 +143,7 @@ end
 function Extension:_on_mapping()
 end
 
-function Extension:_on_syntax()
-end
-
-function Extension:_on_draw()
+function Extension:_on_draw(lines)
 end
 
 return Extension
