@@ -6,7 +6,7 @@ local M = {}
 M.configs = {
   layout = {
     --top = 'auto',
-    top = '50%',
+    left = '50%',
   },
 }
 

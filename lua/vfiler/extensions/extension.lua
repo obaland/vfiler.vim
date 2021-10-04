@@ -10,17 +10,27 @@ local function calcrate_value(value, max)
   local percent = value:match('^(%d+)%%$')
   if percent then
     -- percent calculation
-    print('percent', percent)
-    result = math.tointeger(max * math.tointeger(percent) * 0.01)
+    result = math.floor(max * tonumber(percent) * 0.01 + 0.5)
   else
-    print('value', value)
-    result = math.max(max, math.tointeger(value))
+    result = math.max(max, tonumber(value))
   end
-  print('result', result)
   return result
 end
 
 local function get_winwidth(winwidth, lines, value)
+  if value == 'auto' then
+    -- max line width
+    local max_line_width = 0
+    for _, line in ipairs(lines) do
+      local line_width = vim.fn.strwidth(line)
+      if line_width > max_line_width then
+        max_line_width = line_width
+      end
+    end
+    local max_width = winwidth / 2
+    return math.min(max_line_width, max_width)
+  end
+  return calcrate_value(value, winwidth)
 end
 
 local function get_winheight(winheight, lines, value)
@@ -104,6 +114,11 @@ function Extension:_get_winoption(lines)
     winoption.command = 'silent! aboveleft split'
     winoption.height = get_winheight(
       vim.fn.winheight(0), lines, layout['top']
+    )
+  elseif layout['left'] then
+    winoption.command = 'silent! aboveleft split'
+    winoption.height = get_winwidth(
+      vim.fn.winwidth(0), lines, layout['left']
     )
   else
     core.error('Unsupported option.')
