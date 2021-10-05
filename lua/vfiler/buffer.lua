@@ -87,10 +87,11 @@ end
 
 function Buffer.new(configs)
   local bufname, name, local_number = generate_name(configs.name)
+  local bufnr = create(bufname)
   local buffer = setmetatable({
-      context = Context.new(configs),
+      context = Context.new(bufnr, configs),
       name = bufname,
-      number = create(bufname),
+      number = bufnr,
       view = View.new(configs),
       _tabpagenr = vim.fn.tabpagenr(),
     }, Buffer)

@@ -1,6 +1,8 @@
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
+local Extension = require 'vfiler/extensions/extension'
+
 local M = {}
 
 ------------------------------------------------------------------------------
@@ -12,7 +14,7 @@ function M.do_action(name)
     return
   end
 
-  local extension = M.extensions[vim.fn.bufnr()]
+  local extension = Extension.get(vim.fn.bufnr())
   if not extension then
     core.error('Extension does not exist.')
     return
@@ -24,7 +26,7 @@ end
 -- actions
 ------------------------------------------------------------------------------
 function M.quit(extension)
-  extension:delete()
+  extension:quit()
 end
 
 return M

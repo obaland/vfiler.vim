@@ -8,8 +8,9 @@ local File = require 'vfiler/items/file'
 local Context = {}
 Context.__index = Context
 
-function Context.new(configs)
+function Context.new(bufnr, configs)
   return setmetatable({
+      bufnr = bufnr,
       configs = configs,
       extension = nil,
       items = {},

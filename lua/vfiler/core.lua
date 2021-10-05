@@ -47,6 +47,14 @@ function M.merge_table(dest, src)
   return dest
 end
 
+function M.move_window(winnr)
+  local command = 'wincmd w'
+  if winnr > 0 then
+    command = winnr .. command
+  end
+  vim.command(([[noautocmd execute '%s']]).format(command))
+end
+
 function M.normalized_path(path)
   if path == '/' then
     return '/'

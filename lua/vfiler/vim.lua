@@ -75,7 +75,7 @@ else
     if type(value) == 'boolean' then
       option = value and name or 'no' .. name
     else
-      option = string.format('%s=%s', name, value)
+      option = string.format('%s=%s', name, vim.fn.escape(value, ' '))
     end
     vim.command(command .. ' ' .. option)
   end
