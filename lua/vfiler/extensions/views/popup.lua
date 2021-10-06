@@ -9,10 +9,7 @@ local window_mappings = {}
 local Popup = {}
 
 function Popup.new(configs, mapping_type)
-  local object = core.inherit(Popup, Window, configs)
-  object.mapping_type = mapping_type
-  object.winid = 0
-  return object
+  return core.inherit(Popup, Window, configs, mapping_type)
 end
 
 function Popup:close()
@@ -29,12 +26,11 @@ function Popup:open(name, texts)
     vim.convert_list(texts),
     vim.convert_table(options)
     )
-  local bufnr = vim.fn.winbufnr(self.winid)
-  local winnr = vim.fn.bufwinnr(bufnr)
+  self.bufnr = vim.fn.winbufnr(self.winid)
 
   -- add mappings
   window_mappings[self.winid] = self.mapping_type
-  return bufnr
+  return self.bufnr
 end
 
 function Popup:draw(texts, ...)
@@ -42,9 +38,6 @@ end
 
 function Popup._filter(winid, key)
   local type = window_mappings[winid]
-  for k, value in pairs(mapping.keymappings) do
-    print(k, value)
-  end
   local keymappings = mapping.keymappings[type]
   if not keymappings then
     core.error('There is no keymappings.')
@@ -54,9 +47,8 @@ function Popup._filter(winid, key)
 
   local command = keymappings[key]
   if command then
-    vim.fn.eval(command)
+    vim.fn.execute(command)
   end
-  print('command', command)
   return true
 end
 

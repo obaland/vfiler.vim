@@ -1,4 +1,5 @@
 local core = require 'vfiler/core'
+local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
 local Window = {}
@@ -41,11 +42,13 @@ local function calculate_height(texts, value)
   return calculate_value(winheight, value)
 end
 
-function Window.new(configs)
+function Window.new(configs, mapping_type)
   return setmetatable({
       configs = core.deepcopy(configs),
       height = 0,
+      mapping_type = mapping_type,
       width = 0,
+      winid = 0,
       bufnr = 0,
       bufoptions = {},
       winoptions = {
@@ -94,8 +97,10 @@ function Window:open(name, texts)
     self.height = vim.fn.winheight(0)
   end
 
+  self:_define_mapping()
   self:_set_options()
   self.bufnr = vim.fn.bufnr()
+  self.winid = vim.fn.bufwinid(self.bufnr)
   return self.bufnr
 end
 
@@ -143,6 +148,10 @@ function Window:_get_layout_option(texts)
     return nil
   end
   return option
+end
+
+function Window:_define_mapping()
+  mapping.define(self.mapping_type)
 end
 
 function Window:_set_options()

@@ -11,10 +11,10 @@ local ExtensionList = {}
 
 mapping.setup {
   list = {
-    ['j'] = [[:lua require'vfiler/extensions/list/action'.do_action('move_cursor_down', true)<CR>]],
-    ['q'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')<CR>]],
-    ['<CR>'] = [[:lua require'vfiler/extensions/list/action'.do_action('select')<CR>]],
-    ['<ESC>'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')<CR>]],
+    ['j'] = [[:lua require'vfiler/extensions/list/action'.do_action('move_cursor_down')]],
+    ['q'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')]],
+    ['<CR>'] = [[:lua require'vfiler/extensions/list/action'.do_action('select')]],
+    ['<ESC>'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')]],
   },
 }
 
@@ -61,10 +61,6 @@ function ExtensionList:select()
     self.on_selected(item)
   end
   return item
-end
-
-function ExtensionList:_on_mapping()
-  mapping.define('list')
 end
 
 function ExtensionList:_on_get_texts(items)

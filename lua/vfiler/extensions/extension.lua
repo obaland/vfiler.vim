@@ -39,7 +39,6 @@ function Extension:start(items, cursor_pos)
   self.winid = self.view:open(self.name, texts)
   self.bufnr = vim.fn.winbufnr(self.winid)
   self.items = items
-  self:_on_mapping()
 
   -- draw line texts and syntax
   self:_on_draw(texts)
@@ -56,9 +55,6 @@ function Extension:start(items, cursor_pos)
 
   -- add extension table
   extension_resources[self.bufnr] = self
-end
-
-function Extension:_on_mapping()
 end
 
 function Extension:_on_get_texts(items)

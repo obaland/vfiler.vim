@@ -17,7 +17,7 @@ function M.define(type)
     silent = true,
   }
   for key, rhs in pairs(mappings) do
-    vim.set_buf_keymap('n', key, rhs, options)
+    vim.set_buf_keymap('n', key, rhs .. '<CR>', options)
   end
 end
 
