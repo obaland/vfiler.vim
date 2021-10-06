@@ -3,6 +3,7 @@ local core = require 'vfiler/core'
 local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
+local Popup = require 'vfiler/extensions/views/popup'
 local Window = require 'vfiler/extensions/views/window'
 
 local Extension = require 'vfiler/extensions/extension'
@@ -27,19 +28,26 @@ end
 
 function ExtensionList.new(name, context)
   -- create view
+  local view = nil
   local layout = config.configs.layout
-  local view = Window.new(layout)
-  view:set_buf_options {
-    bufhidden = 'hide',
-    buflisted = false,
-    buftype = 'nofile',
-    filetype = 'vfiler_extension_list',
-    modifiable = false,
-    modified = false,
-    readonly = false,
-    swapfile = false,
-  }
-
+  if layout.floating then
+    if vim.fn.has('nvim') == 1 then
+    else
+      view = Popup.new(layout)
+    end
+  else
+    view = Window.new(layout)
+    view:set_buf_options {
+      bufhidden = 'hide',
+      buflisted = false,
+      buftype = 'nofile',
+      filetype = 'vfiler_extension_list',
+      modifiable = false,
+      modified = false,
+      readonly = false,
+      swapfile = false,
+    }
+  end
   return core.inherit(ExtensionList, Extension, name, context, view, config)
 end
 

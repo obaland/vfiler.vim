@@ -9,7 +9,7 @@ function HeaderColumn.new()
 end
 
 function HeaderColumn:get_text(context, lnum, width)
-  return '[path]:' .. context.path
+  return '[path] ' .. context.path
 end
 
 function HeaderColumn:syntaxes()

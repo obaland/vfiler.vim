@@ -32,7 +32,7 @@ function Extension:quit()
   Extension.delete(self.number)
 end
 
-function Extension:start(items)
+function Extension:start(items, cursor_pos)
   local texts = self:_on_get_texts(items)
 
   self.number = self.view:open(self.name, texts)
@@ -41,6 +41,7 @@ function Extension:start(items)
 
   -- draw line texts and syntax
   self:_on_draw(texts)
+  vim.fn.cursor(cursor_pos, 1)
 
   -- autocmd
   local aucommands = {

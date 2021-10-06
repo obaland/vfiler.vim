@@ -26,6 +26,16 @@ function M.deepcopy(src)
   return copied
 end
 
+function M.get_root_path(path)
+  local root = '/'
+  if M.is_windows and path:match('^//') then
+    root = path:match('^//[^/]*/[^/]*')
+  elseif M.is_windows then
+    root = (M.normalized_path(path) .. '/'):match('^%a+:/')
+  end
+  return root
+end
+
 function M.inherit(class, super, ...)
   local self = (super and super.new(...) or {})
   setmetatable(self, {__index = class})

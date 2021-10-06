@@ -117,12 +117,26 @@ function M.open_tree(context, view, args)
 end
 
 function M.change_drive(context, view, args)
+  local drives = detect_drives()
+  if #drives == 0 then
+    return
+  end
+
+  local root = core.get_root_path(context.path)
+  local cursor_pos = 1
+  for i, drive in ipairs(drives) do
+    if drive == root then
+      cursor_pos = i
+      break
+    end
+  end
+
   local list = ExtensionList.new('drives', context)
   list.on_selected = function(item)
     M.cd(context, view, {item})
   end
 
-  list:start(detect_drives())
+  list:start(drives, cursor_pos)
   context.extension = list
 end
 
