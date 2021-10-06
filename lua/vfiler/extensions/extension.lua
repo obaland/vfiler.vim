@@ -13,7 +13,8 @@ function Extension.new(name, context, view, ...)
       context = context,
       items = nil,
       name = name,
-      number = 0,
+      bufnr = 0,
+      winid = 0,
       view = view,
     }, Extension)
 end
@@ -29,13 +30,14 @@ end
 function Extension:quit()
   self.view:close()
   -- delete extension
-  Extension.delete(self.number)
+  Extension.delete(self.bufnr)
 end
 
 function Extension:start(items, cursor_pos)
   local texts = self:_on_get_texts(items)
 
-  self.number = self.view:open(self.name, texts)
+  self.winid = self.view:open(self.name, texts)
+  self.bufnr = vim.fn.winbufnr(self.winid)
   self.items = items
   self:_on_mapping()
 
@@ -53,7 +55,7 @@ function Extension:start(items, cursor_pos)
   vim.commands(aucommands)
 
   -- add extension table
-  extension_resources[self.number] = self
+  extension_resources[self.bufnr] = self
 end
 
 function Extension:_on_mapping()

@@ -4,6 +4,9 @@
 " License: MIT license
 "=============================================================================
 
-function! vfiler#popup#callback(winid, key) abort
-  "lua require('vfiler/extensions/views/popup').callback(a:winid, a:key)
+function! vfiler#popup#filter(winid, key) abort
+  return luaeval(
+        \ 'require("vfiler/extensions/views/popup")._filter(_A.winid, _A.key)',
+        \ {'winid': a:winid, 'key': a:key}
+        \ )
 endfunction

@@ -8,7 +8,7 @@ local M = {}
 ------------------------------------------------------------------------------
 -- interfaces
 ------------------------------------------------------------------------------
-function M.do_action(name)
+function M.do_action(name, ...)
   if not M[name] then
     core.error(string.format('Action "%s" is not defined', name))
     return
@@ -19,12 +19,16 @@ function M.do_action(name)
     core.error('Extension does not exist.')
     return
   end
-  M[name](extension)
+  M[name](extension, ...)
 end
 
 ------------------------------------------------------------------------------
 -- actions
 ------------------------------------------------------------------------------
+function M.move_cursor_down(extension, loop)
+  print(loop)
+end
+
 function M.quit(extension)
   extension:quit()
 end

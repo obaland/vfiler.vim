@@ -11,6 +11,7 @@ local ExtensionList = {}
 
 mapping.setup {
   list = {
+    ['j'] = [[:lua require'vfiler/extensions/list/action'.do_action('move_cursor_down', true)<CR>]],
     ['q'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')<CR>]],
     ['<CR>'] = [[:lua require'vfiler/extensions/list/action'.do_action('select')<CR>]],
     ['<ESC>'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')<CR>]],
@@ -33,7 +34,7 @@ function ExtensionList.new(name, context)
   if layout.floating then
     if vim.fn.has('nvim') == 1 then
     else
-      view = Popup.new(layout)
+      view = Popup.new(layout, 'list')
     end
   else
     view = Window.new(layout)

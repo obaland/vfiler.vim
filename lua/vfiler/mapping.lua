@@ -3,10 +3,10 @@ local vim = require 'vfiler/vim'
 
 local M = {}
 
-local keymappings = {}
+M.keymappings = {}
 
 function M.define(type)
-  local mappings = keymappings[type]
+  local mappings = M.keymappings[type]
   if not mappings then
     return
   end
@@ -22,14 +22,14 @@ function M.define(type)
 end
 
 function M.set(type, key, rhs)
-  if not keymappings[type] then
-    keymappings[type] = {}
+  if not M.keymappings[type] then
+    M.keymappings[type] = {}
   end
-  keymappings[type][key] = rhs
+  M.keymappings[type][key] = rhs
 end
 
 function M.setup(keymaps)
-  core.merge_table(keymappings, keymaps)
+  core.merge_table(M.keymappings, keymaps)
 end
 
 return M
