@@ -14,11 +14,11 @@ end
 function Popup:open(name, texts)
   local options = {
     drag = false,
-    callback = nil,
+    callback = 'vfiler#popup#callback',
   }
 
-  --self.winid = vim.fn.popup_create(
-  self.winid = vim.fn.popup_menu(
+  self.winid = vim.fn.popup_create(
+  --self.winid = vim.fn.popup_menu(
     vim.convert_list(texts), vim.convert_table(options)
     )
   return vim.fn.winbufnr(self.winid)

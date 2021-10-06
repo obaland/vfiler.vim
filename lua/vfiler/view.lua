@@ -36,7 +36,7 @@ function View.new(configs)
 end
 
 function View:draw(context)
-  local winwidth = vim.fn.winwidth(0)
+  local winwidth = vim.fn.winwidth(0) - 1 -- padding end
   if vim.get_win_option_boolean('number') or
     vim.get_win_option_boolean('relativenumber') then
     winwidth = winwidth - vim.get_win_option_value('numberwidth')
@@ -68,7 +68,7 @@ function View:draw(context)
 
       if column.stretch then
         -- Adjust to fit column end base position
-        local padding = param.end_pos - line_width - 1
+        local padding = param.end_pos - line_width
         if padding > 0 then
           line = line .. (' '):rep(padding)
         end
@@ -130,7 +130,7 @@ function View:_create_column_params(context, winwidth)
 
   -- decide variable column width
   if #variable_columns > 0 then
-    local width_by_columns = rest_width / #variable_columns
+    local width_by_columns = math.floor(rest_width / #variable_columns)
     for _, column in ipairs(variable_columns) do
       params[column.index].width = column.object:get_width(
         context, width_by_columns
@@ -147,7 +147,7 @@ function View:_create_column_params(context, winwidth)
       pos = param.end_pos + 1
     else
       param.end_pos = param.start_pos
-      pos = param.start_pos
+      pos = param.end_pos
     end
   end
   return params

@@ -50,8 +50,8 @@ function NameColumn:get_text(context, lnum, width)
     syntax_name = 'file'
   end
   return self._syntax:surround_text(
-    syntax_name, core.truncate(name, width, '..', width / 2)
-  )
+    syntax_name, core.truncate(name, width, '..', math.floor(width / 2))
+    )
 end
 
 function NameColumn:get_width(context, width)

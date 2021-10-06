@@ -148,12 +148,12 @@ end
 -- truncate string
 local function strwidthpart(str, width)
   local vcol = width + 2
-  return vim.fn.matchstr(str, [[.*\%<]] .. vcol .. 'v')
+  return vim.fn.matchstr(str, '.*\\%<' .. vcol .. 'v')
 end
 
 local function strwidthpart_reverse(str, strwidth, width)
   local vcol = strwidth - width
-  return vim.fn.matchstr(str, [[\%>]] .. vcol .. 'v.*')
+  return vim.fn.matchstr(str, '\\%>' .. vcol .. 'v.*')
 end
 
 local function truncate(str, width)
