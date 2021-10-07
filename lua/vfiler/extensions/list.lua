@@ -11,7 +11,8 @@ local ExtensionList = {}
 
 mapping.setup {
   list = {
-    ['j'] = [[:lua require'vfiler/extensions/list/action'.do_action('move_cursor_down')]],
+    ['k'] = [[:lua require'vfiler/extensions/list/action'.do_action('move_cursor_up', true)]],
+    ['j'] = [[:lua require'vfiler/extensions/list/action'.do_action('move_cursor_down', true)]],
     ['q'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')]],
     ['<CR>'] = [[:lua require'vfiler/extensions/list/action'.do_action('select')]],
     ['<ESC>'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')]],

@@ -101,7 +101,7 @@ function Window:open(name, texts)
   self:_set_options()
   self.bufnr = vim.fn.bufnr()
   self.winid = vim.fn.bufwinid(self.bufnr)
-  return self.bufnr
+  return self.winid
 end
 
 function Window:draw(texts, ...)

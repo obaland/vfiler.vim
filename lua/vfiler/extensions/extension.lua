@@ -19,18 +19,18 @@ function Extension.new(name, context, view, ...)
     }, Extension)
 end
 
-function Extension.get(bufnr)
-  return extension_resources[bufnr]
+function Extension.get(winid)
+  return extension_resources[winid]
 end
 
-function Extension.delete(bufnr)
-  extension_resources[bufnr] = nil
+function Extension.delete(winid)
+  extension_resources[winid] = nil
 end
 
 function Extension:quit()
   self.view:close()
   -- delete extension
-  Extension.delete(self.bufnr)
+  Extension.delete(self.winid)
 end
 
 function Extension:start(items, cursor_pos)
@@ -54,7 +54,7 @@ function Extension:start(items, cursor_pos)
   vim.commands(aucommands)
 
   -- add extension table
-  extension_resources[self.bufnr] = self
+  extension_resources[self.winid] = self
 end
 
 function Extension:_on_get_texts(items)
