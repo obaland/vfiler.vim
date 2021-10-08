@@ -5,8 +5,15 @@ local M = {}
 
 M.configs = {
   layout = {
-    top = 'auto',
-    --floating = 'auto',
+    --top = 6,
+    --top = 'auto',
+    floating = {
+      width = 'auto',
+      height = 'auto',
+      minwidth = 30,
+      minheight = 5,
+      relative = true,
+    },
   },
 }
 

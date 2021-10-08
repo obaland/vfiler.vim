@@ -5,45 +5,23 @@ local vim = require 'vfiler/vim'
 local Window = {}
 Window.__index = Window
 
-local function calculate_value(winvalue, value)
-  local result = 0
-  local percent = value:match('^(%d+)%%$')
-  if percent then
-    -- percent calculation
-    result = math.floor(winvalue * tonumber(percent) * 0.01 + 0.5)
-  else
-    result = math.max(winvalue, tonumber(value))
+local function winvalue(wvalue, value)
+  local v = math.tointeger(value)
+  if v then
+    return math.min(wvalue, value)
   end
-  return result
-end
 
-local function calculate_width(texts, value)
-  local winwidth = vim.fn.winwidth(0)
-  if value == 'auto' then
-    local max = winwidth / 2
-    local bufwidth = 0
-    for _, text in ipairs(texts) do
-      local width = vim.fn.strwidth(text)
-      if bufwidth < width then
-        bufwidth = width
-      end
-    end
-    return math.min(bufwidth + 1, max)
+  v = tonumber(value)
+  if not v then
+    core.error('Illegal config value: ' .. value)
+    return
   end
-  return calculate_value(winwidth, value)
-end
-
-local function calculate_height(texts, value)
-  local winheight = vim.fn.winheight(0)
-  if value == 'auto' then
-    local max = winheight / 2
-    return math.min(#texts + 1, max)
-  end
-  return calculate_value(winheight, value)
+  return math.floor(wvalue * v)
 end
 
 function Window.new(configs, mapping_type)
   return setmetatable({
+      caller_winid = vim.fn.win_getid(),
       configs = core.deepcopy(configs),
       height = 0,
       mapping_type = mapping_type,
@@ -66,7 +44,6 @@ function Window.new(configs, mapping_type)
 end
 
 function Window:close()
-  print('close')
   vim.command('silent bwipeout ' .. self.bufnr)
 end
 
@@ -76,12 +53,10 @@ function Window:open(name, texts)
   -- split command
   vim.command(layout.command)
 
-  local bufname = 'vfiler/' .. name
-
   -- Save swapfile option
   local swapfile = vim.get_buf_option_boolean('swapfile')
   vim.set_buf_option('swapfile', false)
-  vim.command('silent edit ' .. bufname)
+  vim.command('silent edit ' .. self:_get_name(name))
   vim.set_buf_option('swapfile', swapfile)
 
   -- resize window
@@ -131,19 +106,22 @@ function Window:_get_layout_option(texts)
     width = 0, height = 0,
   }
 
+  local wwidth = vim.fn.winwidth(self.caller_winid)
+  local wheight = vim.fn.winheight(self.caller_winid)
+
   local layout = self.configs
   if layout.top then
     option.command = 'silent! aboveleft split'
-    option.height = calculate_height(texts, layout.top)
+    option.height = self:_winheight(layout.top, wheight, texts)
   elseif layout.bottom then
     option.command = 'silent! belowright split'
-    option.height = calculate_height(texts, layout.bottom)
+    option.height = self:_winheight(layout.bottom, wheight, texts)
   elseif layout.left then
     option.command = 'silent! aboveleft vertical split'
-    option.width = calculate_width(texts, layout.left)
+    option.width = self:_winwidth(layout.left, wwidth, texts)
   elseif layout.right then
     option.command = 'silent! belowright vertical split'
-    option.width = calculate_width(texts, layout.right)
+    option.width = self:_winwidth(layout.right, wwidth, texts)
   else
     core.error('Unsupported option.')
     return nil
@@ -153,6 +131,10 @@ end
 
 function Window:_define_mapping()
   mapping.define(self.mapping_type)
+end
+
+function Window:_get_name(name)
+  return 'vfiler/' .. name
 end
 
 function Window:_set_options()
@@ -170,5 +152,29 @@ function Window:_set_options()
     end
   end
 end
+
+function Window:_winwidth(value, wwidth, texts)
+  if value == 'auto' then
+    local max = wwidth / 2
+    local text_width = 0
+    for _, text in ipairs(texts) do
+      local width = vim.fn.strwidth(text)
+      if text_width < width then
+        text_width = width
+      end
+    end
+    return math.min(text_width + 1, max)
+  end
+  return winvalue(wwidth, value)
+end
+
+function Window:_winheight(value, wheight, texts)
+  if value == 'auto' then
+    local max = wheight / 2
+    return math.min(#texts + 1, max)
+  end
+  return winvalue(wheight, value)
+end
+
 
 return Window

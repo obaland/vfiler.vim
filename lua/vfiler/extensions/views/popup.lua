@@ -6,9 +6,7 @@ local Window = require 'vfiler/extensions/views/window'
 local Popup = {}
 
 function Popup.new(configs, mapping_type)
-  local object = core.inherit(Popup, Window, configs, mapping_type)
-  object.src_winid = vim.fn.win_getid()
-  return object
+  return core.inherit(Popup, Window, configs, mapping_type)
 end
 
 function Popup:close()
@@ -22,12 +20,14 @@ function Popup:close()
 end
 
 function Popup:open(name, texts)
+  local laytout = self:_get_layout_option(texts)
   local options = {
     cursorline = true,
     filter = 'vfiler#popup#filter',
     drag = false,
     mapping = false,
     pos = 'center',
+    title = self:_get_name(name),
     wrap = false,
     zindex = 200,
   }
@@ -50,6 +50,45 @@ function Popup:open(name, texts)
 end
 
 function Popup:draw(texts, ...)
+end
+
+function Popup:_get_layout_option(texts)
+  local floating = self.configs.floating
+  local wwidth = vim.fn.winwidth(self.caller_winid)
+  local wheight = vim.fn.winheight(self.caller_winid)
+
+  local layout = {
+    width = 'auto',
+    height = 'auto',
+    minwidth = '8',
+    minheight = '4',
+    pos = 'center',
+    line = 0,
+    col = 0,
+  }
+
+  -- decide width and height
+  if floating.width then
+    layout.width = self:_winwidth(floating.width, wwidth, texts)
+  end
+  if floating.height then
+    layout.height = self:_winheight(floating.height, wheight, texts)
+  end
+  if floating.minwidth then
+    layout.minwidth = self:_winwidth(floating.width, wwidth, texts)
+  end
+  if floating.minheight then
+    layout.minheight = self:_winheight(floating.height, wheight, texts)
+  end
+
+  -- decide position
+  if floating.relative then
+    layout.pos = 'center'
+  else
+    layout.pos = 'topleft'
+  end
+
+  return layout
 end
 
 return Popup
