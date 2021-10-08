@@ -66,6 +66,7 @@ function Window.new(configs, mapping_type)
 end
 
 function Window:close()
+  print('close')
   vim.command('silent bwipeout ' .. self.bufnr)
 end
 

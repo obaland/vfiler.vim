@@ -95,12 +95,12 @@ end
 
 -- print error message
 function M.error(message)
-  vim.command(('echohl ErrorMsg | echo "%s" | echohl None'):format(message))
+  vim.fn['vfiler#core#error'](message)
 end
 
 -- print warning message
 function M.warning(message)
-  vim.command(('echohl WarningMsg | echo "%s" | echohl None'):format(message))
+  vim.fn['vfiler#core#warning'](message)
 end
 
 -- Escape because of the vim pattern

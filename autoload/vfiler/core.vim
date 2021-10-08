@@ -56,16 +56,19 @@ function! vfiler#core#getchar(prompt) abort
   return nr2char(char)
 endfunction
 
+" NOTE:
 function! vfiler#core#info(message) abort
   echo '[vfiler]: ' . a:message
 endfunction
 
+" NOTE:
 function! vfiler#core#error(message) abort
-  echohl ErrorMsg | echom '[vfiler] ERROR: ' . a:message | echohl None
+  echohl ErrorMsg | echom '[vfiler]: ' . a:message | echohl None
 endfunction
 
+" NOTE:
 function! vfiler#core#warning(message) abort
-  echohl WarningMsg | echom '[vfiler] WARNING: ' . a:message | echohl None
+  echohl WarningMsg | echom '[vfiler]: ' . a:message | echohl None
 endfunction
 
 function! vfiler#core#normalized_path(path) abort
