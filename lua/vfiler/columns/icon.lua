@@ -1,18 +1,17 @@
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
-local Column = require 'vfiler/columns/column'
-local Syntax = require 'vfiler/columns/syntax'
-
 local IconColumn = {}
 
 function IconColumn.new()
+  local Column = require('vfiler/columns/column')
   local self = core.inherit(IconColumn, Column, 'icon')
   self.selected = '*'
   self.file = ' '
   self.closed_directory = '+'
   self.opened_directory = '-'
 
+  local Syntax = require('vfiler/columns/syntax')
   self._syntax = Syntax.new {
     syntaxes = {
       selected = {

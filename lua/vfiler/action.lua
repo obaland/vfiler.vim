@@ -131,7 +131,7 @@ function M.change_drive(context, view, args)
     end
   end
 
-  local list = ExtensionList.new('drives', context)
+  local list = ExtensionList.new('select drive', context)
   list.on_selected = function(item)
     M.cd(context, view, {item})
   end

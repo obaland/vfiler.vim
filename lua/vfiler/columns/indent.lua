@@ -1,15 +1,14 @@
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
-local Column = require 'vfiler/columns/column'
-local Syntax = require 'vfiler/columns/syntax'
-
 local IndentColumn = {}
 
 function IndentColumn.new()
+  local Column = require('vfiler/columns/column')
   local self = core.inherit(IndentColumn, Column, 'indent')
   self.icon = '|'
 
+  local Syntax = require('vfiler/columns/syntax')
   self._syntax = Syntax.new {
     syntaxes = {
       indent = {

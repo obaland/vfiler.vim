@@ -1,21 +1,13 @@
-local IconColumn = require 'vfiler/columns/icon'
-local IndentColumn = require 'vfiler/columns/indent'
-local ModeColumn = require 'vfiler/columns/mode'
-local NameColumn = require 'vfiler/columns/name'
-local SizeColumn = require 'vfiler/columns/size'
-local SpaceColumn = require 'vfiler/columns/space'
-local TimeColumn = require 'vfiler/columns/time'
-
 local M = {}
 
 local columns = {
-  icon = IconColumn.new(),
-  indent = IndentColumn.new(),
-  mode = ModeColumn.new(),
-  name = NameColumn.new(),
-  size = SizeColumn.new(),
-  sp = SpaceColumn.new(),
-  time = TimeColumn.new(),
+  icon = require('vfiler/columns/icon').new(),
+  indent = require('vfiler/columns/indent').new(),
+  mode = require('vfiler/columns/mode').new(),
+  name = require('vfiler/columns/name').new(),
+  size = require('vfiler/columns/size').new(),
+  sp = require('vfiler/columns/space').new(),
+  time = require('vfiler/columns/time').new(),
 }
 
 function M.get(name)

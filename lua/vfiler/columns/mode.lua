@@ -1,14 +1,13 @@
 local core = require 'vfiler/core'
 
-local Column = require 'vfiler/columns/column'
-local Syntax = require 'vfiler/columns/syntax'
-
 local ModeColumn = {}
 
 function ModeColumn.new()
+  local Column = require('vfiler/columns/column')
   local self = core.inherit(ModeColumn, Column, 'mode')
   self.format = '%Y/%m/%d %H:%M'
 
+  local Syntax = require('vfiler/columns/syntax')
   self._syntax = Syntax.new {
     syntaxes = {
       executable = {

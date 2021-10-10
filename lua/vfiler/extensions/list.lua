@@ -3,10 +3,6 @@ local core = require 'vfiler/core'
 local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
-local Popup = require 'vfiler/extensions/views/popup'
-local Window = require 'vfiler/extensions/views/window'
-
-local Extension = require 'vfiler/extensions/extension'
 local ExtensionList = {}
 
 mapping.setup {
@@ -14,38 +10,21 @@ mapping.setup {
     ['k'] = [[:lua require'vfiler/extensions/list/action'.do_action('move_cursor_up', true)]],
     ['j'] = [[:lua require'vfiler/extensions/list/action'.do_action('move_cursor_down', true)]],
     ['q'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')]],
-    ['<CR>'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')]],
+    ['<CR>'] = [[:lua require'vfiler/extensions/list/action'.do_action('select')]],
     ['<ESC>'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')]],
     ['gg'] = [[:lua require'vfiler/extensions/list/action'.do_action('quit')]],
   },
 }
 
 function ExtensionList.new(name, context)
-  -- create view
-  local mapping_type = 'list'
-  local view = nil
-  local layout = config.configs.layout
-  if layout.floating then
-    if vim.fn.has('nvim') == 1 then
-    else
-      view = Popup.new(layout, mapping_type)
-    end
-  else
-    view = Window.new(layout, mapping_type)
-    view:set_buf_options {
-      bufhidden = 'hide',
-      buflisted = false,
-      buftype = 'nofile',
-      filetype = 'vfiler_extension_list',
-      modifiable = false,
-      modified = false,
-      readonly = false,
-      swapfile = false,
-    }
-    view:set_win_options {
-      number = true
-    }
-  end
+  local Extension = require('vfiler/extensions/extension')
+  local view = Extension.create_view(config.configs.layout, 'list')
+  view:set_buf_options {
+    filetype = 'vfiler_extension_list',
+    modifiable = false,
+    modified = false,
+    readonly = true,
+  }
   return core.inherit(ExtensionList, Extension, name, context, view, config)
 end
 

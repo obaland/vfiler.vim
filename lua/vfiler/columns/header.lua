@@ -1,10 +1,9 @@
 local core = require 'vfiler/core'
 
-local Column = require 'vfiler/columns/column'
-
 local HeaderColumn = {}
 
 function HeaderColumn.new()
+  local Column = require('vfiler/columns/column')
   return core.inherit(HeaderColumn, Column, 'header')
 end
 

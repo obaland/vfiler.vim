@@ -1,15 +1,12 @@
 local M = {}
 
 M.fn = vim.fn
-function M.commands(cmds)
-  M.command(table.concat(cmds, ' | '))
-end
 
 if vim.fn.has('nvim') == 1 then
   ----------------------------------------------------------------------------
   -- Neovim
   ----------------------------------------------------------------------------
-
+  M.api = vim.api -- Alias
   M.command = vim.api.nvim_command -- Alias
 
   -- Global option
@@ -50,11 +47,11 @@ if vim.fn.has('nvim') == 1 then
     vim.api.nvim_buf_set_keymap(0, mode, lhs, rhs, opts)
   end
 
-  -- Convert lua data to vim data
-  function M.convert_list(data)
+  -- lua data to vim data
+  function M.vim_list(data)
     return data
   end
-  function M.convert_table(data)
+  function M.vim_dict(data)
     return data
   end
 
@@ -66,45 +63,45 @@ else
   M.command = vim.command --Alias
 
   -- Global option
-  local function get_option(prefix, name)
+  function M.get_option(prefix, name)
     return vim.eval(prefix .. name)
   end
 
-  local function set_option(command, name, value)
+  function M.command_set_option(command, name, value)
     local option = ''
     if type(value) == 'boolean' then
       option = value and name or 'no' .. name
     else
       option = string.format('%s=%s', name, vim.fn.escape(value, ' '))
     end
-    vim.command(command .. ' ' .. option)
+    return command .. ' ' .. option
   end
 
   function M.get_global_option_value(name)
-    return get_option('&g:', name)
+    return M.get_option('&g:', name)
   end
   function M.get_global_option_boolean(name)
     return M.get_global_option_value(name) == 1 and true or false
   end
   function M.set_global_option(name, value)
-    set_option('setglobal', name, value)
+    vim.command(M.command_set_option('setglobal', name, value))
   end
 
   function M.get_option_value(name)
-    return get_option('&', name)
+    return M.get_option('&', name)
   end
   function M.get_option_boolean(name)
     return M.get_option_value(name) == 1 and true or false
   end
   function M.set_option(name, value)
-    set_option('set', name, value)
+    vim.command(M.command_set_option('set', name, value))
   end
 
   -- Buffer option
   M.get_buf_option_value = M.get_option_value -- Alias
   M.get_buf_option_boolean = M.get_option_boolean -- Alias
   function M.set_buf_option(name, value)
-    set_option('setlocal', name, value)
+    vim.command(M.command_set_option('setlocal', name, value))
   end
 
   -- Window option
@@ -149,12 +146,35 @@ else
     set_keymap(mode, lhs, rhs, opts)
   end
 
-  -- Convert lua data to vim data
-  function M.convert_list(data)
+  -- Lua data to Vim data
+  function M.vim_list(data)
     return data and vim.list(data) or nil
   end
-  function M.convert_table(data)
+  function M.vim_dict(data)
     return data and vim.dict(data) or nil
+  end
+end
+
+-- Utilities
+function M.commands(cmds)
+  M.command(table.concat(cmds, ' | '))
+end
+
+function M.set_options(options)
+  for key, value in pairs(options) do
+    M.set_option(key, value)
+  end
+end
+
+function M.set_buf_options(options)
+  for key, value in pairs(options) do
+    M.set_buf_option(key, value)
+  end
+end
+
+function M.set_win_options(options)
+  for key, value in pairs(options) do
+    M.set_win_option(key, value)
   end
 end
 

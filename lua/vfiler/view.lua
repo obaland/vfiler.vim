@@ -83,7 +83,7 @@ function View:draw(context)
   vim.set_buf_option('modifiable', true)
   vim.set_buf_option('readonly', false)
   vim.command('silent %delete _')
-  vim.fn.setline(1, vim.convert_list(lines))
+  vim.fn.setline(1, vim.vim_list(lines))
   vim.set_buf_option('modifiable', false)
   vim.set_buf_option('readonly', true)
 

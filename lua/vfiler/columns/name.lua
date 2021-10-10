@@ -1,11 +1,9 @@
 local core = require 'vfiler/core'
 
-local Column = require 'vfiler/columns/column'
-local Syntax = require 'vfiler/columns/syntax'
-
 local NameColumn = {}
 
 function NameColumn.new()
+  local Column = require('vfiler/columns/column')
   local self = core.inherit(NameColumn, Column, 'name')
   self.variable = true
   self.stretch = true
@@ -13,6 +11,7 @@ function NameColumn.new()
   self.min_width = 32
   self.max_width = 0
 
+  local Syntax = require('vfiler/columns/syntax')
   self._syntax = Syntax.new {
     syntaxes = {
       selected = {
@@ -58,7 +57,7 @@ function NameColumn:get_width(context, width)
   if self.max_width <= 0 then
     return math.max(width, self.min_width)
   end
-  return math.min(math.max(width, self.min_width), self.max_width)
+  return core.within(width, self.min_width, self.max_width)
 end
 
 function NameColumn:highlights()

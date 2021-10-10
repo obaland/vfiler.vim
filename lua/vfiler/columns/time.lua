@@ -1,14 +1,13 @@
 local core = require 'vfiler/core'
 
-local Column = require 'vfiler/columns/column'
-local Syntax = require 'vfiler/columns/syntax'
-
 local TimeColumn = {}
 
 function TimeColumn.new()
+  local Column = require('vfiler/columns/column')
   local self = core.inherit(TimeColumn, Column, 'time')
   self.format = '%Y/%m/%d %H:%M'
 
+  local Syntax = require('vfiler/columns/syntax')
   self._syntax = Syntax.new {
     syntaxes = {
       today = {

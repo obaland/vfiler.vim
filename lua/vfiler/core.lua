@@ -179,4 +179,9 @@ function M.truncate(str, width, sep, ...)
   return truncate(result, width)
 end
 
+-- Within the max and min between
+function M.within(v, min, max)
+  return math.min(math.max(v, min), max)
+end
+
 return M

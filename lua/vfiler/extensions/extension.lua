@@ -19,6 +19,26 @@ function Extension.new(name, context, view, ...)
     }, Extension)
 end
 
+function Extension.create_view(layout, mapping_type)
+  local view = nil
+  if layout.floating then
+    if vim.fn.has('nvim') == 1 then
+      view = require('vfiler/extensions/views/floating').new(
+        layout, mapping_type
+       )
+    else
+      view = require('vfiler/extensions/views/popup').new(
+        layout, mapping_type
+        )
+    end
+  else
+    view = require('vfiler/extensions/views/window').new(
+      layout, mapping_type
+      )
+  end
+  return view
+end
+
 function Extension.get(winid)
   return extension_resources[winid]
 end
