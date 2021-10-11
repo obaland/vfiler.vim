@@ -1,7 +1,16 @@
+local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
 local Border = {}
 Border.__index = Border
+
+local function rep(char, count)
+  local str = ''
+  for _ = 1, count do
+    str = str .. char
+  end
+  return str
+end
 
 function Border.new()
   local object = setmetatable({}, Border)
@@ -35,34 +44,51 @@ function Border:close()
   end
 end
 
-function Border:open(title, configs)
-  local content = configs.content
+function Border:open(configs)
+  self.content = core.deepcopy(configs.content)
+  local border = self._border
 
-  -- +2 space chars
-  local title_width = vim.api.nvim_strwidth(title) + 2
-
-  -- calculate min width (base to bottom border)
-
-  self._top_border = {}
-  if title_width > content.width then
-    self.conent_width = title_width
-  else
-    local top_border_width = content.width - title_width
-    local top_border_left_count = top_border_width / 2 /self._bwidth
+  local title = (' %s '):format(configs.title)
+  local title_width = vim.api.nvim_strwidth(title)
+  while math.fmod(title_width, border.width) > 0 do
+    title = title .. ' '
+    title_width = vim.api.nvim_strwidth(title)
   end
+
+  local content_width = math.max(self.content.width, title_width)
+
+  -- calculate top and bottom width
+  local top_border_width = math.ceil(content_width - title_width)
+  local bwidth = border.width
+  local top = border.top
+  top.left_count = math.floor(top_border_width / 2 / bwidth)
+  top.right_count = math.ceil(top_border_width / 2 / bwidth)
+  self.content.width = (
+    (top.left_count * bwidth) + title_width + (top.right_count * bwidth)
+    )
+  --border.bottom.count = self.content.width / bwidth
+  border.bottom.count = self.content.width
+
+  -- calculate content col
+  if self.content.width > configs.content.width then
+    self.content.col = self.content.col - math.floor(
+      (self.content.width - configs.content.width) / 2
+      )
+  end
+  print(self.content.width)
 
   self.bufnr = vim.api.nvim_create_buf(false, true)
 
   local options = {
-    col = content.col - self._bwidth,
+    col = self.content.col - bwidth,
     focusable = false,
-    height = content.height + 2,
+    height = self.content.height + 2,
     noautocmd = false,
-    relative = content.relative,
-    row = content.row - 1,
-    width = content.width + (self._bwidth * 2),
+    relative = self.content.relative,
+    row = self.content.row - 1,
+    width = self.content.width + (bwidth * 2),
     win = self._caller_winid,
-    zindex = content.zindex + 1,
+    zindex = self.content.zindex + 1,
   }
   self.winid = vim.api.nvim_open_win(self.bufnr, true, options)
 
@@ -91,40 +117,40 @@ function Border:open(title, configs)
     vim.api.nvim_win_set_option(self.winid, key, value)
   end
 
-  self:_draw(configs.title, options.width, options.height)
+  self:_draw(title, title_width)
 end
 
-function Border:_draw(title, width, height)
+function Border:_draw(title, title_width)
   local border = self._border
   local lines = {}
 
   -- top line
-  print('width:', width)
-  local whalf_width = (width - (self._bwidth * 2)) / 2
-  print('half width', whalf_width)
-  local title_width = vim.api.nvim_strwidth(title) + 2 -- space * 2
-  print('title width', title_width)
-  local top_half_width = whalf_width - (title_width / 2)
-  print('top half width', top_half_width)
-  local top_left_width = math.floor(top_half_width)
-  print('top left width', top_left_width)
-  local top_right_width = math.ceil(top_half_width)
-  print('top right width', top_right_width)
+  local top = ('%s%s%s%s%s'):format(
+    border.top_left.char,
+    rep(border.top.char, border.top.left_count * 2),
+    title,
+    rep(border.top.char, border.top.right_count * 2),
+    border.top_right.char
+    )
+  print(top, vim.api.nvim_strwidth(top), vim.fn.winwidth(0))
+  table.insert(lines, top)
 
-  local border_chars = ''
-  for _ = 1, math.floor(top_left_width / self._bwidth) do
-    border_chars = border_chars .. border.top
+  print(self.content.width)
+  -- middle lines
+  for _ = 1, self.content.height do
+    local middle = ('%s%s%s'):format(
+      border.left.char, (' '):rep(self.content.width), border.right.char
+      )
+    table.insert(lines, middle)
   end
 
-  local top = ('%s%s %s %s%s'):format(
-    border.top_left,
-    border_chars,
-    title,
-    border_chars,
-    border.top_right
+  -- bottom line
+  local bottom = ('%s%s%s'):format(
+    border.bottom_left.char,
+    rep(border.bottom.char, border.bottom.count),
+    border.bottom_right.char
     )
-  print(top)
-  table.insert(lines, top)
+  table.insert(lines, bottom)
 
   --[[
   local wwidth = vim.fn.winwidth(self.winid)

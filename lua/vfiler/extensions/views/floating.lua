@@ -66,8 +66,8 @@ function Floating:_on_layout_option(name, texts)
     )
 
   -- decide position
-  layout.row = math.floor(wheight - ((layout.height / 2) + (wheight / 2)))
-  layout.col = math.floor(wwidth - ((layout.width / 2) + (wwidth / 2)))
+  layout.row = math.floor((wheight - layout.height) / 2)
+  layout.col = math.floor((wwidth - layout.width) / 2)
   return layout
 end
 
@@ -86,9 +86,13 @@ function Floating:_on_open(name, texts, layout_option)
 
   local border_configs = {
     title = name,
-    content = core.deepcopy(options)
+    content = options,
   }
   self._border:open(border_configs)
+
+  -- overwrite the content
+  options.width = self._border.content.width
+  options.col = self._border.content.col
 
   local listed = self.bufoptions.buflisted and true or false
   local buffer = vim.api.nvim_create_buf(listed, true)
