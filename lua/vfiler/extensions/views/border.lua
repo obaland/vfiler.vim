@@ -6,7 +6,7 @@ Border.__index = Border
 function Border.new()
   local object = setmetatable({}, Border)
   object._caller_windi = vim.fn.win_getid()
-  object._border = {
+  local border = {
     top_left = '╭',
     left = '│',
     bottom_left = '╰',
@@ -16,7 +16,16 @@ function Border.new()
     right = '│',
     bottom_right = '╯',
   }
-  object._bwidth = vim.api.nvim_strwidth(object._border.top)
+
+  object._border = {}
+
+  local bwidth = 0
+  for key, char in pairs(border) do
+    object._border[key] = {}
+    object._border[key].char = char
+    bwidth = math.max(bwidth, vim.api.nvim_strwidth(char))
+  end
+  object._border.width = bwidth
   return object
 end
 
@@ -26,10 +35,24 @@ function Border:close()
   end
 end
 
-function Border:open(configs)
+function Border:open(title, configs)
+  local content = configs.content
+
+  -- +2 space chars
+  local title_width = vim.api.nvim_strwidth(title) + 2
+
+  -- calculate min width (base to bottom border)
+
+  self._top_border = {}
+  if title_width > content.width then
+    self.conent_width = title_width
+  else
+    local top_border_width = content.width - title_width
+    local top_border_left_count = top_border_width / 2 /self._bwidth
+  end
+
   self.bufnr = vim.api.nvim_create_buf(false, true)
 
-  local content = configs.content
   local options = {
     col = content.col - self._bwidth,
     focusable = false,
@@ -85,14 +108,19 @@ function Border:_draw(title, width, height)
   print('top half width', top_half_width)
   local top_left_width = math.floor(top_half_width)
   print('top left width', top_left_width)
-  local top_right_width = math.floor(top_half_width + 0.5)
+  local top_right_width = math.ceil(top_half_width)
   print('top right width', top_right_width)
+
+  local border_chars = ''
+  for _ = 1, math.floor(top_left_width / self._bwidth) do
+    border_chars = border_chars .. border.top
+  end
 
   local top = ('%s%s %s %s%s'):format(
     border.top_left,
-    border.top:rep(top_left_width),
+    border_chars,
     title,
-    border.top:rep(top_right_width),
+    border_chars,
     border.top_right
     )
   print(top)
