@@ -1,19 +1,19 @@
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
-local Border = require 'vfiler/extensions/views/border'
+local Frame = require 'vfiler/extensions/views/frame'
 
 local Floating = {}
 
 function Floating.new(configs, mapping_type)
   local Window = require('vfiler/extensions/views/window')
   local object = core.inherit(Floating, Window, configs, mapping_type)
-  object._border = Border.new()
+  object._frame = Frame.new()
   return object
 end
 
 function Floating:close()
-  self._border:close()
+  self._frame:close()
   if self.winid > 0 then
     vim.api.nvim_win_close(self.winid, true)
   end
@@ -32,8 +32,6 @@ function Floating:_on_apply_options(winid)
 end
 
 function Floating:_on_layout_option(name, texts)
-  local border = self._border
-  local bwidth = self._border_width
   local title_width = vim.fn.strwidth(name)
 
   local floating = self.configs.floating
@@ -42,7 +40,7 @@ function Floating:_on_layout_option(name, texts)
 
   -- calculate min width and height
   local layout = {
-    minwidth = 4,
+    minwidth = 1,
     minheight = 1,
   }
 
@@ -57,7 +55,7 @@ function Floating:_on_layout_option(name, texts)
     layout.minheight = self:_winvalue(wheight, floating.minheight)
   end
 
-  -- adjust width: match to the top border
+  -- adjust width: match to the top
   layout.width = self:_winwidth(
     wwidth, floating.width or 'auto', layout.minwidth, wwidth, texts
     )
@@ -65,13 +63,18 @@ function Floating:_on_layout_option(name, texts)
     wheight, floating.height or 'auto', layout.minheight, wheight, texts
     )
 
-  -- decide position
+  -- claculate position
   layout.row = math.floor((wheight - layout.height) / 2)
   layout.col = math.floor((wwidth - layout.width) / 2)
   return layout
 end
 
 function Floating:_on_open(name, texts, layout_option)
+
+  -- open content layer
+
+  print(layout_option.height)
+
   local options = {
     col = layout_option.col,
     focusable = true,
@@ -84,15 +87,12 @@ function Floating:_on_open(name, texts, layout_option)
     zindex = 200,
   }
 
-  local border_configs = {
+  -- open frame layer
+  local frame_configs = {
     title = name,
     content = options,
   }
-  self._border:open(border_configs)
-
-  -- overwrite the content
-  options.width = self._border.content.width
-  options.col = self._border.content.col
+  self._frame:open(frame_configs)
 
   local listed = self.bufoptions.buflisted and true or false
   local buffer = vim.api.nvim_create_buf(listed, true)

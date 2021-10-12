@@ -11,7 +11,7 @@ M.configs = {
       width = 'auto',
       height = 'auto',
       minwidth = 30,
-      minheight = 5,
+      minheight = '2',
       relative = true,
     },
   },
