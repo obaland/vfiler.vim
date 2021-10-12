@@ -67,6 +67,9 @@ function Frame:open(configs)
     vim.api.nvim_win_set_option(self.winid, key, value)
   end
 
+  -- set syntax highlight
+  vim.api.nvim_win_set_option(self.winid, 'winhighlight', 'Normal:Normal')
+
   self:_draw(configs.title)
 end
 

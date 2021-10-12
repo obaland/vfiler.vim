@@ -20,6 +20,9 @@ function Floating:close()
 end
 
 function Floating:draw(texts, ...)
+  for _, text in pairs(texts) do
+    print(text)
+  end
   vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, true, texts)
 end
 
@@ -72,8 +75,6 @@ end
 function Floating:_on_open(name, texts, layout_option)
 
   -- open content layer
-
-  print(layout_option.height)
 
   local options = {
     col = layout_option.col,
