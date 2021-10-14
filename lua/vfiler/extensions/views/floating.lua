@@ -73,31 +73,37 @@ function Floating:_on_layout_option(name, texts)
 end
 
 function Floating:_on_open(name, texts, layout_option)
-
-  -- open content layer
-
-  local options = {
-    col = layout_option.col,
-    focusable = true,
-    height = layout_option.height,
-    noautocmd = false,
-    relative = layout_option.relative,
-    row = layout_option.row,
-    width = layout_option.width,
-    win = self.caller_winid,
-    zindex = 200,
-  }
-
   -- open frame layer
   local frame_configs = {
     title = name,
-    content = options,
+    num_lines = #texts,
+    content = {
+      col = layout_option.col,
+      height = layout_option.height,
+      relative = layout_option.relative,
+      row = layout_option.row,
+      width = layout_option.width,
+      zindex = 200,
+    },
   }
-  self._frame:open(frame_configs)
+  local content = self._frame:open(frame_configs)
+
+  -- adjust content options
+  local option = {
+    col = content.col,
+    focusable = true,
+    height = content.height,
+    noautocmd = false,
+    relative = layout_option.relative,
+    row = content.row,
+    width = content.row,
+    win = self.caller_winid,
+    zindex = content.zindex,
+  }
 
   local listed = self.bufoptions.buflisted and true or false
   local buffer = vim.api.nvim_create_buf(listed, true)
-  return vim.api.nvim_open_win(buffer, true, options)
+  return vim.api.nvim_open_win(buffer, true, option)
 end
 
 return Floating

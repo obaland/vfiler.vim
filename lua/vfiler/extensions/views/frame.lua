@@ -4,12 +4,14 @@ local vim = require 'vfiler/vim'
 local Frame = {}
 Frame.__index = Frame
 
-local function rep(char, count)
-  local str = ''
-  for _ = 1, count do
-    str = str .. char
+local function num_digits(value)
+  print(value)
+  local num = 1
+  while math.floor(value / (10 * num)) > 0 do
+    num = num + 1
+    value = value / 10
   end
-  return str
+  return num
 end
 
 function Frame.new()
@@ -25,22 +27,39 @@ function Frame:close()
 end
 
 function Frame:open(configs)
-  self.content = core.deepcopy(configs.content)
+  local content = core.deepcopy(configs.content)
+
+  -- calculate number
+  local num_lines = configs.num_lines or 0
+  local digits = configs.num_lines and num_digits(num_lines) or 0
   self.bufnr = vim.api.nvim_create_buf(false, true)
+
+  local width = 0
+  if digits > 0 then
+    width = width + digits + 1 -- +1 for separator
+  end
+  local offset_x = math.floor(width / 2) + 1 -- for border
+
+  -- TODO:
+  -- title (optional)
 
   local options = {
     border = 'rounded',
-    col = self.content.col - 2,
+    col = content.col - offset_x,
     focusable = false,
-    height = self.content.height + 1,
+    height = content.height + 1,
     noautocmd = false,
-    relative = self.content.relative,
-    row = self.content.row - 2,
-    width = self.content.width,
+    relative = content.relative,
+    row = content.row - 1,
+    width = content.width + width,
     win = self._caller_winid,
-    zindex = self.content.zindex + 1,
+    zindex = content.zindex - 1,
   }
-  self.winid = vim.api.nvim_open_win(self.bufnr, true, options)
+  self.winid = vim.api.nvim_open_win(self.bufnr, false, options)
+
+  -- adjust content options
+  content.col = content.col + offset_x
+  content.row = content.row + 1
 
   local bufoptions = {
     bufhidden = 'hide',
@@ -56,6 +75,7 @@ function Frame:open(configs)
     colorcolumn = '',
     conceallevel =  2,
     concealcursor = 'nvc',
+    cursorline = false,
     foldcolumn = '0',
     foldenable = false,
     list = false,
@@ -69,12 +89,27 @@ function Frame:open(configs)
 
   -- set syntax highlight
   vim.api.nvim_win_set_option(self.winid, 'winhighlight', 'Normal:Normal')
+  vim.fn.win_execute(
+    self.winid, core.syntax_match_command('vfilerHeader', '\\%1l.*', {})
+    )
 
-  self:_draw(configs.title)
+  self:_draw(configs.title, num_lines, digits)
+  return content
 end
 
-function Frame:_draw(title)
-  vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, true, {title})
+function Frame:_draw(title, num_lines, digits)
+  local lines = {}
+  if title then
+    table.insert(lines, title)
+  end
+
+  if num_lines > 0 then
+    for n = 1, num_lines do
+      table.insert(lines, ('%' .. digits .. 'd:'):format(n))
+    end
+  end
+
+  vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, true, lines)
 end
 
 return Frame

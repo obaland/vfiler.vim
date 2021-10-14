@@ -25,6 +25,9 @@ function ExtensionList.new(name, context)
     modified = false,
     readonly = true,
   }
+  view:set_win_options {
+    number = true,
+  }
   return core.inherit(ExtensionList, Extension, name, context, view, config)
 end
 
