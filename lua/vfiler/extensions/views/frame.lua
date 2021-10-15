@@ -36,9 +36,10 @@ function Frame:open(configs)
 
   local width = 0
   if digits > 0 then
-    width = width + digits + 1 -- +1 for separator
+    width = width + digits + 2 -- +2 for separator
   end
-  local offset_x = math.floor(width / 2) + 1 -- for border
+  print('width:', width)
+  local offset_x = math.floor(width / 2)
 
   -- TODO:
   -- title (optional)
@@ -58,7 +59,7 @@ function Frame:open(configs)
   self.winid = vim.api.nvim_open_win(self.bufnr, false, options)
 
   -- adjust content options
-  content.col = content.col + offset_x
+  content.col = content.col + width
   content.row = content.row + 1
 
   local bufoptions = {
@@ -89,9 +90,10 @@ function Frame:open(configs)
 
   -- set syntax highlight
   vim.api.nvim_win_set_option(self.winid, 'winhighlight', 'Normal:Normal')
-  vim.fn.win_execute(
-    self.winid, core.syntax_match_command('vfilerHeader', '\\%1l.*', {})
-    )
+  vim.win_executes(self.winid, {
+    core.syntax_match_command('vfilerHeader', '\\%1l.*', {}),
+    core.syntax_match_command('vfilerMenuNumber', '^\\s*\\d\\+:', {}),
+  })
 
   self:_draw(configs.title, num_lines, digits)
   return content

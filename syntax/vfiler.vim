@@ -18,6 +18,8 @@ highlight! def link vfilerHidden            Comment
 highlight! def link vfilerSelected          Title
 highlight! def link vfilerNothing           Directory
 
+highlight! def link vfilerMenuNumber        Constant
+
 highlight! def link vfilerMode              None
 highlight! def link vfilerModeExecutable    PreProc
 

@@ -4,9 +4,15 @@ local vim = require 'vfiler/vim'
 
 local Popup = {}
 
+local bordercahrs = {
+  rounded = {'─', '│', '─', '│', '╭', '╮', '╯', '╰'},
+}
+
 function Popup.new(configs, mapping_type)
   local Window = require('vfiler/extensions/views/window')
-  return core.inherit(Popup, Window, configs, mapping_type)
+  local object = core.inherit(Popup, Window, configs, mapping_type)
+  object._borderchars = bordercahrs.rounded
+  return object
 end
 
 function Popup:close()
@@ -36,9 +42,12 @@ function Popup:_on_apply_options(winid)
   -- set window options
   if self.winoptions then
     for key, value in pairs(self.winoptions) do
-      vim.fn.win_execute(
-        winid, vim.command_set_option('setlocal', key, value)
-        )
+      -- 'number' is omitted as a special option
+      if key ~= 'number' then
+        vim.fn.win_execute(
+          winid, vim.command_set_option('setlocal', key, value)
+          )
+      end
     end
   end
 end
@@ -95,6 +104,8 @@ end
 
 function Popup:_on_open(name, texts, layout_option)
   local options = {
+    border = vim.vim_list({1, 1, 1, 1}),
+    --borderchars = vim.vim_list(self._borderchars),
     col = layout_option.col,
     cursorline = true,
     drag = false,

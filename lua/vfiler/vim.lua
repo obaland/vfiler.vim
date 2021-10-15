@@ -178,4 +178,8 @@ function M.set_win_options(options)
   end
 end
 
+function M.win_executes(window, cmds)
+  M.fn.win_execute(window, table.concat(cmds, ' | '))
+end
+
 return M

@@ -96,14 +96,19 @@ function Floating:_on_open(name, texts, layout_option)
     noautocmd = false,
     relative = layout_option.relative,
     row = content.row,
-    width = content.row,
+    width = layout_option.width,
     win = self.caller_winid,
     zindex = content.zindex,
   }
 
   local listed = self.bufoptions.buflisted and true or false
   local buffer = vim.api.nvim_create_buf(listed, true)
-  return vim.api.nvim_open_win(buffer, true, option)
+  local winid = vim.api.nvim_open_win(buffer, true, option)
+
+  -- set special options
+  vim.api.nvim_win_set_option(winid, 'winhighlight', 'Normal:Normal')
+
+  return winid
 end
 
 return Floating
