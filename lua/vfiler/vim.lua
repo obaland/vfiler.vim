@@ -6,8 +6,11 @@ if vim.fn.has('nvim') == 1 then
   ----------------------------------------------------------------------------
   -- Neovim
   ----------------------------------------------------------------------------
-  M.api = vim.api -- Alias
-  M.command = vim.api.nvim_command -- Alias
+
+  -- Alias
+  M.api = vim.api
+  M.command = vim.api.nvim_command
+  M.o = vim.o
 
   -- Global option
   M.get_global_option_value = vim.api.nvim_get_option -- Alias
@@ -65,16 +68,6 @@ else
   -- Global option
   function M.get_option(prefix, name)
     return vim.eval(prefix .. name)
-  end
-
-  function M.command_set_option(command, name, value)
-    local option = ''
-    if type(value) == 'boolean' then
-      option = value and name or 'no' .. name
-    else
-      option = string.format('%s=%s', name, vim.fn.escape(value, ' '))
-    end
-    return command .. ' ' .. option
   end
 
   function M.get_global_option_value(name)
@@ -172,13 +165,23 @@ function M.set_buf_options(options)
   end
 end
 
+function M.command_set_option(command, name, value)
+  local option = ''
+  if type(value) == 'boolean' then
+    option = value and name or 'no' .. name
+  else
+    option = string.format('%s=%s', name, M.fn.escape(value, ' '))
+  end
+  return command .. ' ' .. option
+end
+
 function M.set_win_options(options)
   for key, value in pairs(options) do
     M.set_win_option(key, value)
   end
 end
 
-function M.win_executes(window, cmds)
+function M.fn.win_executes(window, cmds)
   M.fn.win_execute(window, table.concat(cmds, ' | '))
 end
 

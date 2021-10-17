@@ -14,6 +14,7 @@ mapping.setup {
     ['h'] = [[:lua require'vfiler'.do_action('close_tree_or_cd')]],
     ['l'] = [[:lua require'vfiler'.do_action('open_tree')]],
     ['L'] = [[:lua require'vfiler'.do_action('change_drive')]],
+    ['S'] = [[:lua require'vfiler'.do_action('change_sort')]],
   },
 }
 

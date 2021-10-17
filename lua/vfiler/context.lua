@@ -16,7 +16,7 @@ function Context.new(bufnr, configs)
       items = {},
       path = '',
       show_hidden_files = false,
-      sort_comp = sort.get('name'),
+      sort = 'name',
     }, Context)
 end
 
@@ -78,9 +78,12 @@ function Context:open_directory(lnum)
   end
 
   -- create opened item list
+  local compare = sort.compares[self.sort]
   local opened_items = {}
   for opened_item in self:_create_items(item.path, item.level + 1) do
-    local pos = self:_search_insert_position(opened_items, opened_item)
+    local pos = self:_search_insert_position(
+      opened_items, opened_item, compare
+      )
     table.insert(opened_items, pos, opened_item)
   end
 
@@ -95,8 +98,9 @@ end
 function Context:switch(path)
   -- create header item
   self.items = {}
+  local compare = sort.compares[self.sort]
   for item in self:_create_items(path, 1) do
-    local pos = self:_search_insert_position(self.items, item)
+    local pos = self:_search_insert_position(self.items, item, compare)
     table.insert(self.items, pos, item)
   end
   -- add header item to top
@@ -104,9 +108,9 @@ function Context:switch(path)
   self.path = path
 end
 
-function Context:_search_insert_position(items, target)
+function Context:_search_insert_position(items, target, compare)
   for i, item in ipairs(items) do
-    if self.sort_comp(target, item) then
+    if compare(target, item) then
       return i
     end
   end

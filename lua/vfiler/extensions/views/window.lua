@@ -44,19 +44,20 @@ function Window:open(name, texts)
   self:_on_define_mapping(self.winid)
   self:_on_apply_options(self.winid)
   self.bufnr = vim.fn.winbufnr(self.winid)
+
+  -- set name to statusline
+  if name and #name > 0 then
+    vim.set_win_option('statusline', name)
+  end
+
   return self.winid
 end
 
-function Window:draw(texts, ...)
+function Window:draw(texts)
   vim.command('silent %delete _')
 
   for i, text in ipairs(texts) do
     vim.fn.setline(i, text)
-  end
-
-  -- set statusline
-  if ... then
-    vim.set_win_option('statusline', ...)
   end
 end
 
@@ -69,15 +70,21 @@ function Window:set_win_options(options)
 end
 
 function Window:_on_apply_options(winid)
-  vim.set_buf_options(self.bufoptions)
-  vim.set_win_options(self.winoptions)
+  local options = {}
+  for key, value in pairs(self.bufoptions) do
+    table.insert(options, vim.command_set_option('setlocal', key, value))
+  end
+  for key, value in pairs(self.winoptions) do
+    table.insert(options, vim.command_set_option('setlocal', key, value))
+  end
+  vim.fn.win_executes(winid, options)
 end
 
 function Window:_on_define_mapping(winid)
   mapping.define(self.mapping_type)
 end
 
-function Window:_on_layout_option(texts)
+function Window:_on_layout_option(name, texts)
   local option = {
     width = 0, height = 0,
   }

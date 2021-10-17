@@ -1,10 +1,11 @@
 local core = require 'vfiler/core'
 local exaction = require 'vfiler/extensions/action'
 local mapping = require 'vfiler/mapping'
+local sort = require 'vfiler/sort'
 local vim = require 'vfiler/vim'
 
 local Buffer = require 'vfiler/buffer'
-local ExtensionList = require 'vfiler/extensions/list'
+local ExtensionMenu = require 'vfiler/extensions/menu'
 
 local M = {}
 
@@ -123,21 +124,36 @@ function M.change_drive(context, view, args)
   end
 
   local root = core.get_root_path(context.path)
-  local cursor_pos = 1
+  local cursor = 1
   for i, drive in ipairs(drives) do
     if drive == root then
-      cursor_pos = i
+      cursor = i
       break
     end
   end
 
-  local list = ExtensionList.new('select drive', context)
-  list.on_selected = function(item)
+  local menu = ExtensionMenu.new('Select Drive', context)
+  menu.on_selected = function(item)
     M.cd(context, view, {item})
   end
 
-  list:start(drives, cursor_pos)
-  context.extension = list
+  menu:start(drives, cursor)
+  context.extension = menu
+end
+
+function M.change_sort(context, view, args)
+  local sort_types = sort.types()
+  local cursor = 1
+  for i, type in ipairs(sort_types) do
+    if type == context.sort then
+      cursor = i
+      break
+    end
+  end
+
+  local menu = ExtensionMenu.new('Select Sort', context)
+  menu:start(sort_types, cursor)
+  context.extension = menu
 end
 
 return M

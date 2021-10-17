@@ -1,51 +1,39 @@
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
-local Frame = require 'vfiler/extensions/views/frame'
-
 local Floating = {}
 
 function Floating.new(configs, mapping_type)
   local Window = require('vfiler/extensions/views/window')
-  local object = core.inherit(Floating, Window, configs, mapping_type)
-  object._frame = Frame.new()
-  return object
+  return core.inherit(Floating, Window, configs, mapping_type)
 end
 
 function Floating:close()
-  self._frame:close()
   if self.winid > 0 then
     vim.api.nvim_win_close(self.winid, true)
+  end
+  if self._title then
+    vim.api.nvim_win_close(self._title.winid, true)
   end
 end
 
 function Floating:draw(texts, ...)
-  for _, text in pairs(texts) do
-    print(text)
-  end
   vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, true, texts)
 end
 
-function Floating:_on_apply_options(winid)
-  vim.set_buf_options(self.bufoptions)
-  vim.set_win_options(self.winoptions)
-
-  -- set fixed option
-  vim.api.nvim_win_set_option(winid, 'number', false)
-end
-
 function Floating:_on_layout_option(name, texts)
-  local title_width = vim.fn.strwidth(name)
-
-  local floating = self.configs.floating
-  local wwidth = vim.fn.winwidth(self.caller_winid)
-  local wheight = vim.fn.winheight(self.caller_winid)
-
   -- calculate min width and height
   local layout = {
     minwidth = 1,
     minheight = 1,
   }
+  if name and #name > 0 then
+    layout.minwidth = #name + 2 -- '2' is space width
+  end
+
+  local floating = self.configs.floating
+  local wwidth = vim.fn.winwidth(self.caller_winid)
+  local wheight = vim.fn.winheight(self.caller_winid)
 
   -- position
   layout.relative = floating.relative and 'win' or 'editor'
@@ -73,42 +61,64 @@ function Floating:_on_layout_option(name, texts)
 end
 
 function Floating:_on_open(name, texts, layout_option)
-  -- open frame layer
-  local frame_configs = {
-    title = name,
-    num_lines = #texts,
-    content = {
-      col = layout_option.col,
-      height = layout_option.height,
-      relative = layout_option.relative,
-      row = layout_option.row,
-      width = layout_option.width,
-      zindex = 200,
-    },
-  }
-  local content = self._frame:open(frame_configs)
-
-  -- adjust content options
   local option = {
-    col = content.col,
+    border = 'rounded',
+    col = layout_option.col,
     focusable = true,
-    height = content.height,
+    height = layout_option.height,
     noautocmd = false,
     relative = layout_option.relative,
-    row = content.row,
+    row = layout_option.row,
     width = layout_option.width,
-    win = self.caller_winid,
-    zindex = content.zindex,
+    zindex = 200,
   }
+  if option.relative == 'win' then
+    option.win = self.caller_winid
+  end
 
   local listed = self.bufoptions.buflisted and true or false
   local buffer = vim.api.nvim_create_buf(listed, true)
   local winid = vim.api.nvim_open_win(buffer, true, option)
 
-  -- set special options
+  -- set options
   vim.api.nvim_win_set_option(winid, 'winhighlight', 'Normal:Normal')
 
+  -- open title window
+  if name and #name > 0 then
+    self:_open_tile(name, option)
+  end
   return winid
+end
+
+function Floating:_open_tile(name, content_option)
+  local title = ' ' .. name .. ' '
+  local option = {
+    col = content_option.col + 1,
+    focusable = false,
+    height = 1,
+    noautocmd = false,
+    relative = content_option.relative,
+    row = content_option.row,
+    width = #title,
+    zindex = content_option.zindex + 1,
+  }
+  if option.relative == 'win' then
+    option.win = self.caller_winid
+  end
+  local buffer = vim.api.nvim_create_buf(false, true)
+  local window = vim.api.nvim_open_win(buffer, false, option)
+
+  -- set options
+  vim.api.nvim_win_set_option(window, 'winhighlight', 'Normal:Constant')
+  vim.api.nvim_win_set_option(window, 'cursorline', false)
+
+  -- set title name
+  vim.api.nvim_buf_set_lines(buffer, 0, -1, true, {title})
+
+  self._title = {
+    bufnr = buffer,
+    winid = window,
+  }
 end
 
 return Floating

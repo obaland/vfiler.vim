@@ -4,15 +4,9 @@ local vim = require 'vfiler/vim'
 
 local Popup = {}
 
-local bordercahrs = {
-  rounded = {'─', '│', '─', '│', '╭', '╮', '╯', '╰'},
-}
-
 function Popup.new(configs, mapping_type)
   local Window = require('vfiler/extensions/views/window')
-  local object = core.inherit(Popup, Window, configs, mapping_type)
-  object._borderchars = bordercahrs.rounded
-  return object
+  return core.inherit(Popup, Window, configs, mapping_type)
 end
 
 function Popup:close()
@@ -22,33 +16,6 @@ function Popup:close()
       self.caller_winid, ('call popup_close(%d)'):format(self.winid)
       )
     vim.fn['vfiler#popup#unmap'](self.winid)
-  end
-end
-
-function Popup:draw(texts, ...)
-  -- Nothng to do
-end
-
-function Popup:_on_apply_options(winid)
-  -- set buffer options
-  if self.bufoptions then
-    for key, value in pairs(self.bufoptions) do
-      vim.fn.win_execute(
-        winid, vim.command_set_option('setlocal', key, value)
-        )
-    end
-  end
-
-  -- set window options
-  if self.winoptions then
-    for key, value in pairs(self.winoptions) do
-      -- 'number' is omitted as a special option
-      if key ~= 'number' then
-        vim.fn.win_execute(
-          winid, vim.command_set_option('setlocal', key, value)
-          )
-      end
-    end
   end
 end
 
@@ -65,8 +32,8 @@ function Popup:_on_layout_option(name, texts)
   local wheight = vim.fn.winheight(self.caller_winid)
 
   local layout = {
-    minwidth = 8,
-    minheight = 4,
+    minwidth = 1,
+    minheight = 1,
     line = 0,
     col = 0,
   }
@@ -105,7 +72,6 @@ end
 function Popup:_on_open(name, texts, layout_option)
   local options = {
     border = vim.vim_list({1, 1, 1, 1}),
-    --borderchars = vim.vim_list(self._borderchars),
     col = layout_option.col,
     cursorline = true,
     drag = false,
@@ -124,8 +90,6 @@ function Popup:_on_open(name, texts, layout_option)
   local winid = vim.fn.popup_create(
     vim.vim_list(texts), vim.vim_dict(options)
     )
-
-  -- TODO: border line color
 
   -- key mappings
   vim.fn['vfiler#popup#map'](

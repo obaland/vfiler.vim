@@ -1,22 +1,46 @@
 local M = {}
 
-local sorts = {}
+M.compares = {}
 
-local function to_desc_name(name)
-  return (name:sub(1, 1)):upper() .. name:sub(2)
+local function to_desc_name(type)
+  return (type:sub(1, 1)):upper() .. type:sub(2)
 end
 
-function M.get(name)
-  return sorts[name]
-end
-
-function M.set(name, compare)
-  sorts[name] = compare
+-- @param type    string
+-- @param compare function
+function M.set(type, compare)
+  M.compares[type] = compare
   -- set descending order at the same time
-  local desc_name = to_desc_name(name)
-  sorts[desc_name] = function(item2, item1)
+  local desc_name = to_desc_name(type)
+  M.compares[desc_name] = function(item2, item1)
       return not compare(item2, item1)
   end
+end
+
+function M.types()
+  local types = {}
+  for type, _ in pairs(M.compares) do
+    local tfirst = type:byte(1, 1)
+    local tlower = (0x61 <= tfirst) and (tfirst <= 0x7A)
+
+    local pos = #types + 1
+    for i, value in ipairs(types) do
+      local vfirst = value:byte(1, 1)
+      local vlower = (0x61 <= vfirst) and (vfirst <= 0x7A)
+
+      if (tlower and vlower) or (not (tlower or vlower)) then
+        if type < value then
+          pos = i
+          break
+        end
+      elseif tlower then
+        pos = i
+        break
+      end
+    end
+    table.insert(types, pos, type)
+  end
+  return types
 end
 
 ------------------------------------------------------------------------------
@@ -36,7 +60,7 @@ end)
 -- size ascending
 M.set('size', function(item2, item1)
   if item2.size == item1.size then
-    return sorts.name(item2, item1)
+    return M.compares.name(item2, item1)
   end
   return item2.size < item1.size
 end)
@@ -44,7 +68,7 @@ end)
 -- time ascending
 M.set('time', function(item2, item1)
   if item2.time == item1.time then
-    return sorts.name(item2, item1)
+    return M.compares.name(item2, item1)
   end
   return item2.time < item1.time
 end)
