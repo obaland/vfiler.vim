@@ -11,8 +11,13 @@ local M = {}
 mapping.setup {
   main = {
     ['<CR>'] = [[:lua require'vfiler'.do_action('open')]],
+    ['<Tab>'] = [[:lua require'vfiler'.do_action('switch_to_buffer')]],
+    ['gg'] = [[:lua require'vfiler'.do_action('move_cursor_top')]],
     ['h'] = [[:lua require'vfiler'.do_action('close_tree_or_cd')]],
+    ['j'] = [[:lua require'vfiler'.do_action('move_cursor_down', {true})]],
+    ['k'] = [[:lua require'vfiler'.do_action('move_cursor_up', {true})]],
     ['l'] = [[:lua require'vfiler'.do_action('open_tree')]],
+    ['G'] = [[:lua require'vfiler'.do_action('move_cursor_bottom')]],
     ['L'] = [[:lua require'vfiler'.do_action('change_drive')]],
     ['S'] = [[:lua require'vfiler'.do_action('change_sort')]],
   },

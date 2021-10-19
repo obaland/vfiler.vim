@@ -23,6 +23,7 @@ local function detect_drives()
   return drives
 end
 
+-- @param lnum number
 local function move_cursor(lnum)
   vim.fn.cursor(lnum, 1)
 end
@@ -152,8 +153,46 @@ function M.change_sort(context, view, args)
   end
 
   local menu = ExtensionMenu.new('Select Sort', context)
+  menu.on_selected = function(item)
+    if context.sort ~= item then
+      context:change_sort(item)
+      view:draw(context)
+    end
+  end
   menu:start(sort_types, cursor)
   context.extension = menu
+end
+
+function M.move_cursor_bottom(context, view, args)
+  move_cursor(#context.items)
+end
+
+function M.move_cursor_down(context, view, args)
+  local loop = (#args > 0) and args[1] or false
+  local lnum = vim.fn.line('.') + 1
+  local num_end = #context.items
+  if lnum > num_end then
+    -- the meaning of "2" is to skip the header line
+    lnum = loop and 2 or num_end
+  end
+  move_cursor(lnum)
+end
+
+function M.move_cursor_top(context, view, args)
+  move_cursor(2)
+end
+
+function M.move_cursor_up(context, view, args)
+  local loop = (#args > 0) and args[1] or false
+  local lnum = vim.fn.line('.') - 1
+  if lnum <= 1 then
+    -- the meaning of "2" is to skip the header line
+    lnum = loop and #context.items or 2
+  end
+  move_cursor(lnum)
+end
+
+function M.switch_to_buffer(context, view, args)
 end
 
 return M

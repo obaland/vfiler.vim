@@ -19,6 +19,10 @@ function Popup:close()
   end
 end
 
+function Popup:draw(texts)
+  -- Nothing to do
+end
+
 function Popup:_on_define_mapping(winid)
   vim.fn['vfiler#popup#map'](
     winid,

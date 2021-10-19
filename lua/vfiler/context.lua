@@ -11,17 +11,21 @@ Context.__index = Context
 function Context.new(bufnr, configs)
   return setmetatable({
       bufnr = bufnr,
-      configs = configs,
+      configs = core.deepcopy(configs),
       extension = nil,
       items = {},
+      link_bufnr = 0,
       path = '',
       show_hidden_files = false,
-      sort = 'name',
     }, Context)
 end
 
-function Context:get_item(lnum)
-  return self.items[lnum]
+function Context:change_sort(sort)
+  if self.configs.sort == sort then
+    return
+  end
+  self.configs.sort = sort
+  self:switch(self.path)
 end
 
 function Context:close_directory(lnum)
@@ -71,6 +75,10 @@ function Context:close_directory(lnum)
   return target_pos
 end
 
+function Context:get_item(lnum)
+  return self.items[lnum]
+end
+
 function Context:open_directory(lnum)
   local item = self:get_item(lnum)
   if (not (item and item.isdirectory)) or item.opened then
@@ -78,7 +86,7 @@ function Context:open_directory(lnum)
   end
 
   -- create opened item list
-  local compare = sort.compares[self.sort]
+  local compare = sort.compares[self.configs.sort]
   local opened_items = {}
   for opened_item in self:_create_items(item.path, item.level + 1) do
     local pos = self:_search_insert_position(
@@ -97,8 +105,8 @@ end
 
 function Context:switch(path)
   -- create header item
+  local compare = sort.compares[self.configs.sort]
   self.items = {}
-  local compare = sort.compares[self.sort]
   for item in self:_create_items(path, 1) do
     local pos = self:_search_insert_position(self.items, item, compare)
     table.insert(self.items, pos, item)
@@ -106,6 +114,10 @@ function Context:switch(path)
   -- add header item to top
   table.insert(self.items, 1, Directory.new(path, 0, false))
   self.path = path
+end
+
+function Context:update()
+  self:switch(self.path)
 end
 
 function Context:_search_insert_position(items, target, compare)

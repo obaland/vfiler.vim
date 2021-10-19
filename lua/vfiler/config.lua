@@ -8,6 +8,7 @@ local default_configs = {
   columns = 'indent,sp,icon,sp,name,sp,mode,sp,size,sp,time',
   listed = false,
   name = '',
+  sort = 'name',
 }
 
 M.configs = core.deepcopy(default_configs)

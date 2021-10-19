@@ -44,12 +44,6 @@ function Window:open(name, texts)
   self:_on_define_mapping(self.winid)
   self:_on_apply_options(self.winid)
   self.bufnr = vim.fn.winbufnr(self.winid)
-
-  -- set name to statusline
-  if name and #name > 0 then
-    vim.set_win_option('statusline', name)
-  end
-
   return self.winid
 end
 
@@ -137,6 +131,12 @@ function Window:_on_open(name, texts, layout_option)
   if layout_option.height > 0 then
     core.resize_window_height(layout_option.height)
   end
+
+  -- set name to statusline
+  if name and #name > 0 then
+    vim.set_win_option('statusline', name)
+  end
+
   return vim.fn.win_getid()
 end
 
