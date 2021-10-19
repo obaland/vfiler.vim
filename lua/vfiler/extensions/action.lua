@@ -14,7 +14,7 @@ function M.do_action(name, ...)
     return
   end
 
-  local extension = Extension.get(vim.fn.win_getid())
+  local extension = Extension.get(vim.fn.bufnr())
   if not extension then
     core.error('Extension does not exist.')
     return

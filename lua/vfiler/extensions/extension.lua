@@ -39,18 +39,22 @@ function Extension.create_view(layout, mapping_type)
   return view
 end
 
-function Extension.get(winid)
-  return extension_resources[winid]
+-- @param bufnr number
+function Extension.get(bufnr)
+  return extension_resources[bufnr]
 end
 
-function Extension.delete(winid)
-  extension_resources[winid] = nil
+-- @param bufnr number
+function Extension.delete(bufnr)
+  local extension = extension_resources[bufnr]
+  if extension then
+    extension.view:close()
+  end
+  extension_resources[bufnr] = nil
 end
 
 function Extension:quit()
-  self.view:close()
-  -- delete extension
-  Extension.delete(self.winid)
+  Extension.delete(self.bufnr)
 end
 
 function Extension:start(items, cursor_pos)
@@ -68,13 +72,13 @@ function Extension:start(items, cursor_pos)
   local aucommands = {
     [[augroup vfiler_extension]],
     [[  autocmd!]],
-    [[  autocmd BufDelete <buffer> :lua require('vfiler/extensions/extension').delete('<abuf>')]],
+    [[  autocmd BufDelete <buffer> :lua require('vfiler/extensions/extension').delete(<abuf>)]],
     [[augroup END]],
   }
   vim.commands(aucommands)
 
   -- add extension table
-  extension_resources[self.winid] = self
+  extension_resources[self.bufnr] = self
 end
 
 function Extension:_on_get_texts(items)
