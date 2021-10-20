@@ -11,9 +11,11 @@ end
 function Floating:close()
   if self.winid > 0 then
     vim.api.nvim_win_close(self.winid, true)
+    self.winid = 0
   end
   if self._title then
     vim.api.nvim_win_close(self._title.winid, true)
+    self._title = nil
   end
 end
 

@@ -71,11 +71,12 @@ function Extension:start(items, cursor_pos)
   -- autocmd
   local aucommands = {
     [[augroup vfiler_extension]],
-    [[  autocmd!]],
-    [[  autocmd BufDelete <buffer> :lua require('vfiler/extensions/extension').delete(<abuf>)]],
+    ([[  autocmd WinLeave <buffer> :lua require('vfiler/extensions/extension').delete(%s)]]):format(self.bufnr),
     [[augroup END]],
   }
-  vim.commands(aucommands)
+  for _, au in ipairs(aucommands) do
+    vim.command(au)
+  end
 
   -- add extension table
   extension_resources[self.bufnr] = self
