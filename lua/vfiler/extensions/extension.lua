@@ -8,7 +8,7 @@ local Extension = {}
 Extension.__index = Extension
 
 function Extension.new(name, context, view, ...)
-  return setmetatable({
+  local object = setmetatable({
       configs = core.deepcopy(... or config.configs),
       context = context,
       items = nil,
@@ -17,6 +17,8 @@ function Extension.new(name, context, view, ...)
       winid = 0,
       view = view,
     }, Extension)
+  context.extension = object
+  return object
 end
 
 function Extension.create_view(layout, mapping_type)
@@ -46,9 +48,10 @@ end
 
 -- @param bufnr number
 function Extension.delete(bufnr)
-  local extension = extension_resources[bufnr]
-  if extension then
-    extension.view:close()
+  local ext = extension_resources[bufnr]
+  if ext then
+    ext.context.extension = nil
+    ext.view:close()
   end
   extension_resources[bufnr] = nil
 end
@@ -69,9 +72,12 @@ function Extension:start(items, cursor_pos)
   vim.fn.cursor(cursor_pos, 1)
 
   -- autocmd
+  local delete_func = (
+    [[require('vfiler/extensions/extension').delete(%s)]]
+    ):format(self.bufnr)
   local aucommands = {
     [[augroup vfiler_extension]],
-    ([[  autocmd WinLeave <buffer> :lua require('vfiler/extensions/extension').delete(%s)]]):format(self.bufnr),
+    [[  autocmd BufDelete,BufWinLeave <buffer> :lua ]] .. delete_func,
     [[augroup END]],
   }
   for _, au in ipairs(aucommands) do

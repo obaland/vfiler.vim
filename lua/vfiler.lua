@@ -8,18 +8,28 @@ local Buffer = require 'vfiler/buffer'
 
 local M = {}
 
+local function _action(name, ...)
+  local func = [[:lua require('vfiler/action').do_action]]
+  if ... then
+    func = func .. ([[('%s', %s)]]):format(name, ...)
+  else
+    func = func .. ([[('%s')]]):format(name)
+  end
+  return func
+end
+
 mapping.setup {
   main = {
-    ['<CR>'] = [[:lua require'vfiler'.do_action('open')]],
-    ['<Tab>'] = [[:lua require'vfiler'.do_action('switch_to_buffer')]],
-    ['gg'] = [[:lua require'vfiler'.do_action('move_cursor_top')]],
-    ['h'] = [[:lua require'vfiler'.do_action('close_tree_or_cd')]],
-    ['j'] = [[:lua require'vfiler'.do_action('move_cursor_down', {true})]],
-    ['k'] = [[:lua require'vfiler'.do_action('move_cursor_up', {true})]],
-    ['l'] = [[:lua require'vfiler'.do_action('open_tree')]],
-    ['G'] = [[:lua require'vfiler'.do_action('move_cursor_bottom')]],
-    ['L'] = [[:lua require'vfiler'.do_action('change_drive')]],
-    ['S'] = [[:lua require'vfiler'.do_action('change_sort')]],
+    ['<CR>']  = _action('open'),
+    ['<Tab>'] = _action('switch_to_buffer'),
+    ['gg']    = _action('move_cursor_top'),
+    ['h']     = _action('close_tree_or_cd'),
+    ['j']     = _action('move_cursor_down', 'true'),
+    ['k']     = _action('move_cursor_up', 'true'),
+    ['l']     = _action('open_tree'),
+    ['G']     = _action('move_cursor_bottom'),
+    ['L']     = _action('change_drive'),
+    ['S']     = _action('change_sort'),
   },
 }
 
@@ -52,14 +62,6 @@ function M.start(...)
   end
   action.start(configs)
   return true
-end
-
-function M.do_action(name, ...)
-  action.do_action(name, ... or {})
-end
-
-function M.set_keymap(type, key, rhs)
-  mapping.set(type, key, rhs)
 end
 
 return M

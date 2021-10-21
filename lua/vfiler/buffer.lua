@@ -109,6 +109,10 @@ function Buffer:delete()
   buffer_resources[self.number] = nil
 end
 
+function Buffer:duplicate()
+  return Buffer.new(self.context.configs)
+end
+
 function Buffer:open()
   local winnr = vim.fn.bufwinnr(self.number)
   if winnr > 0 then

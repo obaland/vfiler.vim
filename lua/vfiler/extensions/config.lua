@@ -10,8 +10,8 @@ M.configs = {
     floating = {
       width = 'auto',
       height = 'auto',
-      minwidth = 30,
-      minheight = '2',
+      minwidth = 4,
+      minheight = 1,
       relative = true,
     },
   },

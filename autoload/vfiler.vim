@@ -28,13 +28,6 @@ function! vfiler#start(...) abort
   call luaeval('require"vfiler".start(_A)', get(a:000, 0, {}))
 endfunction
 
-function! vfiler#do_action(name, ...) abort
-  call luaeval(
-        \ 'require"vfiler".do_action(_A.name, _A.args)',
-        \ {'name': a:name, 'args': a:000}
-        \ )
-endfunction
-
 function! vfiler#start_legacy(path, options) abort
   let result = vfiler#buffer#open(a:options.buffer_name)
   if result.bufnr > 0

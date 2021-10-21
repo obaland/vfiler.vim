@@ -103,6 +103,7 @@ function Context:open_directory(lnum)
   return lnum
 end
 
+-- @param path string
 function Context:switch(path)
   -- create header item
   local compare = sort.compares[self.configs.sort]

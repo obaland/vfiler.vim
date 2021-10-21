@@ -29,13 +29,15 @@ function Floating:_on_layout_option(name, texts)
     minwidth = 1,
     minheight = 1,
   }
-  if name and #name > 0 then
-    layout.minwidth = #name + 2 -- '2' is space width
-  end
 
-  local floating = self.configs.floating
+  local floating = core.deepcopy(self.configs.floating)
   local wwidth = vim.fn.winwidth(self.caller_winid)
   local wheight = vim.fn.winheight(self.caller_winid)
+
+  if name and #name > 0 then
+    -- '2' is space width
+    floating.minwidth = math.max(#name + 2, floating.minwidth)
+  end
 
   -- position
   layout.relative = floating.relative and 'win' or 'editor'

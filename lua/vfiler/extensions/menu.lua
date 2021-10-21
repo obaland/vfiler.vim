@@ -5,14 +5,23 @@ local vim = require 'vfiler/vim'
 
 local ExtensionMenu = {}
 
+local function _action(name, ...)
+  local func = [[:lua require('vfiler/extensions/menu/action').do_action]]
+  if ... then
+    func = func .. ([[('%s', %s)]]):format(name, ...)
+  else
+    func = func .. ([[('%s')]]):format(name)
+  end
+  return func
+end
+
 mapping.setup {
   menu = {
-    ['k'] = [[:lua require'vfiler/extensions/menu/action'.do_action('move_cursor_up', true)]],
-    ['j'] = [[:lua require'vfiler/extensions/menu/action'.do_action('move_cursor_down', true)]],
-    ['q'] = [[:lua require'vfiler/extensions/menu/action'.do_action('quit')]],
-    ['<CR>'] = [[:lua require'vfiler/extensions/menu/action'.do_action('select')]],
-    ['<ESC>'] = [[:lua require'vfiler/extensions/menu/action'.do_action('quit')]],
-    ['gg'] = [[:lua require'vfiler/extensions/menu/action'.do_action('quit')]],
+    ['k']     = _action('move_cursor_up', 'true'),
+    ['j']     = _action('move_cursor_down', 'true'),
+    ['q']     = _action('quit'),
+    ['<CR>']  = _action('select'),
+    ['<ESC>'] = _action('quit'),
   },
 }
 
@@ -37,7 +46,7 @@ function ExtensionMenu:select()
   self:quit()
 
   if self.on_selected then
-    self.on_selected(item)
+    self.on_selected(self.context, item)
   end
   return item
 end
