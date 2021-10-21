@@ -19,7 +19,11 @@ function Popup:close()
   end
 end
 
-function Popup:draw(texts)
+function Popup:delete()
+  self:close()
+end
+
+function Popup:draw(name, texts)
   -- Nothing to do
 end
 

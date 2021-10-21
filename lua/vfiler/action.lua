@@ -52,9 +52,7 @@ end
 function M.start(configs)
   local buffer = Buffer.new(configs)
   mapping.define('main')
-
-  buffer.context:switch(configs.path)
-  buffer.view:draw(buffer.context)
+  M.cd(buffer.context, buffer.view, configs.path)
 end
 
 function M.undefine(name)
@@ -76,7 +74,6 @@ end
 
 function M.open(context, view, lnum)
   lnum = lnum or vim.fn.line('.')
-  print(lnum)
   local item = context:get_item(lnum)
   if not item then
     core.warning('Item does not exist.')
@@ -200,10 +197,29 @@ function M.move_cursor_up(context, view, loop)
   move_cursor(lnum)
 end
 
-function M.switch_to_buffer(context, view, args)
+function M.quit(context, view)
+  Buffer.get(context.bufnr):delete()
+end
+
+function M.redraw(context, view)
+  view:draw(context)
+end
+
+function M.switch_to_buffer(context, view)
+  -- already linked
+  if context.link_bufnr > 0 then
+    Buffer.get(context.link_bufnr):open('right')
+    return
+  end
+
   local buffer = Buffer.get(context.bufnr)
-  vim.command('belowright vsplit')
-  buffer:duplicate()
+  core.open_window('right')
+
+  local duplicated = buffer:duplicate()
+  mapping.define('main')
+  M.cd(duplicated.context, duplicated.view, context.path)
+
+  duplicated:link(buffer)
 end
 
 return M

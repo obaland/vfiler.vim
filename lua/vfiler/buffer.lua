@@ -1,3 +1,4 @@
+local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
 local Context = require 'vfiler/context'
@@ -91,13 +92,13 @@ function Buffer.new(configs)
   local buffer = setmetatable({
       context = Context.new(bufnr, configs),
       name = bufname,
-      number = bufnr,
+      bufnr = bufnr,
       view = View.new(configs),
       _tabpagenr = vim.fn.tabpagenr(),
     }, Buffer)
 
   -- add buffer resource
-  buffer_resources[buffer.number] = {
+  buffer_resources[buffer.bufnr] = {
     buffer = buffer,
     name = name,
     local_number = local_number,
@@ -106,20 +107,30 @@ function Buffer.new(configs)
 end
 
 function Buffer:delete()
-  buffer_resources[self.number] = nil
+  vim.command('silent bwipeout ' .. self.bufnr)
+  buffer_resources[self.bufnr] = nil
 end
 
 function Buffer:duplicate()
   return Buffer.new(self.context.configs)
 end
 
-function Buffer:open()
-  local winnr = vim.fn.bufwinnr(self.number)
+function Buffer:link(buffer)
+  self.context.link_bufnr = buffer.bufnr
+  buffer.context.link_bufnr = self.bufnr
+end
+
+function Buffer:open(...)
+  local winnr = vim.fn.bufwinnr(self.bufnr)
   if winnr > 0 then
-    -- Move to opened window
-    vim.command(winnr .. 'wincmd w')
+    core.move_window(winnr)
   else
-    vim.command('silent buffer ' .. self.number)
+    local type = ...
+    if type then
+      -- open window
+      core.open_window(type)
+    end
+    vim.command('silent buffer ' .. self.bufnr)
   end
 end
 

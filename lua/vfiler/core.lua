@@ -57,6 +57,19 @@ function M.merge_table(dest, src)
   return dest
 end
 
+------------------------------------------------------------------------------
+-- Window
+------------------------------------------------------------------------------
+
+local open_window_types = {
+  bottom = 'belowright split',
+  left = 'aboveleft vertical split',
+  right = 'belowright vertical split',
+  tab = 'tabnew',
+  top = 'aboveleft split',
+}
+
+---@param winnr number
 function M.move_window(winnr)
   local command = 'wincmd w'
   if winnr > 0 then
@@ -64,6 +77,27 @@ function M.move_window(winnr)
   end
   vim.command(([[noautocmd execute '%s']]).format(command))
 end
+
+---@param type string
+---@vararg string
+function M.open_window(type, ...)
+  local command = 'silent! ' .. open_window_types[type]
+  if ... then
+    command = ('%s %s'):format(command, ...)
+  end
+  vim.command(command)
+end
+
+---@param height number
+function M.resize_window_height(height)
+  vim.command('silent! resize ' .. height)
+end
+
+---@param width number
+function M.resize_window_width(width)
+  vim.command('silent! vertical resize ' .. width)
+end
+
 
 function M.normalized_path(path)
   if path == '/' then
@@ -134,15 +168,6 @@ end
 -- highlight command
 function M.link_highlight_command(from, to)
   return ('highlight! default link %s %s'):format(from, to)
-end
-
--- resize window
-function M.resize_window_height(height)
-  vim.command('silent! resize ' .. height)
-end
-
-function M.resize_window_width(width)
-  vim.command('silent! vertical resize ' .. width)
 end
 
 -- truncate string

@@ -38,6 +38,10 @@ function Window:close()
   vim.command('silent bwipeout ' .. self.bufnr)
 end
 
+function Window:delete()
+  -- Nothing to do
+end
+
 function Window:open(name, texts)
   local option = self:_on_layout_option(name, texts)
   self.winid = self:_on_open(name, texts, option)
@@ -47,11 +51,16 @@ function Window:open(name, texts)
   return self.winid
 end
 
-function Window:draw(texts)
+function Window:draw(name, texts)
   vim.command('silent %delete _')
 
   for i, text in ipairs(texts) do
     vim.fn.setline(i, text)
+  end
+
+  -- set name to statusline
+  if name and #name > 0 then
+    vim.set_win_option('statusline', name)
   end
 end
 
@@ -88,22 +97,22 @@ function Window:_on_layout_option(name, texts)
 
   local layout = self.configs
   if layout.top then
-    option.command = 'silent! aboveleft split'
+    option.open_type = 'top'
     option.height = self:_winheight(
       wheight, layout.top, 1, wheight - 1, texts
       )
   elseif layout.bottom then
-    option.command = 'silent! belowright split'
+    option.open_type = 'bottom'
     option.height = self:_winheight(
       wheight, layout.bottom, 1, wheight - 1, texts
       )
   elseif layout.left then
-    option.command = 'silent! aboveleft vertical split'
+    option.open_type = 'left'
     option.width = self:_winwidth(
       wwidth, layout.left, 1, wwidth - 1, texts
       )
   elseif layout.right then
-    option.command = 'silent! belowright vertical split'
+    option.open_type = 'right'
     option.width = self:_winwidth(
       wwidth, layout.right, 1, wwidth - 1, texts
       )
@@ -115,8 +124,8 @@ function Window:_on_layout_option(name, texts)
 end
 
 function Window:_on_open(name, texts, layout_option)
-  -- split command
-  vim.command(layout_option.command)
+  -- open window
+  core.open_window(layout_option.open_type)
 
   -- Save swapfile option
   local swapfile = vim.get_buf_option_boolean('swapfile')
@@ -130,11 +139,6 @@ function Window:_on_open(name, texts, layout_option)
   end
   if layout_option.height > 0 then
     core.resize_window_height(layout_option.height)
-  end
-
-  -- set name to statusline
-  if name and #name > 0 then
-    vim.set_win_option('statusline', name)
   end
 
   return vim.fn.win_getid()

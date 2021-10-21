@@ -59,7 +59,7 @@ function ExtensionMenu:_on_draw(texts)
   vim.set_buf_option('modifiable', true)
   vim.set_buf_option('readonly', false)
 
-  self.view:draw(texts)
+  self.view:draw(self.name, texts)
 
   vim.set_buf_option('modifiable', false)
   vim.set_buf_option('readonly', true)

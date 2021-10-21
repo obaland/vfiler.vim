@@ -47,17 +47,21 @@ function Extension.get(bufnr)
 end
 
 -- @param bufnr number
-function Extension.delete(bufnr)
+function Extension.destroy(bufnr)
   local ext = extension_resources[bufnr]
   if ext then
-    ext.context.extension = nil
-    ext.view:close()
+    ext:delete()
   end
   extension_resources[bufnr] = nil
 end
 
+function Extension:delete()
+  self.view:delete()
+end
+
 function Extension:quit()
-  Extension.delete(self.bufnr)
+  self.view:close()
+  self.context.extension = nil
 end
 
 function Extension:start(items, cursor_pos)
@@ -73,11 +77,11 @@ function Extension:start(items, cursor_pos)
 
   -- autocmd
   local delete_func = (
-    [[require('vfiler/extensions/extension').delete(%s)]]
+    [[require('vfiler/extensions/extension').destroy(%s)]]
     ):format(self.bufnr)
   local aucommands = {
     [[augroup vfiler_extension]],
-    [[  autocmd BufDelete,BufWinLeave <buffer> :lua ]] .. delete_func,
+    [[  autocmd BufWinLeave <buffer> :lua ]] .. delete_func,
     [[augroup END]],
   }
   for _, au in ipairs(aucommands) do

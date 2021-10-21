@@ -27,6 +27,7 @@ mapping.setup {
     ['j']     = _action('move_cursor_down', 'true'),
     ['k']     = _action('move_cursor_up', 'true'),
     ['l']     = _action('open_tree'),
+    ['q']     = _action('quit'),
     ['G']     = _action('move_cursor_bottom'),
     ['L']     = _action('change_drive'),
     ['S']     = _action('change_sort'),

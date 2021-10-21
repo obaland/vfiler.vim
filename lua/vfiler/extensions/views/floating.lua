@@ -19,7 +19,11 @@ function Floating:close()
   end
 end
 
-function Floating:draw(texts, ...)
+function Floating:delete()
+  self:close()
+end
+
+function Floating:draw(name, texts)
   vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, true, texts)
 end
 
