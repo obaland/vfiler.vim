@@ -1,11 +1,11 @@
 local core = require 'vfiler/core'
-local exaction = require 'vfiler/extensions/action'
 local mapping = require 'vfiler/mapping'
 local sort = require 'vfiler/sort'
 local vim = require 'vfiler/vim'
 
-local Buffer = require 'vfiler/buffer'
 local ExtensionMenu = require 'vfiler/extensions/menu'
+local File = require 'vfiler/items/file'
+local VFiler = require 'vfiler/vfiler'
 
 local M = {}
 
@@ -21,6 +21,11 @@ local function detect_drives()
     end
   end
   return drives
+end
+
+local function input_names(message)
+  local content = core.input(message)
+  return vim.fn.split(content, [[\s*,\s*]])
 end
 
 -- @param lnum number
@@ -41,18 +46,18 @@ function M.do_action(name, ...)
     return
   end
 
-  local buffer = Buffer.get(vim.fn.bufnr())
-  if not buffer then
+  local vfiler = VFiler.get(vim.fn.bufnr())
+  if not vfiler then
     core.error('Buffer does not exist.')
     return
   end
-  M[name](buffer.context, buffer.view, ...)
+  M[name](vfiler.context, vfiler.view, ...)
 end
 
 function M.start(configs)
-  local buffer = Buffer.new(configs)
+  local vfiler = VFiler.new(configs)
   mapping.define('main')
-  M.cd(buffer.context, buffer.view, configs.path)
+  M.cd(vfiler.context, vfiler.view, configs.path)
 end
 
 function M.undefine(name)
@@ -70,6 +75,27 @@ function M.cd(context, view, path)
   end
   context:switch(path)
   view:draw(context)
+end
+
+function M.new_file(context, view)
+  local dir = context:get_directory_path(vim.fn.line('.'))
+  local names = input_names('New file names? (comma separated)')
+  if #names == 0 then
+    core.info('Canceled')
+    return
+  end
+
+  for _, name in ipairs(names) do
+    local path = dir .. '/' .. name
+    if vim.fn.filereadable(path) ~= 0 then
+      core.warning(('Skipped, %s already exists'):format(name))
+    else
+      local file = File.create(path)
+      if file then
+      else
+      end
+    end
+  end
 end
 
 function M.open(context, view, lnum)
@@ -103,15 +129,6 @@ function M.close_tree_or_cd(context, view, lnum)
     M.cd(context, view, '..')
   else
     M.close_tree(context, view, {lnum})
-  end
-end
-
-function M.open_tree(context, view, lnum)
-  lnum = lnum or vim.fn.line('.')
-  local pos = context:open_directory(lnum)
-  if pos then
-    move_cursor(pos + 1)
-    view:draw(context)
   end
 end
 
@@ -197,8 +214,17 @@ function M.move_cursor_up(context, view, loop)
   move_cursor(lnum)
 end
 
+function M.open_tree(context, view, lnum)
+  lnum = lnum or vim.fn.line('.')
+  local pos = context:open_directory(lnum)
+  if pos then
+    move_cursor(pos + 1)
+    view:draw(context)
+  end
+end
+
 function M.quit(context, view)
-  Buffer.get(context.bufnr):delete()
+  VFiler.delete(context.buffer.number)
 end
 
 function M.redraw(context, view)
@@ -207,19 +233,17 @@ end
 
 function M.switch_to_buffer(context, view)
   -- already linked
-  if context.link_bufnr > 0 then
-    Buffer.get(context.link_bufnr):open('right')
+  if context.linked then
+    context.linked.buffer:open('right')
     return
   end
 
-  local buffer = Buffer.get(context.bufnr)
   core.open_window('right')
 
-  local duplicated = buffer:duplicate()
+  local duplicated = VFiler.duplicate(context.buffer.number)
   mapping.define('main')
   M.cd(duplicated.context, duplicated.view, context.path)
-
-  duplicated:link(buffer)
+  duplicated.context:link(context)
 end
 
 return M

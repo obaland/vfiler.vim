@@ -5,7 +5,7 @@ local vim = require 'vfiler/vim'
 
 local ExtensionMenu = {}
 
-local function _action(name, ...)
+local function _do_action(name, ...)
   local func = [[:lua require('vfiler/extensions/menu/action').do_action]]
   if ... then
     func = func .. ([[('%s', %s)]]):format(name, ...)
@@ -17,11 +17,11 @@ end
 
 mapping.setup {
   menu = {
-    ['k']     = _action('move_cursor_up', 'true'),
-    ['j']     = _action('move_cursor_down', 'true'),
-    ['q']     = _action('quit'),
-    ['<CR>']  = _action('select'),
-    ['<ESC>'] = _action('quit'),
+    ['k']     = _do_action('move_cursor_up', 'true'),
+    ['j']     = _do_action('move_cursor_down', 'true'),
+    ['q']     = _do_action('quit'),
+    ['<CR>']  = _do_action('select'),
+    ['<ESC>'] = _do_action('quit'),
   },
 }
 

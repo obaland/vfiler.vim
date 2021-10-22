@@ -4,11 +4,11 @@ local core = require 'vfiler/core'
 local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
-local Buffer = require 'vfiler/buffer'
+local VFiler = require 'vfiler/vfiler'
 
 local M = {}
 
-local function _action(name, ...)
+local function _do_action(name, ...)
   local func = [[:lua require('vfiler/action').do_action]]
   if ... then
     func = func .. ([[('%s', %s)]]):format(name, ...)
@@ -20,22 +20,23 @@ end
 
 mapping.setup {
   main = {
-    ['<CR>']  = _action('open'),
-    ['<Tab>'] = _action('switch_to_buffer'),
-    ['gg']    = _action('move_cursor_top'),
-    ['h']     = _action('close_tree_or_cd'),
-    ['j']     = _action('move_cursor_down', 'true'),
-    ['k']     = _action('move_cursor_up', 'true'),
-    ['l']     = _action('open_tree'),
-    ['q']     = _action('quit'),
-    ['G']     = _action('move_cursor_bottom'),
-    ['L']     = _action('change_drive'),
-    ['S']     = _action('change_sort'),
+    ['<CR>']  = _do_action('open'),
+    ['<Tab>'] = _do_action('switch_to_buffer'),
+    ['gg']    = _do_action('move_cursor_top'),
+    ['h']     = _do_action('close_tree_or_cd'),
+    ['j']     = _do_action('move_cursor_down', 'true'),
+    ['k']     = _do_action('move_cursor_up', 'true'),
+    ['l']     = _do_action('open_tree'),
+    ['q']     = _do_action('quit'),
+    ['G']     = _do_action('move_cursor_bottom'),
+    ['L']     = _do_action('change_drive'),
+    ['N']     = _do_action('new_file'),
+    ['S']     = _do_action('change_sort'),
   },
 }
 
 function M.parse_command_args(args)
-  return vim.to_vimdict(config.parse(args))
+  return vim.vim_dict(config.parse(args))
 end
 
 function M.start_command(args)
@@ -57,8 +58,8 @@ function M.start(...)
 
   configs.name = 'test'
 
-  local buffer = Buffer.find(configs.name)
-  if buffer then
+  local vfiler = VFiler.find(configs.name)
+  if vfiler then
     -- TODO: open action
   end
   action.start(configs)

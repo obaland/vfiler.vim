@@ -58,6 +58,28 @@ function M.merge_table(dest, src)
 end
 
 ------------------------------------------------------------------------------
+-- Input utility
+------------------------------------------------------------------------------
+
+function M.input(prompt, ...)
+  local args = ... or {}
+  local text = args[1] or ''
+  local completion = args[2]
+
+  prompt = ('[vfiler] %s: '):format(prompt)
+
+  local content = ''
+  if completion then
+    content = vim.fn.input(prompt, text, completion)
+  else
+    content = vim.fn.input(prompt, text)
+  end
+  -- TODO:
+  vim.command('echon')
+  return content
+end
+
+------------------------------------------------------------------------------
 -- Window
 ------------------------------------------------------------------------------
 
@@ -127,12 +149,24 @@ else
   end
 end
 
--- print error message
+------------------------------------------------------------------------------
+-- Message
+------------------------------------------------------------------------------
+
+---print error message
+---@param message string
 function M.error(message)
   vim.fn['vfiler#core#error'](message)
 end
 
--- print warning message
+---print information message
+---@param message string
+function M.info(message)
+  vim.fn['vfiler#core#info'](message)
+end
+
+---print warning message
+---@param message string
 function M.warning(message)
   vim.fn['vfiler#core#warning'](message)
 end
@@ -165,7 +199,10 @@ function M.syntax_match_command(name, pattern, ...)
    return command
 end
 
--- highlight command
+---Generate highlight command string
+---@param from string
+---@param to string
+---@return string
 function M.link_highlight_command(from, to)
   return ('highlight! default link %s %s'):format(from, to)
 end

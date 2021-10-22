@@ -8,15 +8,14 @@ local File = require 'vfiler/items/file'
 local Context = {}
 Context.__index = Context
 
-function Context.new(bufnr, configs)
+function Context.new(buffer, configs)
   return setmetatable({
-      bufnr = bufnr,
       configs = core.deepcopy(configs),
+      buffer = buffer,
       extension = nil,
       items = {},
-      link_bufnr = 0,
+      linked = nil,
       path = '',
-      show_hidden_files = false,
     }, Context)
 end
 
@@ -75,8 +74,31 @@ function Context:close_directory(lnum)
   return target_pos
 end
 
+function Context:delete()
+  self.buffer:delete()
+  self:unlink()
+end
+
+function Context:duplicate(buffer)
+  return Context.new(buffer, self.configs)
+end
+
+function Context:get_directory_path(lnum)
+  local item = self:get_item(lnum)
+  local path = ''
+  if item.isdirectory and item.opened then
+    path = item.path
+  else
+    path = vim.fn.fnamemodify(item.path, ':h')
+  end
+  return path
+end
+
 function Context:get_item(lnum)
   return self.items[lnum]
+end
+
+function Context:insert_item(dirpath, item)
 end
 
 function Context:open_directory(lnum)
@@ -103,6 +125,11 @@ function Context:open_directory(lnum)
   return lnum
 end
 
+function Context:link(context)
+  self.linked = context
+  context.linked = self
+end
+
 -- @param path string
 function Context:switch(path)
   -- create header item
@@ -115,6 +142,14 @@ function Context:switch(path)
   -- add header item to top
   table.insert(self.items, 1, Directory.new(path, 0, false))
   self.path = path
+end
+
+function Context:unlink()
+  local dest = self.linked
+  if dest then
+    dest.linked = nil
+  end
+  self.linked = nil
 end
 
 function Context:update()
@@ -131,7 +166,7 @@ function Context:_search_insert_position(items, target, compare)
 end
 
 function Context:_create_items(path, level)
-  path = path .. (self.show_hidden_files and '/.*' or '/*')
+  path = path .. (self.configs.show_hidden_files and '/.*' or '/*')
   local paths = vim.fn.glob(path, 1, 1)
   local index = 0
 

@@ -7,19 +7,20 @@ local HeaderColumn = require 'vfiler/columns/header'
 local View = {}
 View.__index = View
 
-function View.new(configs)
-  local columns = {}
-  for _, cname in ipairs(vim.fn.split(configs.columns, ',')) do
+---@param columns string
+function View.new(columns)
+  local column_objects = {}
+  for _, cname in ipairs(vim.fn.split(columns, ',')) do
     local column = column_collection.get(cname)
     if column then
-      table.insert(columns, column)
+      table.insert(column_objects, column)
     else
       core.warning(("'%s' is not a valid column."):format(cname))
     end
   end
-  if #columns <= 0 then
+  if #column_objects <= 0 then
     core.error(
-      string.format('There are no valid columns. (%s)', configs.columns)
+      string.format('There are no valid columns. (%s)', columns)
     )
     return nil
   end
@@ -28,7 +29,7 @@ function View.new(configs)
     _cache = {
       winwidth = 0,
     },
-    _columns = columns,
+    _columns = column_objects,
     _header_column = HeaderColumn.new(),
     }, View)
   object:_apply_syntaxes()

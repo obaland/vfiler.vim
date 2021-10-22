@@ -1,18 +1,8 @@
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
-local Context = require 'vfiler/context'
-local View = require 'vfiler/view'
-
-local BUFNAME_PREFIX = 'vfiler'
-local BUFNAME_SEPARATOR = '-'
-local BUFNUMBER_SEPARATOR = ':'
-
 local Buffer = {}
 Buffer.__index = Buffer
-
--- Buffer resource management table
-local buffer_resources = {}
 
 local function create(name)
   -- Save swapfile option
@@ -22,14 +12,16 @@ local function create(name)
   vim.set_buf_option('swapfile', swapfile)
 
   -- Set buffer local options
-  vim.set_buf_option('bufhidden', 'hide')
-  vim.set_buf_option('buflisted', false)
-  vim.set_buf_option('buftype', 'nofile')
-  vim.set_buf_option('filetype', 'vfiler')
-  vim.set_buf_option('modifiable', false)
-  vim.set_buf_option('modified', false)
-  vim.set_buf_option('readonly', false)
-  vim.set_buf_option('swapfile', false)
+  vim.set_buf_options {
+    bufhidden = 'hide',
+    buflisted = false,
+    buftype = 'nofile',
+    filetype = 'vfiler',
+    modifiable = false,
+    modified = false,
+    readonly = false,
+    swapfile = false,
+  }
 
   -- Set window local options
   if vim.fn.exists('&colorcolumn') == 1 then
@@ -41,74 +33,28 @@ local function create(name)
     end
     vim.set_win_option('concealcursor', 'nvc')
   end
-  vim.set_win_option('foldcolumn', '0')
-  vim.set_win_option('foldenable', false)
-  vim.set_win_option('list', false)
-  vim.set_win_option('number', false)
-  vim.set_win_option('spell', false)
-  vim.set_win_option('wrap', false)
+
+  vim.set_win_options {
+    foldcolumn = '0',
+    foldenable = false,
+    list = false,
+    number = false,
+    spell = false,
+    wrap = false,
+  }
   return vim.fn.bufnr()
 end
 
-local function generate_name(name)
-  local bufname = BUFNAME_PREFIX
-  if name:len() > 0 then
-    bufname = bufname .. BUFNAME_SEPARATOR .. name
-  end
-
-  local max_number = -1
-  for _, source in pairs(buffer_resources) do
-    if name == source.name then
-      max_number = math.max(source.local_number, max_number)
-    end
-  end
-
-  local number = 0
-  if max_number >= 0 then
-    number = max_number + 1
-    bufname = bufname .. BUFNUMBER_SEPARATOR .. tostring(number)
-  end
-  return bufname, name, number
-end
-
-function Buffer.find(name)
-  local tabpagenr = vim.fn.tabpagenr()
-  for _, resource in pairs(buffer_resources) do
-    local buffer = resource.buffer
-    if tabpagenr == buffer._tabpagenr and name == buffer.name then
-      return buffer
-    end
-  end
-  return nil
-end
-
-function Buffer.get(bufnr)
-  return buffer_resources[bufnr].buffer
-end
-
-function Buffer.new(configs)
-  local bufname, name, local_number = generate_name(configs.name)
+function Buffer.new(bufname)
   local bufnr = create(bufname)
-  local buffer = setmetatable({
-      context = Context.new(bufnr, configs),
+  return setmetatable({
       name = bufname,
-      bufnr = bufnr,
-      view = View.new(configs),
-      _tabpagenr = vim.fn.tabpagenr(),
+      number = bufnr,
     }, Buffer)
-
-  -- add buffer resource
-  buffer_resources[buffer.bufnr] = {
-    buffer = buffer,
-    name = name,
-    local_number = local_number,
-  }
-  return buffer
 end
 
 function Buffer:delete()
-  vim.command('silent bwipeout ' .. self.bufnr)
-  buffer_resources[self.bufnr] = nil
+  vim.command('silent bwipeout ' .. self.number)
 end
 
 function Buffer:duplicate()
@@ -121,7 +67,7 @@ function Buffer:link(buffer)
 end
 
 function Buffer:open(...)
-  local winnr = vim.fn.bufwinnr(self.bufnr)
+  local winnr = vim.fn.bufwinnr(self.number)
   if winnr > 0 then
     core.move_window(winnr)
   else
@@ -130,7 +76,7 @@ function Buffer:open(...)
       -- open window
       core.open_window(type)
     end
-    vim.command('silent buffer ' .. self.bufnr)
+    vim.command('silent buffer ' .. self.number)
   end
 end
 

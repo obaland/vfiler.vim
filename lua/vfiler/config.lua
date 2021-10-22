@@ -8,6 +8,7 @@ local default_configs = {
   columns = 'indent,sp,icon,sp,name,sp,mode,sp,size,sp,time',
   listed = false,
   name = '',
+  show_hidden_files = false,
   sort = 'name',
 }
 
