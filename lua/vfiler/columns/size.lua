@@ -22,8 +22,7 @@ function SizeColumn.new()
   return self
 end
 
-function SizeColumn:get_text(context, lnum, width)
-  local item = context:get_item(lnum)
+function SizeColumn:get_text(item, width)
   if item.isdirectory then
     return (' '):rep(self._width), self._width
   end
@@ -59,7 +58,7 @@ function SizeColumn:get_text(context, lnum, width)
   )
 end
 
-function SizeColumn:get_width(context, width)
+function SizeColumn:get_width(items, width)
   return self._width
 end
 

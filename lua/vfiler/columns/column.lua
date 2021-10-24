@@ -9,11 +9,11 @@ function Column.new(name)
     }, Column)
 end
 
-function Column:get_text(context, lnum, width)
+function Column:get_text(item, width)
   return 'Not implemented', 0
 end
 
-function Column:get_width(context, width)
+function Column:get_width(items, width)
   return 0
 end
 

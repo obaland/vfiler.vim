@@ -36,8 +36,7 @@ function IconColumn.new()
   return self
 end
 
-function IconColumn:get_text(context, lnum, width)
-  local item = context:get_item(lnum)
+function IconColumn:get_text(item, width)
   local icon_name, syntax_name
   if item.selected then
     icon_name = 'selected'
@@ -52,7 +51,7 @@ function IconColumn:get_text(context, lnum, width)
   return self._syntax:surround_text(syntax_name, self[icon_name])
 end
 
-function IconColumn:get_width(context, width)
+function IconColumn:get_width(items, width)
   local icons = {
     self.selected,
     self.file,

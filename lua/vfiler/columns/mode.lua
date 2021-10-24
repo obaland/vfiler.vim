@@ -27,10 +27,8 @@ function ModeColumn.new()
   return self
 end
 
-function ModeColumn:get_text(context, lnum, width)
-  local item = context:get_item(lnum)
+function ModeColumn:get_text(item, width)
   local mode = '-'
-
   if item.islink then
     mode = 'l'
   elseif item.isdirectory then
@@ -45,7 +43,7 @@ function ModeColumn:get_text(context, lnum, width)
   return self._syntax:surround_text(key, mode)
 end
 
-function ModeColumn:get_width(context, width)
+function ModeColumn:get_width(items, width)
   return 4
 end
 

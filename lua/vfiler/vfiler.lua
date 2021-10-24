@@ -2,7 +2,6 @@ local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
 local Context = require 'vfiler/context'
-local Buffer = require 'vfiler/buffer'
 local View = require 'vfiler/view'
 
 local BUFNAME_PREFIX = 'vfiler'
@@ -23,7 +22,7 @@ local function generate_name(name)
   local maxnr = -1
   for _, vfiler in pairs(vfilers) do
     if name == vfiler.name then
-      maxnr = math.max(vfiler.localnr, maxnr)
+      maxnr = math.max(vfiler.number, maxnr)
     end
   end
 
@@ -38,34 +37,29 @@ end
 function VFiler.delete(bufnr)
   local vfiler = VFiler.get(bufnr)
   if vfiler then
-    vfiler.context:delete()
+    vfiler:quit()
   end
   vfilers[bufnr] = nil
 end
 
-function VFiler.duplicate(bufnr)
-  local source = vfilers[bufnr]
-  local vfiler = source.object
-
-  local bufname, name, localnr = generate_name(source.name)
-  local buffer = Buffer.new(bufname)
-
-  return VFiler._create(
-    name, localnr,
-    vfiler.context:duplicate(buffer),
-    View.new(vfiler.context.configs.columns)
-    )
-end
-
 ---@param name string
 function VFiler.find(name)
-  local tabpagenr = vim.fn.tabpagenr()
-  for _, vfiler in pairs(vfilers) do
-    if tabpagenr == vfiler.tabpagenr and name == vfiler.name then
+  -- in tabpage
+  for _, bufnr in ipairs(vim.fn.tabpagebuflist()) do
+    local vfiler = vfilers[bufnr]
+    if vfiler and vfiler.name == name then
       return vfiler.object
     end
   end
-  return nil
+
+  -- in hidden buffers
+  for bufnr, vfiler in pairs(vfilers) do
+    if vim.fn.bufwinnr(bufnr) >= 0 and vfiler.name == name then
+      return vfiler.object
+    end
+  end
+
+  return nil -- not found
 end
 
 ---@param bufnr number Buffer number
@@ -73,31 +67,56 @@ function VFiler.get(bufnr)
   return vfilers[bufnr].object
 end
 
+---@param configs table
 function VFiler.new(configs)
-  local bufname, name, localnr = generate_name(configs.name)
-  local buffer = Buffer.new(bufname)
-
-  return VFiler._create(
-    name, localnr,
-    Context.new(buffer, configs),
-    View.new(configs.columns)
-    )
-end
-
-function VFiler._create(name, localnr, context, view)
+  local bufname, name, number = generate_name(configs.name)
+  local view = View.new(bufname, configs)
   local object = setmetatable({
-      context = context,
+      configs = core.deepcopy(configs),
+      context = Context.new(configs),
+      linked = nil,
       view = view,
     }, VFiler)
 
   -- add vfiler resource
-  vfilers[context.buffer.number] = {
+  vfilers[view.bufnr] = {
     object = object,
     name = name,
-    localnr = localnr,
-    tabpagenr = vim.fn.tabpagenr(),
+    number = number,
   }
   return object
+end
+
+function VFiler:link(vfiler)
+  self.linked = vfiler
+  vfiler.linked = self
+end
+
+function VFiler:open(...)
+  local winnr = vim.fn.bufwinnr(self.bufnr)
+  if winnr > 0 then
+    core.move_window(winnr)
+  else
+    local direction = ...
+    if type then
+      -- open window
+      core.open_window(direction)
+    end
+    self.view:open()
+  end
+end
+
+function VFiler:quit()
+  self.view:delete()
+  self:unlink()
+end
+
+function VFiler:unlink()
+  local vfiler = self.linked
+  if vfiler then
+    vfiler.linked = nil
+  end
+  self.linked = nil
 end
 
 return VFiler

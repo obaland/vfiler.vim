@@ -23,8 +23,7 @@ function IndentColumn.new()
   return self
 end
 
-function IndentColumn:get_text(context, lnum, width)
-  local item = context:get_item(lnum)
+function IndentColumn:get_text(item, width)
   local indent = item.level - 1
   if indent > 0 then
     return self._syntax:surround_text(
@@ -34,9 +33,9 @@ function IndentColumn:get_text(context, lnum, width)
   return '', 0
 end
 
-function IndentColumn:get_width(context, width)
+function IndentColumn:get_width(items, width)
   local max_level = 0
-  for _, item in ipairs(context.items) do
+  for _, item in ipairs(items) do
     if item.level > max_level then
       max_level = item.level
     end

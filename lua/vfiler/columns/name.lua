@@ -36,8 +36,7 @@ function NameColumn.new()
   return self
 end
 
-function NameColumn:get_text(context, lnum, width)
-  local item = context:get_item(lnum)
+function NameColumn:get_text(item, width)
   local name = item.name
   local syntax_name = ''
   if item.selected then
@@ -53,7 +52,7 @@ function NameColumn:get_text(context, lnum, width)
     )
 end
 
-function NameColumn:get_width(context, width)
+function NameColumn:get_width(items, width)
   if self.max_width <= 0 then
     return math.max(width, self.min_width)
   end

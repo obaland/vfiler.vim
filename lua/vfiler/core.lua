@@ -100,9 +100,9 @@ function M.move_window(winnr)
   vim.command(([[noautocmd execute '%s']]).format(command))
 end
 
----@param type string
+---@param direction string
 ---@vararg string
-function M.open_window(type, ...)
+function M.open_window(direction, ...)
   local command = 'silent! ' .. open_window_types[type]
   if ... then
     command = ('%s %s'):format(command, ...)

@@ -32,8 +32,7 @@ function TimeColumn.new()
   return self
 end
 
-function TimeColumn:get_text(context, lnum, width)
-  local item = context:get_item(lnum)
+function TimeColumn:get_text(item, width)
   local key = 'other'
   local difftime = os.difftime(os.time(), item.time)
 
@@ -47,7 +46,7 @@ function TimeColumn:get_text(context, lnum, width)
   return self._syntax:surround_text(key, os.date(self.format, item.time))
 end
 
-function TimeColumn:get_width(context, width)
+function TimeColumn:get_width(items, width)
   return #os.date(self.format, 0)
 end
 

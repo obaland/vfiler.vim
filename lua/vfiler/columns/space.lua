@@ -7,11 +7,11 @@ function SpaceColumn.new()
   return core.inherit(SpaceColumn, Column, 'sp')
 end
 
-function SpaceColumn:get_text(context, lnum, width)
+function SpaceColumn:get_text(item, width)
   return ' ', 1
 end
 
-function SpaceColumn:get_width(context, width)
+function SpaceColumn:get_width(items, width)
   return 1
 end
 

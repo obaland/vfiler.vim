@@ -58,6 +58,7 @@ function M.start(configs)
   local vfiler = VFiler.new(configs)
   mapping.define('main')
   M.cd(vfiler.context, vfiler.view, configs.path)
+  move_cursor(2)
 end
 
 function M.undefine(name)
@@ -98,37 +99,28 @@ function M.new_file(context, view)
   end
 end
 
-function M.open(context, view, lnum)
-  lnum = lnum or vim.fn.line('.')
-  local item = context:get_item(lnum)
-  if not item then
-    core.warning('Item does not exist.')
-    return
-  end
-
-  if item.isdirectory then
-    M.cd(context, view, item.path)
-  else
-    vim.command('edit ' .. item.path)
-  end
-end
-
 function M.close_tree(context, view, lnum)
   lnum = lnum or vim.fn.line('.')
-  local pos = context:close_directory(lnum)
-  if pos then
-    move_cursor(pos)
-    view:draw(context)
+  local item = view:get_item(lnum)
+
+  local parent = item.parent
+  parent:close()
+
+  view:draw(context)
+
+  local cursor = view:indexof(parent)
+  if cursor then
+    move_cursor(cursor)
   end
 end
 
 function M.close_tree_or_cd(context, view, lnum)
   lnum = lnum or vim.fn.line('.')
-  local item = context:get_item(lnum)
+  local item = view:get_item(lnum)
   if item.level <= 1 and not item.opened then
     M.cd(context, view, '..')
   else
-    M.close_tree(context, view, {lnum})
+    M.close_tree(context, view, lnum)
   end
 end
 
@@ -186,13 +178,13 @@ function M.change_sort(context, view)
 end
 
 function M.move_cursor_bottom(context, view)
-  move_cursor(#context.items)
+  move_cursor(view:num_lines())
 end
 
 function M.move_cursor_down(context, view, loop)
   loop = loop or false
   local lnum = vim.fn.line('.') + 1
-  local num_end = #context.items
+  local num_end = view:num_lines()
   if lnum > num_end then
     -- the meaning of "2" is to skip the header line
     lnum = loop and 2 or num_end
@@ -209,18 +201,36 @@ function M.move_cursor_up(context, view, loop)
   local lnum = vim.fn.line('.') - 1
   if lnum <= 1 then
     -- the meaning of "2" is to skip the header line
-    lnum = loop and #context.items or 2
+    lnum = loop and view:num_lines() or 2
   end
   move_cursor(lnum)
 end
 
+function M.open(context, view, lnum)
+  lnum = lnum or vim.fn.line('.')
+  local item = view:get_item(lnum)
+  if not item then
+    core.warning('Item does not exist.')
+    return
+  end
+
+  if item.isdirectory then
+    M.cd(context, view, item.path)
+  else
+    vim.command('edit ' .. item.path)
+  end
+end
+
 function M.open_tree(context, view, lnum)
   lnum = lnum or vim.fn.line('.')
-  local pos = context:open_directory(lnum)
-  if pos then
-    move_cursor(pos + 1)
-    view:draw(context)
+  local item = view:get_item(lnum)
+
+  if not item.isdirectory or item.opened then
+    return
   end
+  item:open(context.sort)
+  view:draw(context)
+  move_cursor(lnum + 1)
 end
 
 function M.quit(context, view)
