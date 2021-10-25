@@ -67,6 +67,10 @@ function VFiler.get(bufnr)
   return vfilers[bufnr].object
 end
 
+function VFiler.get_current()
+  return VFiler.get(vim.fn.bufnr())
+end
+
 ---@param configs table
 function VFiler.new(configs)
   local bufname, name, number = generate_name(configs.name)
@@ -93,7 +97,7 @@ function VFiler:link(vfiler)
 end
 
 function VFiler:open(...)
-  local winnr = vim.fn.bufwinnr(self.bufnr)
+  local winnr = vim.fn.bufwinnr(self.view.bufnr)
   if winnr > 0 then
     core.move_window(winnr)
   else

@@ -27,13 +27,16 @@ function M.deepcopy(src)
 end
 
 function M.get_root_path(path)
-  local root = '/'
-  if M.is_windows and path:match('^//') then
-    root = path:match('^//[^/]*/[^/]*')
-  elseif M.is_windows then
-    root = (M.normalized_path(path) .. '/'):match('^%a+:/')
+  local root = ''
+  if M.is_windows then
+    if path:match('^//') then
+      -- for UNC path
+      root = path:match('^//[^/]*/[^/]*')
+    else
+      root = (M.normalized_path(path)):match('^%a+:')
+    end
   end
-  return root
+  return root .. '/'
 end
 
 function M.inherit(class, super, ...)
@@ -74,8 +77,7 @@ function M.input(prompt, ...)
   else
     content = vim.fn.input(prompt, text)
   end
-  -- TODO:
-  vim.command('echon')
+  vim.command('redraw')
   return content
 end
 
@@ -83,7 +85,7 @@ end
 -- Window
 ------------------------------------------------------------------------------
 
-local open_window_types = {
+local open_directions = {
   bottom = 'belowright split',
   left = 'aboveleft vertical split',
   right = 'belowright vertical split',
@@ -103,7 +105,7 @@ end
 ---@param direction string
 ---@vararg string
 function M.open_window(direction, ...)
-  local command = 'silent! ' .. open_window_types[type]
+  local command = 'silent! ' .. open_directions[direction]
   if ... then
     command = ('%s %s'):format(command, ...)
   end
@@ -125,18 +127,11 @@ function M.normalized_path(path)
   if path == '/' then
     return '/'
   end
-  -- trim trailing path separator
+
   local result = vim.fn.fnamemodify(vim.fn.resolve(path), ':p')
-  local len = result:len()
-
-  if result:match('/$') or result:match('\\$') then
-    result = result:sub(0, len - 1)
-  end
-
   if M.is_windows then
     result = result:gsub('\\', '/')
   end
-
   return result
 end
 

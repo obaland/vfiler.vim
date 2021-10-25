@@ -1,4 +1,5 @@
 local core = require 'vfiler/core'
+local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
 local View = {}
@@ -72,9 +73,12 @@ function View.new(bufname, configs)
     return nil
   end
 
+  local bufnr = create_buffer(bufname, configs)
+  mapping.define('main')
+
   local object = setmetatable({
     bufname = bufname,
-    bufnr = create_buffer(bufname, configs),
+    bufnr = bufnr,
     show_hidden_files = configs.show_hidden_files,
     _cache = {
       winwidth = 0,

@@ -20,8 +20,9 @@ end
 
 mapping.setup {
   main = {
+    ['.']     = _do_action('toggle_show_hidden'),
     ['<CR>']  = _do_action('open'),
-    ['<Tab>'] = _do_action('switch_to_buffer'),
+    ['<Tab>'] = _do_action('switch_to_filer'),
     ['gg']    = _do_action('move_cursor_top'),
     ['h']     = _do_action('close_tree_or_cd'),
     ['j']     = _do_action('move_cursor_down', 'true'),

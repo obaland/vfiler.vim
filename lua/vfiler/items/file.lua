@@ -3,12 +3,18 @@ local core = require 'vfiler/core'
 local File = {}
 
 function File.create(path)
-  return File.new(path, 0, false)
+  -- create file
+  if core.is_windows then
+    os.execute('type nul > ' .. path)
+  else
+    os.execute('touch ' .. path)
+  end
+  return File.new(path, false)
 end
 
-function File.new(path, level, islink)
+function File.new(path, islink)
   local Item = require('vfiler/items/item')
-  local self = core.inherit(File, Item, path, level, islink)
+  local self = core.inherit(File, Item, path, islink)
   self.type = self.islink and 'L' or 'F'
   return self
 end

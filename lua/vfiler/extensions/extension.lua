@@ -7,17 +7,15 @@ local extension_resources = {}
 local Extension = {}
 Extension.__index = Extension
 
-function Extension.new(name, context, view, ...)
+function Extension.new(name, view, ...)
   local object = setmetatable({
       configs = core.deepcopy(... or config.configs),
-      context = context,
       items = nil,
       name = name,
       bufnr = 0,
       winid = 0,
       view = view,
     }, Extension)
-  context.extension = object
   return object
 end
 
@@ -57,11 +55,13 @@ end
 
 function Extension:delete()
   self.view:delete()
+  if self.on_delete then
+    self.on_delete()
+  end
 end
 
 function Extension:quit()
   self.view:close()
-  self.context.extension = nil
 end
 
 function Extension:start(items, cursor_pos)

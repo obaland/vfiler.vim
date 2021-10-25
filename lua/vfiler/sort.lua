@@ -1,9 +1,22 @@
+local core = require 'vfiler/core'
+
 local M = {}
 
 M.compares = {}
 
 local function to_desc_name(type)
   return (type:sub(1, 1)):upper() .. type:sub(2)
+end
+
+---@param type string
+function M.get(type)
+  local compare = M.compares[type]
+
+  if not compare then
+    core.error(([[Invalid sort type "%s"]]):format(type))
+    return nil
+  end
+  return compare
 end
 
 -- @param type    string
@@ -49,6 +62,7 @@ end
 
 -- name ascending
 M.set('name', function(item2, item1)
+  -- TODO:
   if item2.isdirectory and not item1.isdirectory then
     return true
   elseif not item2.isdirectory and item1.isdirectory then

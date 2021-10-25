@@ -6,31 +6,21 @@ local File = require 'vfiler/items/file'
 
 local Directory = {}
 
-local function insert_position(items, target, compare)
-  for i, item in ipairs(items) do
-    if compare(target, item) then
-      return i
-    end
-  end
-  return #items + 1
-end
-
-local function sort_items(items, compare)
-  table.sort(items, compare)
-  for _, item in ipairs(items) do
-    if item.children then
-      sort_items(item.children, compare)
-    end
-  end
-end
-
-function Directory.new(path, level, islink)
+function Directory.new(path, islink)
   local Item = require('vfiler/items/item')
-  local self = core.inherit(Directory, Item, path, level, islink)
+  local self = core.inherit(Directory, Item, path, islink)
   self.children = nil
   self.opened = false
   self.type = self.islink and 'L' or 'D'
   return self
+end
+
+function Directory:add(item, sort_type)
+  if not self.children then
+    self.children = {}
+  end
+  local compare = sort.get(sort_type)
+  self:_add(item, compare)
 end
 
 function Directory:close()
@@ -39,27 +29,40 @@ function Directory:close()
 end
 
 function Directory:open(sort_type)
-  local compare = sort.compares[sort_type]
-  if not compare then
-    core.error(([[Invalid sort type "%s"]]):format(sort_type))
-    return nil
-  end
-
+  local compare = sort.get(sort_type)
   self.children = {}
   for item in self:_ls() do
-    local pos = insert_position(self.children, item, compare)
-    table.insert(self.children, pos, item)
+    self:_add(item, compare)
   end
   self.opened = true
 end
 
 function Directory:sort(type)
-  local compare = sort.compares[type]
-  if not compare then
-    core.error(([[Invalid sort type "%s"]]):format(type))
-    return nil
+  if not self.children or #self.children <= 1 then
+    return
   end
-  sort_items(self.children, compare)
+
+  local compare = sort.get(type)
+  table.sort(self.children, compare)
+
+  -- sort recursive
+  for _, child in ipairs(self.children) do
+    if child.isdirectory then
+      child:sort(type)
+    end
+  end
+end
+
+function Directory:_add(item, compare)
+  local pos = #self.children + 1
+  for i, child in ipairs(self.children) do
+    if compare(item, child) then
+      pos = i
+      break
+    end
+  end
+  item.level = self.level + 1
+  table.insert(self.children, pos, item)
 end
 
 function Directory:_ls()
@@ -73,7 +76,6 @@ function Directory:_ls()
   end
 
   local index = 0
-  local level = self.level + 1
 
   return function()
     index = index + 1
@@ -86,14 +88,14 @@ function Directory:_ls()
 
     local item = nil
     if ftype == 'dir' then
-      item = Directory.new(normalized, level, false)
+      item = Directory.new(normalized, false)
     elseif ftype == 'file' then
-      item = File.new(normalized, level, false)
+      item = File.new(normalized, false)
     elseif ftype == 'link' then
       if vim.fn.isdirectory(normalized) then
-        item = Directory.new(normalized, level, true)
+        item = Directory.new(normalized, true)
       else
-        item = File.new(normalized, level, true)
+        item = File.new(normalized, true)
       end
     else
       core.warning('Unknown file type. (' .. ftype .. ')')

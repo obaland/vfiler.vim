@@ -25,7 +25,7 @@ mapping.setup {
   },
 }
 
-function ExtensionMenu.new(name, context)
+function ExtensionMenu.new(name)
   local Extension = require('vfiler/extensions/extension')
   local view = Extension.create_view(config.configs.layout, 'menu')
   view:set_buf_options {
@@ -37,7 +37,7 @@ function ExtensionMenu.new(name, context)
   view:set_win_options {
     number = true,
   }
-  return core.inherit(ExtensionMenu, Extension, name, context, view, config)
+  return core.inherit(ExtensionMenu, Extension, name, view, config)
 end
 
 function ExtensionMenu:select()
@@ -46,7 +46,7 @@ function ExtensionMenu:select()
   self:quit()
 
   if self.on_selected then
-    self.on_selected(self.context, item)
+    self.on_selected(item)
   end
   return item
 end
