@@ -7,12 +7,13 @@ local ExtensionMenu = {}
 
 local function _do_action(name, ...)
   local func = [[:lua require('vfiler/extensions/menu/action').do_action]]
+  local args = ''
   if ... then
-    func = func .. ([[('%s', %s)]]):format(name, ...)
+    args = ([[('%s', %s)]]):format(name, ...)
   else
-    func = func .. ([[('%s')]]):format(name)
+    args = ([[('%s')]]):format(name)
   end
-  return func
+  return func .. args
 end
 
 mapping.setup {

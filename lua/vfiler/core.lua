@@ -61,27 +61,6 @@ function M.merge_table(dest, src)
 end
 
 ------------------------------------------------------------------------------
--- Input utility
-------------------------------------------------------------------------------
-
-function M.input(prompt, ...)
-  local args = ... or {}
-  local text = args[1] or ''
-  local completion = args[2]
-
-  prompt = ('[vfiler] %s: '):format(prompt)
-
-  local content = ''
-  if completion then
-    content = vim.fn.input(prompt, text, completion)
-  else
-    content = vim.fn.input(prompt, text)
-  end
-  vim.command('redraw')
-  return content
-end
-
-------------------------------------------------------------------------------
 -- Window
 ------------------------------------------------------------------------------
 
@@ -122,28 +101,6 @@ function M.resize_window_width(width)
   vim.command('silent! vertical resize ' .. width)
 end
 
-
-function M.normalized_path(path)
-  if path == '/' then
-    return '/'
-  end
-
-  local result = vim.fn.fnamemodify(vim.fn.resolve(path), ':p')
-  if M.is_windows then
-    result = result:gsub('\\', '/')
-  end
-  return result
-end
-
--- Lua pettern escape
-if vim.fn.has('nvim') then
-  M.pesc = vim.pesc
-else
-  function M.pesc(s)
-    return s
-  end
-end
-
 ------------------------------------------------------------------------------
 -- Message
 ------------------------------------------------------------------------------
@@ -171,7 +128,10 @@ function M.vesc(s)
   return s:gsub('([\\^*$.~])', '\\%1')
 end
 
--- syntax command
+------------------------------------------------------------------------------
+-- syntax and highlight command utilities
+------------------------------------------------------------------------------
+
 function M.syntax_clear_command(names)
   return ('silent! syntax clear %s'):format(table.concat(names, ' '))
 end
@@ -200,6 +160,31 @@ end
 ---@return string
 function M.link_highlight_command(from, to)
   return ('highlight! default link %s %s'):format(from, to)
+end
+
+------------------------------------------------------------------------------
+-- String utilities
+------------------------------------------------------------------------------
+
+function M.normalized_path(path)
+  if path == '/' then
+    return '/'
+  end
+
+  local result = vim.fn.fnamemodify(vim.fn.resolve(path), ':p')
+  if M.is_windows then
+    result = result:gsub('\\', '/')
+  end
+  return result
+end
+
+-- Lua pettern escape
+if vim.fn.has('nvim') then
+  M.pesc = vim.pesc
+else
+  function M.pesc(s)
+    return s
+  end
 end
 
 -- truncate string
@@ -235,6 +220,10 @@ function M.truncate(str, width, sep, ...)
                  strwidthpart_reverse(replaced, strwidth, footer_width)
   return truncate(result, width)
 end
+
+------------------------------------------------------------------------------
+-- Math utilities
+------------------------------------------------------------------------------
 
 -- Within the max and min between
 function M.within(v, min, max)

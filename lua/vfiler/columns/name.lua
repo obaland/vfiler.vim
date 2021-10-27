@@ -42,11 +42,16 @@ function NameColumn:get_text(item, width)
   if item.selected then
     syntax_name = 'selected'
   elseif item.isdirectory then
-    name = name .. '/' -- append directory mark
     syntax_name = 'directory'
   else
     syntax_name = 'file'
   end
+
+  -- append directory mark
+  if item.isdirectory then
+    name = name .. '/'
+  end
+
   return self._syntax:surround_text(
     syntax_name, core.truncate(name, width, '..', math.floor(width / 2))
     )

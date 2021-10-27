@@ -10,29 +10,33 @@ local M = {}
 
 local function _do_action(name, ...)
   local func = [[:lua require('vfiler/action').do_action]]
+  local args = ''
   if ... then
-    func = func .. ([[('%s', %s)]]):format(name, ...)
+    args = ([[('%s', %s)]]):format(name, ...)
   else
-    func = func .. ([[('%s')]]):format(name)
+    args = ([[('%s')]]):format(name)
   end
-  return func
+  return func .. args
 end
 
 mapping.setup {
   main = {
-    ['.']     = _do_action('toggle_show_hidden'),
-    ['<CR>']  = _do_action('open'),
-    ['<Tab>'] = _do_action('switch_to_filer'),
-    ['gg']    = _do_action('move_cursor_top'),
-    ['h']     = _do_action('close_tree_or_cd'),
-    ['j']     = _do_action('move_cursor_down', 'true'),
-    ['k']     = _do_action('move_cursor_up', 'true'),
-    ['l']     = _do_action('open_tree'),
-    ['q']     = _do_action('quit'),
-    ['G']     = _do_action('move_cursor_bottom'),
-    ['L']     = _do_action('change_drive'),
-    ['N']     = _do_action('new_file'),
-    ['S']     = _do_action('change_sort'),
+    ['.']         = _do_action('toggle_show_hidden'),
+    ['<CR>']      = _do_action('open'),
+    ['<S-Space>'] = _do_action('toggle_select', [['up']]),
+    ['<Space>']   = _do_action('toggle_select', [['down']]),
+    ['<Tab>']     = _do_action('switch_to_filer'),
+    ['gg']        = _do_action('move_cursor_top'),
+    ['h']         = _do_action('close_tree_or_cd'),
+    ['j']         = _do_action('move_cursor_down', 'true'),
+    ['k']         = _do_action('move_cursor_up', 'true'),
+    ['l']         = _do_action('open_tree'),
+    ['q']         = _do_action('quit'),
+    ['D']         = _do_action('delete'),
+    ['G']         = _do_action('move_cursor_bottom'),
+    ['L']         = _do_action('change_drive'),
+    ['N']         = _do_action('new_file'),
+    ['S']         = _do_action('change_sort'),
   },
 }
 

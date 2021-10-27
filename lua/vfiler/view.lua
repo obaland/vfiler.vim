@@ -146,33 +146,8 @@ function View:redraw()
   -- create text lines
   local lines = {}
   for i, item in ipairs(self._items) do
-    local line = ''
-    if i == 1 then
-      -- header line
-      line = '[path] ' .. item.path
-    else
-      local lwidth = 0
-      for j, column in ipairs(self._columns) do
-        local prop = cache.column_props[j]
-
-        local cwidth = prop.width
-        if column.variable then
-          cwidth = cwidth + (prop.start_pos - lwidth - 1)
-        end
-
-        local text, width = column:get_text(item, cwidth)
-        line = line .. text
-        lwidth = lwidth + width
-
-        if column.stretch then
-          -- Adjust to fit column end base position
-          local padding = prop.end_pos - lwidth
-          if padding > 0 then
-            line = line .. (' '):rep(padding)
-          end
-        end
-      end
-    end
+    -- first line is the header line
+    local line = i == 1 and self:_toheader(item) or self:_toline(item)
     table.insert(lines, line)
   end
 
@@ -187,6 +162,28 @@ function View:redraw()
   vim.set_buf_option('readonly', true)
 
   vim.fn.winrestview(saved_view)
+end
+
+function View:redraw_line(lnum)
+  local item = self:get_item(lnum)
+  -- first line is the header line
+  local line = lnum == 1 and self:_toheader(item) or self:_toline(item)
+
+  vim.set_buf_option('modifiable', true)
+  vim.set_buf_option('readonly', false)
+  vim.fn.setline(lnum, line)
+  vim.set_buf_option('modifiable', false)
+  vim.set_buf_option('readonly', true)
+end
+
+function View:selected_items()
+  local selected = {}
+  for _, item in ipairs(self._items) do
+    if item.selected then
+      table.insert(selected, item)
+    end
+  end
+  return selected
 end
 
 function View:_apply_syntaxes()
@@ -266,6 +263,38 @@ function View:_expand_items(items)
       end
     end
   end
+end
+
+---@param item table
+function View:_toheader(item)
+  return '[path] ' .. item.path
+end
+
+---@param item table
+function View:_toline(item)
+  local line = ''
+  local lwidth = 0
+  for j, column in ipairs(self._columns) do
+    local prop = self._cache.column_props[j]
+
+    local cwidth = prop.width
+    if column.variable then
+      cwidth = cwidth + (prop.start_pos - lwidth - 1)
+    end
+
+    local text, width = column:get_text(item, cwidth)
+    line = line .. text
+    lwidth = lwidth + width
+
+    if column.stretch then
+      -- Adjust to fit column end base position
+      local padding = prop.end_pos - lwidth
+      if padding > 0 then
+        line = line .. (' '):rep(padding)
+      end
+    end
+  end
+  return line
 end
 
 return View

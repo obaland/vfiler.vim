@@ -1,3 +1,4 @@
+local cmdline = require 'vfiler/cmdline'
 local core = require 'vfiler/core'
 local sort = require 'vfiler/sort'
 local vim = require 'vfiler/vim'
@@ -76,43 +77,58 @@ function M.cd(context, view, path)
   view:draw(context)
 end
 
+function M.delete(context, view)
+  local selected = view:selected_items()
+  if #selected == 0 then
+    local lnum = vim.fn.line('.')
+    if lnum == 1 then
+      return
+    end
+    selected = {view:get_item(lnum)}
+  end
+
+  local prompt = 'Are you sure you want to delete? - '
+  if #selected > 1 then
+    prompt = prompt .. #selected .. ' files'
+  else
+    prompt = prompt .. selected[1].name
+  end
+end
+
 function M.new_file(context, view, lnum)
   lnum = lnum or vim.fn.line('.')
   local item = view:get_item(lnum)
   local dir = (item.isdirectory and item.opened) and item or item.parent
 
-  local names = input_names('New file names? (comma separated)')
-  if #names == 0 then
-    core.info('Canceled')
-    return
-  end
-
-  local created_files = {}
-  for _, name in ipairs(names) do
-    local path = dir.path .. name
-    if vim.fn.filereadable(path) ~= 0 then
-      core.warning(([[Skipped, "%s" already exists]]):format(name))
-    else
-      local file = File.create(path)
-      if file then
-        dir:add(file, context.sort)
-        table.insert(created_files, name)
-      else
-        core.error(([['Failed to create a "%s" file]]):format(name))
+  cmdline.input_multiple('New file names?',
+    function(contents)
+      local created = {}
+      for _, name in ipairs(contents) do
+        local path = dir.path .. name
+        if vim.fn.filereadable(path) ~= 0 then
+          core.warning(([[Skipped, "%s" already exists]]):format(name))
+        else
+          local file = File.create(path)
+          if file then
+            dir:add(file, context.sort)
+            table.insert(created, name)
+          else
+            core.error(([['Failed to create a "%s" file]]):format(name))
+          end
+        end
       end
+
+      if #created == 0 then
+        return
+      end
+      if #created == 1 then
+        core.info(('Created - %s'):format(created[1]))
+      else
+        core.info(('Created - %d files'):format(#created))
+      end
+      view:draw(context)
     end
-  end
-
-  if #created_files == 0 then
-    return
-  end
-
-  if #created_files == 1 then
-    core.info(('Created - %s'):format(created_files[1]))
-  else
-    core.info(('Created - %d files'):format(#created_files))
-  end
-  view:draw(context)
+    )
 end
 
 function M.close_tree(context, view, lnum)
@@ -207,7 +223,6 @@ function M.move_cursor_bottom(context, view)
 end
 
 function M.move_cursor_down(context, view, loop)
-  loop = loop or false
   local lnum = vim.fn.line('.') + 1
   local num_end = view:num_lines()
   if lnum > num_end then
@@ -222,7 +237,6 @@ function M.move_cursor_top(context, view)
 end
 
 function M.move_cursor_up(context, view, loop)
-  loop = loop or false
   local lnum = vim.fn.line('.') - 1
   if lnum <= 1 then
     -- the meaning of "2" is to skip the header line
@@ -283,6 +297,20 @@ end
 function M.toggle_show_hidden(context, view)
   view.show_hidden_files = not view.show_hidden_files
   view:draw(context)
+end
+
+function M.toggle_select(context, view, after_cursor, lnum)
+  lnum = lnum or vim.fn.line('.')
+  local item = view:get_item(lnum)
+  item.selected = not item.selected
+  view:redraw_line(lnum)
+
+  -- move cursor
+  if after_cursor == 'up' then
+    M.move_cursor_up(context, view)
+  elseif after_cursor == 'down' then
+    M.move_cursor_down(context, view)
+  end
 end
 
 return M
