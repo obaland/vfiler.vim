@@ -93,6 +93,12 @@ function M.delete(context, view)
   else
     prompt = prompt .. selected[1].name
   end
+
+  local choice = cmdline.confirm(
+    prompt,
+    {cmdline.choice.Yes, cmdline.choice.No},
+    2
+    )
 end
 
 function M.new_file(context, view, lnum)

@@ -4,13 +4,26 @@ local vim = require 'vfiler/vim'
 local M = {}
 
 M.choice = {
-  YES = 1,
-  NO = 2,
-  CANCEL = 3,
+  Yes = 1,
+  No = 2,
+  Cancel = 3,
 }
 
 function M.confirm(prompt, choices, default)
-  vim.fn.confirm(prompt)
+  local list = {}
+  for _, cvalue in ipairs(choices) do
+    for key, value in pairs(M.choice) do
+      if cvalue == value then
+        table.insert(list, '&' .. key)
+        break
+      end
+    end
+  end
+  local choice = vim.fn.confirm(prompt, table.concat(list, '\n'), default)
+  if choice == 0 then
+    return M.choice.Cancel
+  end
+  return list[choice]
 end
 
 function M.input(prompt, ...)
