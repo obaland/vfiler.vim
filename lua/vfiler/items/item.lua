@@ -5,9 +5,6 @@ local Item = {}
 Item.__index = Item
 
 function Item.new(path, islink)
-  local isdirectory = vim.fn.isdirectory(path) == 1
-  local mods = isdirectory and ':h:t' or ':t'
-
   local size = vim.fn.getfsize(path)
   local time = vim.fn.getftime(path)
   if size < 0 or time < 0 then
@@ -16,17 +13,38 @@ function Item.new(path, islink)
   end
 
   return setmetatable({
-      isdirectory = isdirectory,
+      isdirectory = vim.fn.isdirectory(path) == 1,
       islink = islink,
       level = 0,
-      name = vim.fn.fnamemodify(path, mods),
+      name = vim.fn.fnamemodify(path, ':t'),
       parent = nil,
-      path = path,
+      path = core.normalized_path(path),
       selected = false,
       size = size,
       time = time,
       mode = vim.fn.getfperm(path)
     }, Item)
+end
+
+function Item:delete()
+  if vim.fn.delete(self.path, 'rf') < 0 then
+    core.error(([["%s" Cannot delete]]):format(self.name))
+    return false
+  end
+
+  -- delete from item tree
+  if not self.parent then
+    return true
+  end
+
+  local children = self.parent.children
+  for i, child in ipairs(children) do
+    if child.path == self.path then
+      table.remove(children, i)
+      break
+    end
+  end
+  return true
 end
 
 return Item

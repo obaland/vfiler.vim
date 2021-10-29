@@ -68,7 +68,22 @@ M.set('name', function(item2, item1)
   elseif not item2.isdirectory and item1.isdirectory then
     return false
   end
-  return item2.name < item1.name
+
+  local name1 = item1.name
+  local name2 = item2.name
+  local length = math.min(#name1, #name2)
+
+  for i = 1, length do
+    local word1 = (name1:sub(i, i)):lower()
+    local word2 = (name2:sub(i, i)):lower()
+
+    if word2 < word1 then
+      return true
+    elseif word2 > word1 then
+      return false
+    end
+  end
+  return (#name2 - #name1) < 0
 end)
 
 -- size ascending

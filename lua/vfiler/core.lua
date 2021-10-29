@@ -171,7 +171,7 @@ function M.normalized_path(path)
     return '/'
   end
 
-  local result = vim.fn.fnamemodify(vim.fn.resolve(path), ':p')
+  local result = vim.fn.fnamemodify(path, ':p')
   if M.is_windows then
     result = result:gsub('\\', '/')
   end

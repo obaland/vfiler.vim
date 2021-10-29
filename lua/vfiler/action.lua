@@ -96,9 +96,18 @@ function M.delete(context, view)
 
   local choice = cmdline.confirm(
     prompt,
-    {cmdline.choice.Yes, cmdline.choice.No},
+    {cmdline.choice.YES, cmdline.choice.NO},
     2
     )
+  if choice ~= cmdline.choice.YES then
+    return
+  end
+
+  -- delete files
+  for _, item in ipairs(selected) do
+    item:delete()
+  end
+  view:draw(context)
 end
 
 function M.new_file(context, view, lnum)

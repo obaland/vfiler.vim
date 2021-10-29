@@ -83,19 +83,19 @@ function Directory:_ls()
       return nil
     end
 
-    local normalized = core.normalized_path(paths[index])
-    local ftype = vim.fn.getftype(normalized)
-
+    local path = paths[index]
+    local ftype = vim.fn.getftype(path)
     local item = nil
+
     if ftype == 'dir' then
-      item = Directory.new(normalized, false)
+      item = Directory.new(path, false)
     elseif ftype == 'file' then
-      item = File.new(normalized, false)
+      item = File.new(path, false)
     elseif ftype == 'link' then
-      if vim.fn.isdirectory(normalized) then
-        item = Directory.new(normalized, true)
+      if vim.fn.isdirectory(path) then
+        item = Directory.new(path, true)
       else
-        item = File.new(normalized, true)
+        item = File.new(path, true)
       end
     else
       core.warning('Unknown file type. (' .. ftype .. ')')
