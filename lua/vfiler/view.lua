@@ -50,7 +50,8 @@ local function create_columns(columns)
   local collection = require 'vfiler/columns/collection'
   local objects = {}
 
-  for _, cname in ipairs(vim.fn.split(columns, ',')) do
+  local cnames = vim.lua_list(vim.fn.split(columns, ','))
+  for _, cname in ipairs(cnames) do
     local column = collection.get(cname)
     if column then
       table.insert(objects, column)
