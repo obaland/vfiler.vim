@@ -75,8 +75,12 @@ function Directory:_add(item, compare)
 end
 
 function Directory:_ls()
-  local paths = vim.fn.glob(self.path .. '/*', 1, 1)
-  local dotpaths = vim.fn.glob(self.path .. '/.*', 1, 1)
+  local paths = vim.lua_list(
+    vim.fn.glob(self.path .. '/*', 1, 1)
+    )
+  local dotpaths = vim.lua_list(
+    vim.fn.glob(self.path .. '/.*', 1, 1)
+    )
   for _, dotpath in ipairs(dotpaths) do
     local dotfile = vim.fn.fnamemodify(dotpath, ':t')
     if not (dotfile == '.' or dotfile == '..') then
