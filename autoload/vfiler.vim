@@ -4,24 +4,6 @@
 " License: MIT license
 "=============================================================================
 
-if has('nvim')
-lua <<EOF
-
-if not vim.fn then
-  vim.fn = setmetatable({}, {
-    __index = function(t, key)
-      local _fn = function(...)
-        return vim.api.nvim_call_function(key, {...})
-      end
-      t[key] = _fn
-      return _fn
-    end
-  })
-end
-
-EOF
-end
-
 function! s:parse_command_args(args) abort
   let l:configs = {}
   let l:configs.path = a:args
