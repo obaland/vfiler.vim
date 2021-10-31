@@ -6,6 +6,11 @@ local Window = {}
 Window.__index = Window
 
 function Window.new(configs, mapping_type)
+  local foldcolumn = 0
+  if vim.fn.has('nvim-0.5.0') then
+    foldcolumn = '0'
+  end
+
   return setmetatable({
       caller_winid = vim.fn.win_getid(),
       configs = core.deepcopy(configs),
@@ -24,7 +29,7 @@ function Window.new(configs, mapping_type)
         colorcolumn = '',
         conceallevel =  2,
         concealcursor = 'nvc',
-        foldcolumn = '0',
+        foldcolumn = foldcolumn,
         foldenable = false,
         list = false,
         number = true,

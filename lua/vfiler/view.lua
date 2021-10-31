@@ -35,8 +35,13 @@ local function create_buffer(bufname, configs)
     vim.set_win_option('concealcursor', 'nvc')
   end
 
+  local foldcolumn = 0
+  if vim.fn.has('nvim-0.5.0') then
+    foldcolumn = '0'
+  end
+
   vim.set_win_options {
-    foldcolumn = '0',
+    foldcolumn = foldcolumn,
     foldenable = false,
     list = false,
     number = false,
