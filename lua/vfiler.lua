@@ -34,6 +34,7 @@ mapping.setup {
     ['q']         = _do_action('quit'),
     ['D']         = _do_action('delete'),
     ['G']         = _do_action('move_cursor_bottom'),
+    ['K']         = _do_action('new_directory'),
     ['L']         = _do_action('change_drive'),
     ['N']         = _do_action('new_file'),
     ['S']         = _do_action('change_sort'),

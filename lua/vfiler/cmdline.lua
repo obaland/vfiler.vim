@@ -24,7 +24,7 @@ function M.input(prompt, ...)
   local text = args[1] or ''
   local completion = args[2]
 
-  prompt = ('[vfiler] %s:'):format(prompt)
+  prompt = ('[vfiler] %s: '):format(prompt)
 
   local content = ''
   if completion then

@@ -4,9 +4,15 @@
 " License: MIT license
 "=============================================================================
 
-if exists('g:loaded_vfiler') || v:version < 703
+if exists('g:loaded_vfiler')
   finish
 endif
+
+" TODO:
+if has('nvim') && !has('nvim-0.5.0')
+elseif v:version < 703
+end
+
 let g:loaded_vfiler = 1
 
 " Global options definition.

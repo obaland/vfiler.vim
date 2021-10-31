@@ -4,6 +4,7 @@ local sort = require 'vfiler/sort'
 local vim = require 'vfiler/vim'
 
 local ExtensionMenu = require 'vfiler/extensions/menu'
+local Directory = require 'vfiler/items/directory'
 local File = require 'vfiler/items/file'
 local VFiler = require 'vfiler/vfiler'
 
@@ -108,6 +109,42 @@ function M.delete(context, view)
     item:delete()
   end
   view:draw(context)
+end
+
+function M.new_directory(context, view, lnum)
+  lnum = lnum or vim.fn.line('.')
+  local item = view:get_item(lnum)
+  local dir = (item.isdirectory and item.opened) and item or item.parent
+
+  cmdline.input_multiple('New directory names?',
+    function(contents)
+      local created = {}
+      for _, name in ipairs(contents) do
+        local path = dir.path .. name
+        if vim.fn.isdirectory(path) ~= 0 then
+          core.warning(([[Skipped, "%s" already exists]]):format(name))
+        else
+          local new = Directory.create(path)
+          if new then
+            dir:add(new, context.sort)
+            table.insert(created, name)
+          else
+            core.error(([['Failed to create a "%s" file]]):format(name))
+          end
+        end
+      end
+
+      if #created == 0 then
+        return
+      end
+      if #created == 1 then
+        core.info(('Created - %s'):format(created[1]))
+      else
+        core.info(('Created - %d directories'):format(#created))
+      end
+      view:draw(context)
+    end
+    )
 end
 
 function M.new_file(context, view, lnum)

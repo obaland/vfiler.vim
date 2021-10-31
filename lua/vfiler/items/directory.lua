@@ -6,6 +6,14 @@ local File = require 'vfiler/items/file'
 
 local Directory = {}
 
+function Directory.create(path)
+  -- mkdir
+  if vim.fn.mkdir(path) ~= 1 then
+    return nil
+  end
+  return Directory.new(path, false)
+end
+
 function Directory.new(path, islink)
   local Item = require('vfiler/items/item')
   local self = core.inherit(Directory, Item, path, islink)
@@ -61,6 +69,7 @@ function Directory:_add(item, compare)
       break
     end
   end
+  item.parent = self
   item.level = self.level + 1
   table.insert(self.children, pos, item)
 end
