@@ -4,12 +4,6 @@
 " License: MIT license
 "=============================================================================
 
-if !has('nvim')
-lua <<EOF
-package.path = package.path .. ';../lua/?.lua'
-EOF
-end
-
 function! s:parse_command_args(args) abort
   let l:configs = {}
   let l:configs.path = a:args
