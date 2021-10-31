@@ -62,4 +62,14 @@ function M.vim_dict(data)
   return data
 end
 
+------------------------------------------------------------------------------
+-- Vim data to Lua data
+------------------------------------------------------------------------------
+function M.lua_list(data)
+  return data
+end
+function M.lua_dict(data)
+  return data
+end
+
 return M

@@ -88,10 +88,28 @@ end
 -- Lua data to Vim data
 ------------------------------------------------------------------------------
 function M.vim_list(data)
-  return data and vim.list(data) or nil
+  return vim.list(data)
 end
 function M.vim_dict(data)
-  return data and vim.dict(data) or nil
+  return vim.dict(data)
+end
+
+------------------------------------------------------------------------------
+-- Vim data to Lua data
+------------------------------------------------------------------------------
+function M.lua_list(data)
+  local t = {}
+  for value in data() do
+    table.insert(t, value)
+  end
+  return t
+end
+function M.lua_dict(data)
+  local t = {}
+  for key, value in data() do
+    t[key] = value
+  end
+  return t
 end
 
 return M
