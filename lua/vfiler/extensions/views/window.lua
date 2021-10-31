@@ -7,7 +7,7 @@ Window.__index = Window
 
 function Window.new(configs, mapping_type)
   local foldcolumn = 0
-  if vim.fn.has('nvim-0.5.0') then
+  if vim.fn.has('nvim-0.5.0') == 1 then
     foldcolumn = '0'
   end
 

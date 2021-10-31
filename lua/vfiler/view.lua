@@ -36,7 +36,7 @@ local function create_buffer(bufname, configs)
   end
 
   local foldcolumn = 0
-  if vim.fn.has('nvim-0.5.0') then
+  if vim.fn.has('nvim-0.5.0') == 1 then
     foldcolumn = '0'
   end
 
