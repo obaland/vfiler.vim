@@ -47,4 +47,16 @@ function Item:delete()
   return true
 end
 
+function Item:rename(name)
+  local newpath = self.parent.path .. '/' .. name
+  local result, message, code = os.rename(self.path, newpath)
+  if not result then
+    core.error(('%s (code:%d)'):format(message, code))
+    return false
+  end
+  self.name = name
+  self.path = newpath
+  return true
+end
+
 return Item

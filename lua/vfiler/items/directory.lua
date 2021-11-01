@@ -45,13 +45,17 @@ function Directory:open(sort_type)
   self.opened = true
 end
 
-function Directory:sort(type)
+function Directory:sort(type, recursive)
   if not self.children or #self.children <= 1 then
     return
   end
 
   local compare = sort.get(type)
   table.sort(self.children, compare)
+
+  if not recursive then
+    return
+  end
 
   -- sort recursive
   for _, child in ipairs(self.children) do

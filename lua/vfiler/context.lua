@@ -17,6 +17,7 @@ end
 
 function Context.new(configs)
   return setmetatable({
+      clipboard = nil,
       extension = nil,
       root = nil,
       show_hidden_files = configs.show_hidden_files,
@@ -28,7 +29,7 @@ function Context:change_sort(type)
   if self.sort == type then
     return
   end
-  self.root:sort(type)
+  self.root:sort(type, true)
   self.sort = type
 end
 

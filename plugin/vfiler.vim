@@ -10,8 +10,15 @@ endif
 
 " TODO:
 if has('nvim') && !has('nvim-0.5.0')
-elseif v:version < 802
-end
+  finish
+elseif !has('nvim')
+ " vim
+  if !has('lua')
+    finish
+  elseif v:version < 802
+    finish
+  endif
+endif
 
 let g:loaded_vfiler = 1
 

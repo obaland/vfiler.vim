@@ -32,6 +32,7 @@ mapping.setup {
     ['k']         = _do_action('move_cursor_up', 'true'),
     ['l']         = _do_action('open_tree'),
     ['q']         = _do_action('quit'),
+    ['r']         = _do_action('rename'),
     ['D']         = _do_action('delete'),
     ['G']         = _do_action('move_cursor_bottom'),
     ['K']         = _do_action('new_directory'),

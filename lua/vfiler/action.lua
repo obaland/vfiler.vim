@@ -78,6 +78,93 @@ function M.cd(context, view, path)
   view:draw(context)
 end
 
+function M.close_tree(context, view, lnum)
+  lnum = lnum or vim.fn.line('.')
+  local item = view:get_item(lnum)
+
+  local target = (item.isdirectory and item.opened) and item or item.parent
+  target:close()
+
+  view:draw(context)
+
+  local cursor = view:indexof(target)
+  if cursor then
+    move_cursor(cursor)
+  end
+end
+
+function M.close_tree_or_cd(context, view, lnum)
+  lnum = lnum or vim.fn.line('.')
+  local item = view:get_item(lnum)
+  if item.level <= 1 and not item.opened then
+    M.cd(context, view, '..')
+  else
+    M.close_tree(context, view, lnum)
+  end
+end
+
+function M.change_drive(context, view)
+  if context.extension then
+    return
+  end
+
+  local drives = detect_drives()
+  if #drives == 0 then
+    return
+  end
+
+  local root = core.get_root_path(context.root.path)
+  local cursor = 1
+  for i, drive in ipairs(drives) do
+    if drive == root then
+      cursor = i
+      break
+    end
+  end
+
+  local menu = ExtensionMenu.new('Select Drive')
+  menu.on_selected = function(item)
+    if root ~= item then
+      M.cd(context, view, item)
+    end
+  end
+  menu.on_delete = function()
+    context.extension = nil
+  end
+
+  menu:start(drives, cursor)
+  context.extension = menu
+end
+
+function M.change_sort(context, view)
+  if context.extension then
+    return
+  end
+
+  local sort_types = sort.types()
+  local cursor = 1
+  for i, type in ipairs(sort_types) do
+    if type == context.sort then
+      cursor = i
+      break
+    end
+  end
+
+  local menu = ExtensionMenu.new('Select Sort')
+  menu.on_selected = function(item)
+    if context.sort ~= item then
+      context:change_sort(item)
+      view:draw(context)
+    end
+  end
+  menu.on_delete = function()
+    context.extension = nil
+  end
+
+  menu:start(sort_types, cursor)
+  context.extension = menu
+end
+
 function M.delete(context, view)
   local selected = view:selected_items()
   if #selected == 0 then
@@ -183,93 +270,6 @@ function M.new_file(context, view, lnum)
     )
 end
 
-function M.close_tree(context, view, lnum)
-  lnum = lnum or vim.fn.line('.')
-  local item = view:get_item(lnum)
-
-  local target = (item.isdirectory and item.opened) and item or item.parent
-  target:close()
-
-  view:draw(context)
-
-  local cursor = view:indexof(target)
-  if cursor then
-    move_cursor(cursor)
-  end
-end
-
-function M.close_tree_or_cd(context, view, lnum)
-  lnum = lnum or vim.fn.line('.')
-  local item = view:get_item(lnum)
-  if item.level <= 1 and not item.opened then
-    M.cd(context, view, '..')
-  else
-    M.close_tree(context, view, lnum)
-  end
-end
-
-function M.change_drive(context, view)
-  if context.extension then
-    return
-  end
-
-  local drives = detect_drives()
-  if #drives == 0 then
-    return
-  end
-
-  local root = core.get_root_path(context.root.path)
-  local cursor = 1
-  for i, drive in ipairs(drives) do
-    if drive == root then
-      cursor = i
-      break
-    end
-  end
-
-  local menu = ExtensionMenu.new('Select Drive')
-  menu.on_selected = function(item)
-    if root ~= item then
-      M.cd(context, view, item)
-    end
-  end
-  menu.on_delete = function()
-    context.extension = nil
-  end
-
-  menu:start(drives, cursor)
-  context.extension = menu
-end
-
-function M.change_sort(context, view)
-  if context.extension then
-    return
-  end
-
-  local sort_types = sort.types()
-  local cursor = 1
-  for i, type in ipairs(sort_types) do
-    if type == context.sort then
-      cursor = i
-      break
-    end
-  end
-
-  local menu = ExtensionMenu.new('Select Sort')
-  menu.on_selected = function(item)
-    if context.sort ~= item then
-      context:change_sort(item)
-      view:draw(context)
-    end
-  end
-  menu.on_delete = function()
-    context.extension = nil
-  end
-
-  menu:start(sort_types, cursor)
-  context.extension = menu
-end
-
 function M.move_cursor_bottom(context, view)
   move_cursor(view:num_lines())
 end
@@ -329,6 +329,34 @@ function M.quit(context, view)
 end
 
 function M.redraw(context, view)
+  view:draw(context)
+end
+
+function M.rename(context, view)
+  local selected = view:selected_items()
+  if #selected == 0 then
+    local lnum = vim.fn.line('.')
+    if lnum == 1 then
+      return
+    end
+    selected = {view:get_item(lnum)}
+  end
+
+  -- TODO: check overwrite
+
+  if #selected > 1 then
+  else
+    local target = selected[1]
+    local rename = cmdline.input(
+      'New file name - ' .. target.name, target.name , 'file'
+      )
+    if #rename > 0 then
+      target:rename(rename)
+      target.parent:sort(context.sort, false)
+    end
+  end
+
+  -- TODO: all redraw
   view:draw(context)
 end
 
