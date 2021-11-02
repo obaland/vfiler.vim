@@ -19,10 +19,6 @@ function Popup:close()
   end
 end
 
-function Popup:delete()
-  self:close()
-end
-
 function Popup:draw(name, texts)
   -- Nothing to do
 end
@@ -77,22 +73,22 @@ function Popup:_on_layout_option(name, texts)
   return layout
 end
 
-function Popup:_on_open(name, texts, layout_option)
+function Popup:_on_open(name, texts, layout)
   local options = {
     border = vim.vim_list({1, 1, 1, 1}),
-    col = layout_option.col,
+    col = layout.col,
     cursorline = true,
     drag = false,
     filter = 'vfiler#popup#filter',
-    line = layout_option.line,
+    line = layout.line,
     mapping = false,
-    minheight = layout_option.minheight,
-    minwidth = layout_option.minwidth,
-    pos = layout_option.pos,
+    minheight = layout.minheight,
+    minwidth = layout.minwidth,
+    pos = layout.pos,
     title = name,
     wrap = false,
     zindex = 200,
-    width = layout_option.width,
+    width = layout.width,
   }
 
   local winid = vim.fn.popup_create(

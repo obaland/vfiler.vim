@@ -26,11 +26,12 @@ mapping.setup {
   },
 }
 
-function ExtensionMenu.new(name)
+function ExtensionMenu.new(options)
   local Extension = require('vfiler/extensions/extension')
+
   local view = Extension.create_view(config.configs.layout, 'menu')
   view:set_buf_options {
-    filetype = 'vfiler_extension_menu',
+    filetype = 'vfiler_menu',
     modifiable = false,
     modified = false,
     readonly = true,
@@ -38,7 +39,13 @@ function ExtensionMenu.new(name)
   view:set_win_options {
     number = true,
   }
-  return core.inherit(ExtensionMenu, Extension, name, view, config)
+
+  local object = core.inherit(
+    ExtensionMenu, Extension, options.name, view, config
+    )
+  object.on_quit = options.on_quit
+  object.on_selected = options.on_selected
+  return object
 end
 
 function ExtensionMenu:select()

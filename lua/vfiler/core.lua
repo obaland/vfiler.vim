@@ -106,21 +106,18 @@ end
 ------------------------------------------------------------------------------
 
 ---print error message
----@param message string
-function M.error(message)
-  vim.fn['vfiler#core#error'](message)
+function M.error(format, ...)
+  vim.fn['vfiler#core#error'](format:format(...))
 end
 
 ---print information message
----@param message string
-function M.info(message)
-  vim.fn['vfiler#core#info'](message)
+function M.info(format, ...)
+  vim.fn['vfiler#core#info'](format:format(...))
 end
 
 ---print warning message
----@param message string
-function M.warning(message)
-  vim.fn['vfiler#core#warning'](message)
+function M.warning(format, ...)
+  vim.fn['vfiler#core#warning'](format:format(...))
 end
 
 -- Escape because of the vim pattern

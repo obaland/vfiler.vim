@@ -4,6 +4,7 @@ local sort = require 'vfiler/sort'
 local vim = require 'vfiler/vim'
 
 local ExtensionMenu = require 'vfiler/extensions/menu'
+local ExtensionRename = require 'vfiler/extensions/rename'
 local Directory = require 'vfiler/items/directory'
 local File = require 'vfiler/items/file'
 local VFiler = require 'vfiler/vfiler'
@@ -43,7 +44,7 @@ end
 
 function M.do_action(name, ...)
   if not M[name] then
-    core.error(string.format('Action "%s" is not defined', name))
+    core.error('Action "%s" is not defined.', name)
     return
   end
 
@@ -122,15 +123,19 @@ function M.change_drive(context, view)
     end
   end
 
-  local menu = ExtensionMenu.new('Select Drive')
-  menu.on_selected = function(item)
-    if root ~= item then
-      M.cd(context, view, item)
-    end
-  end
-  menu.on_delete = function()
-    context.extension = nil
-  end
+  local menu = ExtensionMenu.new {
+    name = 'Select Drive',
+
+    on_selected = function(item)
+      if root ~= item then
+        M.cd(context, view, item)
+      end
+    end,
+
+    on_quit = function()
+      context.extension = nil
+    end,
+  }
 
   menu:start(drives, cursor)
   context.extension = menu
@@ -150,16 +155,20 @@ function M.change_sort(context, view)
     end
   end
 
-  local menu = ExtensionMenu.new('Select Sort')
-  menu.on_selected = function(item)
-    if context.sort ~= item then
-      context:change_sort(item)
-      view:draw(context)
-    end
-  end
-  menu.on_delete = function()
-    context.extension = nil
-  end
+  local menu = ExtensionMenu.new {
+    name = 'Select Sort',
+
+    on_selected = function(item)
+      if context.sort ~= item then
+        context:change_sort(item)
+        view:draw(context)
+      end
+    end,
+
+    on_quit = function()
+      context.extension = nil
+    end,
+  }
 
   menu:start(sort_types, cursor)
   context.extension = menu
@@ -192,8 +201,19 @@ function M.delete(context, view)
   end
 
   -- delete files
+  local deleted = {}
   for _, item in ipairs(selected) do
-    item:delete()
+    if item:delete() then
+      table.insert(deleted, item)
+    end
+  end
+
+  if #deleted == 0 then
+    return
+  elseif #deleted == 1 then
+    core.info('Deleted - %s', deleted[1].name)
+  else
+    core.info('Deleted - %d files', #deleted)
   end
   view:draw(context)
 end
@@ -209,14 +229,14 @@ function M.new_directory(context, view, lnum)
       for _, name in ipairs(contents) do
         local path = dir.path .. name
         if vim.fn.isdirectory(path) ~= 0 then
-          core.warning(([[Skipped, "%s" already exists]]):format(name))
+          core.warning('Skipped, "%s" already exists.', name)
         else
           local new = Directory.create(path)
           if new then
             dir:add(new, context.sort)
             table.insert(created, name)
           else
-            core.error(([['Failed to create a "%s" file]]):format(name))
+            core.error('Failed to create a "%s" file', name)
           end
         end
       end
@@ -225,9 +245,9 @@ function M.new_directory(context, view, lnum)
         return
       end
       if #created == 1 then
-        core.info(('Created - %s'):format(created[1]))
+        core.info('Created - %s', created[1])
       else
-        core.info(('Created - %d directories'):format(#created))
+        core.info('Created - %d directories', #created)
       end
       view:draw(context)
     end
@@ -245,14 +265,14 @@ function M.new_file(context, view, lnum)
       for _, name in ipairs(contents) do
         local path = dir.path .. name
         if vim.fn.filereadable(path) ~= 0 then
-          core.warning(([[Skipped, "%s" already exists]]):format(name))
+          core.warning('Skipped, "%s" already exists', name)
         else
           local file = File.create(path)
           if file then
             dir:add(file, context.sort)
             table.insert(created, name)
           else
-            core.error(([['Failed to create a "%s" file]]):format(name))
+            core.error('Failed to create a "%s" file', name)
           end
         end
       end
@@ -261,9 +281,9 @@ function M.new_file(context, view, lnum)
         return
       end
       if #created == 1 then
-        core.info(('Created - %s'):format(created[1]))
+        core.info('Created - %s', created[1])
       else
-        core.info(('Created - %d files'):format(#created))
+        core.info('Created - %d files', #created)
       end
       view:draw(context)
     end
@@ -342,22 +362,11 @@ function M.rename(context, view)
     selected = {view:get_item(lnum)}
   end
 
-  -- TODO: check overwrite
-
   if #selected > 1 then
+    M._rename_files(context, view, selected)
   else
-    local target = selected[1]
-    local rename = cmdline.input(
-      'New file name - ' .. target.name, target.name , 'file'
-      )
-    if #rename > 0 then
-      target:rename(rename)
-      target.parent:sort(context.sort, false)
-    end
+    M._rename_one_file(context, view, selected[1])
   end
-
-  -- TODO: all redraw
-  view:draw(context)
 end
 
 function M.switch_to_filer(context, view)
@@ -391,6 +400,77 @@ function M.toggle_select(context, view, after_cursor, lnum)
   elseif after_cursor == 'down' then
     M.move_cursor_down(context, view)
   end
+end
+
+function M._rename_files(context, view, targets)
+  if context.extension then
+    return
+  end
+
+  local ext = ExtensionRename.new {
+    on_execute = function(items, renames)
+      local num_renamed = 0
+      local parents = {}
+      for i = 1, #items do
+        local item = items[i]
+        local rename = renames[i]
+        local path = item.parent.path .. '/' .. rename
+
+        local result = true
+        if vim.fn.filereadable(path) == 1 then
+          if cmdline.util.confirm_overwrite(rename) == cmdline.choice.YES then
+            result = item:rename(rename)
+          end
+        else
+          result = item:rename(rename)
+        end
+
+        if result then
+          num_renamed = num_renamed + 1
+          parents[item.parent.path] = item.parent
+        end
+      end
+
+      if num_renamed > 0 then
+        core.info('Renamed - %d files', num_renamed)
+        for _, parent in pairs(parents) do
+          parent:sort(context.sort, false)
+        end
+        view:draw(context)
+      end
+    end,
+
+    on_quit = function()
+      context.extension = nil
+    end,
+  }
+
+  ext:start(targets, 1)
+  context.extension = ext
+end
+
+function M._rename_one_file(context, view, target)
+  local name = target.name
+  local rename = cmdline.input('New file name - ' .. name, name , 'file')
+  if #rename == 0 then
+    return -- Canceled
+  end
+
+  -- Check overwrite
+  local path = target.parent.path .. '/' .. rename
+  if vim.fn.filereadable(path) == 1 then
+    if cmdline.util.confirm_overwrite(rename) ~= cmdline.choice.YES then
+      return
+    end
+  end
+
+  if not target:rename(rename) then
+    return
+  end
+
+  core.info('Renamed - %s -> %s', name, rename)
+  target.parent:sort(context.sort, false)
+  view:draw(context)
 end
 
 return M

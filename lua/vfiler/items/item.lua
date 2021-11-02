@@ -8,7 +8,7 @@ function Item.new(path, islink)
   local size = vim.fn.getfsize(path)
   local time = vim.fn.getftime(path)
   if size < 0 or time < 0 then
-    core.error(('Failed - Invalid path (%s)'):format(path))
+    core.error('Failed - Invalid path "%s".', path)
     return nil
   end
 
@@ -28,7 +28,7 @@ end
 
 function Item:delete()
   if vim.fn.delete(self.path, 'rf') < 0 then
-    core.error(([["%s" Cannot delete]]):format(self.name))
+    core.error('"%s" Cannot delete.', self.name)
     return false
   end
 
@@ -51,7 +51,7 @@ function Item:rename(name)
   local newpath = self.parent.path .. '/' .. name
   local result, message, code = os.rename(self.path, newpath)
   if not result then
-    core.error(('%s (code:%d)'):format(message, code))
+    core.error('%s (code:%d)', message, code)
     return false
   end
   self.name = name

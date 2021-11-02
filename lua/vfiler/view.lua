@@ -56,11 +56,11 @@ local function create_columns(columns)
     if column then
       table.insert(objects, column)
     else
-      core.warning(("'%s' is not a valid column."):format(cname))
+      core.warning('"%s" is not a valid column.', cname)
     end
   end
   if #objects <= 0 then
-    core.error(('There are no valid columns. (%s)'):format(columns))
+    core.error('There are invalid columns. (%s)', columns)
     return nil
   end
   return objects
@@ -131,6 +131,11 @@ function View:open()
 end
 
 function View:redraw()
+  if self.bufnr ~= vim.fn.bufnr() then
+    core.warning('Cannot draw because the buffer is different')
+    return
+  end
+
   local winwidth = vim.fn.winwidth(0) - 1 -- padding end
   if vim.get_win_option_boolean('number') or
     vim.get_win_option_boolean('relativenumber') then

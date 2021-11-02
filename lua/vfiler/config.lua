@@ -15,7 +15,7 @@ local default_configs = {
 M.configs = core.deepcopy(default_configs)
 
 local function error(message)
-  core.error('Argument error - ' .. message)
+  core.error('Argument error - %s', message)
 end
 
 local function normalized_value(value)

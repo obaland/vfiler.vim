@@ -14,7 +14,7 @@ function Window.new(configs, mapping_type)
       bufnr = 0,
       -- default buffer options
       bufoptions = {
-        bufhidden = 'hide',
+        bufhidden = 'delete',
         buflisted = false,
         buftype = 'nofile',
         swapfile = false,
@@ -35,11 +35,10 @@ function Window.new(configs, mapping_type)
 end
 
 function Window:close()
-  vim.command('silent bwipeout ' .. self.bufnr)
-end
-
-function Window:delete()
-  -- Nothing to do
+  local winnr = vim.fn.bufwinnr(self.bufnr)
+  if winnr >= 0 then
+    vim.command(('silent %dquit!'):format(winnr))
+  end
 end
 
 function Window:open(name, texts)
@@ -53,10 +52,7 @@ end
 
 function Window:draw(name, texts)
   vim.command('silent %delete _')
-
-  for i, text in ipairs(texts) do
-    vim.fn.setline(i, text)
-  end
+  vim.fn.setline(1, vim.vim_list(texts))
 
   -- set name to statusline
   if name and #name > 0 then
@@ -123,9 +119,9 @@ function Window:_on_layout_option(name, texts)
   return option
 end
 
-function Window:_on_open(name, texts, layout_option)
+function Window:_on_open(name, texts, layout)
   -- open window
-  core.open_window(layout_option.open_type)
+  core.open_window(layout.open_type)
 
   -- Save swapfile option
   local swapfile = vim.get_buf_option_boolean('swapfile')
@@ -134,13 +130,12 @@ function Window:_on_open(name, texts, layout_option)
   vim.set_buf_option('swapfile', swapfile)
 
   -- resize window
-  if layout_option.width > 0 then
-    core.resize_window_width(layout_option.width)
+  if layout.width > 0 then
+    core.resize_window_width(layout.width)
   end
-  if layout_option.height > 0 then
-    core.resize_window_height(layout_option.height)
+  if layout.height > 0 then
+    core.resize_window_height(layout.height)
   end
-
   return vim.fn.win_getid()
 end
 

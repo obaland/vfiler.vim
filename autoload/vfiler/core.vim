@@ -57,6 +57,15 @@ function! vfiler#core#getchar(prompt) abort
 endfunction
 
 " NOTE:
+function! vfiler#core#clear_undo() abort
+	let l:undolevels = &undolevels
+	setlocal undolevels=-1
+	silent execute "normal! I \<BS>\<Esc>"
+	execute 'setlocal undolevels=' . l:undolevels
+	unlet l:undolevels
+endfunction
+
+" NOTE:
 function! vfiler#core#info(message) abort
   echo '[vfiler]: ' . a:message
 endfunction

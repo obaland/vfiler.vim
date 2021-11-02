@@ -13,6 +13,7 @@ function M.confirm(prompt, choices, default)
   vim.command('echon')
   prompt = ('[vfiler] %s'):format(prompt)
   local choice = vim.fn.confirm(prompt, table.concat(choices, '\n'), default)
+  vim.command('redraw')
   if choice == 0 then
     return M.choice.Cancel
   end
@@ -45,6 +46,18 @@ function M.input_multiple(prompt, callback)
   if callback then
     callback(splitted)
   end
+end
+
+------------------------------------------------------------------------------
+-- Utilities
+------------------------------------------------------------------------------
+M.util = {}
+
+function M.util.confirm_overwrite(name)
+  return M.confirm(
+    ('"%s" already exists. Overwrite?'):format(name),
+    {M.choice.YES, M.choice.NO}, 1
+    )
 end
 
 return M

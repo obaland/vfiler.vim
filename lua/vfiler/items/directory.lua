@@ -115,7 +115,7 @@ function Directory:_ls()
         item = File.new(path, true)
       end
     else
-      core.warning('Unknown file type. (' .. ftype .. ')')
+      core.warning('Unknown file type. (%s)', ftype)
     end
     item.parent = self
     return item

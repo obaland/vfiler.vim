@@ -19,10 +19,6 @@ function Floating:close()
   end
 end
 
-function Floating:delete()
-  self:close()
-end
-
 function Floating:draw(name, texts)
   vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, true, texts)
 end
@@ -68,16 +64,16 @@ function Floating:_on_layout_option(name, texts)
   return layout
 end
 
-function Floating:_on_open(name, texts, layout_option)
+function Floating:_on_open(name, texts, layout)
   local option = {
     border = 'rounded',
-    col = layout_option.col,
+    col = layout.col,
     focusable = true,
-    height = layout_option.height,
+    height = layout.height,
     noautocmd = false,
-    relative = layout_option.relative,
-    row = layout_option.row,
-    width = layout_option.width,
+    relative = layout.relative,
+    row = layout.row,
+    width = layout.width,
     zindex = 200,
   }
   if option.relative == 'win' then

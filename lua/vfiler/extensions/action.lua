@@ -10,7 +10,7 @@ local M = {}
 ------------------------------------------------------------------------------
 function M.do_action(name, ...)
   if not M[name] then
-    core.error(string.format('Action "%s" is not defined', name))
+    core.error('Action "%s" is not defined.', name)
     return
   end
 
