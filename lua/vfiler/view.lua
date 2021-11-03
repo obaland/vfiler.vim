@@ -189,6 +189,12 @@ function View:selected_items()
       table.insert(selected, item)
     end
   end
+  if #selected == 0 then
+    local lnum = vim.fn.line('.')
+    if lnum ~= 1 then
+      selected = {self:get_item(lnum)}
+    end
+  end
   return selected
 end
 

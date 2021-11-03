@@ -61,6 +61,27 @@ function M.merge_table(dest, src)
 end
 
 ------------------------------------------------------------------------------
+-- File
+------------------------------------------------------------------------------
+if M.is_windows then
+  function M.copy_directory(src, dest)
+    --return vim.fn.system(('copy /y %s %s'):format(src, dest))
+  end
+
+  function M.copy_file(src, dest)
+    vim.fn.system(('copy /y %s %s'):format(src, dest))
+  end
+else
+  function M.copy_directory(src, dest)
+    os.execute(('cp -R %s %s'):format(src, dest))
+  end
+
+  function M.copy_file(src, dest)
+    os.execute(('cp %s %s'):format(src, dest))
+  end
+end
+
+------------------------------------------------------------------------------
 -- Window
 ------------------------------------------------------------------------------
 
@@ -193,6 +214,16 @@ end
 local function strwidthpart_reverse(str, strwidth, width)
   local vcol = strwidth - width
   return vim.fn.matchstr(str, '\\%>' .. vcol .. 'v.*')
+end
+
+if M.is_windows then
+  function M.shellescape(str)
+    return ('"%s"'):format(vim.fn.escape(str:gsub('/', [[\]])))
+  end
+else
+  function M.shellescape(str)
+    return vim.fn.shellescape(str)
+  end
 end
 
 local function truncate(str, width)

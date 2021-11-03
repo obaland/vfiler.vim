@@ -35,8 +35,8 @@ end
 
 -- @param path string
 function Context:switch(path)
-  self.root = Directory.new(core.normalized_path(path), false)
-  self.root:open(self.sort)
+  self.root = Directory.new(core.normalized_path(path), false, self.sort)
+  self.root:open()
 end
 
 function Context:update()

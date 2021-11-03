@@ -6,29 +6,40 @@ local File = require 'vfiler/items/file'
 
 local Directory = {}
 
-function Directory.create(path)
+if core.is_windows then
+  function Directory._copy(src, dest)
+    --return vim.fn.system(('copy /y %s %s'):format(src, dest))
+  end
+else
+  function Directory._copy(src, dest)
+    os.execute(('cp -R %s %s'):format(src, dest))
+  end
+end
+
+function Directory.create(path, sort_type)
   -- mkdir
   if vim.fn.mkdir(path) ~= 1 then
     return nil
   end
-  return Directory.new(path, false)
+  return Directory.new(path, false, sort_type)
 end
 
-function Directory.new(path, islink)
+function Directory.new(path, islink, sort_type)
   local Item = require('vfiler/items/item')
   local self = core.inherit(Directory, Item, path, islink)
   self.children = nil
   self.opened = false
   self.type = self.islink and 'L' or 'D'
+  self._sort = sort_type
+  self._sort_compare = sort.get(sort_type)
   return self
 end
 
-function Directory:add(item, sort_type)
+function Directory:add(item)
   if not self.children then
     self.children = {}
   end
-  local compare = sort.get(sort_type)
-  self:_add(item, compare)
+  self:_add(item)
 end
 
 function Directory:close()
@@ -36,11 +47,20 @@ function Directory:close()
   self.opened = false
 end
 
-function Directory:open(sort_type)
-  local compare = sort.get(sort_type)
+function Directory:copy(destpath)
+  Directory._copy(
+    core.shellescape(self.path), core.shellescape(destpath)
+    )
+  if not vim.fn.filereadable(destpath) then
+    return nil
+  end
+  return Directory.new(destpath, self.islink, self._sort)
+end
+
+function Directory:open()
   self.children = {}
   for item in self:_ls() do
-    self:_add(item, compare)
+    self:_add(item)
   end
   self.opened = true
 end
@@ -50,8 +70,9 @@ function Directory:sort(type, recursive)
     return
   end
 
-  local compare = sort.get(type)
-  table.sort(self.children, compare)
+  self._sort = type
+  self._sort_compare = sort.get(type)
+  table.sort(self.children, self._sort_compare)
 
   if not recursive then
     return
@@ -65,10 +86,10 @@ function Directory:sort(type, recursive)
   end
 end
 
-function Directory:_add(item, compare)
+function Directory:_add(item)
   local pos = #self.children + 1
   for i, child in ipairs(self.children) do
-    if compare(item, child) then
+    if self._sort_compare(item, child) then
       pos = i
       break
     end
@@ -105,12 +126,12 @@ function Directory:_ls()
     local item = nil
 
     if ftype == 'dir' then
-      item = Directory.new(path, false)
+      item = Directory.new(path, false, self._sort)
     elseif ftype == 'file' then
       item = File.new(path, false)
     elseif ftype == 'link' then
       if vim.fn.isdirectory(path) then
-        item = Directory.new(path, true)
+        item = Directory.new(path, true, self._sort)
       else
         item = File.new(path, true)
       end

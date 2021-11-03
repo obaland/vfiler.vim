@@ -3,8 +3,9 @@ local core = require 'vfiler/core'
 local sort = require 'vfiler/sort'
 local vim = require 'vfiler/vim'
 
-local ExtensionMenu = require 'vfiler/extensions/menu'
-local ExtensionRename = require 'vfiler/extensions/rename'
+local Clipboard = require 'vfiler/clipboard'
+local Menu = require 'vfiler/extensions/menu'
+local Rename = require 'vfiler/extensions/rename'
 local Directory = require 'vfiler/items/directory'
 local File = require 'vfiler/items/file'
 local VFiler = require 'vfiler/vfiler'
@@ -123,7 +124,7 @@ function M.change_drive(context, view)
     end
   end
 
-  local menu = ExtensionMenu.new {
+  local menu = Menu.new {
     name = 'Select Drive',
 
     on_selected = function(item)
@@ -155,7 +156,7 @@ function M.change_sort(context, view)
     end
   end
 
-  local menu = ExtensionMenu.new {
+  local menu = Menu.new {
     name = 'Select Sort',
 
     on_selected = function(item)
@@ -174,14 +175,24 @@ function M.change_sort(context, view)
   context.extension = menu
 end
 
+function M.copy(context, view)
+  local selected = view:selected_items()
+  if #selected == 0 then
+    return
+  end
+
+  context.clipboard = Clipboard.copy(selected)
+  if #selected == 1 then
+    core.info('Copy to the clipboard - %s', selected[1].name)
+  else
+    core.info('Copy to the clipboard - %d files', #selected)
+  end
+end
+
 function M.delete(context, view)
   local selected = view:selected_items()
   if #selected == 0 then
-    local lnum = vim.fn.line('.')
-    if lnum == 1 then
-      return
-    end
-    selected = {view:get_item(lnum)}
+    return
   end
 
   local prompt = 'Are you sure you want to delete? - '
@@ -218,6 +229,47 @@ function M.delete(context, view)
   view:draw(context)
 end
 
+function M.move(context, view)
+  local selected = view:selected_items()
+  if #selected == 0 then
+    return
+  end
+
+  context.clipboard = Clipboard.move(selected)
+  if #selected == 1 then
+    core.info('Move to the clipboard - %s', selected[1].name)
+  else
+    core.info('Move to the clipboard - %d files', #selected)
+  end
+end
+
+function M.move_cursor_bottom(context, view)
+  move_cursor(view:num_lines())
+end
+
+function M.move_cursor_down(context, view, loop)
+  local lnum = vim.fn.line('.') + 1
+  local num_end = view:num_lines()
+  if lnum > num_end then
+    -- the meaning of "2" is to skip the header line
+    lnum = loop and 2 or num_end
+  end
+  move_cursor(lnum)
+end
+
+function M.move_cursor_top(context, view)
+  move_cursor(2)
+end
+
+function M.move_cursor_up(context, view, loop)
+  local lnum = vim.fn.line('.') - 1
+  if lnum <= 1 then
+    -- the meaning of "2" is to skip the header line
+    lnum = loop and view:num_lines() or 2
+  end
+  move_cursor(lnum)
+end
+
 function M.new_directory(context, view, lnum)
   lnum = lnum or vim.fn.line('.')
   local item = view:get_item(lnum)
@@ -231,9 +283,9 @@ function M.new_directory(context, view, lnum)
         if vim.fn.isdirectory(path) ~= 0 then
           core.warning('Skipped, "%s" already exists.', name)
         else
-          local new = Directory.create(path)
+          local new = Directory.create(path, context.sort)
           if new then
-            dir:add(new, context.sort)
+            dir:add(new)
             table.insert(created, name)
           else
             core.error('Failed to create a "%s" file', name)
@@ -269,7 +321,7 @@ function M.new_file(context, view, lnum)
         else
           local file = File.create(path)
           if file then
-            dir:add(file, context.sort)
+            dir:add(file)
             table.insert(created, name)
           else
             core.error('Failed to create a "%s" file', name)
@@ -288,33 +340,6 @@ function M.new_file(context, view, lnum)
       view:draw(context)
     end
     )
-end
-
-function M.move_cursor_bottom(context, view)
-  move_cursor(view:num_lines())
-end
-
-function M.move_cursor_down(context, view, loop)
-  local lnum = vim.fn.line('.') + 1
-  local num_end = view:num_lines()
-  if lnum > num_end then
-    -- the meaning of "2" is to skip the header line
-    lnum = loop and 2 or num_end
-  end
-  move_cursor(lnum)
-end
-
-function M.move_cursor_top(context, view)
-  move_cursor(2)
-end
-
-function M.move_cursor_up(context, view, loop)
-  local lnum = vim.fn.line('.') - 1
-  if lnum <= 1 then
-    -- the meaning of "2" is to skip the header line
-    lnum = loop and view:num_lines() or 2
-  end
-  move_cursor(lnum)
 end
 
 function M.open(context, view, lnum)
@@ -339,9 +364,23 @@ function M.open_tree(context, view, lnum)
   if not item.isdirectory or item.opened then
     return
   end
-  item:open(context.sort)
+  item:open()
   view:draw(context)
   move_cursor(lnum + 1)
+end
+
+function M.paste(context, view)
+  if not context.clipboard then
+    core.warning('No clipboard')
+    return
+  end
+
+  local item = view:get_item(vim.fn.line('.'))
+  local dest = (item.isdirectory and item.opened) and item or item.parent
+  if context.clipboard:paste(dest) then
+    context.clipboard = nil
+  end
+  view:draw(context)
 end
 
 function M.quit(context, view)
@@ -354,18 +393,10 @@ end
 
 function M.rename(context, view)
   local selected = view:selected_items()
-  if #selected == 0 then
-    local lnum = vim.fn.line('.')
-    if lnum == 1 then
-      return
-    end
-    selected = {view:get_item(lnum)}
-  end
-
-  if #selected > 1 then
-    M._rename_files(context, view, selected)
-  else
+  if #selected == 1 then
     M._rename_one_file(context, view, selected[1])
+  elseif #selected > 1 then
+    M._rename_files(context, view, selected)
   end
 end
 
@@ -407,7 +438,7 @@ function M._rename_files(context, view, targets)
     return
   end
 
-  local ext = ExtensionRename.new {
+  local ext = Rename.new {
     on_execute = function(items, renames)
       local num_renamed = 0
       local parents = {}
