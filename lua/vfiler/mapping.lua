@@ -3,33 +3,44 @@ local vim = require 'vfiler/vim'
 
 local M = {}
 
-M.keymappings = {}
+local keymappings = {}
 
-function M.define(type)
-  local mappings = M.keymappings[type]
-  if not mappings then
+function M._call(key, bufnr)
+  local keymapping = keymappings[bufnr]
+  if not keymapping then
+    core.error('Not defined in the "%d" buffer', bufnr)
     return
   end
+
+  local func = keymapping.mappings[key]
+  if not keymapping then
+    core.error('Not defined in the "%s" key', key)
+    return
+  end
+  keymapping.do_action(bufnr, func)
+end
+
+function M.define(bufnr, mappings, func)
+  keymappings[bufnr] = {
+    mappings = core.deepcopy(mappings),
+    do_action = func,
+  }
 
   local options = {
     noremap = true,
     nowait = true,
     silent = true,
   }
-  for key, rhs in pairs(mappings) do
-    vim.set_buf_keymap('n', key, rhs .. '<CR>', options)
+  for key, _ in pairs(mappings) do
+    local rhs = (
+      [[lua: require('vfiler/mapping')._call('%s', %d)<CR>]]
+      ):format(key, bufnr)
+    vim.set_buf_keymap('n', key, rhs, options)
   end
 end
 
-function M.set(type, key, rhs)
-  if not M.keymappings[type] then
-    M.keymappings[type] = {}
-  end
-  M.keymappings[type][key] = rhs
-end
-
-function M.setup(keymaps)
-  core.merge_table(M.keymappings, keymaps)
+function M.undefine(bufnr)
+  keymappings[bufnr] = nil
 end
 
 return M

@@ -2,8 +2,9 @@ local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
 local M = {}
+M.configs = {}
 
-local default_configs = {
+local default_options = {
   auto_cd = false,
   columns = 'indent,sp,icon,sp,name,sp,mode,sp,size,sp,time',
   listed = true,
@@ -12,7 +13,7 @@ local default_configs = {
   sort = 'name',
 }
 
-M.configs = core.deepcopy(default_configs)
+M.configs.options = core.deepcopy(default_options)
 
 local function error(message)
   core.error('Argument error - %s', message)
@@ -67,31 +68,39 @@ end
 
 function M.parse(str_args)
   local args = split(str_args)
-
-  -- copy from default
   local configs = core.deepcopy(M.configs)
-  configs.path = ''
+  local options = configs.options
+  local path = ''
 
   for _, arg in ipairs(args) do
     if arg:sub(1, 1) == '-' then
       local name, value, key = parse_option(arg)
-      if configs[name] == nil then
+      if options[name] == nil then
         error(string.format("Unknown '%s' option.", key))
         return nil
-      elseif type(value) ~= type(configs[name]) then
+      elseif type(value) ~= type(options[name]) then
         error(string.format("Illegal option value. (%s)", value))
         return nil
       end
-      configs[name] = value
+      options[name] = value
     else
-      if #configs.path > 0 then
+      if #path > 0 then
         error('The path specification is duplicated.')
         return nil
       end
-      configs.path = normalized_value(arg)
+      path = normalized_value(arg)
     end
   end
-  return configs
+  return configs, path
+end
+
+function M.setup(configs)
+  if configs.options then
+    core.merge_table(M.configs.options, configs.options)
+  end
+  if configs.mappings then
+    M.configs.mappings = core.deepcopy(configs.mappings)
+  end
 end
 
 return M

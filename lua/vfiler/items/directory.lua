@@ -1,4 +1,5 @@
 local core = require 'vfiler/core'
+local path = require 'vfiler/path'
 local sort = require 'vfiler/sort'
 local vim = require 'vfiler/vim'
 
@@ -16,17 +17,17 @@ else
   end
 end
 
-function Directory.create(path, sort_type)
+function Directory.create(dirpath, sort_type)
   -- mkdir
-  if vim.fn.mkdir(path) ~= 1 then
+  if vim.fn.mkdir(dirpath) ~= 1 then
     return nil
   end
-  return Directory.new(path, false, sort_type)
+  return Directory.new(dirpath, false, sort_type)
 end
 
-function Directory.new(path, islink, sort_type)
+function Directory.new(dirpath, islink, sort_type)
   local Item = require('vfiler/items/item')
-  local self = core.inherit(Directory, Item, path, islink)
+  local self = core.inherit(Directory, Item, dirpath, islink)
   self.children = nil
   self.opened = false
   self.type = self.islink and 'L' or 'D'
@@ -51,7 +52,7 @@ function Directory:copy(destpath)
   Directory._copy(
     core.shellescape(self.path), core.shellescape(destpath)
     )
-  if not vim.fn.filereadable(destpath) then
+  if not path.exists(destpath) then
     return nil
   end
   return Directory.new(destpath, self.islink, self._sort)
@@ -101,10 +102,10 @@ end
 
 function Directory:_ls()
   local paths = vim.lua_list(
-    vim.fn.glob(self.path .. '/*', 1, 1)
+    vim.fn.glob(path.join(self.path, '/*'), 1, 1)
     )
   local dotpaths = vim.lua_list(
-    vim.fn.glob(self.path .. '/.*', 1, 1)
+    vim.fn.glob(path.join(self.path, '/.*'), 1, 1)
     )
   for _, dotpath in ipairs(dotpaths) do
     local dotfile = vim.fn.fnamemodify(dotpath, ':t')
@@ -121,19 +122,19 @@ function Directory:_ls()
       return nil
     end
 
-    local path = paths[index]
-    local ftype = vim.fn.getftype(path)
+    local filepath = paths[index]
+    local ftype = vim.fn.getftype(filepath)
     local item = nil
 
     if ftype == 'dir' then
-      item = Directory.new(path, false, self._sort)
+      item = Directory.new(filepath, false, self._sort)
     elseif ftype == 'file' then
-      item = File.new(path, false)
+      item = File.new(filepath, false)
     elseif ftype == 'link' then
-      if vim.fn.isdirectory(path) then
-        item = Directory.new(path, true, self._sort)
+      if path.isdirectory(filepath) then
+        item = Directory.new(filepath, true, self._sort)
       else
-        item = File.new(path, true)
+        item = File.new(filepath, true)
       end
     else
       core.warning('Unknown file type. (%s)', ftype)

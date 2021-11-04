@@ -25,7 +25,10 @@ function! vfiler#start_command(args) abort
 endfunction
 
 function! vfiler#start(...) abort
-  call luaeval('require"vfiler".start(_A)', get(a:000, 0, {}))
+  call luaeval(
+        \ 'require"vfiler".start(_A.dirpath, _A.configs)',
+        \ {'dirpath': get(a:000, 0, ''), 'configs': get(a:000, 1, {})}
+        \ )
 endfunction
 
 function! vfiler#start_legacy(path, options) abort

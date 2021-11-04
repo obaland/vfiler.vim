@@ -1,4 +1,5 @@
 local core = require 'vfiler/core'
+local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
 local Context = require 'vfiler/context'
@@ -65,7 +66,7 @@ end
 
 ---@param bufnr number Buffer number
 function VFiler.get(bufnr)
-  return vfilers[bufnr].object
+  return vfilers[bufnr].vfiler
 end
 
 function VFiler.get_current()
@@ -74,22 +75,51 @@ end
 
 ---@param configs table
 function VFiler.new(configs)
-  local bufname, name, number = generate_name(configs.name)
-  local view = View.new(bufname, configs)
+  local options = configs.options
+  local bufname, name, number = generate_name(options.name)
+  local view = View.new(bufname, options)
+
   local object = setmetatable({
       configs = core.deepcopy(configs),
-      context = Context.new(configs),
+      context = Context.new(options),
       linked = nil,
       view = view,
     }, VFiler)
 
+  -- key mappings
+  local mapoptions = {
+    noremap = true,
+    nowait = true,
+    silent = true,
+  }
+  for key, _ in pairs(configs.mappings) do
+    local rhs = (
+      [[:lua require('vfiler/vfiler')._call(%d, '%s')<CR>]]
+      ):format(view.bufnr, key)
+    vim.set_buf_keymap('n', key, rhs, mapoptions)
+  end
+
   -- add vfiler resource
   vfilers[view.bufnr] = {
-    object = object,
+    vfiler = object,
     name = name,
     number = number,
   }
   return object
+end
+
+function VFiler._call(bufnr, key)
+  local vfiler = VFiler.get(bufnr)
+  vfiler:do_action(key)
+end
+
+function VFiler:do_action(key)
+  local func = self.configs.mappings[key]
+  if not func then
+    core.error('Not defined in the "%s" key', key)
+    return
+  end
+  func(self.context, self.view)
 end
 
 function VFiler:link(vfiler)

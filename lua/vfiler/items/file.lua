@@ -1,5 +1,4 @@
 local core = require 'vfiler/core'
-local vim = require 'vfiler/vim'
 
 local File = {}
 

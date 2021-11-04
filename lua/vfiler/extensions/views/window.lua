@@ -80,7 +80,7 @@ function Window:_on_apply_options(winid)
 end
 
 function Window:_on_define_mapping(winid)
-  mapping.define(self.mapping_type)
+  mapping._define(self.mapping_type)
 end
 
 function Window:_on_layout_option(name, texts)

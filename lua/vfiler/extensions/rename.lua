@@ -1,6 +1,6 @@
 local config = require 'vfiler/extensions/config'
 local core = require 'vfiler/core'
-local mapping = require 'vfiler/mapping'
+local mapping = require 'vfiler/extensions/rename/mapping'
 local vim = require 'vfiler/vim'
 
 local ExtensionRename = {}
@@ -16,12 +16,10 @@ local function _do_action(name, ...)
   return func .. args
 end
 
-mapping.setup {
-  rename = {
-    ['q']     = _do_action('quit'),
-    ['<ESC>'] = _do_action('quit'),
-  },
-}
+--mapping.setup {
+--  ['q']     = _do_action('quit'),
+--  ['<ESC>'] = _do_action('quit'),
+--}
 
 function ExtensionRename.new(options)
   local Extension = require('vfiler/extensions/extension')

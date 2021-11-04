@@ -1,5 +1,6 @@
-local cmdline = require 'vfiler/cmdline'
 local core = require 'vfiler/core'
+local cmdline = require 'vfiler/cmdline'
+local path = require 'vfiler/path'
 local sort = require 'vfiler/sort'
 local vim = require 'vfiler/vim'
 
@@ -19,16 +20,11 @@ local function detect_drives()
   local drives = {}
   for byte = ('A'):byte(), ('Z'):byte() do
     local drive = string.char(byte) .. ':/'
-    if vim.fn.isdirectory(drive) == 1 then
+    if path.isdirectory(drive) then
       table.insert(drives, drive)
     end
   end
   return drives
-end
-
-local function input_names(message)
-  local content = core.input(message)
-  return vim.fn.split(content, [[\s*,\s*]])
 end
 
 -- @param lnum number
@@ -43,7 +39,7 @@ function M.define(name, func)
   M[name] = func
 end
 
-function M.do_action(name, ...)
+function M._do_action(name, ...)
   if not M[name] then
     core.error('Action "%s" is not defined.', name)
     return
@@ -57,9 +53,22 @@ function M.do_action(name, ...)
   M[name](vfiler.context, vfiler.view, ...)
 end
 
-function M.start(configs)
+function M.do_action(bufnr, func)
+  local vfiler = VFiler.get(bufnr)
+  if not vfiler then
+    core.error('Buffer does not exist.')
+    return
+  end
+  func(vfiler.context, vfiler.view)
+end
+
+function M.start(dirpath, configs)
   local vfiler = VFiler.new(configs)
-  M.cd(vfiler.context, vfiler.view, configs.path)
+  local context = vfiler.context
+  local view = vfiler.view
+
+  context:switch(dirpath)
+  view:draw(context)
   move_cursor(2)
 end
 
@@ -70,13 +79,13 @@ end
 ------------------------------------------------------------------------------
 -- actions
 ------------------------------------------------------------------------------
-function M.cd(context, view, path)
+function M.cd(context, view, dirpath)
   -- special path
-  if path == '..' then
+  if dirpath == '..' then
     -- change parent directory
-    path = vim.fn.fnamemodify(context.root.path, ':h:h')
+    dirpath = vim.fn.fnamemodify(context.root.path, ':h:h')
   end
-  context:switch(path)
+  context:switch(dirpath)
   view:draw(context)
 end
 
@@ -115,7 +124,7 @@ function M.change_drive(context, view)
     return
   end
 
-  local root = core.get_root_path(context.root.path)
+  local root = path.root(context.root.path)
   local cursor = 1
   for i, drive in ipairs(drives) do
     if drive == root then
@@ -247,12 +256,17 @@ function M.move_cursor_bottom(context, view)
   move_cursor(view:num_lines())
 end
 
-function M.move_cursor_down(context, view, loop)
+function M.move_cursor_down(context, view)
+  local lnum = vim.fn.line('.') + 1
+  move_cursor(lnum)
+end
+
+function M.loop_cursor_down(context, view)
   local lnum = vim.fn.line('.') + 1
   local num_end = view:num_lines()
   if lnum > num_end then
     -- the meaning of "2" is to skip the header line
-    lnum = loop and 2 or num_end
+    lnum = 2
   end
   move_cursor(lnum)
 end
@@ -279,11 +293,11 @@ function M.new_directory(context, view, lnum)
     function(contents)
       local created = {}
       for _, name in ipairs(contents) do
-        local path = dir.path .. name
-        if vim.fn.isdirectory(path) ~= 0 then
+        local filepath = path.join(dir.path, name)
+        if path.isdirectory(filepath) then
           core.warning('Skipped, "%s" already exists.', name)
         else
-          local new = Directory.create(path, context.sort)
+          local new = Directory.create(filepath, context.sort)
           if new then
             dir:add(new)
             table.insert(created, name)
@@ -315,11 +329,11 @@ function M.new_file(context, view, lnum)
     function(contents)
       local created = {}
       for _, name in ipairs(contents) do
-        local path = dir.path .. name
-        if vim.fn.filereadable(path) ~= 0 then
+        local filepath = path.join(dir.path, name)
+        if vim.fn.filereadable(filepath) ~= 0 then
           core.warning('Skipped, "%s" already exists', name)
         else
-          local file = File.create(path)
+          local file = File.create(filepath)
           if file then
             dir:add(file)
             table.insert(created, name)
@@ -445,10 +459,10 @@ function M._rename_files(context, view, targets)
       for i = 1, #items do
         local item = items[i]
         local rename = renames[i]
-        local path = item.parent.path .. '/' .. rename
+        local filepath = path.join(item.parent.path, rename)
 
         local result = true
-        if vim.fn.filereadable(path) == 1 then
+        if path.exists(filepath) then
           if cmdline.util.confirm_overwrite(rename) == cmdline.choice.YES then
             result = item:rename(rename)
           end
@@ -488,8 +502,8 @@ function M._rename_one_file(context, view, target)
   end
 
   -- Check overwrite
-  local path = target.parent.path .. '/' .. rename
-  if vim.fn.filereadable(path) == 1 then
+  local filepath = path.join(target.parent.path, rename)
+  if path.exists(filepath) == 1 then
     if cmdline.util.confirm_overwrite(rename) ~= cmdline.choice.YES then
       return
     end

@@ -1,11 +1,10 @@
 local core = require 'vfiler/core'
-local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
 local View = {}
 View.__index = View
 
-local function create_buffer(bufname, configs)
+local function create_buffer(bufname, options)
   -- Save swapfile option
   local swapfile = vim.get_buf_option_boolean('swapfile')
   vim.set_buf_option('swapfile', false)
@@ -15,7 +14,7 @@ local function create_buffer(bufname, configs)
   -- Set buffer local options
   vim.set_buf_options {
     bufhidden = 'hide',
-    buflisted = configs.listed,
+    buflisted = options.listed,
     buftype = 'nofile',
     filetype = 'vfiler',
     modifiable = false,
@@ -67,20 +66,18 @@ local function create_columns(columns)
 end
 
 ---@param bufname string
----@param configs table
-function View.new(bufname, configs)
-  local columns = create_columns(configs.columns)
+---@param options table
+function View.new(bufname, options)
+  local columns = create_columns(options.columns)
   if not columns then
     return nil
   end
 
-  local bufnr = create_buffer(bufname, configs)
-  mapping.define('main')
-
+  local bufnr = create_buffer(bufname, options)
   local object = setmetatable({
     bufname = bufname,
     bufnr = bufnr,
-    show_hidden_files = configs.show_hidden_files,
+    show_hidden_files = options.show_hidden_files,
     _cache = {
       winwidth = 0,
     },
@@ -93,8 +90,10 @@ end
 
 ---Delete view object
 function View:delete()
-  vim.command('silent bwipeout ' .. self.bufnr)
-  self.bufnr = 0
+  if self.bufnr >= 0 then
+    vim.command('silent bwipeout ' .. self.bufnr)
+  end
+  self.bufnr = -1
 end
 
 ---@param lnum number

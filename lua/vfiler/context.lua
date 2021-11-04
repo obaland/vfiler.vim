@@ -1,5 +1,5 @@
 local core = require 'vfiler/core'
-local sort = require 'vfiler/sort'
+local path = require 'vfiler/path'
 
 local Directory = require 'vfiler/items/directory'
 
@@ -15,13 +15,13 @@ local function sort_items(items, compare)
   end
 end
 
-function Context.new(configs)
+function Context.new(options)
   return setmetatable({
       clipboard = nil,
       extension = nil,
       root = nil,
-      show_hidden_files = configs.show_hidden_files,
-      sort = configs.sort,
+      show_hidden_files = options.show_hidden_files,
+      sort = options.sort,
     }, Context)
 end
 
@@ -34,8 +34,8 @@ function Context:change_sort(type)
 end
 
 -- @param path string
-function Context:switch(path)
-  self.root = Directory.new(core.normalized_path(path), false, self.sort)
+function Context:switch(dirpath)
+  self.root = Directory.new(dirpath, false, self.sort)
   self.root:open()
 end
 

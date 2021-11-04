@@ -1,6 +1,6 @@
 local config = require 'vfiler/extensions/config'
 local core = require 'vfiler/core'
-local mapping = require 'vfiler/mapping'
+local mapping = require 'vfiler/extensions/menu/mapping'
 local vim = require 'vfiler/vim'
 
 local ExtensionMenu = {}
@@ -16,15 +16,13 @@ local function _do_action(name, ...)
   return func .. args
 end
 
-mapping.setup {
-  menu = {
-    ['k']     = _do_action('move_cursor_up', 'true'),
-    ['j']     = _do_action('move_cursor_down', 'true'),
-    ['q']     = _do_action('quit'),
-    ['<CR>']  = _do_action('select'),
-    ['<ESC>'] = _do_action('quit'),
-  },
-}
+--mapping.setup {
+--  ['k']     = _do_action('move_cursor_up', 'true'),
+--  ['j']     = _do_action('move_cursor_down', 'true'),
+--  ['q']     = _do_action('quit'),
+--  ['<CR>']  = _do_action('select'),
+--  ['<ESC>'] = _do_action('quit'),
+--}
 
 function ExtensionMenu.new(options)
   local Extension = require('vfiler/extensions/extension')
