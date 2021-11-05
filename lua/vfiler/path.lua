@@ -1,3 +1,4 @@
+local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
 local M = {}
@@ -26,7 +27,7 @@ function M.normalize(path)
   end
 
   local result = vim.fn.fnamemodify(path, ':p')
-  if M.is_windows then
+  if core.is_windows then
     result = result:gsub('\\', '/')
   end
   return result

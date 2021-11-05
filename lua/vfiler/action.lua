@@ -425,7 +425,7 @@ function M.new_file(context, view)
 end
 
 function M.open(context, view)
-  local item = view:get_item(vim.fn.line('.'))
+  local item = view:get_current()
   if not item then
     core.warning('Item does not exist.')
     return
@@ -439,7 +439,8 @@ function M.open(context, view)
 end
 
 function M.open_tree(context, view)
-  local item = view:get_current()
+  local lnum = vim.fn.line('.')
+  local item = view:get_item(lnum)
   if not item.isdirectory or item.opened then
     return
   end
