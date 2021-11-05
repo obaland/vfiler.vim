@@ -96,6 +96,10 @@ function View:delete()
   self.bufnr = -1
 end
 
+function View:get_current()
+  return self:get_item(vim.fn.line('.'))
+end
+
 ---@param lnum number
 function View:get_item(lnum)
   return self._items[lnum]

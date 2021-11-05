@@ -79,25 +79,19 @@ function VFiler.new(configs)
   local bufname, name, number = generate_name(options.name)
   local view = View.new(bufname, options)
 
+  -- key mappings
+  local mappings = mapping.define(
+    view.bufnr, configs.mappings,
+    [[require('vfiler/vfiler')._call]]
+    )
+
   local object = setmetatable({
-      configs = core.deepcopy(configs),
       context = Context.new(options),
       linked = nil,
+      mappings = mappings,
+      options = core.deepcopy(options),
       view = view,
     }, VFiler)
-
-  -- key mappings
-  local mapoptions = {
-    noremap = true,
-    nowait = true,
-    silent = true,
-  }
-  for key, _ in pairs(configs.mappings) do
-    local rhs = (
-      [[:lua require('vfiler/vfiler')._call(%d, '%s')<CR>]]
-      ):format(view.bufnr, key)
-    vim.set_buf_keymap('n', key, rhs, mapoptions)
-  end
 
   -- add vfiler resource
   vfilers[view.bufnr] = {
@@ -108,15 +102,15 @@ function VFiler.new(configs)
   return object
 end
 
-function VFiler._call(bufnr, key)
+function VFiler._call(bufnr, code)
   local vfiler = VFiler.get(bufnr)
-  vfiler:do_action(key)
+  vfiler:do_action(code)
 end
 
-function VFiler:do_action(key)
-  local func = self.configs.mappings[key]
+function VFiler:do_action(code)
+  local func = self.mappings[code]
   if not func then
-    core.error('Not defined in the "%s" key', key)
+    core.error('Not defined in the key')
     return
   end
   func(self.context, self.view)

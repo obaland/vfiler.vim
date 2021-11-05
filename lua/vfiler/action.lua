@@ -13,6 +13,16 @@ local VFiler = require 'vfiler/vfiler'
 
 local M = {}
 
+local function cd(context, view, dirpath)
+  -- special path
+  if dirpath == '..' then
+    -- change parent directory
+    dirpath = vim.fn.fnamemodify(context.root.path, ':h:h')
+  end
+  context:switch(dirpath)
+  view:draw(context)
+end
+
 local function detect_drives()
   if not core.is_windows then
     return {}
@@ -30,6 +40,77 @@ end
 -- @param lnum number
 local function move_cursor(lnum)
   vim.fn.cursor(lnum, 1)
+end
+
+local function rename_files(context, view, targets)
+  if context.extension then
+    return
+  end
+
+  local ext = Rename.new {
+    on_execute = function(items, renames)
+      local num_renamed = 0
+      local parents = {}
+      for i = 1, #items do
+        local item = items[i]
+        local rename = renames[i]
+        local filepath = path.join(item.parent.path, rename)
+
+        local result = true
+        if path.exists(filepath) then
+          if cmdline.util.confirm_overwrite(rename) == cmdline.choice.YES then
+            result = item:rename(rename)
+          end
+        else
+          result = item:rename(rename)
+        end
+
+        if result then
+          num_renamed = num_renamed + 1
+          parents[item.parent.path] = item.parent
+        end
+      end
+
+      if num_renamed > 0 then
+        core.info('Renamed - %d files', num_renamed)
+        for _, parent in pairs(parents) do
+          parent:sort(context.sort, false)
+        end
+        view:draw(context)
+      end
+    end,
+
+    on_quit = function()
+      context.extension = nil
+    end,
+  }
+
+  ext:start(targets, 1)
+  context.extension = ext
+end
+
+local function rename_one_file(context, view, target)
+  local name = target.name
+  local rename = cmdline.input('New file name - ' .. name, name , 'file')
+  if #rename == 0 then
+    return -- Canceled
+  end
+
+  -- Check overwrite
+  local filepath = path.join(target.parent.path, rename)
+  if path.exists(filepath) == 1 then
+    if cmdline.util.confirm_overwrite(rename) ~= cmdline.choice.YES then
+      return
+    end
+  end
+
+  if not target:rename(rename) then
+    return
+  end
+
+  core.info('Renamed - %s -> %s', name, rename)
+  target.parent:sort(context.sort, false)
+  view:draw(context)
 end
 
 ------------------------------------------------------------------------------
@@ -64,11 +145,7 @@ end
 
 function M.start(dirpath, configs)
   local vfiler = VFiler.new(configs)
-  local context = vfiler.context
-  local view = vfiler.view
-
-  context:switch(dirpath)
-  view:draw(context)
+  cd(vfiler.context, vfiler.view, dirpath)
   move_cursor(2)
 end
 
@@ -79,20 +156,9 @@ end
 ------------------------------------------------------------------------------
 -- actions
 ------------------------------------------------------------------------------
-function M.cd(context, view, dirpath)
-  -- special path
-  if dirpath == '..' then
-    -- change parent directory
-    dirpath = vim.fn.fnamemodify(context.root.path, ':h:h')
-  end
-  context:switch(dirpath)
-  view:draw(context)
-end
 
-function M.close_tree(context, view, lnum)
-  lnum = lnum or vim.fn.line('.')
-  local item = view:get_item(lnum)
-
+function M.close_tree(context, view)
+  local item = view:get_current()
   local target = (item.isdirectory and item.opened) and item or item.parent
   target:close()
 
@@ -104,13 +170,12 @@ function M.close_tree(context, view, lnum)
   end
 end
 
-function M.close_tree_or_cd(context, view, lnum)
-  lnum = lnum or vim.fn.line('.')
-  local item = view:get_item(lnum)
+function M.close_tree_or_cd(context, view)
+  local item = view:get_current()
   if item.level <= 1 and not item.opened then
-    M.cd(context, view, '..')
+    cd(context, view, '..')
   else
-    M.close_tree(context, view, lnum)
+    M.close_tree(context, view)
   end
 end
 
@@ -138,7 +203,7 @@ function M.change_drive(context, view)
 
     on_selected = function(item)
       if root ~= item then
-        M.cd(context, view, item)
+        cd(context, view, item)
       end
     end,
 
@@ -238,6 +303,24 @@ function M.delete(context, view)
   view:draw(context)
 end
 
+function M.loop_cursor_down(context, view)
+  local lnum = vim.fn.line('.') + 1
+  local num_end = view:num_lines()
+  if lnum > num_end then
+    -- the meaning of "2" is to skip the header line
+    lnum = 2
+  end
+  move_cursor(lnum)
+end
+
+function M.loop_cursor_up(context, view, loop)
+  local lnum = vim.fn.line('.') - 1
+  if lnum <= 1 then
+    lnum = view:num_lines()
+  end
+  move_cursor(lnum)
+end
+
 function M.move(context, view)
   local selected = view:selected_items()
   if #selected == 0 then
@@ -261,32 +344,18 @@ function M.move_cursor_down(context, view)
   move_cursor(lnum)
 end
 
-function M.loop_cursor_down(context, view)
-  local lnum = vim.fn.line('.') + 1
-  local num_end = view:num_lines()
-  if lnum > num_end then
-    -- the meaning of "2" is to skip the header line
-    lnum = 2
-  end
-  move_cursor(lnum)
-end
-
 function M.move_cursor_top(context, view)
   move_cursor(2)
 end
 
-function M.move_cursor_up(context, view, loop)
-  local lnum = vim.fn.line('.') - 1
-  if lnum <= 1 then
-    -- the meaning of "2" is to skip the header line
-    lnum = loop and view:num_lines() or 2
-  end
+function M.move_cursor_up(context, view)
+  -- the meaning of "2" is to skip the header line
+  local lnum = math.max(2, vim.fn.line('.') - 1)
   move_cursor(lnum)
 end
 
-function M.new_directory(context, view, lnum)
-  lnum = lnum or vim.fn.line('.')
-  local item = view:get_item(lnum)
+function M.new_directory(context, view)
+  local item = view:get_current()
   local dir = (item.isdirectory and item.opened) and item or item.parent
 
   cmdline.input_multiple('New directory names?',
@@ -320,9 +389,8 @@ function M.new_directory(context, view, lnum)
     )
 end
 
-function M.new_file(context, view, lnum)
-  lnum = lnum or vim.fn.line('.')
-  local item = view:get_item(lnum)
+function M.new_file(context, view)
+  local item = view:get_current()
   local dir = (item.isdirectory and item.opened) and item or item.parent
 
   cmdline.input_multiple('New file names?',
@@ -356,25 +424,22 @@ function M.new_file(context, view, lnum)
     )
 end
 
-function M.open(context, view, lnum)
-  lnum = lnum or vim.fn.line('.')
-  local item = view:get_item(lnum)
+function M.open(context, view)
+  local item = view:get_item(vim.fn.line('.'))
   if not item then
     core.warning('Item does not exist.')
     return
   end
 
   if item.isdirectory then
-    M.cd(context, view, item.path)
+    cd(context, view, item.path)
   else
     vim.command('edit ' .. item.path)
   end
 end
 
-function M.open_tree(context, view, lnum)
-  lnum = lnum or vim.fn.line('.')
-  local item = view:get_item(lnum)
-
+function M.open_tree(context, view)
+  local item = view:get_current()
   if not item.isdirectory or item.opened then
     return
   end
@@ -424,7 +489,7 @@ function M.switch_to_filer(context, view)
 
   core.open_window('right')
   local filer = VFiler.new(current.configs)
-  M.cd(filer.context, filer.view, context.root.path)
+  cd(filer.context, filer.view, context.root.path)
   filer:link(current)
 end
 
@@ -433,89 +498,21 @@ function M.toggle_show_hidden(context, view)
   view:draw(context)
 end
 
-function M.toggle_select(context, view, after_cursor, lnum)
-  lnum = lnum or vim.fn.line('.')
+function M.toggle_select(context, view)
+  local lnum = vim.fn.line('.')
   local item = view:get_item(lnum)
   item.selected = not item.selected
   view:redraw_line(lnum)
-
-  -- move cursor
-  if after_cursor == 'up' then
-    M.move_cursor_up(context, view)
-  elseif after_cursor == 'down' then
-    M.move_cursor_down(context, view)
-  end
 end
 
-function M._rename_files(context, view, targets)
-  if context.extension then
-    return
-  end
-
-  local ext = Rename.new {
-    on_execute = function(items, renames)
-      local num_renamed = 0
-      local parents = {}
-      for i = 1, #items do
-        local item = items[i]
-        local rename = renames[i]
-        local filepath = path.join(item.parent.path, rename)
-
-        local result = true
-        if path.exists(filepath) then
-          if cmdline.util.confirm_overwrite(rename) == cmdline.choice.YES then
-            result = item:rename(rename)
-          end
-        else
-          result = item:rename(rename)
-        end
-
-        if result then
-          num_renamed = num_renamed + 1
-          parents[item.parent.path] = item.parent
-        end
-      end
-
-      if num_renamed > 0 then
-        core.info('Renamed - %d files', num_renamed)
-        for _, parent in pairs(parents) do
-          parent:sort(context.sort, false)
-        end
-        view:draw(context)
-      end
-    end,
-
-    on_quit = function()
-      context.extension = nil
-    end,
-  }
-
-  ext:start(targets, 1)
-  context.extension = ext
+function M.toggle_select_down(context, view)
+  M.toggle_select(context, view)
+  M.move_cursor_down(context, view)
 end
 
-function M._rename_one_file(context, view, target)
-  local name = target.name
-  local rename = cmdline.input('New file name - ' .. name, name , 'file')
-  if #rename == 0 then
-    return -- Canceled
-  end
-
-  -- Check overwrite
-  local filepath = path.join(target.parent.path, rename)
-  if path.exists(filepath) == 1 then
-    if cmdline.util.confirm_overwrite(rename) ~= cmdline.choice.YES then
-      return
-    end
-  end
-
-  if not target:rename(rename) then
-    return
-  end
-
-  core.info('Renamed - %s -> %s', name, rename)
-  target.parent:sort(context.sort, false)
-  view:draw(context)
+function M.toggle_select_up(context, view)
+  M.toggle_select(context, view)
+  M.move_cursor_up(context, view)
 end
 
 return M
