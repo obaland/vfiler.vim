@@ -8,11 +8,10 @@ if exists('g:loaded_vfiler')
   finish
 endif
 
-" TODO:
 if has('nvim') && !has('nvim-0.5.0')
+  echomsg 'VFiler requires Neovim 0.5.0 or later.'
   finish
 elseif !has('nvim')
- " vim
   if !has('lua') || v:version < 802
     echomsg 'VFiler requires Vim 8.2 or later with Lua support ("+lua").'
     finish
