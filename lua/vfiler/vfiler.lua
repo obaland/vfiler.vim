@@ -46,7 +46,7 @@ end
 ---@param name string
 function VFiler.find(name)
   -- in tabpage
-  local buflist = vim.lua_list(vim.fn.tabpagebuflist())
+  local buflist = vim.from_vimlist(vim.fn.tabpagebuflist())
   for _, bufnr in ipairs(buflist) do
     local vfiler = vfilers[bufnr]
     if vfiler and vfiler.name == name then

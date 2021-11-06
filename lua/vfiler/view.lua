@@ -49,7 +49,7 @@ local function create_columns(columns)
   local collection = require 'vfiler/columns/collection'
   local objects = {}
 
-  local cnames = vim.lua_list(vim.fn.split(columns, ','))
+  local cnames = vim.from_vimlist(vim.fn.split(columns, ','))
   for _, cname in ipairs(cnames) do
     local column = collection.get(cname)
     if column then
@@ -166,7 +166,7 @@ function View:redraw()
   vim.set_buf_option('modifiable', true)
   vim.set_buf_option('readonly', false)
   vim.command('silent %delete _')
-  vim.fn.setline(1, vim.vim_list(lines))
+  vim.fn.setline(1, vim.to_vimlist(lines))
   vim.set_buf_option('modifiable', false)
   vim.set_buf_option('readonly', true)
 

@@ -101,10 +101,10 @@ function Directory:_add(item)
 end
 
 function Directory:_ls()
-  local paths = vim.lua_list(
+  local paths = vim.from_vimlist(
     vim.fn.glob(core.path.join(self.path, '/*'), 1, 1)
     )
-  local dotpaths = vim.lua_list(
+  local dotpaths = vim.from_vimlist(
     vim.fn.glob(core.path.join(self.path, '/.*'), 1, 1)
     )
   for _, dotpath in ipairs(dotpaths) do

@@ -34,7 +34,7 @@ config.setup {
 }
 
 function M.parse_command_args(args)
-  return vim.vim_dict(config.parse(args))
+  return vim.to_vimdict(config.parse(args))
 end
 
 function M.start_command(args)

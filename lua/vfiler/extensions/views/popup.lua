@@ -24,7 +24,7 @@ function Popup:define_mapping(mappings, funcstr)
   for key, _ in pairs(mappings) do
     table.insert(keys, key)
   end
-  vim.fn['vfiler#popup#map'](self.winid, vim.vim_dict(keys), funcstr)
+  vim.fn['vfiler#popup#map'](self.winid, vim.to_vimlist(keys), funcstr)
   return core.table.copy(mappings)
 end
 
@@ -77,7 +77,7 @@ end
 
 function Popup:_on_open(name, texts, options)
   local popup_options = {
-    border = vim.vim_list({1, 1, 1, 1}),
+    border = vim.to_vimlist({1, 1, 1, 1}),
     col = options.col,
     cursorline = true,
     drag = false,
@@ -94,7 +94,7 @@ function Popup:_on_open(name, texts, options)
   }
 
   return vim.fn.popup_create(
-    vim.vim_list(texts), vim.vim_dict(popup_options)
+    vim.to_vimlist(texts), vim.to_vimdict(popup_options)
     )
 end
 

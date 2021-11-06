@@ -69,7 +69,7 @@ function ExtensionRename:execute_rename()
     return
   end
 
-  local renames = vim.lua_list(vim.fn.getline(1, #self.items))
+  local renames = vim.from_vimlist(vim.fn.getline(1, #self.items))
   vim.set_buf_option('modified', false)
   self:quit()
 

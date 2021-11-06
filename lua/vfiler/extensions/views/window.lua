@@ -54,7 +54,7 @@ end
 
 function Window:draw(name, texts)
   vim.command('silent %delete _')
-  vim.fn.setline(1, vim.vim_list(texts))
+  vim.fn.setline(1, vim.to_vimlist(texts))
 
   -- set name to statusline
   if name and #name > 0 then

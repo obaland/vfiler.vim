@@ -87,24 +87,24 @@ end
 ------------------------------------------------------------------------------
 -- Lua data to Vim data
 ------------------------------------------------------------------------------
-function M.vim_list(data)
+function M.to_vimlist(data)
   return vim.list(data)
 end
-function M.vim_dict(data)
+function M.to_vimdict(data)
   return vim.dict(data)
 end
 
 ------------------------------------------------------------------------------
 -- Vim data to Lua data
 ------------------------------------------------------------------------------
-function M.lua_list(data)
+function M.from_vimlist(data)
   local t = {}
   for value in data() do
     table.insert(t, value)
   end
   return t
 end
-function M.lua_dict(data)
+function M.from_vimdict(data)
   local t = {}
   for key, value in data() do
     t[key] = value
