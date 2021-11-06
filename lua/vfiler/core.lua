@@ -2,62 +2,16 @@ local vim = require 'vfiler/vim'
 
 local M = {}
 
+------------------------------------------------------------------------------
+-- Core
+------------------------------------------------------------------------------
 M.is_windows = vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1
-
-function M.concat_list(dest, src)
-  local pos = #dest
-  for i = 1, #src do
-    table.insert(dest, pos + i, src[i])
-  end
-  return dest
-end
-
-function M.deepcopy(src)
-  local copied
-  if type(src) == 'table' then
-    copied = {}
-    for key, value in next, src, nil do
-      copied[M.deepcopy(key)] = M.deepcopy(value)
-    end
-    setmetatable(copied, M.deepcopy(getmetatable(src)))
-  else -- number, string, boolean, etc
-    copied = src
-  end
-  return copied
-end
-
-function M.get_root_path(path)
-  local root = ''
-  if M.is_windows then
-    if path:match('^//') then
-      -- for UNC path
-      root = path:match('^//[^/]*/[^/]*')
-    else
-      root = (M.normalized_path(path)):match('^%a+:')
-    end
-  end
-  return root .. '/'
-end
 
 function M.inherit(class, super, ...)
   local self = (super and super.new(...) or {})
   setmetatable(self, {__index = class})
   setmetatable(class, {__index = super})
   return self
-end
-
-function M.merge_table(dest, src)
-  for key, value in pairs(src) do
-    if type(value) == 'table' then
-      if not dest[key] then
-        dest[key] = {}
-      end
-      M.merge_table(dest[key], value)
-    else
-      dest[key] = value
-    end
-  end
-  return dest
 end
 
 ------------------------------------------------------------------------------
@@ -84,6 +38,7 @@ end
 ------------------------------------------------------------------------------
 -- Window
 ------------------------------------------------------------------------------
+M.window = {}
 
 local open_directions = {
   bottom = 'belowright split',
@@ -94,7 +49,7 @@ local open_directions = {
 }
 
 ---@param winnr number
-function M.move_window(winnr)
+function M.window.move(winnr)
   local command = 'wincmd w'
   if winnr > 0 then
     command = winnr .. command
@@ -104,7 +59,7 @@ end
 
 ---@param direction string
 ---@vararg string
-function M.open_window(direction, ...)
+function M.window.open(direction, ...)
   local command = 'silent! ' .. open_directions[direction]
   if ... then
     command = ('%s %s'):format(command, ...)
@@ -113,48 +68,94 @@ function M.open_window(direction, ...)
 end
 
 ---@param height number
-function M.resize_window_height(height)
+function M.window.resize_height(height)
   vim.command('silent! resize ' .. height)
 end
 
 ---@param width number
-function M.resize_window_width(width)
+function M.window.resize_width(width)
   vim.command('silent! vertical resize ' .. width)
 end
 
 ------------------------------------------------------------------------------
 -- Message
 ------------------------------------------------------------------------------
+M.message = {}
 
 ---print error message
-function M.error(format, ...)
+function M.message.error(format, ...)
   vim.fn['vfiler#core#error'](format:format(...))
 end
 
 ---print information message
-function M.info(format, ...)
+function M.message.info(format, ...)
   vim.fn['vfiler#core#info'](format:format(...))
 end
 
 ---print warning message
-function M.warning(format, ...)
+function M.message.warning(format, ...)
   vim.fn['vfiler#core#warning'](format:format(...))
 end
 
--- Escape because of the vim pattern
-function M.vesc(s)
-  return s:gsub('([\\^*$.~])', '\\%1')
+------------------------------------------------------------------------------
+-- Path utilities
+------------------------------------------------------------------------------
+M.path = {}
+
+function M.path.exists(path)
+  return vim.fn.filereadable(path) == 1
+end
+
+function M.path.isdirectory(path)
+  return vim.fn.isdirectory(path) == 1
+end
+
+function M.path.join(path, name)
+  if path:sub(#path, #path) ~= '/' then
+    path = path .. '/'
+  end
+  if name:sub(1, 1) == '/' then
+    name = name:sub(2)
+  end
+  return path .. name
+end
+
+function M.path.normalize(path)
+  if path == '/' then
+    return '/'
+  end
+
+  local result = vim.fn.fnamemodify(path, ':p')
+  if M.is_windows then
+    result = result:gsub('\\', '/')
+  end
+  return result
+end
+
+function M.path.root(path)
+  local root = ''
+  if M.is_windows then
+    if path:match('^//') then
+      -- for UNC path
+      root = path:match('^//[^/]*/[^/]*')
+    else
+      root = (M.path.normalize(path)):match('^%a+:')
+    end
+  end
+  return root .. '/'
 end
 
 ------------------------------------------------------------------------------
 -- syntax and highlight command utilities
 ------------------------------------------------------------------------------
+M.syntax = {}
+M.highlight = {}
 
-function M.syntax_clear_command(names)
+function M.syntax.clear_command(names)
   return ('silent! syntax clear %s'):format(table.concat(names, ' '))
 end
 
-function M.syntax_match_command(name, pattern, ...)
+function M.syntax.match_command(name, pattern, ...)
    local command = ('syntax match %s /%s/'):format(name, pattern)
    if ... then
      local options = {}
@@ -176,31 +177,20 @@ end
 ---@param from string
 ---@param to string
 ---@return string
-function M.link_highlight_command(from, to)
+function M.highlight.link_command(from, to)
   return ('highlight! default link %s %s'):format(from, to)
 end
 
 ------------------------------------------------------------------------------
 -- String utilities
 ------------------------------------------------------------------------------
-
-function M.normalized_path(path)
-  if path == '/' then
-    return '/'
-  end
-
-  local result = vim.fn.fnamemodify(path, ':p')
-  if M.is_windows then
-    result = result:gsub('\\', '/')
-  end
-  return result
-end
+M.string = {}
 
 -- Lua pettern escape
 if vim.fn.has('nvim') then
-  M.pesc = vim.pesc
+  M.string.pesc = vim.pesc
 else
-  function M.pesc(s)
+  function M.string.pesc(s)
     return s
   end
 end
@@ -217,11 +207,11 @@ local function strwidthpart_reverse(str, strwidth, width)
 end
 
 if M.is_windows then
-  function M.shellescape(str)
+  function M.string.shellescape(str)
     return ('"%s"'):format(vim.fn.escape(str:gsub('/', [[\]])))
   end
 else
-  function M.shellescape(str)
+  function M.string.shellescape(str)
     return vim.fn.shellescape(str)
   end
 end
@@ -236,7 +226,7 @@ local function truncate(str, width)
   return str:sub(1, width)
 end
 
-function M.truncate(str, width, sep, ...)
+function M.string.truncate(str, width, sep, ...)
   local strwidth = vim.fn.strwidth(str)
   if strwidth <= width then
     return str
@@ -249,12 +239,60 @@ function M.truncate(str, width, sep, ...)
   return truncate(result, width)
 end
 
+-- Escape because of the vim pattern
+function M.string.vesc(s)
+  return s:gsub('([\\^*$.~])', '\\%1')
+end
+
+------------------------------------------------------------------------------
+-- Table and List
+------------------------------------------------------------------------------
+M.list = {}
+M.table = {}
+
+function M.list.extend(dest, src)
+  local pos = #dest
+  for i = 1, #src do
+    table.insert(dest, pos + i, src[i])
+  end
+  return dest
+end
+
+function M.table.copy(src)
+  local copied
+  if type(src) == 'table' then
+    copied = {}
+    for key, value in next, src, nil do
+      copied[M.table.copy(key)] = M.table.copy(value)
+    end
+    setmetatable(copied, M.table.copy(getmetatable(src)))
+  else -- number, string, boolean, etc
+    copied = src
+  end
+  return copied
+end
+
+function M.table.merge(dest, src)
+  for key, value in pairs(src) do
+    if type(value) == 'table' then
+      if not dest[key] then
+        dest[key] = {}
+      end
+      M.table.merge(dest[key], value)
+    else
+      dest[key] = value
+    end
+  end
+  return dest
+end
+
 ------------------------------------------------------------------------------
 -- Math utilities
 ------------------------------------------------------------------------------
+M.math = {}
 
 -- Within the max and min between
-function M.within(v, min, max)
+function M.math.within(v, min, max)
   return math.min(math.max(v, min), max)
 end
 

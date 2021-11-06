@@ -3,9 +3,9 @@ local vim = require 'vfiler/vim'
 
 local Floating = {}
 
-function Floating.new(configs, mapping_type)
+function Floating.new(options)
   local Window = require('vfiler/extensions/views/window')
-  return core.inherit(Floating, Window, configs, mapping_type)
+  return core.inherit(Floating, Window, options)
 end
 
 function Floating:close()
@@ -30,7 +30,7 @@ function Floating:_on_layout_option(name, texts)
     minheight = 1,
   }
 
-  local floating = core.deepcopy(self.configs.floating)
+  local floating = core.table.copy(self.options.floating)
   local wwidth = vim.fn.winwidth(self.caller_winid)
   local wheight = vim.fn.winheight(self.caller_winid)
 
@@ -64,32 +64,32 @@ function Floating:_on_layout_option(name, texts)
   return layout
 end
 
-function Floating:_on_open(name, texts, layout)
-  local option = {
+function Floating:_on_open(name, texts, options)
+  local win_options = {
     border = 'rounded',
-    col = layout.col,
+    col = options.col,
     focusable = true,
-    height = layout.height,
+    height = options.height,
     noautocmd = false,
-    relative = layout.relative,
-    row = layout.row,
-    width = layout.width,
+    relative = options.relative,
+    row = options.row,
+    width = options.width,
     zindex = 200,
   }
-  if option.relative == 'win' then
-    option.win = self.caller_winid
+  if win_options.relative == 'win' then
+    win_options.win = self.caller_winid
   end
 
   local listed = self.bufoptions.buflisted and true or false
   local buffer = vim.api.nvim_create_buf(listed, true)
-  local winid = vim.api.nvim_open_win(buffer, true, option)
+  local winid = vim.api.nvim_open_win(buffer, true, win_options)
 
   -- set options
   vim.api.nvim_win_set_option(winid, 'winhighlight', 'Normal:Normal')
 
   -- open title window
   if name and #name > 0 then
-    self:_open_tile(name, option)
+    self:_open_tile(name, win_options)
   end
   return winid
 end

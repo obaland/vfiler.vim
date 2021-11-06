@@ -13,17 +13,17 @@ function Syntax.new(configs)
 end
 
 function Syntax:syntaxes()
-  local end_mark = core.vesc(self._end_mark)
+  local end_mark = core.string.vesc(self._end_mark)
   local ignores = {end_mark}
   local group_names = {}
   local commands = {}
 
   for _, syntax in pairs(self._syntaxes) do
-    local start_mark = core.vesc(syntax.start_mark)
+    local start_mark = core.string.vesc(syntax.start_mark)
     table.insert(ignores, start_mark)
 
     local pattern = ('%s.\\+%s'):format(start_mark, end_mark)
-    local command = core.syntax_match_command(
+    local command = core.syntax.match_command(
       syntax.group, pattern, {contains = self._ignore_group}
     )
     table.insert(commands, command)
@@ -31,10 +31,10 @@ function Syntax:syntaxes()
   end
 
   -- clear syntax (insert at the first of command list)
-  table.insert(commands, 1, core.syntax_clear_command(group_names))
+  table.insert(commands, 1, core.syntax.clear_command(group_names))
 
   -- ignore syntax
-  local ignore_syntax = core.syntax_match_command(
+  local ignore_syntax = core.syntax.match_command(
     self._ignore_group,
     table.concat(ignores, '\\|'),
     {contained = true, conceal = true}
@@ -48,13 +48,13 @@ function Syntax:highlights()
   for _, syntax in pairs(self._syntaxes) do
     if syntax.highlight then
       table.insert(
-        commands, core.link_highlight_command(syntax.group, syntax.highlight)
+        commands, core.highlight.link_command(syntax.group, syntax.highlight)
       )
     end
   end
   if self._ignore_group then
     table.insert(
-      commands, core.link_highlight_command(self._ignore_group, 'Ignore')
+      commands, core.highlight.link_command(self._ignore_group, 'Ignore')
     )
   end
   return commands

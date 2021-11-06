@@ -55,11 +55,11 @@ local function create_columns(columns)
     if column then
       table.insert(objects, column)
     else
-      core.warning('"%s" is not a valid column.', cname)
+      core.message.warning('"%s" is not a valid column.', cname)
     end
   end
   if #objects <= 0 then
-    core.error('There are invalid columns. (%s)', columns)
+    core.message.error('There are invalid columns. (%s)', columns)
     return nil
   end
   return objects
@@ -135,7 +135,7 @@ end
 
 function View:redraw()
   if self.bufnr ~= vim.fn.bufnr() then
-    core.warning('Cannot draw because the buffer is different')
+    core.message.warning('Cannot draw because the buffer is different')
     return
   end
 
@@ -204,21 +204,21 @@ end
 function View:_apply_syntaxes()
   local header_group = 'vfilerHeader'
   local syntaxes = {
-    core.syntax_clear_command({header_group}),
-    core.syntax_match_command(header_group, [[\%1l.*']]),
+    core.syntax.clear_command({header_group}),
+    core.syntax.match_command(header_group, [[\%1l.*']]),
   }
   local highlights = {
-    core.link_highlight_command(header_group, 'Statement'),
+    core.highlight.link_command(header_group, 'Statement'),
   }
 
   for _, column in pairs(self._columns) do
     local column_syntaxes = column:syntaxes()
     if column_syntaxes then
-      core.concat_list(syntaxes, column_syntaxes)
+      core.list.extend(syntaxes, column_syntaxes)
     end
     local column_highlights = column:highlights()
     if column_highlights then
-      core.concat_list(highlights, column_highlights)
+      core.list.extend(highlights, column_highlights)
     end
   end
 
@@ -229,7 +229,9 @@ end
 function View:_create_column_props(winwidth)
   local props = {}
   local variable_columns = {}
-  local rest_width = winwidth
+
+  -- Subtract the space between columns
+  local rest_width = winwidth - (#self._columns - 1)
 
   for i, column in ipairs(self._columns) do
     local width = 0
@@ -253,17 +255,10 @@ function View:_create_column_props(winwidth)
     end
   end
 
-  -- decide column base position
-  local pos = 1
+  local cumulative_width = 0
   for _, prop in ipairs(props) do
-    prop.start_pos = pos
-    if prop.width > 0 then
-      prop.end_pos = prop.start_pos + prop.width - 1
-      pos = prop.end_pos + 1
-    else
-      prop.end_pos = prop.start_pos
-      pos = prop.end_pos
-    end
+    cumulative_width = cumulative_width + prop.width
+    prop.cumulative_width = cumulative_width
   end
   return props
 end
@@ -287,29 +282,29 @@ end
 
 ---@param item table
 function View:_toline(item)
-  local line = ''
-  local lwidth = 0
-  for j, column in ipairs(self._columns) do
-    local prop = self._cache.column_props[j]
+  local texts = {}
+  local cumulative_width = 0
+  for i, column in ipairs(self._columns) do
+    local prop = self._cache.column_props[i]
 
     local cwidth = prop.width
     if column.variable then
-      cwidth = cwidth + (prop.start_pos - lwidth - 1)
+      cwidth = cwidth + (prop.cumulative_width - cumulative_width)
     end
 
     local text, width = column:get_text(item, cwidth)
-    line = line .. text
-    lwidth = lwidth + width
+    cumulative_width = cumulative_width + width
 
     if column.stretch then
       -- Adjust to fit column end base position
-      local padding = prop.end_pos - lwidth
+      local padding = prop.cumulative_width - cumulative_width
       if padding > 0 then
-        line = line .. (' '):rep(padding)
+        text = text .. (' '):rep(padding)
       end
     end
+    table.insert(texts, text)
   end
-  return line
+  return table.concat(texts, ' ')
 end
 
 return View

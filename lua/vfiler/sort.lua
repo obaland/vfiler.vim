@@ -13,7 +13,7 @@ function M.get(type)
   local compare = M.compares[type]
 
   if not compare then
-    core.error('Invalid sort type "%s"', type)
+    core.message.error('Invalid sort type "%s"', type)
     return nil
   end
   return compare

@@ -5,11 +5,10 @@ local vim = require 'vfiler/vim'
 local Window = {}
 Window.__index = Window
 
-function Window.new(configs, mapping_type)
+function Window.new(options)
   return setmetatable({
       caller_winid = vim.fn.win_getid(),
-      configs = core.deepcopy(configs),
-      mapping_type = mapping_type,
+      options = core.table.copy(options),
       winid = 0,
       bufnr = 0,
       -- default buffer options
@@ -41,10 +40,13 @@ function Window:close()
   end
 end
 
+function Window:define_mapping(mappings, funcstr)
+  return mapping.define(self.bufnr, mappings, funcstr)
+end
+
 function Window:open(name, texts)
   local option = self:_on_layout_option(name, texts)
   self.winid = self:_on_open(name, texts, option)
-  self:_on_define_mapping(self.winid)
   self:_on_apply_options(self.winid)
   self.bufnr = vim.fn.winbufnr(self.winid)
   return self.winid
@@ -61,11 +63,11 @@ function Window:draw(name, texts)
 end
 
 function Window:set_buf_options(options)
-  core.merge_table(self.bufoptions, options)
+  core.table.merge(self.bufoptions, options)
 end
 
 function Window:set_win_options(options)
-  core.merge_table(self.winoptions, options)
+  core.table.merge(self.winoptions, options)
 end
 
 function Window:_on_apply_options(winid)
@@ -79,49 +81,44 @@ function Window:_on_apply_options(winid)
   vim.fn.win_executes(winid, options)
 end
 
-function Window:_on_define_mapping(winid)
-  mapping._define(self.mapping_type)
-end
-
 function Window:_on_layout_option(name, texts)
-  local option = {
+  local options = {
     width = 0, height = 0,
   }
 
   local wwidth = vim.fn.winwidth(self.caller_winid)
   local wheight = vim.fn.winheight(self.caller_winid)
 
-  local layout = self.configs
-  if layout.top then
-    option.open_type = 'top'
-    option.height = self:_winheight(
-      wheight, layout.top, 1, wheight - 1, texts
+  if self.options.top then
+    options.open_type = 'top'
+    options.height = self:_winheight(
+      wheight, self.options.top, 1, wheight - 1, texts
       )
-  elseif layout.bottom then
-    option.open_type = 'bottom'
-    option.height = self:_winheight(
-      wheight, layout.bottom, 1, wheight - 1, texts
+  elseif self.options.bottom then
+    options.open_type = 'bottom'
+    options.height = self:_winheight(
+      wheight, self.options.bottom, 1, wheight - 1, texts
       )
-  elseif layout.left then
-    option.open_type = 'left'
-    option.width = self:_winwidth(
-      wwidth, layout.left, 1, wwidth - 1, texts
+  elseif self.options.left then
+    options.open_type = 'left'
+    options.width = self:_winwidth(
+      wwidth, self.options.left, 1, wwidth - 1, texts
       )
-  elseif layout.right then
-    option.open_type = 'right'
-    option.width = self:_winwidth(
-      wwidth, layout.right, 1, wwidth - 1, texts
+  elseif self.options.right then
+    options.open_type = 'right'
+    options.width = self:_winwidth(
+      wwidth, self.options.right, 1, wwidth - 1, texts
       )
   else
-    core.error('Unsupported option.')
+    core.message.error('Unsupported option.')
     return nil
   end
-  return option
+  return options
 end
 
-function Window:_on_open(name, texts, layout)
+function Window:_on_open(name, texts, options)
   -- open window
-  core.open_window(layout.open_type)
+  core.window.open(options.open_type)
 
   -- Save swapfile option
   local swapfile = vim.get_buf_option_boolean('swapfile')
@@ -130,11 +127,11 @@ function Window:_on_open(name, texts, layout)
   vim.set_buf_option('swapfile', swapfile)
 
   -- resize window
-  if layout.width > 0 then
-    core.resize_window_width(layout.width)
+  if options.width > 0 then
+    core.window.resize_width(options.width)
   end
-  if layout.height > 0 then
-    core.resize_window_height(layout.height)
+  if options.height > 0 then
+    core.window.resize_height(options.height)
   end
   return vim.fn.win_getid()
 end
@@ -151,7 +148,7 @@ function Window:_winwidth(wwidth, value, min, max, texts)
   else
     width = self:_winvalue(wwidth, value)
   end
-  return math.floor(core.within(width, min, max))
+  return math.floor(core.math.within(width, min, max))
 end
 
 function Window:_winheight(wheight, value, min, max, texts)
@@ -161,13 +158,13 @@ function Window:_winheight(wheight, value, min, max, texts)
   else
     height = self:_winvalue(wheight, value)
   end
-  return math.floor(core.within(height, min, max))
+  return math.floor(core.math.within(height, min, max))
 end
 
 function Window:_winvalue(wvalue, value)
   local v = tonumber(value)
   if not v then
-    core.error('Illegal config value: ' .. value)
+    core.message.error('Illegal config value: ' .. value)
     return
   end
 

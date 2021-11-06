@@ -13,9 +13,8 @@ if has('nvim') && !has('nvim-0.5.0')
   finish
 elseif !has('nvim')
  " vim
-  if !has('lua')
-    finish
-  elseif v:version < 802
+  if !has('lua') || v:version < 802
+    echomsg 'VFiler requires Vim 8.2 or later with Lua support ("+lua").'
     finish
   endif
 endif

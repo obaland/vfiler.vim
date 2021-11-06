@@ -53,7 +53,8 @@ function NameColumn:get_text(item, width)
   end
 
   return self._syntax:surround_text(
-    syntax_name, core.truncate(name, width, '..', math.floor(width / 2))
+    syntax_name,
+    core.string.truncate(name, width, '..', math.floor(width / 2))
     )
 end
 
@@ -61,7 +62,7 @@ function NameColumn:get_width(items, width)
   if self.max_width <= 0 then
     return math.max(width, self.min_width)
   end
-  return core.within(width, self.min_width, self.max_width)
+  return core.math.within(width, self.min_width, self.max_width)
 end
 
 function NameColumn:highlights()

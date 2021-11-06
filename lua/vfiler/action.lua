@@ -1,6 +1,5 @@
 local core = require 'vfiler/core'
 local cmdline = require 'vfiler/cmdline'
-local path = require 'vfiler/path'
 local sort = require 'vfiler/sort'
 local vim = require 'vfiler/vim'
 
@@ -30,7 +29,7 @@ local function detect_drives()
   local drives = {}
   for byte = ('A'):byte(), ('Z'):byte() do
     local drive = string.char(byte) .. ':/'
-    if path.isdirectory(drive) then
+    if core.path.isdirectory(drive) then
       table.insert(drives, drive)
     end
   end
@@ -54,10 +53,10 @@ local function rename_files(context, view, targets)
       for i = 1, #items do
         local item = items[i]
         local rename = renames[i]
-        local filepath = path.join(item.parent.path, rename)
+        local filepath = core.path.join(item.parent.path, rename)
 
         local result = true
-        if path.exists(filepath) then
+        if core.path.exists(filepath) then
           if cmdline.util.confirm_overwrite(rename) == cmdline.choice.YES then
             result = item:rename(rename)
           end
@@ -72,7 +71,7 @@ local function rename_files(context, view, targets)
       end
 
       if num_renamed > 0 then
-        core.info('Renamed - %d files', num_renamed)
+        core.message.info('Renamed - %d files', num_renamed)
         for _, parent in pairs(parents) do
           parent:sort(context.sort, false)
         end
@@ -97,8 +96,8 @@ local function rename_one_file(context, view, target)
   end
 
   -- Check overwrite
-  local filepath = path.join(target.parent.path, rename)
-  if path.exists(filepath) == 1 then
+  local filepath = core.path.join(target.parent.path, rename)
+  if core.path.exists(filepath) == 1 then
     if cmdline.util.confirm_overwrite(rename) ~= cmdline.choice.YES then
       return
     end
@@ -108,7 +107,7 @@ local function rename_one_file(context, view, target)
     return
   end
 
-  core.info('Renamed - %s -> %s', name, rename)
+  core.message.info('Renamed - %s -> %s', name, rename)
   target.parent:sort(context.sort, false)
   view:draw(context)
 end
@@ -122,13 +121,13 @@ end
 
 function M._do_action(name, ...)
   if not M[name] then
-    core.error('Action "%s" is not defined.', name)
+    core.message.error('Action "%s" is not defined.', name)
     return
   end
 
   local vfiler = VFiler.get(vim.fn.bufnr())
   if not vfiler then
-    core.error('Buffer does not exist.')
+    core.message.error('Buffer does not exist.')
     return
   end
   M[name](vfiler.context, vfiler.view, ...)
@@ -137,7 +136,7 @@ end
 function M.do_action(bufnr, func)
   local vfiler = VFiler.get(bufnr)
   if not vfiler then
-    core.error('Buffer does not exist.')
+    core.message.error('Buffer does not exist.')
     return
   end
   func(vfiler.context, vfiler.view)
@@ -189,7 +188,7 @@ function M.change_drive(context, view)
     return
   end
 
-  local root = path.root(context.root.path)
+  local root = core.path.root(context.root.path)
   local cursor = 1
   for i, drive in ipairs(drives) do
     if drive == root then
@@ -257,9 +256,9 @@ function M.copy(context, view)
 
   context.clipboard = Clipboard.copy(selected)
   if #selected == 1 then
-    core.info('Copy to the clipboard - %s', selected[1].name)
+    core.message.info('Copy to the clipboard - %s', selected[1].name)
   else
-    core.info('Copy to the clipboard - %d files', #selected)
+    core.message.info('Copy to the clipboard - %d files', #selected)
   end
 end
 
@@ -296,9 +295,9 @@ function M.delete(context, view)
   if #deleted == 0 then
     return
   elseif #deleted == 1 then
-    core.info('Deleted - %s', deleted[1].name)
+    core.message.info('Deleted - %s', deleted[1].name)
   else
-    core.info('Deleted - %d files', #deleted)
+    core.message.info('Deleted - %d files', #deleted)
   end
   view:draw(context)
 end
@@ -329,9 +328,9 @@ function M.move(context, view)
 
   context.clipboard = Clipboard.move(selected)
   if #selected == 1 then
-    core.info('Move to the clipboard - %s', selected[1].name)
+    core.message.info('Move to the clipboard - %s', selected[1].name)
   else
-    core.info('Move to the clipboard - %d files', #selected)
+    core.message.info('Move to the clipboard - %d files', #selected)
   end
 end
 
@@ -362,16 +361,16 @@ function M.new_directory(context, view)
     function(contents)
       local created = {}
       for _, name in ipairs(contents) do
-        local filepath = path.join(dir.path, name)
-        if path.isdirectory(filepath) then
-          core.warning('Skipped, "%s" already exists.', name)
+        local filepath = core.path.join(dir.path, name)
+        if core.path.isdirectory(filepath) then
+          core.message.warning('Skipped, "%s" already exists.', name)
         else
           local new = Directory.create(filepath, context.sort)
           if new then
             dir:add(new)
             table.insert(created, name)
           else
-            core.error('Failed to create a "%s" file', name)
+            core.message.error('Failed to create a "%s" file', name)
           end
         end
       end
@@ -380,9 +379,9 @@ function M.new_directory(context, view)
         return
       end
       if #created == 1 then
-        core.info('Created - %s', created[1])
+        core.message.info('Created - %s', created[1])
       else
-        core.info('Created - %d directories', #created)
+        core.message.info('Created - %d directories', #created)
       end
       view:draw(context)
     end
@@ -397,16 +396,16 @@ function M.new_file(context, view)
     function(contents)
       local created = {}
       for _, name in ipairs(contents) do
-        local filepath = path.join(dir.path, name)
-        if vim.fn.filereadable(filepath) ~= 0 then
-          core.warning('Skipped, "%s" already exists', name)
+        local filepath = core.path.join(dir.path, name)
+        if core.path.exists(filepath) ~= 0 then
+          core.message.warning('Skipped, "%s" already exists', name)
         else
           local file = File.create(filepath)
           if file then
             dir:add(file)
             table.insert(created, name)
           else
-            core.error('Failed to create a "%s" file', name)
+            core.message.error('Failed to create a "%s" file', name)
           end
         end
       end
@@ -415,9 +414,9 @@ function M.new_file(context, view)
         return
       end
       if #created == 1 then
-        core.info('Created - %s', created[1])
+        core.message.info('Created - %s', created[1])
       else
-        core.info('Created - %d files', #created)
+        core.message.info('Created - %d files', #created)
       end
       view:draw(context)
     end
@@ -427,7 +426,7 @@ end
 function M.open(context, view)
   local item = view:get_current()
   if not item then
-    core.warning('Item does not exist.')
+    core.message.warning('Item does not exist.')
     return
   end
 
@@ -451,7 +450,7 @@ end
 
 function M.paste(context, view)
   if not context.clipboard then
-    core.warning('No clipboard')
+    core.message.warning('No clipboard')
     return
   end
 
@@ -474,9 +473,9 @@ end
 function M.rename(context, view)
   local selected = view:selected_items()
   if #selected == 1 then
-    M._rename_one_file(context, view, selected[1])
+    rename_one_file(context, view, selected[1])
   elseif #selected > 1 then
-    M._rename_files(context, view, selected)
+    rename_files(context, view, selected)
   end
 end
 
@@ -488,7 +487,7 @@ function M.switch_to_filer(context, view)
     return
   end
 
-  core.open_window('right')
+  core.window.open('right')
   local filer = VFiler.new(current.configs)
   cd(filer.context, filer.view, context.root.path)
   filer:link(current)

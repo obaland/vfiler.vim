@@ -1,30 +1,21 @@
-local config = require 'vfiler/extensions/config'
+local action = require 'vfiler/extensions/rename/action'
+local config = require 'vfiler/extensions/rename/config'
 local core = require 'vfiler/core'
-local mapping = require 'vfiler/extensions/rename/mapping'
 local vim = require 'vfiler/vim'
 
 local ExtensionRename = {}
 
-local function _do_action(name, ...)
-  local func = [[:lua require('vfiler/extensions/rename/action').do_action]]
-  local args = ''
-  if ... then
-    args = ([[('%s', %s)]]):format(name, ...)
-  else
-    args = ([[('%s')]]):format(name)
-  end
-  return func .. args
-end
-
---mapping.setup {
---  ['q']     = _do_action('quit'),
---  ['<ESC>'] = _do_action('quit'),
---}
+config.setup {
+  mappings = {
+    ['q']     = action.quit,
+    ['<ESC>'] = action.quit,
+  },
+}
 
 function ExtensionRename.new(options)
   local Extension = require('vfiler/extensions/extension')
 
-  local view = Extension.create_view({left = '0.5'}, 'rename')
+  local view = Extension.create_view({left = '0.5'})
   view:set_buf_options {
     buftype = 'acwrite',
     filetype = 'vfiler_rename',
@@ -37,7 +28,7 @@ function ExtensionRename.new(options)
   }
 
   local object = core.inherit(
-    ExtensionRename, Extension, 'Rename', view, config
+    ExtensionRename, Extension, 'Rename', view, config.configs
     )
   object.on_quit = options.on_quit
   object.on_execute = options.on_execute
@@ -105,22 +96,22 @@ function ExtensionRename:_on_draw(texts)
   local group_changed = 'vfilerRename_Changed'
 
   local syntaxes = {
-    core.syntax_clear_command({group_notchanged, group_changed}),
-    core.syntax_match_command(group_changed, [[^.\+$]]),
+    core.syntax.clear_command({group_notchanged, group_changed}),
+    core.syntax.match_command(group_changed, [[^.\+$]]),
   }
   -- Create "NotChanged" syntax for each line
   for i, text in ipairs(texts) do
     local pattern = ([[^\%%%dl%s$]]):format(i, text)
     table.insert(
-      syntaxes, core.syntax_match_command(group_notchanged, pattern)
+      syntaxes, core.syntax.match_command(group_notchanged, pattern)
       )
   end
   vim.commands(syntaxes)
 
   -- highlights
   vim.commands {
-    core.link_highlight_command(group_changed, 'Special'),
-    core.link_highlight_command(group_notchanged, 'Normal'),
+    core.highlight.link_command(group_changed, 'Special'),
+    core.highlight.link_command(group_notchanged, 'Normal'),
   }
 end
 

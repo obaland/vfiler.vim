@@ -1,5 +1,4 @@
 local core = require 'vfiler/core'
-local path = require 'vfiler/path'
 local sort = require 'vfiler/sort'
 local vim = require 'vfiler/vim'
 
@@ -50,9 +49,10 @@ end
 
 function Directory:copy(destpath)
   Directory._copy(
-    core.shellescape(self.path), core.shellescape(destpath)
+    core.string.shellescape(self.path),
+    core.string.shellescape(destpath)
     )
-  if not path.exists(destpath) then
+  if not core.path.exists(destpath) then
     return nil
   end
   return Directory.new(destpath, self.islink, self._sort)
@@ -102,10 +102,10 @@ end
 
 function Directory:_ls()
   local paths = vim.lua_list(
-    vim.fn.glob(path.join(self.path, '/*'), 1, 1)
+    vim.fn.glob(core.path.join(self.path, '/*'), 1, 1)
     )
   local dotpaths = vim.lua_list(
-    vim.fn.glob(path.join(self.path, '/.*'), 1, 1)
+    vim.fn.glob(core.path.join(self.path, '/.*'), 1, 1)
     )
   for _, dotpath in ipairs(dotpaths) do
     local dotfile = vim.fn.fnamemodify(dotpath, ':t')
@@ -131,13 +131,13 @@ function Directory:_ls()
     elseif ftype == 'file' then
       item = File.new(filepath, false)
     elseif ftype == 'link' then
-      if path.isdirectory(filepath) then
+      if core.path.isdirectory(filepath) then
         item = Directory.new(filepath, true, self._sort)
       else
         item = File.new(filepath, true)
       end
     else
-      core.warning('Unknown file type. (%s)', ftype)
+      core.message.warning('Unknown file type. (%s)', ftype)
     end
     item.parent = self
     return item

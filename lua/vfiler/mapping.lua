@@ -2,7 +2,7 @@ local vim = require 'vfiler/vim'
 
 local M = {}
 
-local function tocode(key)
+local function escape(key)
   local capture = key:match('^<(.+)>$')
   if capture then
     return '[' .. capture .. ']'
@@ -19,10 +19,10 @@ function M.define(bufnr, mappings, funcstr)
 
   local keymaps = {}
   for key, func in pairs(mappings) do
-    local code = tocode(key)
-    local rhs = ([[:lua %s(%d, '%s')<CR>]]):format(funcstr, bufnr, code)
+    local escaped = escape(key)
+    local rhs = ([[:lua %s(%d, '%s')<CR>]]):format(funcstr, bufnr, escaped)
 
-    keymaps[code] = func
+    keymaps[escaped] = func
     vim.set_buf_keymap('n', key, rhs, options)
   end
   return keymaps

@@ -6,7 +6,7 @@ local columns = {
   mode = require('vfiler/columns/mode').new(),
   name = require('vfiler/columns/name').new(),
   size = require('vfiler/columns/size').new(),
-  sp = require('vfiler/columns/space').new(),
+  space = require('vfiler/columns/space').new(),
   time = require('vfiler/columns/time').new(),
 }
 

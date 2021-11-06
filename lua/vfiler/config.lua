@@ -6,20 +6,20 @@ M.configs = {}
 
 local default_options = {
   auto_cd = false,
-  columns = 'indent,sp,icon,sp,name,sp,mode,sp,size,sp,time',
+  columns = 'indent,icon,name,mode,size,time',
   listed = true,
   name = '',
   show_hidden_files = false,
   sort = 'name',
 }
 
-M.configs.options = core.deepcopy(default_options)
+M.configs.options = core.table.copy(default_options)
 
 local function error(message)
-  core.error('Argument error - %s', message)
+  core.message.error('Argument error - %s', message)
 end
 
-local function normalized_value(value)
+local function normalize(value)
   if type(value) ~= 'string' then
     return value
   end
@@ -52,7 +52,7 @@ end
 local function parse_option(arg)
   local key, value = arg:match('^%-([%-%w]+)=(.+)')
   if key then
-    value = normalized_value(value)
+    value = normalize(value)
   else
     key = arg:match('^%-no%-(%g+)')
     if key then
@@ -66,10 +66,9 @@ local function parse_option(arg)
   return key:gsub('%-', '_'), value, key
 end
 
-function M.parse(str_args)
+function M.parse_options(str_args)
   local args = split(str_args)
-  local configs = core.deepcopy(M.configs)
-  local options = configs.options
+  local options = core.table.copy(M.configs.options)
   local path = ''
 
   for _, arg in ipairs(args) do
@@ -88,19 +87,14 @@ function M.parse(str_args)
         error('The path specification is duplicated.')
         return nil
       end
-      path = normalized_value(arg)
+      path = normalize(arg)
     end
   end
-  return configs, path
+  return options, path
 end
 
 function M.setup(configs)
-  if configs.options then
-    core.merge_table(M.configs.options, configs.options)
-  end
-  if configs.mappings then
-    M.configs.mappings = core.deepcopy(configs.mappings)
-  end
+  core.table.merge(M.configs, configs)
 end
 
 return M

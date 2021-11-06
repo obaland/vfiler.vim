@@ -1,5 +1,4 @@
 local core = require 'vfiler/core'
-local path = require 'vfiler/path'
 local vim = require 'vfiler/vim'
 
 local Item = {}
@@ -9,17 +8,17 @@ function Item.new(filepath, islink)
   local size = vim.fn.getfsize(filepath)
   local time = vim.fn.getftime(filepath)
   if size < 0 or time < 0 then
-    core.error('Failed - Invalid path "%s"', filepath)
+    core.message.error('Failed - Invalid path "%s"', filepath)
     return nil
   end
 
   return setmetatable({
-      isdirectory = path.isdirectory(filepath),
+      isdirectory = core.path.isdirectory(filepath),
       islink = islink,
       level = 0,
       name = vim.fn.fnamemodify(filepath, ':t'),
       parent = nil,
-      path = path.normalize(filepath),
+      path = core.path.normalize(filepath),
       selected = false,
       size = size,
       time = time,
@@ -29,7 +28,7 @@ end
 
 function Item:delete()
   if vim.fn.delete(self.path, 'rf') < 0 then
-    core.error('"%s" Cannot delete.', self.name)
+    core.message.error('"%s" Cannot delete.', self.name)
     return false
   end
 
@@ -49,10 +48,10 @@ function Item:delete()
 end
 
 function Item:rename(name)
-  local newpath = path.join(self.parent.path, name)
+  local newpath = core.path.join(self.parent.path, name)
   local result, message, code = os.rename(self.path, newpath)
   if not result then
-    core.error('%s (code:%d)', message, code)
+    core.message.error('%s (code:%d)', message, code)
     return false
   end
   self.name = name

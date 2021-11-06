@@ -1,5 +1,4 @@
 local core = require 'vfiler/core'
-local path = require 'vfiler/path'
 
 local Directory = require 'vfiler/items/directory'
 

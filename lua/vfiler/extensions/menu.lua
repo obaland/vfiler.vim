@@ -1,33 +1,24 @@
-local config = require 'vfiler/extensions/config'
+local action = require 'vfiler/extensions/menu/action'
+local config = require 'vfiler/extensions/menu/config'
 local core = require 'vfiler/core'
-local mapping = require 'vfiler/extensions/menu/mapping'
 local vim = require 'vfiler/vim'
 
 local ExtensionMenu = {}
 
-local function _do_action(name, ...)
-  local func = [[:lua require('vfiler/extensions/menu/action').do_action]]
-  local args = ''
-  if ... then
-    args = ([[('%s', %s)]]):format(name, ...)
-  else
-    args = ([[('%s')]]):format(name)
-  end
-  return func .. args
-end
-
---mapping.setup {
---  ['k']     = _do_action('move_cursor_up', 'true'),
---  ['j']     = _do_action('move_cursor_down', 'true'),
---  ['q']     = _do_action('quit'),
---  ['<CR>']  = _do_action('select'),
---  ['<ESC>'] = _do_action('quit'),
---}
+config.setup {
+  mappings = {
+    ['k']     = action.loop_cursor_up,
+    ['j']     = action.loop_cursor_down,
+    ['q']     = action.quit,
+    ['<CR>']  = action.select,
+    ['<ESC>'] = action.quit,
+  },
+}
 
 function ExtensionMenu.new(options)
   local Extension = require('vfiler/extensions/extension')
 
-  local view = Extension.create_view(config.configs.layout, 'menu')
+  local view = Extension.create_view(config.configs.options)
   view:set_buf_options {
     filetype = 'vfiler_menu',
     modifiable = false,
@@ -39,7 +30,7 @@ function ExtensionMenu.new(options)
   }
 
   local object = core.inherit(
-    ExtensionMenu, Extension, options.name, view, config
+    ExtensionMenu, Extension, options.name, view, config.configs
     )
   object.on_quit = options.on_quit
   object.on_selected = options.on_selected

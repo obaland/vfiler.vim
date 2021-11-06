@@ -6,7 +6,8 @@
 
 let s:keymappings = {}
 
-function! vfiler#popup#map(winid, mappings) abort
+function! vfiler#popup#map(winid, keys, funcstr) abort
+  let l:bufnr = winbufnr(winid)
   let l:mappings = {}
   for l:key in keys(a:mappings)
     let l:escaped = l:key
@@ -14,7 +15,10 @@ function! vfiler#popup#map(winid, mappings) abort
       " escaped key string
       let l:escaped = eval('"\' . l:key . '"')
     end
-    let l:mappings[l:escaped] = a:mappings[l:key]
+    let l:mappings[l:escaped] = printf(
+          \ ":lua %s(%d, '%s')", a:funcstr, l:bufnr, l:key
+          \ )
+    echom l:mappings[l:escaped]
   endfor
   let s:keymappings[a:winid] = l:mappings
 endfunction

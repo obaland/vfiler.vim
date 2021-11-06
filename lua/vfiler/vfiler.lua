@@ -89,7 +89,7 @@ function VFiler.new(configs)
       context = Context.new(options),
       linked = nil,
       mappings = mappings,
-      options = core.deepcopy(options),
+      options = core.table.copy(options),
       view = view,
     }, VFiler)
 
@@ -102,15 +102,15 @@ function VFiler.new(configs)
   return object
 end
 
-function VFiler._call(bufnr, code)
+function VFiler._call(bufnr, key)
   local vfiler = VFiler.get(bufnr)
-  vfiler:do_action(code)
+  vfiler:do_action(key)
 end
 
-function VFiler:do_action(code)
-  local func = self.mappings[code]
+function VFiler:do_action(key)
+  local func = self.mappings[key]
   if not func then
-    core.error('Not defined in the key')
+    core.message.error('Not defined in the key')
     return
   end
   func(self.context, self.view)
@@ -124,12 +124,12 @@ end
 function VFiler:open(...)
   local winnr = vim.fn.bufwinnr(self.view.bufnr)
   if winnr > 0 then
-    core.move_window(winnr)
+    core.window.move(winnr)
   else
     local direction = ...
     if type then
       -- open window
-      core.open_window(direction)
+      core.window.open(direction)
     end
     self.view:open()
   end

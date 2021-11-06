@@ -63,9 +63,9 @@ local function copy_files(self, dest)
   end
 
   if #copied == 1 then
-    core.info('Copied to "%s" - %s', dest.path, copied[1].name)
+    core.message.info('Copied to "%s" - %s', dest.path, copied[1].name)
   elseif #copied > 1 then
-    core.info('Copied to "%s" - %d files', dest.path, #copied)
+    core.message.info('Copied to "%s" - %d files', dest.path, #copied)
   end
 
   -- Retrun false to hold the clipboard

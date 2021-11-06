@@ -1,24 +1,11 @@
 local action = require 'vfiler/action'
 local config = require 'vfiler/config'
 local core = require 'vfiler/core'
-local mapping = require 'vfiler/mapping'
-local path = require 'vfiler/path'
 local vim = require 'vfiler/vim'
 
 local VFiler = require 'vfiler/vfiler'
 
 local M = {}
-
-local function _do_action(name, ...)
-  local func = [[:lua require('vfiler/action')._do_action]]
-  local args = ''
-  if ... then
-    args = ([[('%s', %s)]]):format(name, ...)
-  else
-    args = ([[('%s')]]):format(name)
-  end
-  return func .. args
-end
 
 config.setup {
   mappings = {
@@ -51,16 +38,20 @@ function M.parse_command_args(args)
 end
 
 function M.start_command(args)
-  local configs, dirpath = config.parse(args)
-  if not configs then
+  local options, dirpath = config.parse_options(args)
+  if not options then
     return false
   end
+  local configs = {
+    options = options,
+    mappings = core.table.copy(config.configs.mappings),
+  }
   return M.start(dirpath, configs)
 end
 
 function M.start(...)
   local args = {...}
-  local configs = core.merge_table(args[2] or {}, config.configs)
+  local configs = core.table.merge(args[2] or {}, config.configs)
   local options = configs.options
 
   local dirpath = args[1]

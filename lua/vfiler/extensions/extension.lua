@@ -1,4 +1,3 @@
-local config = require 'vfiler/extensions/config'
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
@@ -7,36 +6,29 @@ local extension_resources = {}
 local Extension = {}
 Extension.__index = Extension
 
-function Extension.new(name, view, ...)
-  local object = setmetatable({
-      configs = core.deepcopy(... or config.configs),
-      items = nil,
-      name = name,
-      bufnr = 0,
-      winid = 0,
-      view = view,
-    }, Extension)
-  return object
+function Extension.new(name, view, configs)
+  return setmetatable({
+    configs = core.table.copy(configs),
+    items = nil,
+    name = name,
+    bufnr = 0,
+    winid = 0,
+    view = view,
+  }, Extension)
 end
 
-function Extension.create_view(layout, mapping_type)
+function Extension.create_view(options)
   local view = nil
-  if layout.floating then
+  if options.floating then
     if vim.fn.has('nvim') == 1 then
-      view = require('vfiler/extensions/views/floating').new(
-        layout, mapping_type
-       )
+      view = require('vfiler/extensions/views/floating')
     else
-      view = require('vfiler/extensions/views/popup').new(
-        layout, mapping_type
-        )
+      view = require('vfiler/extensions/views/popup')
     end
   else
-    view = require('vfiler/extensions/views/window').new(
-      layout, mapping_type
-      )
+    view = require('vfiler/extensions/views/window')
   end
-  return view
+  return view.new(options)
 end
 
 -- @param bufnr number
@@ -51,6 +43,25 @@ function Extension.delete(bufnr)
     ext:quit()
   end
   extension_resources[bufnr] = nil
+end
+
+function Extension._call(bufnr, key)
+  local ext = Extension.get(bufnr)
+  if not ext then
+    core.message.error('Extension does not exist.')
+    return
+  end
+  ext:do_action(key)
+end
+
+---@param key string
+function Extension:do_action(key)
+  local func = self.mappings[key]
+  if not func then
+    core.message.error('Not defined in the key')
+    return
+  end
+  func(self)
 end
 
 function Extension:quit()
@@ -69,6 +80,11 @@ function Extension:start(items, cursor_pos)
   self.bufnr = vim.fn.winbufnr(self.winid)
   self.items = items
 
+  -- define key mappings
+  self.mappings = self.view:define_mapping(
+    self.configs.mappings, [[require('vfiler/extensions/extension')._call]]
+    )
+
   -- draw line texts and syntax
   self:_on_draw(texts)
   vim.fn.cursor(cursor_pos, 1)
@@ -81,7 +97,7 @@ function Extension:start(items, cursor_pos)
     [[augroup vfiler_extension]],
     [[  autocmd BufWinLeave <buffer> :lua ]] .. delete_func,
   }
-  core.concat_list(aucommands, self:_on_autocommands())
+  core.list.extend(aucommands, self:_on_autocommands())
   table.insert(aucommands, 'augroup END')
 
   for _, au in ipairs(aucommands) do
