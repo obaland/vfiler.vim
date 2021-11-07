@@ -42,14 +42,6 @@ function Context:change_sort(type)
   self.sort_type = type
 end
 
-function Context:load_cache()
-  local path = self._cache[self.root.path]
-  if not path then
-    return nil
-  end
-  return self.root:expand(path)
-end
-
 -- @param path string
 function Context:switch(dirpath, restore)
   self.root = Directory.new(dirpath, false, self.sort_type)
