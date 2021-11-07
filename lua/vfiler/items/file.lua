@@ -20,10 +20,7 @@ function File.new(path, islink)
 end
 
 function File:copy(destpath)
-  core.file.copy(
-    core.string.shellescape(self.path),
-    core.string.shellescape(destpath)
-    )
+  core.file.copy(self.path, destpath)
   if not core.path.exists(destpath) then
     return nil
   end

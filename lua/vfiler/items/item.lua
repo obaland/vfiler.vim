@@ -63,10 +63,7 @@ function Item:_make_orphan()
 end
 
 function Item:_move(destpath)
-  core.file.move(
-    core.string.shellescape(self.path),
-    core.string.shellescape(destpath)
-    )
+  core.file.move(self.path, destpath)
   if not core.path.exists(destpath) and core.path.exists(self.path) then
     return false
   end

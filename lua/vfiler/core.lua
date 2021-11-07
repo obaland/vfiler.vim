@@ -22,19 +22,31 @@ M.file = {}
 
 if M.is_windows then
   function M.dir.copy(src, dest)
-    vim.fn.system(('robocopy /e %s %s'):format(src, dest))
+    local command = ('robocopy /e %s %s'):format(
+      M.string.shellescape(src), M.string.shellescape(dest)
+      )
+    vim.fn.system(command)
   end
 
   function M.file.copy(src, dest)
-    vim.fn.system(('copy /y %s %s'):format(src, dest))
+    local command = ('copy /y %s %s'):format(
+      M.string.shellescape(src), M.string.shellescape(dest)
+      )
+    vim.fn.system(command)
   end
 else
   function M.dir.copy(src, dest)
-    vim.fn.system(('cp -fR %s %s'):format(src, dest))
+    local command = ('cp -fR %s %s'):format(
+      M.string.shellescape(src), M.string.shellescape(dest)
+      )
+    vim.fn.system(command)
   end
 
   function M.file.copy(src, dest)
-    vim.fn.system(('cp -f %s %s'):format(src, dest))
+    local command = ('cp -f %s %s'):format(
+      M.string.shellescape(src), M.string.shellescape(dest)
+      )
+    vim.fn.system(command)
   end
 end
 
@@ -132,9 +144,14 @@ function M.path.normalize(path)
     return '/'
   end
 
-  local result = vim.fn.fnamemodify(path, ':p:h')
+  local result = vim.fn.fnamemodify(path, ':p')
   if M.is_windows then
     result = result:gsub('\\', '/')
+  end
+
+  -- trim end '/'
+  if result:sub(#result) == '/' then
+    result = result:sub(1, #result - 1)
   end
   return result
 end

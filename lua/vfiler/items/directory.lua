@@ -38,12 +38,10 @@ function Directory:close()
 end
 
 function Directory:copy(destpath)
-  local src = core.string.shellescape(self.path)
-  local dest = core.string.shellescape(destpath)
   if self.islink then
-    core.file.copy(src, dest)
+    core.file.copy(self.path, destpath)
   else
-    core.dir.copy(src, dest)
+    core.dir.copy(self.path, destpath)
   end
 
   if not core.path.exists(destpath) then

@@ -397,7 +397,7 @@ function M.new_file(context, view)
       local created = {}
       for _, name in ipairs(contents) do
         local filepath = core.path.join(dir.path, name)
-        if core.path.exists(filepath) ~= 0 then
+        if core.path.exists(filepath) then
           core.message.warning('Skipped, "%s" already exists', name)
         else
           local file = File.create(filepath)
