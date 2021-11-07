@@ -115,10 +115,10 @@ function View:draw(context)
   self:redraw()
 end
 
----@param target table
-function View:indexof(target)
+---@param path string
+function View:indexof(path)
   for i, item in ipairs(self._items) do
-    if item.path == target.path then
+    if item.path == path then
       return i
     end
   end
@@ -135,7 +135,7 @@ end
 
 function View:redraw()
   if self.bufnr ~= vim.fn.bufnr() then
-    core.message.warning('Cannot draw because the buffer is different')
+    core.message.warning('Cannot draw because the buffer is different.')
     return
   end
 

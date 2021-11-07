@@ -25,7 +25,7 @@ config.setup {
     ['D']         = action.delete,
     ['G']         = action.move_cursor_bottom,
     ['K']         = action.new_directory,
-    ['L']         = action.change_drive,
+    ['L']         = action.switch_drive,
     ['M']         = action.move,
     ['N']         = action.new_file,
     ['P']         = action.paste,

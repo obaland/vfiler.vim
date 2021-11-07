@@ -148,11 +148,6 @@ function M.path.normalize(path)
   if M.is_windows then
     result = result:gsub('\\', '/')
   end
-
-  -- trim end '/'
-  if result:sub(#result) == '/' then
-    result = result:sub(1, #result - 1)
-  end
   return result
 end
 
@@ -210,13 +205,11 @@ end
 ------------------------------------------------------------------------------
 M.string = {}
 
--- Lua pettern escape
-if vim.fn.has('nvim') then
-  M.string.pesc = vim.pesc
-else
-  function M.string.pesc(s)
-    return s
+local function trim_end(str, char)
+  if str:sub(#str, #str) == char then
+    return str:sub(1, #str - 1)
   end
+  return str
 end
 
 -- truncate string
@@ -230,16 +223,6 @@ local function strwidthpart_reverse(str, strwidth, width)
   return vim.fn.matchstr(str, '\\%>' .. vcol .. 'v.*')
 end
 
-if M.is_windows then
-  function M.string.shellescape(str)
-    return ('"%s"'):format(vim.fn.escape(str:gsub('/', [[\]])))
-  end
-else
-  function M.string.shellescape(str)
-    return vim.fn.shellescape(str)
-  end
-end
-
 local function truncate(str, width)
   local bytes = {str:byte(1, #str)}
   for _, byte in ipairs(bytes) do
@@ -248,6 +231,27 @@ local function truncate(str, width)
     end
   end
   return str:sub(1, width)
+end
+
+-- Lua pettern escape
+function M.string.pesc(s)
+  return s:gsub('([%^%(%)%[%]%*%+%-%?%.%%])', '%%%1')
+end
+
+if M.is_windows then
+  function M.string.shellescape(str)
+    return ('"%s"'):format(
+      trim_end(vim.fn.escape(str:gsub('/', [[\]])), '/')
+      )
+  end
+else
+  function M.string.shellescape(str)
+    return vim.fn.shellescape(trim_end(str))
+  end
+end
+
+function M.string.split(str, pattern)
+  return vim.from_vimlist(vim.fn.split(str, pattern))
 end
 
 function M.string.truncate(str, width, sep, ...)

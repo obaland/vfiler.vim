@@ -7,80 +7,67 @@ local Directory = require 'vfiler/items/directory'
 local Clipboard = {}
 Clipboard.__index = Clipboard
 
-local function copy_files(self, dest)
-  local successes = {}
-  for _, item in ipairs(self.items) do
-    local destpath = core.path.join(dest.path, item.name)
-    if core.path.exists(destpath) then
-      if cmdline.util.confirm_overwrite(item.name) ~= cmdline.choice.YES then
-        goto continue
-      end
-    end
-
-    local copied = item:copy(destpath)
-    if copied then
-      dest:add(copied)
-      table.insert(successes, copied)
-    else
-      core.message.error('Failed to copy "%s".', item.name)
-    end
-
-    ::continue::
-  end
-
-  if #successes == 1 then
-    core.message.info('Copied to "%s" - %s', dest.path, successes[1].name)
-  elseif #successes > 1 then
-    core.message.info('Copied to "%s" - %d files', dest.path, #successes)
-  end
-
-  -- Retrun false in the hope of holding clipboard
-  return false
+local function copy(item, destpath)
+  return item:copy(destpath)
 end
 
-local function move_files(self, dest)
-  local successes = {}
-  for _, item in ipairs(self.items) do
-    local destpath = core.path.join(dest.path, item.name)
-    if core.path.exists(destpath) then
-      if cmdline.util.confirm_overwrite(item.name) ~= cmdline.choice.YES then
-        goto continue
-      end
-    end
-
-    local moved = item:move(destpath)
-    if moved then
-      dest:add(moved)
-      table.insert(successes, moved)
-    else
-      core.message.error('Failed to move "%s".', item.name)
-    end
-
-    ::continue::
-  end
-
-  if #successes == 1 then
-    core.message.info('Moved to "%s" - %s', dest.path, successes[1].name)
-  elseif #successes > 1 then
-    core.message.info('Moved to "%s" - %d files', dest.path, #successes)
-  end
-
-  -- Retrun true in the hope of clearing clipboard
-  return true
+local function move(item, destpath)
+  return item:move(destpath)
 end
 
 function Clipboard.copy(items)
   return setmetatable({
-      items = items,
-      paste = copy_files,
-    }, Clipboard)
+    hold = true,
+    _items = items,
+    _done_format = 'Copied to "%s"',
+    _fail_format = 'Failed to copy "%s"',
+    _function = copy,
+  }, Clipboard)
 end
 
 function Clipboard.move(items)
   return setmetatable({
-      items = items,
-      paste = move_files,
-    }, Clipboard)
+    hold = false,
+    _items = items,
+    _done_format = 'Moved to "%s"',
+    _fail_format = 'Failed to move "%s"',
+    _function = move,
+  }, Clipboard)
+end
+
+function Clipboard:paste(dest)
+  local successes = {}
+  for _, item in ipairs(self._items) do
+    local destpath = core.path.join(dest.path, item.name)
+    if core.path.exists(destpath) then
+      if cmdline.util.confirm_overwrite(item.name) ~= cmdline.choice.YES then
+        goto continue
+      end
+    end
+
+    local new = self._function(item, destpath)
+    if new then
+      dest:add(new)
+      table.insert(successes, new)
+    else
+      core.message.error(self._fail_format, item.name)
+    end
+
+    ::continue::
+  end
+
+  if #successes == 1 then
+    core.message.info(
+      self._done_format .. ' - %s', dest.path, successes[1].name
+      )
+  elseif #successes > 1 then
+    core.message.info(
+      self._done_format .. ' - %d files', dest.path, #successes
+      )
+  else
+    return false
+  end
+  return true
 end
 
 return Clipboard

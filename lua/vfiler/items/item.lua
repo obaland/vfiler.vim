@@ -35,6 +35,15 @@ function Item:delete()
   return true
 end
 
+function Item:parent_path()
+  if self.parent then
+    return self.parent.path
+  end
+  local path = self.path
+  local mods = self.path:sub(#path, #path) == '/' and ':h:h' or ':h'
+  return vim.fn.fnamemodify(path, mods)
+end
+
 function Item:rename(name)
   local newpath = core.path.join(self.parent.path, name)
   local result, message, code = os.rename(self.path, newpath)

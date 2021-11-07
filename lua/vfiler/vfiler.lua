@@ -66,7 +66,7 @@ end
 
 ---@param bufnr number Buffer number
 function VFiler.get(bufnr)
-  return vfilers[bufnr].vfiler
+  return vfilers[bufnr].object
 end
 
 function VFiler.get_current()
@@ -86,16 +86,17 @@ function VFiler.new(configs)
     )
 
   local object = setmetatable({
-      context = Context.new(options),
-      linked = nil,
-      mappings = mappings,
-      options = core.table.copy(options),
-      view = view,
-    }, VFiler)
+    configs = core.table.copy(configs),
+    context = Context.new(options),
+    linked = nil,
+    mappings = mappings,
+    options = core.table.copy(options),
+    view = view,
+  }, VFiler)
 
   -- add vfiler resource
   vfilers[view.bufnr] = {
-    vfiler = object,
+    object = object,
     name = name,
     number = number,
   }

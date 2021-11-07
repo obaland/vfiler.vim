@@ -20,7 +20,7 @@ function Directory.new(dirpath, islink, sort_type)
   self.children = nil
   self.opened = false
   self.type = self.islink and 'L' or 'D'
-  self._sort = sort_type
+  self.sort_type = sort_type
   self._sort_compare = sort.get(sort_type)
   return self
 end
@@ -47,12 +47,21 @@ function Directory:copy(destpath)
   if not core.path.exists(destpath) then
     return nil
   end
-  return Directory.new(destpath, self.islink, self._sort)
+  return Directory.new(destpath, self.islink, self.sort_type)
+end
+
+function Directory:expand(path)
+  local s, e = path:find(self.path, 1, true)
+  if not s then
+    return nil
+  end
+  local names = core.string.split(path:sub(e), '/')
+  return self:_expand(names)
 end
 
 function Directory:move(destpath)
   if self:_move(destpath) then
-    return Directory.new(destpath, self.islink, self._sort)
+    return Directory.new(destpath, self.islink, self.sort_type)
   end
   return nil
 end
@@ -63,6 +72,7 @@ function Directory:open()
     self:_add(item)
   end
   self.opened = true
+  return #self.children > 0 and self.children[1].path, self.path
 end
 
 function Directory:sort(type, recursive)
@@ -70,7 +80,7 @@ function Directory:sort(type, recursive)
     return
   end
 
-  self._sort = type
+  self.sort_type = type
   self._sort_compare = sort.get(type)
   table.sort(self.children, self._sort_compare)
 
@@ -81,7 +91,7 @@ function Directory:sort(type, recursive)
   -- sort recursive
   for _, child in ipairs(self.children) do
     if child.isdirectory then
-      child:sort(type)
+      child:sort(type, recursive)
     end
   end
 end
@@ -97,6 +107,22 @@ function Directory:_add(item)
   item.parent = self
   item.level = self.level + 1
   table.insert(self.children, pos, item)
+end
+
+function Directory:_expand(names)
+  local path = self:open()
+  local name = names[1]
+  for _, child in ipairs(self.children) do
+    if child.name == name then
+      table.remove(names, 1)
+      if #names > 0 then
+        return child:_expand(names)
+      else
+        return child.path
+      end
+    end
+  end
+  return path
 end
 
 function Directory:_ls()
@@ -126,12 +152,12 @@ function Directory:_ls()
     local item = nil
 
     if ftype == 'dir' then
-      item = Directory.new(filepath, false, self._sort)
+      item = Directory.new(filepath, false, self.sort_type)
     elseif ftype == 'file' then
       item = File.new(filepath, false)
     elseif ftype == 'link' then
       if core.path.isdirectory(filepath) then
-        item = Directory.new(filepath, true, self._sort)
+        item = Directory.new(filepath, true, self.sort_type)
       else
         item = File.new(filepath, true)
       end

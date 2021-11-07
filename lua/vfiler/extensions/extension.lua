@@ -74,21 +74,31 @@ function Extension:quit()
   extension_resources[self.bufnr] = nil
 end
 
-function Extension:start(items, cursor_pos)
-  local texts = self:_on_get_texts(items)
+function Extension:start(items, ...)
+  local lnum = 1
+  if ... then
+    local default = ...
+    for i, item in ipairs(items) do
+      if item == default then
+        lnum = i
+        break
+      end
+    end
+  end
 
+  local texts = self:_on_get_texts(items)
   self.winid = self.view:open(self.name, texts)
   self.bufnr = vim.fn.winbufnr(self.winid)
   self.items = items
 
-  -- define key mappings
+  -- define key mappings (overwrite)
   self.mappings = self.view:define_mapping(
-    self.configs.mappings, [[require('vfiler/extensions/extension')._call]]
+    self.mappings, [[require('vfiler/extensions/extension')._call]]
     )
 
   -- draw line texts and syntax
   self:_on_draw(texts)
-  vim.fn.cursor(cursor_pos, 1)
+  vim.fn.cursor(lnum, 1)
 
   -- autocmd
   local delete_func = (

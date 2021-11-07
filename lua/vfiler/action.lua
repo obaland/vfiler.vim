@@ -12,14 +12,48 @@ local VFiler = require 'vfiler/vfiler'
 
 local M = {}
 
+-- @param lnum number
+local function move_cursor(lnum)
+  vim.fn.cursor(lnum, 1)
+end
+
 local function cd(context, view, dirpath)
-  -- special path
-  if dirpath == '..' then
-    -- change parent directory
-    dirpath = vim.fn.fnamemodify(context.root.path, ':h')
-  end
-  context:switch(dirpath)
+  context:store(view:get_current().path)
+  local path = context:switch(dirpath, true)
   view:draw(context)
+  local lnum = view:indexof(path)
+  if lnum then
+    move_cursor(lnum)
+  end
+end
+
+local function create_files(dest, contents, create)
+  local created = {}
+  for _, name in ipairs(contents) do
+    local filepath = core.path.join(dest.path, name)
+    if core.path.isdirectory(filepath) then
+      core.message.warning('Skipped, "%s" already exists', name)
+    else
+      local new = create(dest, filepath)
+      if new then
+        dest:add(new)
+        table.insert(created, name)
+      else
+        core.message.error('Failed to create a "%s" file', name)
+      end
+    end
+  end
+
+  if #created == 0 then
+    return false
+  end
+
+  if #created == 1 then
+    core.message.info('Created - "%s" file', created[1])
+  else
+    core.message.info('Created - %d files', #created)
+  end
+  return true
 end
 
 local function detect_drives()
@@ -34,11 +68,6 @@ local function detect_drives()
     end
   end
   return drives
-end
-
--- @param lnum number
-local function move_cursor(lnum)
-  vim.fn.cursor(lnum, 1)
 end
 
 local function rename_files(context, view, targets)
@@ -73,7 +102,7 @@ local function rename_files(context, view, targets)
       if num_renamed > 0 then
         core.message.info('Renamed - %d files', num_renamed)
         for _, parent in pairs(parents) do
-          parent:sort(context.sort, false)
+          parent:sort(context.sort_type, false)
         end
         view:draw(context)
       end
@@ -84,7 +113,7 @@ local function rename_files(context, view, targets)
     end,
   }
 
-  ext:start(targets, 1)
+  ext:start(targets)
   context.extension = ext
 end
 
@@ -107,8 +136,8 @@ local function rename_one_file(context, view, target)
     return
   end
 
-  core.message.info('Renamed - %s -> %s', name, rename)
-  target.parent:sort(context.sort, false)
+  core.message.info('Renamed - "%s" -> "%s"', name, rename)
+  target.parent:sort(context.sort_type, false)
   view:draw(context)
 end
 
@@ -159,26 +188,31 @@ end
 function M.close_tree(context, view)
   local item = view:get_current()
   local target = (item.isdirectory and item.opened) and item or item.parent
-  target:close()
 
+  target:close()
   view:draw(context)
 
-  local cursor = view:indexof(target)
-  if cursor then
-    move_cursor(cursor)
+  local lnum = view:indexof(target.path)
+  if lnum then
+    move_cursor(lnum)
   end
 end
 
 function M.close_tree_or_cd(context, view)
   local item = view:get_current()
   if item.level <= 1 and not item.opened then
-    cd(context, view, '..')
+    local path = context.root:parent_path()
+    cd(context, view, path)
+    local lnum = view:indexof(item.parent.path)
+    if lnum then
+      move_cursor(lnum)
+    end
   else
     M.close_tree(context, view)
   end
 end
 
-function M.change_drive(context, view)
+function M.switch_drive(context, view)
   if context.extension then
     return
   end
@@ -189,29 +223,28 @@ function M.change_drive(context, view)
   end
 
   local root = core.path.root(context.root.path)
-  local cursor = 1
-  for i, drive in ipairs(drives) do
-    if drive == root then
-      cursor = i
-      break
-    end
-  end
-
   local menu = Menu.new {
     name = 'Select Drive',
+    on_selected = function(drive)
+      if root == drive then
+        return
+      end
 
-    on_selected = function(item)
-      if root ~= item then
-        cd(context, view, item)
+      context:store(view:get_current().path)
+      local path = context:switch_drive(drive, true)
+      view:draw(context)
+
+      local lnum = view:indexof(path)
+      if lnum then
+        move_cursor(lnum)
       end
     end,
-
     on_quit = function()
       context.extension = nil
     end,
   }
 
-  menu:start(drives, cursor)
+  menu:start(drives, root)
   context.extension = menu
 end
 
@@ -220,22 +253,20 @@ function M.change_sort(context, view)
     return
   end
 
-  local sort_types = sort.types()
-  local cursor = 1
-  for i, type in ipairs(sort_types) do
-    if type == context.sort then
-      cursor = i
-      break
-    end
-  end
-
   local menu = Menu.new {
     name = 'Select Sort',
 
-    on_selected = function(item)
-      if context.sort ~= item then
-        context:change_sort(item)
+    on_selected = function(sort_type)
+      if context.sort_type ~= sort_type then
+        local item = view:get_current()
+
+        context:change_sort(sort_type)
         view:draw(context)
+
+        local lnum = view:indexof(item.path)
+        if lnum then
+          move_cursor(lnum)
+        end
       end
     end,
 
@@ -244,7 +275,7 @@ function M.change_sort(context, view)
     end,
   }
 
-  menu:start(sort_types, cursor)
+  menu:start(sort.types(), context.sort_type)
   context.extension = menu
 end
 
@@ -359,33 +390,13 @@ function M.new_directory(context, view)
 
   cmdline.input_multiple('New directory names?',
     function(contents)
-      local created = {}
-      for _, name in ipairs(contents) do
-        local filepath = core.path.join(dir.path, name)
-        if core.path.isdirectory(filepath) then
-          core.message.warning('Skipped, "%s" already exists.', name)
-        else
-          local new = Directory.create(filepath, context.sort)
-          if new then
-            dir:add(new)
-            table.insert(created, name)
-          else
-            core.message.error('Failed to create a "%s" file', name)
-          end
-        end
+      local result = create_files(dir, contents, function(dest, filepath)
+        return Directory.create(filepath, dest.sort_type)
+      end)
+      if result then
+        view:draw(context)
       end
-
-      if #created == 0 then
-        return
-      end
-      if #created == 1 then
-        core.message.info('Created - %s', created[1])
-      else
-        core.message.info('Created - %d directories', #created)
-      end
-      view:draw(context)
-    end
-    )
+    end)
 end
 
 function M.new_file(context, view)
@@ -394,33 +405,13 @@ function M.new_file(context, view)
 
   cmdline.input_multiple('New file names?',
     function(contents)
-      local created = {}
-      for _, name in ipairs(contents) do
-        local filepath = core.path.join(dir.path, name)
-        if core.path.exists(filepath) then
-          core.message.warning('Skipped, "%s" already exists', name)
-        else
-          local file = File.create(filepath)
-          if file then
-            dir:add(file)
-            table.insert(created, name)
-          else
-            core.message.error('Failed to create a "%s" file', name)
-          end
-        end
+      local result = create_files(dir, contents, function(dest, filepath)
+        return File.create(filepath)
+      end)
+      if result then
+        view:draw(context)
       end
-
-      if #created == 0 then
-        return
-      end
-      if #created == 1 then
-        core.message.info('Created - %s', created[1])
-      else
-        core.message.info('Created - %d files', #created)
-      end
-      view:draw(context)
-    end
-    )
+    end)
 end
 
 function M.open(context, view)
@@ -449,14 +440,15 @@ function M.open_tree(context, view)
 end
 
 function M.paste(context, view)
-  if not context.clipboard then
+  local cb = context.clipboard
+  if not cb then
     core.message.warning('No clipboard')
     return
   end
 
   local item = view:get_item(vim.fn.line('.'))
   local dest = (item.isdirectory and item.opened) and item or item.parent
-  if context.clipboard:paste(dest) then
+  if cb:paste(dest) and cb.hold then
     context.clipboard = nil
   end
   view:draw(context)
