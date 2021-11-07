@@ -23,9 +23,9 @@ function Floating:draw(name, texts)
   vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, true, texts)
 end
 
-function Floating:_on_layout_option(name, texts)
+function Floating:_on_win_option(name, texts)
   -- calculate min width and height
-  local layout = {
+  local options = {
     minwidth = 1,
     minheight = 1,
   }
@@ -40,28 +40,28 @@ function Floating:_on_layout_option(name, texts)
   end
 
   -- position
-  layout.relative = floating.relative and 'win' or 'editor'
+  options.relative = floating.relative and 'win' or 'editor'
 
   -- decide width and height
   if floating.minwidth then
-    layout.minwidth = self:_winvalue(wwidth, floating.minwidth)
+    options.minwidth = self:_winvalue(wwidth, floating.minwidth)
   end
   if floating.minheight then
-    layout.minheight = self:_winvalue(wheight, floating.minheight)
+    options.minheight = self:_winvalue(wheight, floating.minheight)
   end
 
   -- adjust width: match to the top
-  layout.width = self:_winwidth(
-    wwidth, floating.width or 'auto', layout.minwidth, wwidth, texts
+  options.width = self:_winwidth(
+    wwidth, floating.width or 'auto', options.minwidth, wwidth, texts
     )
-  layout.height = self:_winheight(
-    wheight, floating.height or 'auto', layout.minheight, wheight, texts
+  options.height = self:_winheight(
+    wheight, floating.height or 'auto', options.minheight, wheight, texts
     )
 
   -- claculate position
-  layout.row = math.floor((wheight - layout.height) / 2)
-  layout.col = math.floor((wwidth - layout.width) / 2)
-  return layout
+  options.row = math.floor((wheight - options.height) / 2)
+  options.col = math.floor((wwidth - options.width) / 2)
+  return options
 end
 
 function Floating:_on_open(name, texts, options)

@@ -16,7 +16,7 @@ local function cd(context, view, dirpath)
   -- special path
   if dirpath == '..' then
     -- change parent directory
-    dirpath = vim.fn.fnamemodify(context.root.path, ':h:h')
+    dirpath = vim.fn.fnamemodify(context.root.path, ':h')
   end
   context:switch(dirpath)
   view:draw(context)

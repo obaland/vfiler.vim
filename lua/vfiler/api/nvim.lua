@@ -55,20 +55,20 @@ end
 ------------------------------------------------------------------------------
 -- Lua data to Vim data
 ------------------------------------------------------------------------------
-function M.vim_list(data)
+function M.to_vimlist(data)
   return data
 end
-function M.vim_dict(data)
+function M.to_vimdict(data)
   return data
 end
 
 ------------------------------------------------------------------------------
 -- Vim data to Lua data
 ------------------------------------------------------------------------------
-function M.lua_list(data)
+function M.from_vimlist(data)
   return data
 end
-function M.lua_dict(data)
+function M.from_vimdict(data)
   return data
 end
 

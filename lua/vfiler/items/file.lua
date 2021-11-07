@@ -19,4 +19,21 @@ function File.new(path, islink)
   return self
 end
 
+function File:copy(destpath)
+  core.file.copy(
+    core.string.shellescape(self.path),
+    core.string.shellescape(destpath)
+    )
+  if not core.path.exists(destpath) then
+    return nil
+  end
+  return File.new(destpath, self.islink)
+end
+
+function File:move(destpath)
+  if self:_move(destpath) then
+    return File.new(destpath, self.islink)
+  end
+  return nil
+end
 return File

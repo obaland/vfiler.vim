@@ -31,19 +31,7 @@ function Item:delete()
     core.message.error('"%s" Cannot delete.', self.name)
     return false
   end
-
-  -- delete from item tree
-  if not self.parent then
-    return true
-  end
-
-  local children = self.parent.children
-  for i, child in ipairs(children) do
-    if child.path == self.path then
-      table.remove(children, i)
-      break
-    end
-  end
+  self:_make_orphan()
   return true
 end
 
@@ -56,6 +44,33 @@ function Item:rename(name)
   end
   self.name = name
   self.path = newpath
+  return true
+end
+
+--- Remove from parent tree
+function Item:_make_orphan()
+  if not self.parent then
+    return
+  end
+
+  local children = self.parent.children
+  for i, child in ipairs(children) do
+    if child.path == self.path then
+      table.remove(children, i)
+      break
+    end
+  end
+end
+
+function Item:_move(destpath)
+  core.file.move(
+    core.string.shellescape(self.path),
+    core.string.shellescape(destpath)
+    )
+  if not core.path.exists(destpath) and core.path.exists(self.path) then
+    return false
+  end
+  self:_make_orphan()
   return true
 end
 

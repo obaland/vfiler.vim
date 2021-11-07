@@ -7,72 +7,65 @@ local Directory = require 'vfiler/items/directory'
 local Clipboard = {}
 Clipboard.__index = Clipboard
 
-if core.is_windows then
-  function Clipboard._escape(path)
-    return ('"%s"'):format(vim.fn.escape(path:gsub('/', [[\]])))
-  end
-
-  function Clipboard._copy_directory(src, dest)
-    --return vim.fn.system(('copy /y %s %s'):format(src, dest))
-  end
-  function Clipboard._copy_file(src, dest)
-    vim.fn.system(('copy /y %s %s'):format(src, dest))
-  end
-else
-  function Clipboard._escape(path)
-    return vim.fn.shellescape(path)
-  end
-
-  function Clipboard._copy_directory(src, dest)
-    os.execute(('cp -R %s %s'):format(src, dest))
-  end
-  function Clipboard._copy_file(src, dest)
-    os.execute(('cp %s %s'):format(src, dest))
-  end
-end
-
 local function copy_files(self, dest)
-  local copied = {}
+  local successes = {}
   for _, item in ipairs(self.items) do
-    local destpath = dest.path .. '/' .. item.name
-    if vim.fn.filereadable(destpath) == 1 then
+    local destpath = core.path.join(dest.path, item.name)
+    if core.path.exists(destpath) then
       if cmdline.util.confirm_overwrite(item.name) ~= cmdline.choice.YES then
         goto continue
       end
     end
 
-    local srcpath = Clipboard._escape(item.path)
-    destpath = Clipboard._escape(destpath)
-
-    if item.islink or not item.isdirectory then
-      Clipboard._copy_file(srcpath, destpath)
+    local copied = item:copy(destpath)
+    if copied then
+      dest:add(copied)
+      table.insert(successes, copied)
     else
-    end
-
-    -- Successful copy
-    if vim.fn.filereadable(destpath) == 1 then
-      if item.isdirectory then
-        dest:add_directory(destpath, item.islink)
-      else
-        dest:add_file(destpath, item.islink)
-      end
-      table.insert(copied, item)
+      core.message.error('Failed to copy "%s".', item.name)
     end
 
     ::continue::
   end
 
-  if #copied == 1 then
-    core.message.info('Copied to "%s" - %s', dest.path, copied[1].name)
-  elseif #copied > 1 then
-    core.message.info('Copied to "%s" - %d files', dest.path, #copied)
+  if #successes == 1 then
+    core.message.info('Copied to "%s" - %s', dest.path, successes[1].name)
+  elseif #successes > 1 then
+    core.message.info('Copied to "%s" - %d files', dest.path, #successes)
   end
 
-  -- Retrun false to hold the clipboard
+  -- Retrun false in the hope of holding clipboard
   return false
 end
 
 local function move_files(self, dest)
+  local successes = {}
+  for _, item in ipairs(self.items) do
+    local destpath = core.path.join(dest.path, item.name)
+    if core.path.exists(destpath) then
+      if cmdline.util.confirm_overwrite(item.name) ~= cmdline.choice.YES then
+        goto continue
+      end
+    end
+
+    local moved = item:move(destpath)
+    if moved then
+      dest:add(moved)
+      table.insert(successes, moved)
+    else
+      core.message.error('Failed to move "%s".', item.name)
+    end
+
+    ::continue::
+  end
+
+  if #successes == 1 then
+    core.message.info('Moved to "%s" - %s', dest.path, successes[1].name)
+  elseif #successes > 1 then
+    core.message.info('Moved to "%s" - %d files', dest.path, #successes)
+  end
+
+  -- Retrun true in the hope of clearing clipboard
   return true
 end
 

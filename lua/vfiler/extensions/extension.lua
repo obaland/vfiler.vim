@@ -8,7 +8,8 @@ Extension.__index = Extension
 
 function Extension.new(name, view, configs)
   return setmetatable({
-    configs = core.table.copy(configs),
+    options = core.table.copy(configs.options),
+    mappings = core.table.copy(configs.mappings),
     items = nil,
     name = name,
     bufnr = 0,

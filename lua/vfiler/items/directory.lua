@@ -6,16 +6,6 @@ local File = require 'vfiler/items/file'
 
 local Directory = {}
 
-if core.is_windows then
-  function Directory._copy(src, dest)
-    --return vim.fn.system(('copy /y %s %s'):format(src, dest))
-  end
-else
-  function Directory._copy(src, dest)
-    os.execute(('cp -R %s %s'):format(src, dest))
-  end
-end
-
 function Directory.create(dirpath, sort_type)
   -- mkdir
   if vim.fn.mkdir(dirpath) ~= 1 then
@@ -48,14 +38,25 @@ function Directory:close()
 end
 
 function Directory:copy(destpath)
-  Directory._copy(
-    core.string.shellescape(self.path),
-    core.string.shellescape(destpath)
-    )
+  local src = core.string.shellescape(self.path)
+  local dest = core.string.shellescape(destpath)
+  if self.islink then
+    core.file.copy(src, dest)
+  else
+    core.dir.copy(src, dest)
+  end
+
   if not core.path.exists(destpath) then
     return nil
   end
   return Directory.new(destpath, self.islink, self._sort)
+end
+
+function Directory:move(destpath)
+  if self:_move(destpath) then
+    return Directory.new(destpath, self.islink, self._sort)
+  end
+  return nil
 end
 
 function Directory:open()

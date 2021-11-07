@@ -45,7 +45,7 @@ function Window:define_mapping(mappings, funcstr)
 end
 
 function Window:open(name, texts)
-  local option = self:_on_layout_option(name, texts)
+  local option = self:_on_win_option(name, texts)
   self.winid = self:_on_open(name, texts, option)
   self:_on_apply_options(self.winid)
   self.bufnr = vim.fn.winbufnr(self.winid)
@@ -81,7 +81,7 @@ function Window:_on_apply_options(winid)
   vim.fn.win_executes(winid, options)
 end
 
-function Window:_on_layout_option(name, texts)
+function Window:_on_win_option(name, texts)
   local options = {
     width = 0, height = 0,
   }

@@ -15,24 +15,31 @@ function M.inherit(class, super, ...)
 end
 
 ------------------------------------------------------------------------------
--- File
+-- File and Directory
 ------------------------------------------------------------------------------
+M.dir = {}
+M.file = {}
+
 if M.is_windows then
-  function M.copy_directory(src, dest)
-    --return vim.fn.system(('copy /y %s %s'):format(src, dest))
+  function M.dir.copy(src, dest)
+    vim.fn.system(('robocopy /e %s %s'):format(src, dest))
   end
 
-  function M.copy_file(src, dest)
+  function M.file.copy(src, dest)
     vim.fn.system(('copy /y %s %s'):format(src, dest))
   end
 else
-  function M.copy_directory(src, dest)
-    os.execute(('cp -R %s %s'):format(src, dest))
+  function M.dir.copy(src, dest)
+    vim.fn.system(('cp -fR %s %s'):format(src, dest))
   end
 
-  function M.copy_file(src, dest)
-    os.execute(('cp %s %s'):format(src, dest))
+  function M.file.copy(src, dest)
+    vim.fn.system(('cp -f %s %s'):format(src, dest))
   end
+end
+
+function M.file.move(src, dest)
+  os.rename(src, dest)
 end
 
 ------------------------------------------------------------------------------
@@ -103,7 +110,7 @@ end
 M.path = {}
 
 function M.path.exists(path)
-  return vim.fn.filereadable(path) == 1
+  return vim.fn.filereadable(path) == 1 or vim.fn.isdirectory(path) == 1
 end
 
 function M.path.isdirectory(path)
@@ -125,7 +132,7 @@ function M.path.normalize(path)
     return '/'
   end
 
-  local result = vim.fn.fnamemodify(path, ':p')
+  local result = vim.fn.fnamemodify(path, ':p:h')
   if M.is_windows then
     result = result:gsub('\\', '/')
   end

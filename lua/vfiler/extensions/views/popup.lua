@@ -25,6 +25,7 @@ function Popup:define_mapping(mappings, funcstr)
     table.insert(keys, key)
   end
   vim.fn['vfiler#popup#map'](self.winid, vim.to_vimlist(keys), funcstr)
+  -- Note: same mapping datas
   return core.table.copy(mappings)
 end
 
@@ -32,7 +33,7 @@ function Popup:draw(name, texts)
   -- Nothing to do
 end
 
-function Popup:_on_layout_option(name, texts)
+function Popup:_on_win_option(name, texts)
   local floating = self.options.floating
   local wwidth = vim.fn.winwidth(self.caller_winid)
   local wheight = vim.fn.winheight(self.caller_winid)
