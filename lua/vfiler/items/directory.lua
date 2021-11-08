@@ -50,12 +50,8 @@ function Directory:copy(destpath)
   return Directory.new(destpath, self.islink, self.sort_type)
 end
 
-function Directory:expand(path)
-  local s, e = path:find(self.path, 1, true)
-  if not s then
-    return nil
-  end
-  local names = core.string.split(path:sub(e), '/')
+function Directory:expand(relative_path)
+  local names = core.string.split(relative_path, '/')
   return self:_expand(names)
 end
 
@@ -72,7 +68,6 @@ function Directory:open()
     self:_add(item)
   end
   self.opened = true
-  return #self.children > 0 and self.children[1].path, self.path
 end
 
 function Directory:sort(type, recursive)
@@ -110,19 +105,19 @@ function Directory:_add(item)
 end
 
 function Directory:_expand(names)
-  local path = self:open()
-  local name = names[1]
+  if not self.children then
+    self:open()
+  end
+  local name = table.remove(names, 1)
   for _, child in ipairs(self.children) do
     if child.name == name then
-      table.remove(names, 1)
-      if #names > 0 then
-        return child:_expand(names)
-      else
-        return child.path
+      if #names == 0 then
+        child:open()
+        return
       end
+      child:_expand(names)
     end
   end
-  return path
 end
 
 function Directory:_ls()

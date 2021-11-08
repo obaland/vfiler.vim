@@ -126,7 +126,7 @@ function View:indexof(path)
       return i
     end
   end
-  return nil
+  return 0
 end
 
 function View:num_lines()

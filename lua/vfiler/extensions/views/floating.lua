@@ -115,6 +115,7 @@ function Floating:_open_tile(name, content_option)
   -- set options
   vim.api.nvim_win_set_option(window, 'winhighlight', 'Normal:Constant')
   vim.api.nvim_win_set_option(window, 'cursorline', false)
+  vim.api.nvim_win_set_option(window, 'number', false)
 
   -- set title name
   vim.api.nvim_buf_set_lines(buffer, 0, -1, true, {title})

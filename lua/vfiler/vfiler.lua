@@ -1,4 +1,5 @@
 local core = require 'vfiler/core'
+local event = require 'vfiler/event'
 local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
@@ -82,7 +83,13 @@ function VFiler.new(configs)
   -- key mappings
   local mappings = mapping.define(
     view.bufnr, configs.mappings,
-    [[require('vfiler/vfiler')._call]]
+    [[require('vfiler/vfiler')._do_action]]
+    )
+
+  -- register events
+  event.register(
+    view.bufnr, configs.events,
+    [[require('vfiler/vfiler')._handle_event]]
     )
 
   local object = setmetatable({
@@ -103,9 +110,15 @@ function VFiler.new(configs)
   return object
 end
 
-function VFiler._call(bufnr, key)
+function VFiler._do_action(bufnr, key)
   local vfiler = VFiler.get(bufnr)
   vfiler:do_action(key)
+end
+
+function VFiler._handle_event(bufnr, type)
+  print('event!', type)
+  local vfiler = VFiler.get(bufnr)
+  vfiler:handle_event(type)
 end
 
 function VFiler:do_action(key)
@@ -119,6 +132,16 @@ end
 
 function VFiler:draw()
   self.view:draw(self.context)
+end
+
+function VFiler:handle_event(type)
+  local events = self.configs.events
+  local func = events[type]
+  if not func then
+    core.message.error('Event "%s" is not registered.', type)
+    return
+  end
+  func(self.context, self.view)
 end
 
 function VFiler:link(vfiler)

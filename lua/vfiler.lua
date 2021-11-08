@@ -40,6 +40,10 @@ config.setup {
     ['S']         = action.change_sort,
     ['YY']        = action.yank_name,
   },
+
+  events = {
+    BufEnter = action.redraw,
+  },
 }
 
 function M.parse_command_args(args)

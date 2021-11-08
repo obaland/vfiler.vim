@@ -20,16 +20,13 @@ end
 local function cd(context, view, dirpath)
   local current = view:get_current()
   if current then
-    context:store(current.path)
+    context:save(current.path)
   end
   local path = context:switch(dirpath, true)
   view:draw(context)
-  local lnum = view:indexof(path)
-  if not lnum then
-    -- Skip header line
-    lnum = 2
-  end
-  move_cursor(lnum)
+
+  -- Skip header line
+  move_cursor(math.max(view:indexof(path), 2))
 end
 
 local function create_files(dest, contents, create)
@@ -167,7 +164,7 @@ local function rename_one_file(context, view, target)
 end
 
 ------------------------------------------------------------------------------
--- interfaces
+-- Interfaces
 ------------------------------------------------------------------------------
 function M.define(name, func)
   M[name] = func
@@ -537,14 +534,11 @@ function M.switch_drive(context, view)
         return
       end
 
-      context:store(view:get_current().path)
+      context:save(view:get_current().path)
       local path = context:switch_drive(drive, true)
       view:draw(context)
-
-      local lnum = view:indexof(path)
-      if lnum then
-        move_cursor(lnum)
-      end
+      -- Skip header line
+      move_cursor(math.max(view:indexof(path), 2))
     end,
     on_quit = function()
       context.extension = nil
