@@ -56,17 +56,35 @@ else
   end
 end
 
-function M.execute(path)
+function M.file.execute(path)
   local command = ''
   if M.is_windows then
-    command = ('!start rundll32 url.dll,FileProtocolHandler %s'):format(
+    command = ('start rundll32 url.dll,FileProtocolHandler %s'):format(
       vim.fn.escape(path, '#%')
       )
+  elseif M.is_mac and vim.fn.executable('open') == 1 then
+    -- For Mac OS
+    command = ('open %s &'):format(vim.fn.shellescape(path))
+  elseif M.is_cygwin then
+    -- For Cygwin
+    command = ('cygstart %s'):format(vim.fn.shellescape(path))
+  elseif vim.fn.executable('xdg-open') == 1 then
+    -- For Linux
+    command = ('xdg-open %s &'):format(vim.fn.shellescape(path))
+  elseif os.getenv('KDE_FULL_SESSION') and os.getenv('KDE_FULL_SESSION') == 'true' then
+    -- For KDE
+    command = ('kioclient exec %s &'):format(vim.fn.shellescape(path))
+  elseif os.getenv('GNOME_DESKTOP_SESSION_ID') then
+    -- For GNOME
+    command = ('gnome-open %s &'):format(vim.fn.shellescape(path))
+  elseif vim.fn.executable('exo-open') == 1 then
+    -- For Xfce
+    command = ('exo-open %s &'):format(vim.fn.shellescape(path))
   else
     M.message.error('Not supported platform.')
     return
   end
-  vim.fn.execute(command)
+  vim.fn.system(command)
 end
 
 function M.file.move(src, dest)

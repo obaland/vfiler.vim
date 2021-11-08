@@ -117,13 +117,17 @@ function VFiler:do_action(key)
   func(self.context, self.view)
 end
 
+function VFiler:draw()
+  self.view:draw(self.context)
+end
+
 function VFiler:link(vfiler)
   self.linked = vfiler
   vfiler.linked = self
 end
 
 function VFiler:open(...)
-  local winnr = vim.fn.bufwinnr(self.view.bufnr)
+  local winnr = self.view:winnr()
   if winnr > 0 then
     core.window.move(winnr)
   else

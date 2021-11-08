@@ -25,9 +25,11 @@ local function cd(context, view, dirpath)
   local path = context:switch(dirpath, true)
   view:draw(context)
   local lnum = view:indexof(path)
-  if lnum then
-    move_cursor(lnum)
+  if not lnum then
+    -- Skip header line
+    lnum = 2
   end
+  move_cursor(lnum)
 end
 
 local function create_files(dest, contents, create)
@@ -280,6 +282,27 @@ function M.copy(context, view)
   end
 end
 
+function M.copy_to_filer(context, view)
+  local selected = view:selected_items()
+  if #selected == 0 then
+    return
+  end
+  local current = VFiler.get(view.bufnr)
+  local linked = current.linked
+  if not (linked and linked.view:displayed()) then
+    -- Copy to clipboard
+    M.copy(context, view)
+    return
+  end
+
+  -- Copy to linked filer
+  local cb = Clipboard.copy(selected)
+  cb:paste(linked.context.root)
+  linked:open()
+  linked:draw()
+  current:open()
+end
+
 function M.delete(context, view)
   local selected = view:selected_items()
   if #selected == 0 then
@@ -318,6 +341,15 @@ function M.delete(context, view)
     core.message.info('Deleted - %d files', #deleted)
   end
   view:draw(context)
+end
+
+function M.execute_file(context, view)
+  local item = view:get_current()
+  if item then
+    core.file.execute(item.path)
+  else
+    core.message.error('File does not exist.')
+  end
 end
 
 function M.jump_to_home(context, view)
@@ -374,6 +406,28 @@ function M.move_cursor_up(context, view)
   -- the meaning of "2" is to skip the header line
   local lnum = math.max(2, vim.fn.line('.') - 1)
   move_cursor(lnum)
+end
+
+function M.move_to_filer(context, view)
+  local selected = view:selected_items()
+  if #selected == 0 then
+    return
+  end
+  local current = VFiler.get(view.bufnr)
+  local linked = current.linked
+  if not (linked and linked.view:displayed()) then
+    -- Move to clipboard
+    M.move(context, view)
+    return
+  end
+
+  -- Move to linked filer
+  local cb = Clipboard.move(selected)
+  cb:paste(linked.context.root)
+  linked:open()
+  linked:draw()
+  current:open()
+  current:draw()
 end
 
 function M.new_directory(context, view)

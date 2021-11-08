@@ -96,6 +96,10 @@ function View:delete()
   self.bufnr = -1
 end
 
+function View:displayed()
+  return self:winnr() >= 0
+end
+
 function View:get_current()
   return self:get_item(vim.fn.line('.'))
 end
@@ -199,6 +203,10 @@ function View:selected_items()
     end
   end
   return selected
+end
+
+function View:winnr()
+  return vim.fn.bufwinnr(self.bufnr)
 end
 
 function View:_apply_syntaxes()
