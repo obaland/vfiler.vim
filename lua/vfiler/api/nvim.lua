@@ -18,10 +18,6 @@ function M.get_option_value(name)
 end
 M.get_option_boolean = M.get_option_value -- Alias
 
-function M.set_option(name, value)
-  vim.o[name] = value
-end
-
 ------------------------------------------------------------------------------
 -- Buffer option
 ------------------------------------------------------------------------------
@@ -29,9 +25,6 @@ function M.get_buf_option_value(name, value)
   return vim.api.nvim_buf_get_option(0, name)
 end
 M.get_buf_option_boolean = M.get_buf_option_value -- Alias
-function M.set_buf_option(name, value)
-  vim.api.nvim_buf_set_option(0, name, value)
-end
 
 ------------------------------------------------------------------------------
 -- Window option
@@ -40,9 +33,6 @@ function M.get_win_option_value(name)
   return vim.api.nvim_win_get_option(0, name)
 end
 M.get_win_option_boolean = M.get_win_option_value -- Alias
-function M.set_win_option(name, value)
-  vim.api.nvim_win_set_option(0, name, value)
-end
 
 ------------------------------------------------------------------------------
 -- Key mapping

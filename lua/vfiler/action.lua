@@ -18,7 +18,10 @@ local function move_cursor(lnum)
 end
 
 local function cd(context, view, dirpath)
-  context:store(view:get_current().path)
+  local current = view:get_current()
+  if current then
+    context:store(current.path)
+  end
   local path = context:switch(dirpath, true)
   view:draw(context)
   local lnum = view:indexof(path)
@@ -68,6 +71,26 @@ local function detect_drives()
     end
   end
   return drives
+end
+
+local function open(context, view, direction)
+  local item = view:get_current()
+  if not item then
+    core.message.warning('Item does not exist.')
+    return
+  end
+
+  if item.isdirectory then
+    if direction == 'edit' then
+      cd(context, view, item.path)
+      return
+    end
+    local vfiler = VFiler.get_current()
+    core.window.open(direction)
+    M.start(item.path, vfiler.configs)
+    return
+  end
+  core.window.open(direction, item.path)
 end
 
 local function rename_files(context, view, targets)
@@ -212,42 +235,6 @@ function M.close_tree_or_cd(context, view)
   end
 end
 
-function M.switch_drive(context, view)
-  if context.extension then
-    return
-  end
-
-  local drives = detect_drives()
-  if #drives == 0 then
-    return
-  end
-
-  local root = core.path.root(context.root.path)
-  local menu = Menu.new {
-    name = 'Select Drive',
-    on_selected = function(drive)
-      if root == drive then
-        return
-      end
-
-      context:store(view:get_current().path)
-      local path = context:switch_drive(drive, true)
-      view:draw(context)
-
-      local lnum = view:indexof(path)
-      if lnum then
-        move_cursor(lnum)
-      end
-    end,
-    on_quit = function()
-      context.extension = nil
-    end,
-  }
-
-  menu:start(drives, root)
-  context.extension = menu
-end
-
 function M.change_sort(context, view)
   if context.extension then
     return
@@ -333,6 +320,11 @@ function M.delete(context, view)
   view:draw(context)
 end
 
+function M.jump_to_home(context, view)
+  local dirpath = vim.fn.expand('~')
+  cd(context, view, dirpath)
+end
+
 function M.loop_cursor_down(context, view)
   local lnum = vim.fn.line('.') + 1
   local num_end = view:num_lines()
@@ -415,17 +407,19 @@ function M.new_file(context, view)
 end
 
 function M.open(context, view)
-  local item = view:get_current()
-  if not item then
-    core.message.warning('Item does not exist.')
-    return
-  end
+  open(context, view, 'edit')
+end
 
-  if item.isdirectory then
-    cd(context, view, item.path)
-  else
-    vim.command('edit ' .. item.path)
-  end
+function M.open_by_split(context, view)
+  open(context, view, 'right')
+end
+
+function M.open_by_tabpage(context, view)
+  open(context, view, 'tab')
+end
+
+function M.open_by_vsplit(context, view)
+  open(context, view, 'bottom')
 end
 
 function M.open_tree(context, view)
@@ -471,6 +465,42 @@ function M.rename(context, view)
   end
 end
 
+function M.switch_drive(context, view)
+  if context.extension then
+    return
+  end
+
+  local drives = detect_drives()
+  if #drives == 0 then
+    return
+  end
+
+  local root = core.path.root(context.root.path)
+  local menu = Menu.new {
+    name = 'Select Drive',
+    on_selected = function(drive)
+      if root == drive then
+        return
+      end
+
+      context:store(view:get_current().path)
+      local path = context:switch_drive(drive, true)
+      view:draw(context)
+
+      local lnum = view:indexof(path)
+      if lnum then
+        move_cursor(lnum)
+      end
+    end,
+    on_quit = function()
+      context.extension = nil
+    end,
+  }
+
+  menu:start(drives, root)
+  context.extension = menu
+end
+
 function M.switch_to_filer(context, view)
   local current = VFiler.get_current()
   -- already linked
@@ -505,6 +535,36 @@ end
 function M.toggle_select_up(context, view)
   M.toggle_select(context, view)
   M.move_cursor_up(context, view)
+end
+
+function M.yank_name(context, view)
+  local names = {}
+  for _, selected in ipairs(view:selected_items()) do
+    table.insert(names, selected.name)
+  end
+  if #names == 1 then
+    Clipboard.yank(names[1])
+    core.message.info('Yanked name - "%s"', names[1])
+  elseif #names > 1 then
+    local content = table.concat(names, '\n')
+    Clipboard.yank(content)
+    core.message.info('Yanked %d names', #names)
+  end
+end
+
+function M.yank_path(context, view)
+  local paths = {}
+  for _, selected in ipairs(view:selected_items()) do
+    table.insert(paths, selected.path)
+  end
+  if #paths == 1 then
+    Clipboard.yank(paths[1])
+    core.message.info('Yanked path - "%s"', paths[1])
+  elseif #paths > 1 then
+    local content = table.concat(paths, '\n')
+    Clipboard.yank(content)
+    core.message.info('Yanked %d paths', #paths)
+  end
 end
 
 return M

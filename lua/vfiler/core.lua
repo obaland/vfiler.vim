@@ -5,7 +5,13 @@ local M = {}
 ------------------------------------------------------------------------------
 -- Core
 ------------------------------------------------------------------------------
+M.is_cygwin = vim.fn.has('win32unix') == 1
 M.is_windows = vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1
+M.is_mac = (not M.is_windows) and (not M.is_cygwin) and (
+  (vim.fn.has('mac') == 1) or (vim.fn.has('macunix') == 1) or
+  (vim.fn.has('gui_macvim') == 1) or
+  (vim.fn.isdirectory('/proc') ~= 1) and (vim.fn.executable('sw_vers') == 1)
+  )
 
 function M.inherit(class, super, ...)
   local self = (super and super.new(...) or {})
@@ -50,6 +56,19 @@ else
   end
 end
 
+function M.execute(path)
+  local command = ''
+  if M.is_windows then
+    command = ('!start rundll32 url.dll,FileProtocolHandler %s'):format(
+      vim.fn.escape(path, '#%')
+      )
+  else
+    M.message.error('Not supported platform.')
+    return
+  end
+  vim.fn.execute(command)
+end
+
 function M.file.move(src, dest)
   os.rename(src, dest)
 end
@@ -60,6 +79,7 @@ end
 M.window = {}
 
 local open_directions = {
+  edit = 'edit',
   bottom = 'belowright split',
   left = 'aboveleft vertical split',
   right = 'belowright vertical split',

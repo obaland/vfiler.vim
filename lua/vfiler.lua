@@ -14,6 +14,7 @@ config.setup {
     ['<S-Space>'] = action.toggle_select_up,
     ['<Space>']   = action.toggle_select_down,
     ['<Tab>']     = action.switch_to_filer,
+    ['~']         = action.jump_to_home,
     ['gg']        = action.move_cursor_top,
     ['h']         = action.close_tree_or_cd,
     ['j']         = action.loop_cursor_down,
@@ -21,6 +22,10 @@ config.setup {
     ['l']         = action.open_tree,
     ['q']         = action.quit,
     ['r']         = action.rename,
+    ['s']         = action.open_by_split,
+    ['t']         = action.open_by_tabpage,
+    ['v']         = action.open_by_vsplit,
+    ['yy']        = action.yank_path,
     ['C']         = action.copy,
     ['D']         = action.delete,
     ['G']         = action.move_cursor_bottom,
@@ -30,6 +35,7 @@ config.setup {
     ['N']         = action.new_file,
     ['P']         = action.paste,
     ['S']         = action.change_sort,
+    ['YY']        = action.yank_name,
   },
 }
 

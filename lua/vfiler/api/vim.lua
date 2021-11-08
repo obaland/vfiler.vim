@@ -17,9 +17,6 @@ end
 function M.get_global_option_boolean(name)
   return M.get_global_option_value(name) == 1 and true or false
 end
-function M.set_global_option(name, value)
-  vim.command(M.command_set_option('setglobal', name, value))
-end
 
 function M.get_option_value(name)
   return M.get_option('&', name)
@@ -27,25 +24,18 @@ end
 function M.get_option_boolean(name)
   return M.get_option_value(name) == 1 and true or false
 end
-function M.set_option(name, value)
-  vim.command(M.command_set_option('set', name, value))
-end
 
 ------------------------------------------------------------------------------
 -- Buffer option
 ------------------------------------------------------------------------------
 M.get_buf_option_value = M.get_option_value -- Alias
 M.get_buf_option_boolean = M.get_option_boolean -- Alias
-function M.set_buf_option(name, value)
-  vim.command(M.command_set_option('setlocal', name, value))
-end
 
 ------------------------------------------------------------------------------
 -- Window option
 ------------------------------------------------------------------------------
 M.get_win_option_value = M.get_option_value -- Alias
 M.get_win_option_boolean = M.get_option_boolean -- Alias
-M.set_win_option = M.set_buf_option -- Alias
 
 -- Key mapping
 local function set_keymap(mode, lhs, rhs, opts)

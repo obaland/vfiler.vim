@@ -35,6 +35,10 @@ function Clipboard.move(items)
   }, Clipboard)
 end
 
+function Clipboard.yank(content)
+  vim.fn['vfiler#core#yank'](content)
+end
+
 function Clipboard:paste(dest)
   local successes = {}
   for _, item in ipairs(self._items) do
