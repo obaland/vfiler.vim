@@ -57,7 +57,9 @@ end
 
 function Extension._handle_event(bufnr, type)
   local ext = Extension.get(bufnr)
-  ext:handle_event(type)
+  if ext then
+    ext:handle_event(type)
+  end
 end
 
 ---@param key string

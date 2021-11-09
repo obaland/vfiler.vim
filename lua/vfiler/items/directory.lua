@@ -91,6 +91,12 @@ function Directory:sort(type, recursive)
   end
 end
 
+function Directory:walk()
+  local items = {}
+  self:_walk(items)
+  return items
+end
+
 function Directory:_add(item)
   local pos = #self.children + 1
   for i, child in ipairs(self.children) do
@@ -161,6 +167,18 @@ function Directory:_ls()
     end
     item.parent = self
     return item
+  end
+end
+
+function Directory:_walk(items)
+  if not self.children then
+    return
+  end
+  for _, child in ipairs(self.children) do
+    table.insert(items, child)
+    if child.isdirectory then
+      child:_walk(items)
+    end
   end
 end
 

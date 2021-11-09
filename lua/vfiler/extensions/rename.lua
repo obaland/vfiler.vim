@@ -42,7 +42,31 @@ function ExtensionRename.new(options)
 end
 
 function ExtensionRename:check()
-  -- TODO:
+  vim.command('echo')
+  local buflen = vim.fn.line('$')
+  local itemlen = #self.items
+  if buflen < itemlen then
+    core.message.error('Too few lines.')
+    return false
+  elseif buflen > itemlen then
+    core.message.error('Too many lines.')
+    return false
+  end
+
+  local lines = self:get_lines()
+  for lnum, line in ipairs(lines) do
+    if #line == 0 then
+      core.message.error('Blank line. (%s)', lnum)
+      return false
+    end
+    for i = lnum + 1, #lines do
+      if line == lines[i] then
+        core.message.error('Duplicated names. (line: %d and %d)', lnum, i)
+        return false
+      end
+    end
+  end
+
   return true
 end
 

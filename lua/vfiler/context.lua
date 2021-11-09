@@ -3,6 +3,9 @@ local core = require 'vfiler/core'
 local Directory = require 'vfiler/items/directory'
 
 local function walk_expanded(rpaths, root_path, dir)
+  if not dir.children then
+    return
+  end
   local expanded = false
   for _, child in ipairs(dir.children) do
     if child.isdirectory and child.children then
@@ -32,7 +35,7 @@ function Store.new()
 end
 
 function Store:save(root, path)
-  local drive = core.path.root(root.path)
+  local drive = root:root()
   self._drives[drive] = root.path
 
   local rpaths = {}
@@ -94,6 +97,8 @@ end
 -- @param path string
 function Context:switch(dirpath, restore)
   self.root = Directory.new(dirpath, false, self.sort_type)
+  self.root:open()
+
   local path, expanded_rpaths = self._store:restore_path(dirpath)
   if path and restore then
     for _, rpath in ipairs(expanded_rpaths) do
@@ -101,7 +106,6 @@ function Context:switch(dirpath, restore)
     end
     return path
   end
-  self.root:open()
   return self.root.path
 end
 

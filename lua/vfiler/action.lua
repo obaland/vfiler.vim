@@ -18,6 +18,11 @@ local function move_cursor(lnum)
 end
 
 local function cd(context, view, dirpath)
+  if context.root and context.root.path == dirpath then
+    -- Same directory path
+    return
+  end
+
   local current = view:get_current()
   if current then
     context:save(current.path)
@@ -207,6 +212,13 @@ end
 -- actions
 ------------------------------------------------------------------------------
 
+function M.clear_selected_all(context, view)
+  for _, item in ipairs(context.root:walk()) do
+    item.selected = false
+  end
+  view:redraw()
+end
+
 function M.close_tree(context, view)
   local item = view:get_current()
   local target = (item.isdirectory and item.opened) and item or item.parent
@@ -214,10 +226,8 @@ function M.close_tree(context, view)
   target:close()
   view:draw(context)
 
-  local lnum = view:indexof(target.path)
-  if lnum then
-    move_cursor(lnum)
-  end
+  -- Skip header line
+  move_cursor(math.max(view:indexof(target.path), 2))
 end
 
 function M.close_tree_or_cd(context, view)
@@ -225,10 +235,6 @@ function M.close_tree_or_cd(context, view)
   if item.level <= 1 and not item.opened then
     local path = context.root:parent_path()
     cd(context, view, path)
-    local lnum = view:indexof(item.parent.path)
-    if lnum then
-      move_cursor(lnum)
-    end
   else
     M.close_tree(context, view)
   end
@@ -249,10 +255,8 @@ function M.change_sort(context, view)
         context:change_sort(sort_type)
         view:draw(context)
 
-        local lnum = view:indexof(item.path)
-        if lnum then
-          move_cursor(lnum)
-        end
+        -- Skip header line
+        move_cursor(math.max(view:indexof(item.path), 2))
       end
     end,
 
@@ -263,6 +267,10 @@ function M.change_sort(context, view)
 
   menu:start(sort.types(), context.sort_type)
   context.extension = menu
+end
+
+function M.change_to_parent(context, view)
+  cd(context, view, context.root:parent_path())
 end
 
 function M.copy(context, view)
@@ -349,8 +357,27 @@ function M.execute_file(context, view)
   end
 end
 
+function M.jump_to_directory(context, view)
+  local dirpath = cmdline.input('Jump to?', '', 'dir')
+  if #dirpath == 0 then
+    return
+  end
+  dirpath = core.path.normalize(dirpath)
+  if not core.path.isdirectory(dirpath) then
+    core.message.error('Not exists the "%s" path.', dirpath)
+    return
+  end
+  cd(context, view, dirpath)
+  vim.command('echo') -- clear prompt message
+end
+
 function M.jump_to_home(context, view)
   local dirpath = vim.fn.expand('~')
+  cd(context, view, dirpath)
+end
+
+function M.jump_to_root(context, view)
+  local dirpath = context.root:root()
   cd(context, view, dirpath)
 end
 
@@ -533,7 +560,7 @@ function M.rename(context, view)
   end
 end
 
-function M.switch_drive(context, view)
+function M.switch_to_drive(context, view)
   if context.extension then
     return
   end
@@ -543,7 +570,7 @@ function M.switch_drive(context, view)
     return
   end
 
-  local root = core.path.root(context.root.path)
+  local root = context.root:root()
   local menu = Menu.new {
     name = 'Select Drive',
     on_selected = function(drive)
@@ -595,6 +622,13 @@ function M.toggle_select(context, view)
   local item = view:get_item(lnum)
   item.selected = not item.selected
   view:redraw_line(lnum)
+end
+
+function M.toggle_select_all(context, view)
+  for _, item in ipairs(context.root:walk()) do
+    item.selected = not item.selected
+  end
+  view:redraw()
 end
 
 function M.toggle_select_down(context, view)

@@ -189,19 +189,6 @@ function M.path.normalize(path)
   return result
 end
 
-function M.path.root(path)
-  local root = ''
-  if M.is_windows then
-    if path:match('^//') then
-      -- for UNC path
-      root = path:match('^//[^/]*/[^/]*')
-    else
-      root = (M.path.normalize(path)):match('^%a+:')
-    end
-  end
-  return root .. '/'
-end
-
 ------------------------------------------------------------------------------
 -- syntax and highlight command utilities
 ------------------------------------------------------------------------------

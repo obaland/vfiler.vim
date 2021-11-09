@@ -100,6 +100,15 @@ function View:displayed()
   return self:winnr() >= 0
 end
 
+---Draw context contents
+---@param context table
+function View:draw(context)
+  -- expand item list
+  self._items = context.root:walk()
+  table.insert(self._items, 1, context.root) -- header
+  self:redraw()
+end
+
 function View:get_current()
   return self:get_item(vim.fn.line('.'))
 end
@@ -107,16 +116,6 @@ end
 ---@param lnum number
 function View:get_item(lnum)
   return self._items[lnum]
-end
-
----Draw context contents
----@param context table
-function View:draw(context)
-  -- expand item list
-  local root = context.root
-  self._items = {root} -- header
-  self:_expand_items(root.children)
-  self:redraw()
 end
 
 ---@param path string
@@ -267,18 +266,6 @@ function View:_create_column_props(winwidth)
     prop.cumulative_width = cumulative_width
   end
   return props
-end
-
-function View:_expand_items(items)
-  for _, item in ipairs(items) do
-    local hidden_file = item.name:sub(1, 1) == '.'
-    if self.show_hidden_files or not hidden_file then
-      table.insert(self._items, item)
-      if item.children and #item.children > 0 then
-        self:_expand_items(item.children)
-      end
-    end
-  end
 end
 
 ---@param item table
