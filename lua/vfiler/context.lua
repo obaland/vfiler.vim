@@ -13,7 +13,6 @@ local function walk_expanded(rpaths, root_path, dir)
   if not expanded then
     local path = dir.path:sub(#root_path + 1)
     if #path > 0 then
-      print(path)
       table.insert(rpaths, path)
     end
   end

@@ -29,6 +29,11 @@ function NameColumn.new()
         start_mark = 'n@d\\',
         highlight = 'vfilerDirectory',
       },
+      link = {
+        group = 'vfilerName_Link',
+        start_mark = 'n@l\\',
+        highlight = 'vfilerLink',
+      },
     },
     end_mark = '\\n@',
     ignore_group = 'vfilerName_Ignore',
@@ -41,6 +46,8 @@ function NameColumn:get_text(item, width)
   local syntax_name = ''
   if item.selected then
     syntax_name = 'selected'
+  elseif item.islink then
+    syntax_name = 'link'
   elseif item.isdirectory then
     syntax_name = 'directory'
   else

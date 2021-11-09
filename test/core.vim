@@ -3,7 +3,7 @@ let s:assert = themis#helper('assert')
 
 function! s:truncate(str, width, sep, footer_width) abort
   return luaeval(
-        \ 'require"vfiler/core".truncate(_A.str, _A.width, _A.sep, _A.fwidth)',
+        \ 'require"vfiler/core".string.truncate(_A.str, _A.width, _A.sep, _A.fwidth)',
         \ {'str': a:str, 'width': a:width, 'sep': a:sep, 'fwidth': a:footer_width}
         \ )
 endfunction

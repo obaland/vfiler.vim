@@ -15,6 +15,16 @@ function ModeColumn.new()
         start_mark = 'm@e\\',
         highlight = 'vfilerModeExecutable',
       },
+      directory = {
+        group = 'vfilerMode_Directory',
+        start_mark = 'm@d\\',
+        highlight = 'vfilerDirectory',
+      },
+      link = {
+        group = 'vfilerMode_Link',
+        start_mark = 'm@l\\',
+        highlight = 'vfilerLink',
+      },
       other = {
         group = 'vfilerMode_Other',
         start_mark = 'm@o\\',
@@ -39,6 +49,10 @@ function ModeColumn:get_text(item, width)
   local key = 'other'
   if mode:sub(#mode, #mode) == 'x' then
     key = 'executable'
+  elseif item.islink then
+    key = 'link'
+  elseif item.isdirectory then
+    key = 'directory'
   end
   return self._syntax:surround_text(key, mode)
 end

@@ -578,6 +578,11 @@ function M.switch_to_filer(context, view)
   local filer = VFiler.new(current.configs)
   cd(filer.context, filer.view, context.root.path)
   filer:link(current)
+  
+  -- redraw current
+  current:open()
+  M.redraw(current.context, current.view)
+  filer:open()
 end
 
 function M.toggle_show_hidden(context, view)

@@ -297,7 +297,7 @@ function View:_toline(item)
 
     local cwidth = prop.width
     if column.variable then
-      cwidth = cwidth + (prop.cumulative_width - cumulative_width)
+      cwidth = math.max(cwidth, (prop.cumulative_width - cumulative_width))
     end
 
     local text, width = column:get_text(item, cwidth)
