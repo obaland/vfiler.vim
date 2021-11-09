@@ -10,6 +10,12 @@ config.setup {
     ['q']     = action.quit,
     ['<ESC>'] = action.quit,
   },
+
+  events = {
+    BufWriteCmd = action.execute,
+    InsertLeave = action.check,
+    CursorMoved = action.check,
+  },
 }
 
 function ExtensionRename.new(options)
@@ -35,37 +41,13 @@ function ExtensionRename.new(options)
   return object
 end
 
-function ExtensionRename.check(bufnr)
-  local ext = ExtensionRename.get(bufnr)
-  if ext then
-    ext:check_buffer()
-  end
-end
-
-function ExtensionRename.execute(bufnr)
-  local ext = ExtensionRename.get(bufnr)
-  if ext then
-    ext:execute_rename()
-  end
-end
-
-function ExtensionRename:_on_autocommands()
-  local path = [[require('vfiler/extensions/rename')]]
-  local execute_func = ('%s.execute(%s)'):format(path, self.bufnr)
-  local check_func = ('%s.check(%s)'):format(path, self.bufnr)
-
-  return {
-    [[autocmd BufWriteCmd <buffer> :lua ]] .. execute_func,
-    [[autocmd InsertLeave,CursorMoved <buffer> :lua ]] .. check_func,
-  }
-end
-
-function ExtensionRename:check_buffer()
+function ExtensionRename:check()
+  -- TODO:
   return true
 end
 
-function ExtensionRename:execute_rename()
-  if not self:check_buffer() then
+function ExtensionRename:execute()
+  if not self:check() then
     return
   end
 
@@ -76,6 +58,11 @@ function ExtensionRename:execute_rename()
   if self.on_execute then
     self.on_execute(self.items, renames)
   end
+end
+
+function ExtensionRename:get_lines()
+  local lines = vim.fn.getline(1, #self.items)
+  return vim.from_vimlist(lines)
 end
 
 function ExtensionRename:_on_get_texts(items)

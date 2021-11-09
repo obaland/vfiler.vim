@@ -13,12 +13,17 @@ config.setup {
     ['<CR>']  = action.select,
     ['<ESC>'] = action.quit,
   },
+
+  events = {
+    BufWinLeave = action.quit,
+  },
 }
 
 function ExtensionMenu.new(options)
   local Extension = require('vfiler/extensions/extension')
 
-  local view = Extension.create_view(config.configs.options)
+  local configs = config.configs
+  local view = Extension.create_view(configs.options)
   view:set_buf_options {
     filetype = 'vfiler_menu',
     modifiable = false,
@@ -30,7 +35,7 @@ function ExtensionMenu.new(options)
   }
 
   local object = core.inherit(
-    ExtensionMenu, Extension, options.name, view, config.configs
+    ExtensionMenu, Extension, options.name, view, configs
     )
   object.on_quit = options.on_quit
   object.on_selected = options.on_selected

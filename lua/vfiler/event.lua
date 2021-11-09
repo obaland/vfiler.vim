@@ -6,8 +6,8 @@ local M = {}
 -- Interfaces
 ------------------------------------------------------------------------------
 
-function M.register(bufnr, events, funcstr)
-  local aucommands = {'augroup vfiler'}
+function M.register(group, bufnr, events, funcstr)
+  local aucommands = {'augroup ' .. group }
   for event, _ in pairs(events) do
     local au = ('autocmd %s <buffer> :lua %s(%d, "%s")'):format(
       event, funcstr, bufnr, event
@@ -17,7 +17,6 @@ function M.register(bufnr, events, funcstr)
   table.insert(aucommands, 'augroup END')
 
   for _, au in ipairs(aucommands) do
-    print(au)
     vim.command(au)
   end
 end

@@ -296,8 +296,8 @@ function M.copy_to_filer(context, view)
   local cb = Clipboard.copy(selected)
   cb:paste(linked.context.root)
   linked:open()
-  linked:draw()
-  current:open()
+  M.redraw(linked.context, linked.view)
+  current:open() -- Return to current
 end
 
 function M.delete(context, view)
@@ -422,9 +422,9 @@ function M.move_to_filer(context, view)
   local cb = Clipboard.move(selected)
   cb:paste(linked.context.root)
   linked:open()
-  linked:draw()
+  M.redraw(linked.context, linked.view)
   current:open()
-  current:draw()
+  M.redraw(current.context, current.view)
 end
 
 function M.new_directory(context, view)
@@ -505,6 +505,23 @@ end
 
 function M.redraw(context, view)
   view:draw(context)
+end
+
+function M.redraw_all(context, view)
+  for _, filer in ipairs(VFiler.get_displays()) do
+    M.redraw(filer.context, filer.view)
+  end
+end
+
+function M.reload(context, view)
+  context:update()
+  view:draw(context)
+end
+
+function M.reload_all(context, view)
+  for _, filer in ipairs(VFiler.get_displays()) do
+    M.reload(filer.context, filer.view)
+  end
 end
 
 function M.rename(context, view)

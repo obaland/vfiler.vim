@@ -74,6 +74,19 @@ function VFiler.get_current()
   return VFiler.get(vim.fn.bufnr())
 end
 
+function VFiler.get_displays()
+  local filers = {}
+  -- in tabpage
+  local buflist = vim.from_vimlist(vim.fn.tabpagebuflist())
+  for _, bufnr in ipairs(buflist) do
+    local vfiler = vfilers[bufnr]
+    if vfiler and vim.fn.bufwinnr(vfiler.view.bufnr) >= 0 then
+      table.insert(filers, vfiler)
+    end
+  end
+  return filers
+end
+
 ---@param configs table
 function VFiler.new(configs)
   local options = configs.options
@@ -88,7 +101,7 @@ function VFiler.new(configs)
 
   -- register events
   event.register(
-    view.bufnr, configs.events,
+    'vfiler', view.bufnr, configs.events,
     [[require('vfiler/vfiler')._handle_event]]
     )
 
@@ -116,7 +129,6 @@ function VFiler._do_action(bufnr, key)
 end
 
 function VFiler._handle_event(bufnr, type)
-  print('event!', type)
   local vfiler = VFiler.get(bufnr)
   vfiler:handle_event(type)
 end
@@ -128,10 +140,6 @@ function VFiler:do_action(key)
     return
   end
   func(self.context, self.view)
-end
-
-function VFiler:draw()
-  self.view:draw(self.context)
 end
 
 function VFiler:handle_event(type)

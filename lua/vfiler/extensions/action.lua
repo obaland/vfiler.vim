@@ -25,6 +25,9 @@ end
 ------------------------------------------------------------------------------
 -- actions
 ------------------------------------------------------------------------------
+function M.delete(extension)
+end
+
 function M.loop_cursor_down(extension)
   local pos = vim.fn.line('.') + 1
   vim.fn.cursor(pos > vim.fn.line('$') and 1 or pos, 1)

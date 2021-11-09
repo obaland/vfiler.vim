@@ -42,7 +42,9 @@ config.setup {
   },
 
   events = {
-    BufEnter = action.redraw,
+    BufEnter = action.reload,
+    FocusGained = action.reload_all,
+    VimResized = action.redraw_all,
   },
 }
 

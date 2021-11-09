@@ -1,4 +1,5 @@
 local core = require 'vfiler/core'
+local event = require 'vfiler/event'
 local vim = require 'vfiler/vim'
 
 local extension_resources = {}
@@ -8,8 +9,7 @@ Extension.__index = Extension
 
 function Extension.new(name, view, configs)
   return setmetatable({
-    options = core.table.copy(configs.options),
-    mappings = core.table.copy(configs.mappings),
+    configs = core.table.copy(configs),
     items = nil,
     name = name,
     bufnr = 0,
@@ -46,7 +46,7 @@ function Extension.delete(bufnr)
   extension_resources[bufnr] = nil
 end
 
-function Extension._call(bufnr, key)
+function Extension._do_action(bufnr, key)
   local ext = Extension.get(bufnr)
   if not ext then
     core.message.error('Extension does not exist.')
@@ -55,11 +55,26 @@ function Extension._call(bufnr, key)
   ext:do_action(key)
 end
 
+function Extension._handle_event(bufnr, type)
+  local ext = Extension.get(bufnr)
+  ext:handle_event(type)
+end
+
 ---@param key string
 function Extension:do_action(key)
-  local func = self.mappings[key]
+  local func = self.configs.mappings[key]
   if not func then
     core.message.error('Not defined in the key')
+    return
+  end
+  func(self)
+end
+
+function Extension:handle_event(type)
+  local events = self.configs.events
+  local func = events[type]
+  if not func then
+    core.message.error('Event "%s" is not registered.', type)
     return
   end
   func(self)
@@ -92,35 +107,23 @@ function Extension:start(items, ...)
   self.items = items
 
   -- define key mappings (overwrite)
-  self.mappings = self.view:define_mapping(
-    self.mappings, [[require('vfiler/extensions/extension')._call]]
+  self.configs.mappings = self.view:define_mapping(
+    self.configs.mappings,
+    [[require('vfiler/extensions/extension')._do_action]]
+    )
+
+  -- register events
+  event.register(
+    'vfiler_extension', self.bufnr, self.configs.events,
+    [[require('vfiler/extensions/extension')._handle_event]]
     )
 
   -- draw line texts and syntax
   self:_on_draw(texts)
   vim.fn.cursor(lnum, 1)
 
-  -- autocmd
-  local delete_func = (
-    [[require('vfiler/extensions/extension').delete(%s)]]
-    ):format(self.bufnr)
-  local aucommands = {
-    [[augroup vfiler_extension]],
-    [[  autocmd BufWinLeave <buffer> :lua ]] .. delete_func,
-  }
-  core.list.extend(aucommands, self:_on_autocommands())
-  table.insert(aucommands, 'augroup END')
-
-  for _, au in ipairs(aucommands) do
-    vim.command(au)
-  end
-
   -- add extension table
   extension_resources[self.bufnr] = self
-end
-
-function Extension:_on_autocommands()
-  return {}
 end
 
 function Extension:_on_get_texts(items)
@@ -128,6 +131,7 @@ function Extension:_on_get_texts(items)
 end
 
 function Extension:_on_draw(texts)
+  -- Not implemented
 end
 
 return Extension
