@@ -47,12 +47,19 @@ let g:vfiler_use_default_mappings =
 let g:vfiler_display_current_directory_on_top =
       \ get(g:, 'vfiler_display_current_directory_on_top', 1)
 
-" Disable netrw.
-if g:vfiler_as_default_explorer
-  augroup FileExplorer
-    autocmd!
-  augroup END
-endif
+" Syntax highlights
+highlight def link vfilerDirectory         Directory
+highlight def link vfilerExecutable        PreProc
+highlight def link vfilerFile              None
+highlight def link vfilerHeader            Statement
+highlight def link vfilerHidden            Comment
+highlight def link vfilerLink              Constant
+highlight def link vfilerNothing           Directory
+highlight def link vfilerSelected          Title
+highlight def link vfilerSize              Statement
+highlight def link vfilerTime              None
+highlight def link vfilerTimeToday         PreProc
+highlight def link vfilerTimeWeek          Type
 
 " define commands
 command! -nargs=? -complete=customlist,vfiler#complete VFiler call

@@ -213,11 +213,9 @@ function View:_apply_syntaxes()
   local header_group = 'vfilerHeader'
   local syntaxes = {
     core.syntax.clear_command({header_group}),
-    core.syntax.match_command(header_group, [[\%1l.*']]),
+    core.syntax.match_command(header_group, [[\%1l.*]]),
   }
-  local highlights = {
-    core.highlight.link_command(header_group, 'Statement'),
-  }
+  local highlights = {}
 
   for _, column in pairs(self._columns) do
     local column_syntaxes = column:syntaxes()

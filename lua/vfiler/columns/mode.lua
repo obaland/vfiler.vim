@@ -13,7 +13,7 @@ function ModeColumn.new()
       executable = {
         group = 'vfilerMode_Executable',
         start_mark = 'm@e\\',
-        highlight = 'vfilerModeExecutable',
+        highlight = 'vfilerExecutable',
       },
       directory = {
         group = 'vfilerMode_Directory',
@@ -25,10 +25,10 @@ function ModeColumn.new()
         start_mark = 'm@l\\',
         highlight = 'vfilerLink',
       },
-      other = {
-        group = 'vfilerMode_Other',
-        start_mark = 'm@o\\',
-        highlight = 'vfilerMode',
+      file = {
+        group = 'vfilerMode_File',
+        start_mark = 'm@f\\',
+        highlight = 'vfilerFile',
       },
     },
     end_mark = '\\m@',
@@ -46,7 +46,7 @@ function ModeColumn:get_text(item, width)
   end
   mode = mode .. item.mode:sub(1, 3)
 
-  local key = 'other'
+  local key = 'file'
   if mode:sub(#mode, #mode) == 'x' then
     key = 'executable'
   elseif item.islink then
