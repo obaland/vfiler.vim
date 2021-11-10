@@ -5,12 +5,15 @@ local M = {}
 M.configs = {}
 
 local default_options = {
-  auto_cd = false,
+  auto_cd = true,
   columns = 'indent,icon,name,mode,size,time',
   listed = true,
-  name = '',
+  name = 'test',
   show_hidden_files = false,
   sort = 'name',
+  split = 'vertical',
+  width = 90,
+  height = 30,
 }
 
 M.configs.options = core.table.copy(default_options)
@@ -66,6 +69,8 @@ local function parse_option(arg)
   return key:gsub('%-', '_'), value, key
 end
 
+--- Parse command line arguments strings
+---@param str_args string
 function M.parse_options(str_args)
   local args = split(str_args)
   local options = core.table.copy(M.configs.options)

@@ -27,7 +27,7 @@ local function cd(context, view, dirpath)
   if current then
     context:save(current.path)
   end
-  local path = context:switch(dirpath, true)
+  local path = context:switch(dirpath)
   view:draw(context)
 
   -- Skip header line
@@ -77,6 +77,82 @@ local function detect_drives()
   return drives
 end
 
+local choose_keys = {
+  'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
+  'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+  '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+}
+
+local function choose_window()
+  local winnrs = {}
+  for nr = 1, vim.fn.winnr('$') do
+    if vim.fn.getwinvar(nr, '&filetype') ~= 'vfiler' then
+      table.insert(winnrs, nr)
+    end
+  end
+  if #winnrs == 0 then
+    return -1
+  elseif #winnrs == 1 then
+    return winnrs[1]
+  end
+
+  -- Map window keys, and save statuslines
+  local keys = {}
+  local winkeys = {}
+  local statuslines = {}
+  for _, winnr in ipairs(winnrs) do
+    local key = choose_keys[winnr]
+    table.insert(keys, key)
+    winkeys[key] = winnr
+
+    local bufnr = vim.fn.winbufnr(winnr)
+    statuslines[winnr] = vim.fn.getbufvar(bufnr, '&statusline')
+  end
+
+  -- Save status
+  local laststatus = vim.get_global_option_value('laststatus')
+  local save_winnr = vim.fn.winnr()
+
+  -- Choose window
+  vim.set_global_option('laststatus', 2)
+  for key, nr in pairs(winkeys) do
+    local status = (' '):rep(vim.fn.winwidth(nr) / 2 - 1) .. key
+    vim.fn.setwinvar(nr, '&statusline', status)
+    vim.command('redraw')
+  end
+
+  local key = nil
+  local prompt = ('choose (%s) ?'):format(table.concat(keys, '/'))
+  repeat
+    key = cmdline.getchar(prompt)
+    if key == '<ESC>' then
+      break
+    end
+  until winkeys[key]
+
+  -- Restore
+  vim.set_global_option('laststatus', laststatus)
+  for nr, statusline in pairs(statuslines) do
+    vim.fn.setwinvar(nr, '&statusline', statusline)
+    vim.command('redraw')
+  end
+  core.window.move(save_winnr)
+
+  return key == '<ESC>' and nil or winkeys[key]
+end
+
+local function open_by_choose(item)
+  local winnr = choose_window()
+  if not winnr then
+    return
+  elseif winnr < 0 then
+    core.window.open('right', item.path)
+  else
+    core.window.move(winnr)
+    core.window.open('edit', item.path)
+  end
+end
+
 local function open(context, view, direction)
   local item = view:get_current()
   if not item then
@@ -84,17 +160,19 @@ local function open(context, view, direction)
     return
   end
 
-  if item.isdirectory then
-    if direction == 'edit' then
-      cd(context, view, item.path)
-      return
+  if not item.isdirectory then
+    if direction == 'choose' then
+      open_by_choose(item)
+    else
+      core.window.open(direction, item.path)
     end
+  elseif direction == 'edit' or direction == 'choose'then
+    cd(context, view, item.path)
+  else
     local vfiler = VFiler.get_current()
     core.window.open(direction)
     M.start(item.path, vfiler.configs)
-    return
   end
-  core.window.open(direction, item.path)
 end
 
 local function rename_files(context, view, targets)
@@ -175,30 +253,12 @@ function M.define(name, func)
   M[name] = func
 end
 
-function M._do_action(name, ...)
-  if not M[name] then
-    core.message.error('Action "%s" is not defined.', name)
-    return
-  end
-
-  local vfiler = VFiler.get(vim.fn.bufnr())
-  if not vfiler then
-    core.message.error('Buffer does not exist.')
-    return
-  end
-  M[name](vfiler.context, vfiler.view, ...)
-end
-
-function M.do_action(bufnr, func)
-  local vfiler = VFiler.get(bufnr)
-  if not vfiler then
-    core.message.error('Buffer does not exist.')
-    return
-  end
-  func(vfiler.context, vfiler.view)
-end
-
 function M.start(dirpath, configs)
+  local split = configs.options.split
+  if split ~= 'none' then
+    core.window.open(split)
+  end
+
   local vfiler = VFiler.new(configs)
   cd(vfiler.context, vfiler.view, dirpath)
   move_cursor(2)
@@ -488,8 +548,12 @@ function M.open(context, view)
   open(context, view, 'edit')
 end
 
+function M.open_by_choose(context, view)
+  open(context, view, 'choose')
+end
+
 function M.open_by_split(context, view)
-  open(context, view, 'right')
+  open(context, view, 'bottom')
 end
 
 function M.open_by_tabpage(context, view)
@@ -497,7 +561,7 @@ function M.open_by_tabpage(context, view)
 end
 
 function M.open_by_vsplit(context, view)
-  open(context, view, 'bottom')
+  open(context, view, 'right')
 end
 
 function M.open_tree(context, view)
@@ -527,7 +591,8 @@ function M.paste(context, view)
 end
 
 function M.quit(context, view)
-  VFiler.delete(view.bufnr)
+  local vfiler = VFiler.get_current()
+  vfiler:quit()
 end
 
 function M.redraw(context, view)
@@ -579,7 +644,7 @@ function M.switch_to_drive(context, view)
       end
 
       context:save(view:get_current().path)
-      local path = context:switch_drive(drive, true)
+      local path = context:switch_drive(drive)
       view:draw(context)
       -- Skip header line
       move_cursor(math.max(view:indexof(path), 2))
@@ -605,7 +670,7 @@ function M.switch_to_filer(context, view)
   local filer = VFiler.new(current.configs)
   cd(filer.context, filer.view, context.root.path)
   filer:link(current)
-  
+
   -- redraw current
   current:open()
   M.redraw(current.context, current.view)

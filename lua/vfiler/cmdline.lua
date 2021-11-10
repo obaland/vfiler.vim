@@ -19,6 +19,26 @@ function M.confirm(prompt, choices, default)
   return choices[choice]
 end
 
+function M.getchar(prompt)
+  prompt = ('[vfiler] %s: '):format(prompt)
+  local commands = {
+    'echohl Question',
+    ('echon "%s"'):format(prompt),
+    'echohl None',
+  }
+  vim.commands(commands)
+  local code = vim.fn.getchar()
+  vim.command('echo ""')
+
+  local char = nil
+  if (32 <= code) and (code <= 126) then
+    char = string.char(code)
+  elseif code == 27 then
+    char = '<ESC>'
+  end
+  return char
+end
+
 function M.input(prompt, ...)
   local args = ... and {...} or {}
   local text = args[1] or ''
@@ -32,7 +52,7 @@ function M.input(prompt, ...)
   else
     content = vim.fn.input(prompt, text)
   end
-  vim.command('redraw')
+  vim.command('echo ""')
   return content
 end
 

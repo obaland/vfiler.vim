@@ -73,11 +73,14 @@ function View.new(bufname, options)
     return nil
   end
 
+  local split = options.split
   local bufnr = create_buffer(bufname, options)
   local object = setmetatable({
     bufname = bufname,
     bufnr = bufnr,
     show_hidden_files = options.show_hidden_files,
+    width = split == 'vertical' and options.width or 0,
+    height = split == 'horizontal' and options.height or 0,
     _cache = {
       winwidth = 0,
     },
@@ -104,7 +107,7 @@ end
 ---@param context table
 function View:draw(context)
   -- expand item list
-  self._items = context.root:walk()
+  self._items = context.root:walk(self.show_hidden_files)
   table.insert(self._items, 1, context.root) -- header
   self:redraw()
 end
@@ -140,6 +143,17 @@ function View:redraw()
   if self.bufnr ~= vim.fn.bufnr() then
     core.message.warning('Cannot draw because the buffer is different.')
     return
+  end
+
+  -- resize window size
+  if self.width > 0 then
+    vim.command('vertical resize ' .. self.width)
+    vim.set_win_option('winfixwidth', true)
+  end
+  if self.height > 0 then
+    print('come', self.height)
+    vim.command('resize ' .. self.height)
+    vim.set_win_option('winfixheight', true)
   end
 
   local winwidth = vim.fn.winwidth(0) - 1 -- padding end

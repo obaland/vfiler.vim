@@ -36,20 +36,25 @@ local function generate_name(name)
   return bufname, name, number
 end
 
-function VFiler.delete(bufnr)
-  local vfiler = VFiler.get(bufnr)
-  if vfiler then
-    vfiler:quit()
+--- Cleanup vfiler buffers
+function VFiler.cleanup()
+  local valid_filers = {}
+  for bufnr, vfiler in pairs(vfilers) do
+    local exists = vim.fn.bufexists(bufnr) and vim.fn.bufloaded(bufnr)
+    if exists then
+      valid_filers[bufnr] = vfiler
+    else
+      vim.command('bwipeout ' .. bufnr)
+    end
   end
-  vfilers[bufnr] = nil
+  vfilers = valid_filers
 end
 
 ---@param name string
 function VFiler.find(name)
   -- in tabpage
-  local buflist = vim.from_vimlist(vim.fn.tabpagebuflist())
-  for _, bufnr in ipairs(buflist) do
-    local vfiler = vfilers[bufnr]
+  for winnr = 1, vim.fn.winnr('$') do
+    local vfiler = vfilers[vim.fn.winbufnr(winnr)]
     if vfiler and vfiler.name == name then
       return vfiler.object
     end
@@ -57,7 +62,7 @@ function VFiler.find(name)
 
   -- in hidden buffers
   for bufnr, vfiler in pairs(vfilers) do
-    if vim.fn.bufwinnr(bufnr) >= 0 and vfiler.name == name then
+    if vim.fn.bufwinnr(bufnr) < 0 and vfiler.name == name then
       return vfiler.object
     end
   end
@@ -80,8 +85,8 @@ function VFiler.get_displays()
   local buflist = vim.from_vimlist(vim.fn.tabpagebuflist())
   for _, bufnr in ipairs(buflist) do
     local vfiler = vfilers[bufnr]
-    if vfiler and vim.fn.bufwinnr(vfiler.view.bufnr) >= 0 then
-      table.insert(filers, vfiler)
+    if vfiler then
+      table.insert(filers, vfiler.object)
     end
   end
   return filers
@@ -172,8 +177,10 @@ function VFiler:open(...)
 end
 
 function VFiler:quit()
+  local bufnr = self.view.bufnr
   self.view:delete()
   self:unlink()
+  vfilers[bufnr] = nil
 end
 
 function VFiler:unlink()

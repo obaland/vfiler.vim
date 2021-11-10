@@ -6,6 +6,29 @@ local File = require 'vfiler/items/file'
 
 local Directory = {}
 
+local function create_item(path, sort_type)
+  local ftype = vim.fn.getftype(path)
+  if #ftype == 0 then
+    return nil
+  end
+
+  local item = nil
+  if ftype == 'dir' then
+    item = Directory.new(path, false, sort_type)
+  elseif ftype == 'file' then
+    item = File.new(path, false)
+  elseif ftype == 'link' then
+    if core.path.isdirectory(path) then
+      item = Directory.new(path, true, sort_type)
+    else
+      item = File.new(path, true)
+    end
+  else
+    core.message.warning('Unknown "%s" file type. (%s)', ftype, path)
+  end
+  return item
+end
+
 function Directory.create(dirpath, sort_type)
   -- mkdir
   if vim.fn.mkdir(dirpath) ~= 1 then
@@ -91,9 +114,9 @@ function Directory:sort(type, recursive)
   end
 end
 
-function Directory:walk()
+function Directory:walk(hidden)
   local items = {}
-  self:_walk(items)
+  self:_walk(items, hidden)
   return items
 end
 
@@ -127,16 +150,28 @@ function Directory:_expand(names)
 end
 
 function Directory:_ls()
+  local items = {}
+
   local paths = vim.from_vimlist(
     vim.fn.glob(core.path.join(self.path, '/*'), 1, 1)
     )
+  for _, path in ipairs(paths) do
+    local item = create_item(path, self.sort_type)
+    if item then
+      table.insert(items, item)
+    end
+  end
+
   local dotpaths = vim.from_vimlist(
     vim.fn.glob(core.path.join(self.path, '/.*'), 1, 1)
     )
   for _, dotpath in ipairs(dotpaths) do
     local dotfile = vim.fn.fnamemodify(dotpath, ':t')
     if not (dotfile == '.' or dotfile == '..') then
-      table.insert(paths, dotpath)
+      local item = create_item(dotpath, self.sort_type)
+      if item then
+        table.insert(items, item)
+      end
     end
   end
 
@@ -144,40 +179,21 @@ function Directory:_ls()
 
   return function()
     index = index + 1
-    if not paths[index] then
-      return nil
-    end
-
-    local filepath = paths[index]
-    local ftype = vim.fn.getftype(filepath)
-    local item = nil
-
-    if ftype == 'dir' then
-      item = Directory.new(filepath, false, self.sort_type)
-    elseif ftype == 'file' then
-      item = File.new(filepath, false)
-    elseif ftype == 'link' then
-      if core.path.isdirectory(filepath) then
-        item = Directory.new(filepath, true, self.sort_type)
-      else
-        item = File.new(filepath, true)
-      end
-    else
-      core.message.warning('Unknown file type. (%s)', ftype)
-    end
-    item.parent = self
-    return item
+    return items[index]
   end
 end
 
-function Directory:_walk(items)
+function Directory:_walk(items, hidden)
   if not self.children then
     return
   end
   for _, child in ipairs(self.children) do
-    table.insert(items, child)
-    if child.isdirectory then
-      child:_walk(items)
+    local hidden_file = child.name:sub(1, 1) == '.'
+    if hidden or not hidden_file then
+      table.insert(items, child)
+      if child.isdirectory then
+        child:_walk(items)
+      end
     end
   end
 end

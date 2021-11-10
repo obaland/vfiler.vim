@@ -99,10 +99,12 @@ M.window = {}
 local open_directions = {
   edit = 'edit',
   bottom = 'belowright split',
+  horizontal = 'split',
   left = 'aboveleft vertical split',
   right = 'belowright vertical split',
   tab = 'tabnew',
   top = 'aboveleft split',
+  vertical = 'vertical split',
 }
 
 ---@param winnr number
@@ -117,7 +119,13 @@ end
 ---@param direction string
 ---@vararg string
 function M.window.open(direction, ...)
-  local command = 'silent! ' .. open_directions[direction]
+  local dir = open_directions[direction]
+  if not dir then
+    M.message.error('Illegal "%s" open direction.', direction)
+    return
+  end
+
+  local command = 'silent! ' .. dir
   if ... then
     command = ('%s %s'):format(command, ...)
   end

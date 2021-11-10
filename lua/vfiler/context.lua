@@ -1,4 +1,5 @@
 local core = require 'vfiler/core'
+local vim = require 'vfiler/vim'
 
 local Directory = require 'vfiler/items/directory'
 
@@ -70,10 +71,10 @@ Context.__index = Context
 
 function Context.new(options)
   return setmetatable({
+    auto_cd = options.auto_cd,
     clipboard = nil,
     extension = nil,
     root = nil,
-    show_hidden_files = options.show_hidden_files,
     sort_type = options.sort,
     _store = Store.new(),
   }, Context)
@@ -95,12 +96,17 @@ function Context:change_sort(type)
 end
 
 -- @param path string
-function Context:switch(dirpath, restore)
+function Context:switch(dirpath)
+  -- perform auto cd
+  if self.auto_cd then
+    vim.command('silent lcd ' .. dirpath)
+  end
+
   self.root = Directory.new(dirpath, false, self.sort_type)
   self.root:open()
 
   local path, expanded_rpaths = self._store:restore_path(dirpath)
-  if path and restore then
+  if path then
     for _, rpath in ipairs(expanded_rpaths) do
       self.root:expand(rpath)
     end
@@ -109,14 +115,17 @@ function Context:switch(dirpath, restore)
   return self.root.path
 end
 
-function Context:switch_drive(drive, restore)
+function Context:switch_drive(drive)
   local dirpath = self._store:restore_dirpath(drive)
-  if not (restore and dirpath) then
+  if not dirpath then
+    dirpath = drive
+    --[[
     self.root = Directory.new(drive, false, self.sort_type)
     self.root:open()
     return self.root.path
+    ]]
   end
-  return self:switch(dirpath, restore)
+  return self:switch(dirpath)
 end
 
 function Context:update()

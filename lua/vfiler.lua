@@ -80,14 +80,13 @@ function M.start(...)
     dirpath = vim.fn.getcwd()
   end
 
-  -- TODO:
-  options.name = 'test'
-
+  VFiler.cleanup()
   local vfiler = VFiler.find(options.name)
   if vfiler then
     -- TODO: open action
+  else
+    action.start(dirpath, configs)
   end
-  action.start(dirpath, configs)
   return true
 end
 
