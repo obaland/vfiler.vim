@@ -31,8 +31,8 @@ function Floating:_on_win_option(name, texts)
   }
 
   local floating = core.table.copy(self.options.floating)
-  local wwidth = vim.fn.winwidth(self.caller_winid)
-  local wheight = vim.fn.winheight(self.caller_winid)
+  local wwidth = vim.fn.winwidth(self.source_winid)
+  local wheight = vim.fn.winheight(self.source_winid)
 
   if name and #name > 0 then
     -- '2' is space width
@@ -77,7 +77,7 @@ function Floating:_on_open(name, texts, options)
     zindex = 200,
   }
   if win_options.relative == 'win' then
-    win_options.win = self.caller_winid
+    win_options.win = self.source_winid
   end
 
   local listed = self.bufoptions.buflisted and true or false
@@ -107,7 +107,7 @@ function Floating:_open_tile(name, content_option)
     zindex = content_option.zindex + 1,
   }
   if option.relative == 'win' then
-    option.win = self.caller_winid
+    option.win = self.source_winid
   end
   local buffer = vim.api.nvim_create_buf(false, true)
   local window = vim.api.nvim_open_win(buffer, false, option)

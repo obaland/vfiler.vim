@@ -7,22 +7,22 @@ M.fn = vim.fn
 ------------------------------------------------------------------------------
 -- Global option
 ------------------------------------------------------------------------------
-function M.get_option(prefix, name)
+local function get_option(prefix, name)
   return vim.eval(prefix .. name)
 end
 
 function M.get_global_option_value(name)
-  return M.get_option('&g:', name)
+  return get_option('&g:', name)
 end
 function M.get_global_option_boolean(name)
-  return M.get_global_option_value(name) == 1 and true or false
+  return M.get_global_option_value(name) == 1
 end
 
 function M.get_option_value(name)
-  return M.get_option('&', name)
+  return get_option('&', name)
 end
 function M.get_option_boolean(name)
-  return M.get_option_value(name) == 1 and true or false
+  return M.get_option_value(name) == 1
 end
 
 ------------------------------------------------------------------------------

@@ -7,12 +7,12 @@ View.__index = View
 local function create_buffer(bufname, options)
   -- Save swapfile option
   local swapfile = vim.get_buf_option_boolean('swapfile')
-  vim.set_buf_option('swapfile', false)
+  vim.set_local_option('swapfile', false)
   vim.command('silent edit ' .. bufname)
-  vim.set_buf_option('swapfile', swapfile)
+  vim.set_local_option('swapfile', swapfile)
 
   -- Set buffer local options
-  vim.set_buf_options {
+  vim.set_local_options {
     bufhidden = 'hide',
     buflisted = options.listed,
     buftype = 'nofile',
@@ -25,16 +25,16 @@ local function create_buffer(bufname, options)
 
   -- Set window local options
   if vim.fn.exists('&colorcolumn') == 1 then
-    vim.set_win_option('colorcolumn', '')
+    vim.set_local_option('colorcolumn', '')
   end
   if vim.fn.has('conceal') == 1 then
     if vim.get_win_option_value('conceallevel') < 2 then
-      vim.set_win_option('conceallevel', 2)
+      vim.set_local_option('conceallevel', 2)
     end
-    vim.set_win_option('concealcursor', 'nvc')
+    vim.set_local_option('concealcursor', 'nvc')
   end
 
-  vim.set_win_options {
+  vim.set_local_options {
     foldcolumn = '0',
     foldenable = false,
     list = false,
@@ -135,7 +135,17 @@ function View:num_lines()
   return #self._items
 end
 
-function View:open()
+function View:open(...)
+  local direction = ...
+  local winnr = self:winnr()
+  if winnr > 0 then
+    core.window.move(winnr)
+    return
+  end
+
+  if direction then
+    core.window.open(direction)
+  end
   vim.command('silent buffer ' .. self.bufnr)
 end
 
@@ -148,12 +158,12 @@ function View:redraw()
   -- resize window size
   if self.width > 0 then
     vim.command('vertical resize ' .. self.width)
-    vim.set_win_option('winfixwidth', true)
+    vim.set_local_option('winfixwidth', true)
   end
   if self.height > 0 then
     print('come', self.height)
     vim.command('resize ' .. self.height)
-    vim.set_win_option('winfixheight', true)
+    vim.set_local_option('winfixheight', true)
   end
 
   local winwidth = vim.fn.winwidth(0) - 1 -- padding end
@@ -170,22 +180,20 @@ function View:redraw()
   end
 
   -- create text lines
-  local lines = {}
-  for i, item in ipairs(self._items) do
-    -- first line is the header line
-    local line = i == 1 and self:_toheader(item) or self:_toline(item)
-    table.insert(lines, line)
+  local lines = {self:_toheader(self._items[1])}
+  for i = 2, #self._items do
+    table.insert(lines, self:_toline(self._items[i]))
   end
 
   -- set buffer lines
   local saved_view = vim.fn.winsaveview()
 
-  vim.set_buf_option('modifiable', true)
-  vim.set_buf_option('readonly', false)
+  vim.set_local_option('modifiable', true)
+  vim.set_local_option('readonly', false)
   vim.command('silent %delete _')
   vim.fn.setline(1, vim.to_vimlist(lines))
-  vim.set_buf_option('modifiable', false)
-  vim.set_buf_option('readonly', true)
+  vim.set_local_option('modifiable', false)
+  vim.set_local_option('readonly', true)
 
   vim.fn.winrestview(saved_view)
 end
@@ -195,11 +203,11 @@ function View:redraw_line(lnum)
   -- first line is the header line
   local line = lnum == 1 and self:_toheader(item) or self:_toline(item)
 
-  vim.set_buf_option('modifiable', true)
-  vim.set_buf_option('readonly', false)
+  vim.set_local_option('modifiable', true)
+  vim.set_local_option('readonly', false)
   vim.fn.setline(lnum, line)
-  vim.set_buf_option('modifiable', false)
-  vim.set_buf_option('readonly', true)
+  vim.set_local_option('modifiable', false)
+  vim.set_local_option('readonly', true)
 end
 
 function View:selected_items()
@@ -284,7 +292,7 @@ end
 
 ---@param item table
 function View:_toheader(item)
-  return '[path] ' .. item.path
+  return vim.fn.fnamemodify(item.path, ':~')
 end
 
 ---@param item table

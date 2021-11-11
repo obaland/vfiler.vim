@@ -1,5 +1,4 @@
 local core = require 'vfiler/core'
-local mapping = require 'vfiler/mapping'
 local vim = require 'vfiler/vim'
 
 local Popup = {}
@@ -13,7 +12,7 @@ function Popup:close()
   if self.winid > 0 then
     -- Note: If you do not run it from the calling window, you will get an error
     vim.fn.win_execute(
-      self.caller_winid, ('call popup_close(%d)'):format(self.winid)
+      self.source_winid, ('call popup_close(%d)'):format(self.winid)
       )
     vim.fn['vfiler#popup#unmap'](self.winid)
   end
@@ -35,8 +34,8 @@ end
 
 function Popup:_on_win_option(name, texts)
   local floating = self.options.floating
-  local wwidth = vim.fn.winwidth(self.caller_winid)
-  local wheight = vim.fn.winheight(self.caller_winid)
+  local wwidth = vim.fn.winwidth(self.source_winid)
+  local wheight = vim.fn.winheight(self.source_winid)
 
   local options = {
     minwidth = 1,
@@ -65,9 +64,9 @@ function Popup:_on_win_option(name, texts)
       wheight, floating.height or 'auto', options.minheight, wheight, texts
       )
 
-    local screen_pos = vim.fn.win_screenpos(self.caller_winid)
-    local x = screen_pos[2]
+    local screen_pos = vim.fn.win_screenpos(self.source_winid)
     local y = screen_pos[1]
+    local x = screen_pos[2]
     options.line = y + math.floor(wheight - ((height / 2) + (wheight / 2)))
     options.col = x + math.floor(wwidth - ((width / 2) + (wwidth / 2)))
   else

@@ -8,6 +8,7 @@ local columns = {
   size = require('vfiler/columns/size').new(),
   space = require('vfiler/columns/space').new(),
   time = require('vfiler/columns/time').new(),
+  type = require('vfiler/columns/type').new(),
 }
 
 function M.get(name)

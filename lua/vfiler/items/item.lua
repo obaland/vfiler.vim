@@ -31,7 +31,7 @@ function Item:delete()
     core.message.error('"%s" Cannot delete.', self.name)
     return false
   end
-  self:_make_orphan()
+  self:_become_orphan()
   return true
 end
 
@@ -70,7 +70,7 @@ function Item:root()
 end
 
 --- Remove from parent tree
-function Item:_make_orphan()
+function Item:_become_orphan()
   if not self.parent then
     return
   end
@@ -89,7 +89,7 @@ function Item:_move(destpath)
   if not core.path.exists(destpath) and core.path.exists(self.path) then
     return false
   end
-  self:_make_orphan()
+  self:_becom_orphan()
   return true
 end
 

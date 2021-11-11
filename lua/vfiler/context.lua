@@ -80,6 +80,10 @@ function Context.new(options)
   }, Context)
 end
 
+function Context:clear()
+  self._store = Store.new()
+end
+
 function Context:save(path)
   if not self.root then
     return
@@ -119,11 +123,6 @@ function Context:switch_drive(drive)
   local dirpath = self._store:restore_dirpath(drive)
   if not dirpath then
     dirpath = drive
-    --[[
-    self.root = Directory.new(drive, false, self.sort_type)
-    self.root:open()
-    return self.root.path
-    ]]
   end
   return self:switch(dirpath)
 end
@@ -134,6 +133,11 @@ function Context:update()
   for _, rpath in ipairs(rpaths) do
     self.root:expand(rpath)
   end
+end
+
+function Context:sync(context)
+  self._store:save(context.root, context.root.path)
+  self:switch(context.root.path)
 end
 
 return Context

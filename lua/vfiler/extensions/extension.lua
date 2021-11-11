@@ -9,6 +9,7 @@ Extension.__index = Extension
 
 function Extension.new(name, view, configs)
   return setmetatable({
+    source_bufnr = vim.fn.bufnr(),
     configs = core.table.copy(configs),
     items = nil,
     name = name,
@@ -88,6 +89,12 @@ function Extension:quit()
   if self.on_quit then
     self.on_quit()
   end
+
+  local source_winnr = vim.fn.bufwinnr(self.source_bufnr)
+  if source_winnr >= 0 then
+    core.window.move(source_winnr)
+  end
+
   extension_resources[self.bufnr] = nil
 end
 
@@ -122,7 +129,7 @@ function Extension:start(items, ...)
 
   -- draw line texts and syntax
   self:_on_draw(texts)
-  vim.fn.cursor(lnum, 1)
+  vim.fn.win_execute(self.winid, ('call cursor(%d, 1)'):format(lnum))
 
   -- add extension table
   extension_resources[self.bufnr] = self

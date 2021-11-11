@@ -12,6 +12,8 @@ config.setup {
     ['.']         = action.toggle_show_hidden,
     ['<BS>']      = action.change_to_parent,
     ['<C-j>']     = action.jump_to_directory,
+    ['<C-l>']     = action.reload,
+    ['<C-p>']     = action.sync_with_current_filer,
     ['<CR>']      = action.open,
     ['<S-Space>'] = action.toggle_select_up,
     ['<Space>']   = action.toggle_select_down,
@@ -73,7 +75,6 @@ end
 function M.start(...)
   local args = {...}
   local configs = core.table.merge(args[2] or {}, config.configs)
-  local options = configs.options
 
   local dirpath = args[1]
   if not dirpath or dirpath == '' then
@@ -81,12 +82,17 @@ function M.start(...)
   end
 
   VFiler.cleanup()
-  local vfiler = VFiler.find(options.name)
-  if vfiler then
-    -- TODO: open action
-  else
-    action.start(dirpath, configs)
+
+  -- split window
+  local split = configs.options.split
+  if split ~= 'none' then
+    core.window.open(split)
   end
+
+  local vfiler = VFiler.open(configs)
+  vfiler.context:switch(dirpath)
+  vfiler.view:draw(vfiler.context)
+  core.cursor.move(2)
   return true
 end
 

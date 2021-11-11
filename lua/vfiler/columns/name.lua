@@ -34,6 +34,11 @@ function NameColumn.new()
         start_mark = 'n@l\\',
         highlight = 'vfilerLink',
       },
+      hidden = {
+        group = 'vfilerName_Hidden',
+        start_mark = 'n@h\\',
+        highlight = 'vfilerHidden',
+      },
     },
     end_mark = '\\n@',
     ignore_group = 'vfilerName_Ignore',
@@ -46,6 +51,8 @@ function NameColumn:get_text(item, width)
   local syntax_name = ''
   if item.selected then
     syntax_name = 'selected'
+  elseif item.name:sub(1, 1) == '.' then
+    syntax_name = 'hidden'
   elseif item.islink then
     syntax_name = 'link'
   elseif item.isdirectory then
@@ -70,14 +77,6 @@ function NameColumn:get_width(items, width)
     return math.max(width, self.min_width)
   end
   return core.math.within(width, self.min_width, self.max_width)
-end
-
-function NameColumn:highlights()
-  return self._syntax:highlights()
-end
-
-function NameColumn:syntaxes()
-  return self._syntax:syntaxes()
 end
 
 return NameColumn

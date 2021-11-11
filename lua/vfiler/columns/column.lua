@@ -6,6 +6,7 @@ function Column.new(name)
       name = name,
       variable = false,
       stretch = false,
+      _syntax = nil,
     }, Column)
 end
 
@@ -18,10 +19,16 @@ function Column:get_width(items, width)
 end
 
 function Column:highlights()
+  if self._syntax then
+    return self._syntax:highlights()
+  end
   return nil
 end
 
 function Column:syntaxes()
+  if self._syntax then
+    return self._syntax:syntaxes()
+  end
   return nil
 end
 

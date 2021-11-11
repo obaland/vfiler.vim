@@ -114,9 +114,9 @@ function Directory:sort(type, recursive)
   end
 end
 
-function Directory:walk(hidden)
+function Directory:walk(include_hidden)
   local items = {}
-  self:_walk(items, hidden)
+  self:_walk(items, include_hidden)
   return items
 end
 
@@ -183,13 +183,13 @@ function Directory:_ls()
   end
 end
 
-function Directory:_walk(items, hidden)
+function Directory:_walk(items, include_hidden)
   if not self.children then
     return
   end
   for _, child in ipairs(self.children) do
-    local hidden_file = child.name:sub(1, 1) == '.'
-    if hidden or not hidden_file then
+    local hidden = child.name:sub(1, 1) == '.'
+    if include_hidden or not hidden then
       table.insert(items, child)
       if child.isdirectory then
         child:_walk(items)

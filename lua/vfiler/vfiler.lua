@@ -15,6 +15,25 @@ local vfilers = {}
 local VFiler = {}
 VFiler.__index = VFiler
 
+local function find(name)
+  -- in tabpage
+  for winnr = 1, vim.fn.winnr('$') do
+    local vfiler = vfilers[vim.fn.winbufnr(winnr)]
+    if vfiler and vfiler.name == name then
+      return vfiler.object
+    end
+  end
+
+  -- in hidden buffers
+  for bufnr, vfiler in pairs(vfilers) do
+    if vim.fn.bufwinnr(bufnr) < 0 and vfiler.name == name then
+      return vfiler.object
+    end
+  end
+
+  return nil -- not found
+end
+
 local function generate_name(name)
   local bufname = BUFNAME_PREFIX
   if #name > 0 then
@@ -48,26 +67,6 @@ function VFiler.cleanup()
     end
   end
   vfilers = valid_filers
-end
-
----@param name string
-function VFiler.find(name)
-  -- in tabpage
-  for winnr = 1, vim.fn.winnr('$') do
-    local vfiler = vfilers[vim.fn.winbufnr(winnr)]
-    if vfiler and vfiler.name == name then
-      return vfiler.object
-    end
-  end
-
-  -- in hidden buffers
-  for bufnr, vfiler in pairs(vfilers) do
-    if vim.fn.bufwinnr(bufnr) < 0 and vfiler.name == name then
-      return vfiler.object
-    end
-  end
-
-  return nil -- not found
 end
 
 ---@param bufnr number Buffer number
@@ -128,6 +127,17 @@ function VFiler.new(configs)
   return object
 end
 
+function VFiler.open(configs)
+  local vfiler = find(configs.name)
+  if vfiler then
+    vfiler.context:clear()
+    vfiler.view:open()
+  else
+    vfiler = VFiler.new(configs)
+  end
+  return vfiler
+end
+
 function VFiler._do_action(bufnr, key)
   local vfiler = VFiler.get(bufnr)
   vfiler:do_action(key)
@@ -160,20 +170,6 @@ end
 function VFiler:link(vfiler)
   self.linked = vfiler
   vfiler.linked = self
-end
-
-function VFiler:open(...)
-  local winnr = self.view:winnr()
-  if winnr > 0 then
-    core.window.move(winnr)
-  else
-    local direction = ...
-    if type then
-      -- open window
-      core.window.open(direction)
-    end
-    self.view:open()
-  end
 end
 
 function VFiler:quit()

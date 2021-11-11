@@ -43,12 +43,4 @@ function IndentColumn:get_width(items, width)
   return max_level > 0 and (max_level + vim.fn.strwidth(self.icon)) or 0
 end
 
-function IndentColumn:highlights()
-  return self._syntax:highlights()
-end
-
-function IndentColumn:syntaxes()
-  return self._syntax:syntaxes()
-end
-
 return IndentColumn

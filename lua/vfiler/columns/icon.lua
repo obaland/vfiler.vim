@@ -71,12 +71,4 @@ function IconColumn:get_width(items, width)
   return iwidth
 end
 
-function IconColumn:highlights()
-  return self._syntax:highlights()
-end
-
-function IconColumn:syntaxes()
-  return self._syntax:syntaxes()
-end
-
 return IconColumn

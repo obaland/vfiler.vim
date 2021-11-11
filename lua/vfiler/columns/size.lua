@@ -62,12 +62,4 @@ function SizeColumn:get_width(items, width)
   return self._width
 end
 
-function SizeColumn:highlights()
-  return self._syntax:highlights()
-end
-
-function SizeColumn:syntaxes()
-  return self._syntax:syntaxes()
-end
-
 return SizeColumn

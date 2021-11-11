@@ -76,7 +76,7 @@ function ExtensionRename:execute()
   end
 
   local renames = vim.from_vimlist(vim.fn.getline(1, #self.items))
-  vim.set_buf_option('modified', false)
+  vim.set_local_option('modified', false)
   self:quit()
 
   if self.on_execute then
@@ -100,7 +100,7 @@ end
 function ExtensionRename:_on_draw(texts)
   self.view:draw(self.name, texts)
   vim.fn['vfiler#core#clear_undo']()
-  vim.set_buf_option('modified', false)
+  vim.set_local_option('modified', false)
 
   -- syntaxes
   local group_notchanged = 'vfilerRename_NotChanged'

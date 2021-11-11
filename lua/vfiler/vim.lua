@@ -9,7 +9,7 @@ end
 ------------------------------------------------------------------------------
 -- Set options
 ------------------------------------------------------------------------------
-function M.command_set_option(command, name, value)
+local function set_option_command(command, name, value)
   local option = ''
   if type(value) == 'boolean' then
     option = value and name or 'no' .. name
@@ -19,44 +19,68 @@ function M.command_set_option(command, name, value)
   return command .. ' ' .. option
 end
 
+function M.set_global_option_command(name, value)
+  return set_option_command('setglobal', name, value)
+end
+
+function M.set_option_command(name, value)
+  return set_option_command('set', name, value)
+end
+
+function M.set_local_option_command(name, value)
+  return set_option_command('setlocal', name, value)
+end
+
 function M.set_global_option(name, value)
-  M.command(M.command_set_option('setglobal', name, value))
+  M.command(M.set_global_option_command(name, value))
 end
 
 function M.set_option(name, value)
-  M.command(M.command_set_option('set', name, value))
+  M.command(M.set_option_command(name, value))
 end
 
-function M.set_buf_option(name, value)
-  M.command(M.command_set_option('setlocal', name, value))
+function M.set_local_option(name, value)
+  M.command(M.set_local_option_command(name, value))
 end
 
-M.set_win_option = M.set_buf_option -- Alias
+function M.set_global_option_commands(options)
+  local commands = {}
+  for key, value in pairs(options) do
+    table.insert(commands, M.set_global_option_command(key, value))
+  end
+  return commands
+end
 
-------------------------------------------------------------------------------
--- Utilities
-------------------------------------------------------------------------------
+function M.set_option_commands(options)
+  local commands = {}
+  for key, value in pairs(options) do
+    table.insert(commands, M.set_option_command(key, value))
+  end
+  return commands
+end
 
-function M.commands(cmds)
-  M.command(table.concat(cmds, ' | '))
+function M.set_local_option_commands(options)
+  local commands = {}
+  for key, value in pairs(options) do
+    table.insert(commands, M.set_local_option_command(key, value))
+  end
+  return commands
+end
+
+function M.set_global_options(options)
+  M.commands(M.set_global_option_commands(options))
 end
 
 function M.set_options(options)
-  for key, value in pairs(options) do
-    M.set_option(key, value)
-  end
+  M.commands(M.set_option_commands(options))
 end
 
-function M.set_buf_options(options)
-  for key, value in pairs(options) do
-    M.set_buf_option(key, value)
-  end
+function M.set_local_options(options)
+  M.commands(M.set_local_option_commands(options))
 end
 
-function M.set_win_options(options)
-  for key, value in pairs(options) do
-    M.set_win_option(key, value)
-  end
+function M.commands(cmds)
+  M.command(table.concat(cmds, ' | '))
 end
 
 function M.fn.win_executes(window, cmds)

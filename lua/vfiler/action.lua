@@ -12,11 +12,6 @@ local VFiler = require 'vfiler/vfiler'
 
 local M = {}
 
--- @param lnum number
-local function move_cursor(lnum)
-  vim.fn.cursor(lnum, 1)
-end
-
 local function cd(context, view, dirpath)
   if context.root and context.root.path == dirpath then
     -- Same directory path
@@ -31,7 +26,7 @@ local function cd(context, view, dirpath)
   view:draw(context)
 
   -- Skip header line
-  move_cursor(math.max(view:indexof(path), 2))
+  core.cursor.move(math.max(view:indexof(path), 2))
 end
 
 local function create_files(dest, contents, create)
@@ -261,7 +256,7 @@ function M.start(dirpath, configs)
 
   local vfiler = VFiler.new(configs)
   cd(vfiler.context, vfiler.view, dirpath)
-  move_cursor(2)
+  core.cursor.move(2)
 end
 
 function M.undefine(name)
@@ -287,7 +282,7 @@ function M.close_tree(context, view)
   view:draw(context)
 
   -- Skip header line
-  move_cursor(math.max(view:indexof(target.path), 2))
+  core.cursor.move(math.max(view:indexof(target.path), 2))
 end
 
 function M.close_tree_or_cd(context, view)
@@ -316,7 +311,7 @@ function M.change_sort(context, view)
         view:draw(context)
 
         -- Skip header line
-        move_cursor(math.max(view:indexof(item.path), 2))
+        core.cursor.move(math.max(view:indexof(item.path), 2))
       end
     end,
 
@@ -363,9 +358,9 @@ function M.copy_to_filer(context, view)
   -- Copy to linked filer
   local cb = Clipboard.copy(selected)
   cb:paste(linked.context.root)
-  linked:open()
+  linked.view:open()
   M.redraw(linked.context, linked.view)
-  current:open() -- Return to current
+  current.view:open() -- Return to current
 end
 
 function M.delete(context, view)
@@ -448,7 +443,7 @@ function M.loop_cursor_down(context, view)
     -- the meaning of "2" is to skip the header line
     lnum = 2
   end
-  move_cursor(lnum)
+  core.cursor.move(lnum)
 end
 
 function M.loop_cursor_up(context, view, loop)
@@ -456,7 +451,7 @@ function M.loop_cursor_up(context, view, loop)
   if lnum <= 1 then
     lnum = view:num_lines()
   end
-  move_cursor(lnum)
+  core.cursor.move(lnum)
 end
 
 function M.move(context, view)
@@ -474,22 +469,22 @@ function M.move(context, view)
 end
 
 function M.move_cursor_bottom(context, view)
-  move_cursor(view:num_lines())
+  core.cursor.move(view:num_lines())
 end
 
 function M.move_cursor_down(context, view)
   local lnum = vim.fn.line('.') + 1
-  move_cursor(lnum)
+  core.cursor.move(lnum)
 end
 
 function M.move_cursor_top(context, view)
-  move_cursor(2)
+  core.cursor.move(2)
 end
 
 function M.move_cursor_up(context, view)
   -- the meaning of "2" is to skip the header line
   local lnum = math.max(2, vim.fn.line('.') - 1)
-  move_cursor(lnum)
+  core.cursor.move(lnum)
 end
 
 function M.move_to_filer(context, view)
@@ -508,9 +503,9 @@ function M.move_to_filer(context, view)
   -- Move to linked filer
   local cb = Clipboard.move(selected)
   cb:paste(linked.context.root)
-  linked:open()
+  linked.view:open()
   M.redraw(linked.context, linked.view)
-  current:open()
+  current.view:open()
   M.redraw(current.context, current.view)
 end
 
@@ -572,7 +567,7 @@ function M.open_tree(context, view)
   end
   item:open()
   view:draw(context)
-  move_cursor(lnum + 1)
+  core.cursor.move(lnum + 1)
 end
 
 function M.paste(context, view)
@@ -647,7 +642,7 @@ function M.switch_to_drive(context, view)
       local path = context:switch_drive(drive)
       view:draw(context)
       -- Skip header line
-      move_cursor(math.max(view:indexof(path), 2))
+      core.cursor.move(math.max(view:indexof(path), 2))
     end,
     on_quit = function()
       context.extension = nil
@@ -660,9 +655,10 @@ end
 
 function M.switch_to_filer(context, view)
   local current = VFiler.get_current()
+  local linked = current.linked
   -- already linked
-  if current.linked then
-    current.linked:open('right')
+  if linked then
+    linked.view:open('right')
     return
   end
 
@@ -672,9 +668,22 @@ function M.switch_to_filer(context, view)
   filer:link(current)
 
   -- redraw current
-  current:open()
+  current.view:open()
   M.redraw(current.context, current.view)
-  filer:open()
+  filer.view:open()
+end
+
+function M.sync_with_current_filer(context, view)
+  local current = VFiler.get_current()
+  local linked = current.linked
+  if not linked then
+    return
+  end
+
+  linked.context:sync(current.context)
+  linked:open()
+  M.redraw(linked.context, linked.view)
+  current:open() -- return current window
 end
 
 function M.toggle_show_hidden(context, view)

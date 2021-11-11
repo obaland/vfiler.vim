@@ -5,7 +5,6 @@ local ModeColumn = {}
 function ModeColumn.new()
   local Column = require('vfiler/columns/column')
   local self = core.inherit(ModeColumn, Column, 'mode')
-  self.format = '%Y/%m/%d %H:%M'
 
   local Syntax = require('vfiler/columns/syntax')
   self._syntax = Syntax.new {
@@ -30,6 +29,11 @@ function ModeColumn.new()
         start_mark = 'm@f\\',
         highlight = 'vfilerFile',
       },
+      hidden = {
+        group = 'vfilerMode_Hidden',
+        start_mark = 'm@h\\',
+        highlight = 'vfilerHidden',
+      },
     },
     end_mark = '\\m@',
     ignore_group = 'vfilerMode_Ignore',
@@ -47,7 +51,9 @@ function ModeColumn:get_text(item, width)
   mode = mode .. item.mode:sub(1, 3)
 
   local key = 'file'
-  if mode:sub(#mode, #mode) == 'x' then
+  if item.name:sub(1, 1) == '.' then
+    key = 'hidden'
+  elseif mode:sub(#mode, #mode) == 'x' then
     key = 'executable'
   elseif item.islink then
     key = 'link'
@@ -59,14 +65,6 @@ end
 
 function ModeColumn:get_width(items, width)
   return 4
-end
-
-function ModeColumn:highlights()
-  return self._syntax:highlights()
-end
-
-function ModeColumn:syntaxes()
-  return self._syntax:syntaxes()
 end
 
 return ModeColumn

@@ -50,12 +50,4 @@ function TimeColumn:get_width(items, width)
   return #os.date(self.format, 0)
 end
 
-function TimeColumn:highlights()
-  return self._syntax:highlights()
-end
-
-function TimeColumn:syntaxes()
-  return self._syntax:syntaxes()
-end
-
 return TimeColumn
