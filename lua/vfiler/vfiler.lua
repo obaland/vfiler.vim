@@ -15,25 +15,6 @@ local vfilers = {}
 local VFiler = {}
 VFiler.__index = VFiler
 
-local function find(name)
-  -- in tabpage
-  for winnr = 1, vim.fn.winnr('$') do
-    local vfiler = vfilers[vim.fn.winbufnr(winnr)]
-    if vfiler and vfiler.name == name then
-      return vfiler.object
-    end
-  end
-
-  -- in hidden buffers
-  for bufnr, vfiler in pairs(vfilers) do
-    if vim.fn.bufwinnr(bufnr) < 0 and vfiler.name == name then
-      return vfiler.object
-    end
-  end
-
-  return nil -- not found
-end
-
 local function define_mappings(bufnr, mappings)
   return mapping.define(
     bufnr, mappings, [[require('vfiler/vfiler')._do_action]]
@@ -79,6 +60,25 @@ function VFiler.cleanup()
     end
   end
   vfilers = valid_filers
+end
+
+---@param name string
+function VFiler.find(name)
+  -- in tabpage
+  for winnr = 1, vim.fn.winnr('$') do
+    local vfiler = vfilers[vim.fn.winbufnr(winnr)]
+    if vfiler and vfiler.name == name then
+      return vfiler.object
+    end
+  end
+
+  -- in hidden buffers
+  for bufnr, vfiler in pairs(vfilers) do
+    if vim.fn.bufwinnr(bufnr) < 0 and vfiler.name == name then
+      return vfiler.object
+    end
+  end
+  return nil -- not found
 end
 
 ---@param bufnr number Buffer number
@@ -129,18 +129,6 @@ function VFiler.new(configs)
   return object
 end
 
-function VFiler.open(configs)
-  local vfiler = find(configs.name)
-  if not vfiler then
-    return nil
-  end
-  if vfiler then
-    vfiler.context:clear()
-    vfiler.view:open()
-  end
-  return vfiler
-end
-
 function VFiler._do_action(bufnr, key)
   local vfiler = VFiler.get(bufnr)
   vfiler:do_action(key)
@@ -179,6 +167,18 @@ function VFiler:link(vfiler)
   vfiler.linked = self
 end
 
+function VFiler:open(...)
+  if self:displayed() then
+    core.window.move(self.view:winnr())
+    return
+  end
+  local direction = ...
+  if direction then
+    core.window.open(direction)
+  end
+  self.view:open()
+end
+
 function VFiler:quit()
   local bufnr = self.view.bufnr
   if bufnr >= 0 then
@@ -189,6 +189,13 @@ function VFiler:quit()
 end
 
 function VFiler:reset(configs)
+  self.linked = nil
+  self.context = Context.new(configs.options)
+  self.view:reset(configs.options)
+
+  mapping.undefine(self.configs.mappings)
+  self._mappings = define_mappings(self.view.bufnr, configs.mappings)
+  self.configs = core.table.copy(configs)
 end
 
 function VFiler:start(dirpath)

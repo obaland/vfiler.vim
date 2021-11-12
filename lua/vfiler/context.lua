@@ -88,6 +88,7 @@ function Context:save(path)
   if not self.root then
     return
   end
+  print('save:', path)
   self._store:save(self.root, path)
 end
 

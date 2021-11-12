@@ -19,8 +19,8 @@ function Clipboard.copy(items)
   return setmetatable({
     hold = true,
     _items = items,
-    _done_format = 'Copied to "%s"',
-    _fail_format = 'Failed to copy "%s"',
+    _done_message_prefix = 'Copied to',
+    _fail_message_prefix = 'Failed to copy',
     _function = copy,
   }, Clipboard)
 end
@@ -29,8 +29,8 @@ function Clipboard.move(items)
   return setmetatable({
     hold = false,
     _items = items,
-    _done_format = 'Moved to "%s"',
-    _fail_format = 'Failed to move "%s"',
+    _done_message_prefix = 'Moved to',
+    _fail_message_prefix = 'Failed to move',
     _function = move,
   }, Clipboard)
 end
@@ -40,7 +40,7 @@ function Clipboard.yank(content)
 end
 
 function Clipboard:paste(dest)
-  local successes = {}
+  local pasted = {}
   for _, item in ipairs(self._items) do
     local destpath = core.path.join(dest.path, item.name)
     if core.path.exists(destpath) then
@@ -52,21 +52,21 @@ function Clipboard:paste(dest)
     local new = self._function(item, destpath)
     if new then
       dest:add(new)
-      table.insert(successes, new)
+      table.insert(pasted, new)
     else
-      core.message.error(self._fail_format, item.name)
+      core.message.error('%s "%s"', self._fail_format, item.name)
     end
 
     ::continue::
   end
 
-  if #successes == 1 then
+  if #pasted == 1 then
     core.message.info(
-      self._done_format .. ' - %s', dest.path, successes[1].name
+      '%s "%s" - %s', self._done_message_prefix, dest.path, pasted[1].name
       )
-  elseif #successes > 1 then
+  elseif #pasted > 1 then
     core.message.info(
-      self._done_format .. ' - %d files', dest.path, #successes
+      '%s "%s" - %d files', self._done_message_prefix, dest.path, #pasted
       )
   else
     return false

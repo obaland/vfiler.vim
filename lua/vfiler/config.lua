@@ -14,6 +14,7 @@ local default_options = {
   split = 'vertical',
   width = 90,
   height = 30,
+  new = false,
 }
 
 M.configs.options = core.table.copy(default_options)

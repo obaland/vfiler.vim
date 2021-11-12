@@ -4,47 +4,6 @@ local vim = require 'vfiler/vim'
 local View = {}
 View.__index = View
 
-local function create_buffer(bufname, listed)
-  -- Save swapfile option
-  local swapfile = vim.get_buf_option_boolean('swapfile')
-  vim.set_local_option('swapfile', false)
-  vim.command('silent edit ' .. bufname)
-  vim.set_local_option('swapfile', swapfile)
-
-  -- Set buffer local options
-  vim.set_local_options {
-    bufhidden = 'hide',
-    buflisted = listed,
-    buftype = 'nofile',
-    filetype = 'vfiler',
-    modifiable = false,
-    modified = false,
-    readonly = false,
-    swapfile = false,
-  }
-
-  -- Set window local options
-  if vim.fn.exists('&colorcolumn') == 1 then
-    vim.set_local_option('colorcolumn', '')
-  end
-  if vim.fn.has('conceal') == 1 then
-    if vim.get_win_option_value('conceallevel') < 2 then
-      vim.set_local_option('conceallevel', 2)
-    end
-    vim.set_local_option('concealcursor', 'nvc')
-  end
-
-  vim.set_local_options {
-    foldcolumn = '0',
-    foldenable = false,
-    list = false,
-    number = false,
-    spell = false,
-    wrap = false,
-  }
-  return vim.fn.bufnr()
-end
-
 local function create_columns(columns)
   local collection = require 'vfiler/columns/collection'
   local objects = {}
@@ -68,29 +27,16 @@ end
 ---@param bufname string
 ---@param options table
 function View.new(bufname, options)
-  local columns = create_columns(options.columns)
-  if not columns then
-    return nil
-  end
-
-  local split = options.split
-  return setmetatable({
-    bufname = bufname,
+  local object = setmetatable({
     bufnr = -1,
-    listed = options.listed,
-    show_hidden_files = options.show_hidden_files,
-    width = (split == 'vertical') and options.width or 0,
-    height = (split == 'horizontal') and options.height or 0,
-    _cache = {
-      winwidth = 0,
-    },
-    _columns = columns,
-    _items = {},
-    }, View)
+    _bufname = bufname,
+  }, View)
+  object:_reset(options)
+  return object
 end
 
 function View:create()
-  self.bufnr = create_buffer(self.bufname, self.listed)
+  self.bufnr = self:_create_buffer()
   self:_apply_syntaxes()
   return self.bufnr
 end
@@ -109,7 +55,7 @@ function View:draw(context)
   -- expand item list
   self._items = {}
   for item in context.root:walk() do
-    if self.show_hidden_files or item.name:sub(1, 1) ~= '.' then
+    if self._show_hidden_files or item.name:sub(1, 1) ~= '.' then
       table.insert(self._items, item)
     end
   end
@@ -135,6 +81,12 @@ function View:indexof(path)
   return 0
 end
 
+function View:move_cursor(path)
+  local lnum = self:indexof(path)
+  -- Skip header line
+  core.cursor.move(math.max(lnum, 2))
+end
+
 function View:num_lines()
   return #self._items
 end
@@ -150,13 +102,12 @@ function View:redraw()
   end
 
   -- resize window size
-  if self.width > 0 then
-    vim.command('vertical resize ' .. self.width)
+  if self._width > 0 then
+    vim.command('vertical resize ' .. self._width)
     vim.set_local_option('winfixwidth', true)
   end
-  if self.height > 0 then
-    print('come', self.height)
-    vim.command('resize ' .. self.height)
+  if self._height > 0 then
+    vim.command('resize ' .. self._height)
     vim.set_local_option('winfixheight', true)
   end
 
@@ -204,6 +155,12 @@ function View:redraw_line(lnum)
   vim.set_local_option('readonly', true)
 end
 
+function View:reset(options)
+  self:_reset(options)
+  self:_apply_syntaxes()
+  vim.set_local_option('buflisted', self._listed)
+end
+
 function View:selected_items()
   local selected = {}
   for _, item in ipairs(self._items) do
@@ -247,6 +204,47 @@ function View:_apply_syntaxes()
   vim.commands(highlights)
 end
 
+function View:_create_buffer()
+  -- Save swapfile option
+  local swapfile = vim.get_buf_option_boolean('swapfile')
+  vim.set_local_option('swapfile', false)
+  vim.command('silent edit ' .. self._bufname)
+  vim.set_local_option('swapfile', swapfile)
+
+  -- Set buffer local options
+  vim.set_local_options {
+    bufhidden = 'hide',
+    buflisted = self._listed,
+    buftype = 'nofile',
+    filetype = 'vfiler',
+    modifiable = false,
+    modified = false,
+    readonly = false,
+    swapfile = false,
+  }
+
+  -- Set window local options
+  if vim.fn.exists('&colorcolumn') == 1 then
+    vim.set_local_option('colorcolumn', '')
+  end
+  if vim.fn.has('conceal') == 1 then
+    if vim.get_win_option_value('conceallevel') < 2 then
+      vim.set_local_option('conceallevel', 2)
+    end
+    vim.set_local_option('concealcursor', 'nvc')
+  end
+
+  vim.set_local_options {
+    foldcolumn = '0',
+    foldenable = false,
+    list = false,
+    number = false,
+    spell = false,
+    wrap = false,
+  }
+  return vim.fn.bufnr()
+end
+
 function View:_create_column_props(winwidth)
   local props = {}
   local variable_columns = {}
@@ -282,6 +280,23 @@ function View:_create_column_props(winwidth)
     prop.cumulative_width = cumulative_width
   end
   return props
+end
+
+function View:_reset(options)
+  local columns = create_columns(options.columns)
+  if not columns then
+    return nil
+  end
+
+  local split = options.split
+  self._width = (split == 'vertical') and options.width or 0
+  self._height = (split == 'horizontal') and options.height or 0
+  self._listed = options.listed
+  self._show_hidden_files = options.show_hidden_files
+  self._cache = {
+    winwidth = 0,
+  }
+  self._columns = columns
 end
 
 ---@param item table

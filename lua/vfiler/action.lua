@@ -24,9 +24,7 @@ local function cd(context, view, dirpath)
   end
   local path = context:switch(dirpath)
   view:draw(context)
-
-  -- Skip header line
-  core.cursor.move(math.max(view:indexof(path), 2))
+  view:move_cursor(path)
 end
 
 local function create_files(dest, contents, create)
@@ -136,7 +134,18 @@ local function choose_window()
   return key == '<ESC>' and nil or winkeys[key]
 end
 
-local function open_by_choose(item)
+local function open_directory(context, view, item, direction)
+  if direction == 'edit' or direction == 'choose'then
+    cd(context, view, item.path)
+    return
+  end
+
+  local vfiler = VFiler.get_current()
+  core.window.open(direction)
+  M.start(item.path, vfiler.configs)
+end
+
+local function open_file_by_choose(item)
   local winnr = choose_window()
   if not winnr then
     return
@@ -148,6 +157,14 @@ local function open_by_choose(item)
   end
 end
 
+local function open_file(item, direction)
+  if direction == 'choose' then
+    open_file_by_choose(item)
+  else
+    core.window.open(direction, item.path)
+  end
+end
+
 local function open(context, view, direction)
   local item = view:get_current()
   if not item then
@@ -155,18 +172,10 @@ local function open(context, view, direction)
     return
   end
 
-  if not item.isdirectory then
-    if direction == 'choose' then
-      open_by_choose(item)
-    else
-      core.window.open(direction, item.path)
-    end
-  elseif direction == 'edit' or direction == 'choose'then
-    cd(context, view, item.path)
+  if item.isdirectory then
+    open_directory(context, view, item, direction)
   else
-    local vfiler = VFiler.get_current()
-    core.window.open(direction)
-    M.start(item.path, vfiler.configs)
+    open_file(item, direction)
   end
 end
 
@@ -249,14 +258,15 @@ function M.define(name, func)
 end
 
 function M.start(dirpath, configs)
-  local split = configs.options.split
-  if split ~= 'none' then
-    core.window.open(split)
+  local options = configs.options
+  local vfiler = VFiler.find(options.name)
+  if vfiler then
+    vfiler:open()
+    vfiler:reset(configs)
+  else
+    vfiler = VFiler.new(configs)
   end
-
-  local vfiler = VFiler.new(configs)
-  cd(vfiler.context, vfiler.view, dirpath)
-  core.cursor.move(2)
+  vfiler:start(dirpath)
 end
 
 function M.undefine(name)
@@ -280,16 +290,15 @@ function M.close_tree(context, view)
 
   target:close()
   view:draw(context)
-
-  -- Skip header line
-  core.cursor.move(math.max(view:indexof(target.path), 2))
+  view:move_cursor(target.path)
 end
 
 function M.close_tree_or_cd(context, view)
   local item = view:get_current()
   if item.level <= 1 and not item.opened then
-    local path = context.root:parent_path()
-    cd(context, view, path)
+    local path = context.root.path
+    cd(context, view, context.root:parent_path())
+    view:move_cursor(path)
   else
     M.close_tree(context, view)
   end
@@ -309,9 +318,7 @@ function M.change_sort(context, view)
 
         context:change_sort(sort_type)
         view:draw(context)
-
-        -- Skip header line
-        core.cursor.move(math.max(view:indexof(item.path), 2))
+        view:move_cursor(item.path)
       end
     end,
 
@@ -358,9 +365,9 @@ function M.copy_to_filer(context, view)
   -- Copy to linked filer
   local cb = Clipboard.copy(selected)
   cb:paste(linked.context.root)
-  linked.view:open()
+  linked:open()
   M.redraw(linked.context, linked.view)
-  current.view:open() -- Return to current
+  current:open() -- Return to current
 end
 
 function M.delete(context, view)
@@ -503,9 +510,9 @@ function M.move_to_filer(context, view)
   -- Move to linked filer
   local cb = Clipboard.move(selected)
   cb:paste(linked.context.root)
-  linked.view:open()
+  linked:open()
   M.redraw(linked.context, linked.view)
-  current.view:open()
+  current:open()
   M.redraw(current.context, current.view)
 end
 
@@ -641,8 +648,7 @@ function M.switch_to_drive(context, view)
       context:save(view:get_current().path)
       local path = context:switch_drive(drive)
       view:draw(context)
-      -- Skip header line
-      core.cursor.move(math.max(view:indexof(path), 2))
+      view:move_cursor(path)
     end,
     on_quit = function()
       context.extension = nil
@@ -658,19 +664,29 @@ function M.switch_to_filer(context, view)
   local linked = current.linked
   -- already linked
   if linked then
-    linked.view:open('right')
+    linked:open('right')
     return
   end
 
+  local lnum = vim.fn.line('.')
   core.window.open('right')
-  local filer = VFiler.new(current.configs)
-  cd(filer.context, filer.view, context.root.path)
+  local filer = VFiler.find(current.configs.name)
+  if filer then
+    filer:open()
+    filer:reset(current.configs)
+  else
+    filer = VFiler.new(current.configs)
+  end
   filer:link(current)
+  filer.context:sync(current.context)
+  filer.view:draw(filer.context)
+  core.cursor.move(lnum)
 
   -- redraw current
-  current.view:open()
-  M.redraw(current.context, current.view)
-  filer.view:open()
+  current:open()
+  view:draw(context)
+
+  filer:open() -- return other filer
 end
 
 function M.sync_with_current_filer(context, view)

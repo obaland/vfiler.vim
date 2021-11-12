@@ -83,16 +83,16 @@ function M.start(...)
 
   VFiler.cleanup()
 
-  -- split window
-  local split = configs.options.split
-  if split ~= 'none' then
-    core.window.open(split)
+  local options = configs.options
+  local vfiler = VFiler.find(options.name)
+  if not (vfiler and vfiler:displayed()) then
+    -- split window
+    local split = options.split
+    if split ~= 'none' then
+      core.window.open(split)
+    end
   end
-
-  -- TODO: open
-
-  local vfiler = VFiler.new(configs)
-  vfiler:start(dirpath)
+  action.start(dirpath, configs)
   return true
 end
 
