@@ -89,10 +89,10 @@ function M.start(...)
     core.window.open(split)
   end
 
-  local vfiler = VFiler.open(configs)
-  vfiler.context:switch(dirpath)
-  vfiler.view:draw(vfiler.context)
-  core.cursor.move(2)
+  -- TODO: open
+
+  local vfiler = VFiler.new(configs)
+  vfiler:start(dirpath)
   return true
 end
 

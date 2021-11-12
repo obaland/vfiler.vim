@@ -4,7 +4,7 @@ local vim = require 'vfiler/vim'
 local View = {}
 View.__index = View
 
-local function create_buffer(bufname, options)
+local function create_buffer(bufname, listed)
   -- Save swapfile option
   local swapfile = vim.get_buf_option_boolean('swapfile')
   vim.set_local_option('swapfile', false)
@@ -14,7 +14,7 @@ local function create_buffer(bufname, options)
   -- Set buffer local options
   vim.set_local_options {
     bufhidden = 'hide',
-    buflisted = options.listed,
+    buflisted = listed,
     buftype = 'nofile',
     filetype = 'vfiler',
     modifiable = false,
@@ -74,21 +74,25 @@ function View.new(bufname, options)
   end
 
   local split = options.split
-  local bufnr = create_buffer(bufname, options)
-  local object = setmetatable({
+  return setmetatable({
     bufname = bufname,
-    bufnr = bufnr,
+    bufnr = -1,
+    listed = options.listed,
     show_hidden_files = options.show_hidden_files,
-    width = split == 'vertical' and options.width or 0,
-    height = split == 'horizontal' and options.height or 0,
+    width = (split == 'vertical') and options.width or 0,
+    height = (split == 'horizontal') and options.height or 0,
     _cache = {
       winwidth = 0,
     },
     _columns = columns,
     _items = {},
     }, View)
-  object:_apply_syntaxes()
-  return object
+end
+
+function View:create()
+  self.bufnr = create_buffer(self.bufname, self.listed)
+  self:_apply_syntaxes()
+  return self.bufnr
 end
 
 ---Delete view object
@@ -99,16 +103,16 @@ function View:delete()
   self.bufnr = -1
 end
 
-function View:displayed()
-  return self:winnr() >= 0
-end
-
 ---Draw context contents
 ---@param context table
 function View:draw(context)
   -- expand item list
-  self._items = context.root:walk(self.show_hidden_files)
-  table.insert(self._items, 1, context.root) -- header
+  self._items = {}
+  for item in context.root:walk() do
+    if self.show_hidden_files or item.name:sub(1, 1) ~= '.' then
+      table.insert(self._items, item)
+    end
+  end
   self:redraw()
 end
 
@@ -135,17 +139,7 @@ function View:num_lines()
   return #self._items
 end
 
-function View:open(...)
-  local direction = ...
-  local winnr = self:winnr()
-  if winnr > 0 then
-    core.window.move(winnr)
-    return
-  end
-
-  if direction then
-    core.window.open(direction)
-  end
+function View:open()
   vim.command('silent buffer ' .. self.bufnr)
 end
 

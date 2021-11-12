@@ -96,16 +96,17 @@ function VFiler.new(configs)
   local options = configs.options
   local bufname, name, number = generate_name(options.name)
   local view = View.new(bufname, options)
+  local bufnr = view:create()
 
   -- key mappings
   local mappings = mapping.define(
-    view.bufnr, configs.mappings,
+    bufnr, configs.mappings,
     [[require('vfiler/vfiler')._do_action]]
     )
 
   -- register events
   event.register(
-    'vfiler', view.bufnr, configs.events,
+    'vfiler', bufnr, configs.events,
     [[require('vfiler/vfiler')._handle_event]]
     )
 
@@ -113,13 +114,12 @@ function VFiler.new(configs)
     configs = core.table.copy(configs),
     context = Context.new(options),
     linked = nil,
-    mappings = mappings,
-    options = core.table.copy(options),
     view = view,
+    _mappings = mappings,
   }, VFiler)
 
   -- add vfiler resource
-  vfilers[view.bufnr] = {
+  vfilers[bufnr] = {
     object = object,
     name = name,
     number = number,
@@ -148,8 +148,12 @@ function VFiler._handle_event(bufnr, type)
   vfiler:handle_event(type)
 end
 
+function VFiler:displayed()
+  return self.view:winnr() >= 0
+end
+
 function VFiler:do_action(key)
-  local func = self.mappings[key]
+  local func = self._mappings[key]
   if not func then
     core.message.error('Not defined in the key')
     return
@@ -177,6 +181,12 @@ function VFiler:quit()
   self.view:delete()
   self:unlink()
   vfilers[bufnr] = nil
+end
+
+function VFiler:start(dirpath)
+  self.context:switch(dirpath)
+  self.view:draw(self.context)
+  core.cursor.move(2)
 end
 
 function VFiler:unlink()

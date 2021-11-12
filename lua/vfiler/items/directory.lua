@@ -114,10 +114,18 @@ function Directory:sort(type, recursive)
   end
 end
 
-function Directory:walk(include_hidden)
-  local items = {}
-  self:_walk(items, include_hidden)
-  return items
+function Directory:walk()
+  local function _walk(item)
+    coroutine.yield(item)
+    if item.children then
+      for _, child in ipairs(item.children) do
+        _walk(child)
+      end
+    end
+  end
+  return coroutine.wrap(function()
+    _walk(self)
+  end)
 end
 
 function Directory:_add(item)
@@ -150,51 +158,34 @@ function Directory:_expand(names)
 end
 
 function Directory:_ls()
-  local items = {}
-
   local paths = vim.from_vimlist(
     vim.fn.glob(core.path.join(self.path, '/*'), 1, 1)
     )
-  for _, path in ipairs(paths) do
-    local item = create_item(path, self.sort_type)
-    if item then
-      table.insert(items, item)
-    end
-  end
 
+  -- extend hidden paths
   local dotpaths = vim.from_vimlist(
     vim.fn.glob(core.path.join(self.path, '/.*'), 1, 1)
     )
   for _, dotpath in ipairs(dotpaths) do
     local dotfile = vim.fn.fnamemodify(dotpath, ':t')
     if not (dotfile == '.' or dotfile == '..') then
-      local item = create_item(dotpath, self.sort_type)
-      if item then
-        table.insert(items, item)
-      end
+      table.insert(paths, dotpath)
     end
   end
 
   local index = 0
 
   return function()
-    index = index + 1
-    return items[index]
-  end
-end
-
-function Directory:_walk(items, include_hidden)
-  if not self.children then
-    return
-  end
-  for _, child in ipairs(self.children) do
-    local hidden = child.name:sub(1, 1) == '.'
-    if include_hidden or not hidden then
-      table.insert(items, child)
-      if child.isdirectory then
-        child:_walk(items)
+    local item = nil
+    repeat
+      index = index + 1
+      local path = paths[index]
+      if not path then
+        break
       end
-    end
+      item = create_item(path, self.sort_type)
+    until item
+    return item
   end
 end
 
