@@ -41,6 +41,11 @@ function M.set_buf_keymap(mode, lhs, rhs, opts)
   vim.api.nvim_buf_set_keymap(0, mode, lhs, rhs, opts)
 end
 
+M.del_keymap = vim.api.nvim_del_keymap
+function M.del_buf_keymap(mode, lhs)
+  vim.api.nvim_buf_del_keymap(0, mode, lhs)
+end
+
 ------------------------------------------------------------------------------
 -- Lua data to Vim data
 ------------------------------------------------------------------------------

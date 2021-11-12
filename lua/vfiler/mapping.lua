@@ -30,4 +30,10 @@ function M.define(bufnr, mappings, funcstr)
   return keymaps
 end
 
+function M.undefine(mappings)
+  for key, _ in pairs(mappings) do
+    vim.del_buf_keymap('n', key)
+  end
+end
+
 return M

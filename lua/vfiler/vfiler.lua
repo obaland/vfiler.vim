@@ -34,6 +34,18 @@ local function find(name)
   return nil -- not found
 end
 
+local function define_mappings(bufnr, mappings)
+  return mapping.define(
+    bufnr, mappings, [[require('vfiler/vfiler')._do_action]]
+    )
+end
+
+local function register_events(bufnr, events)
+  event.register(
+    'vfiler', bufnr, events, [[require('vfiler/vfiler')._handle_event]]
+    )
+end
+
 local function generate_name(name)
   local bufname = BUFNAME_PREFIX
   if #name > 0 then
@@ -98,24 +110,14 @@ function VFiler.new(configs)
   local view = View.new(bufname, options)
   local bufnr = view:create()
 
-  -- key mappings
-  local mappings = mapping.define(
-    bufnr, configs.mappings,
-    [[require('vfiler/vfiler')._do_action]]
-    )
-
-  -- register events
-  event.register(
-    'vfiler', bufnr, configs.events,
-    [[require('vfiler/vfiler')._handle_event]]
-    )
+  register_events(bufnr, configs.events)
 
   local object = setmetatable({
     configs = core.table.copy(configs),
     context = Context.new(options),
     linked = nil,
     view = view,
-    _mappings = mappings,
+    _mappings = define_mappings(bufnr, configs.mappings),
   }, VFiler)
 
   -- add vfiler resource
@@ -129,11 +131,12 @@ end
 
 function VFiler.open(configs)
   local vfiler = find(configs.name)
+  if not vfiler then
+    return nil
+  end
   if vfiler then
     vfiler.context:clear()
     vfiler.view:open()
-  else
-    vfiler = VFiler.new(configs)
   end
   return vfiler
 end
@@ -178,9 +181,14 @@ end
 
 function VFiler:quit()
   local bufnr = self.view.bufnr
-  self.view:delete()
-  self:unlink()
-  vfilers[bufnr] = nil
+  if bufnr >= 0 then
+    self.view:delete()
+    self:unlink()
+    vfilers[bufnr] = nil
+  end
+end
+
+function VFiler:reset(configs)
 end
 
 function VFiler:start(dirpath)

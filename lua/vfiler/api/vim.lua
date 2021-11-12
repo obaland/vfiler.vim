@@ -65,6 +65,19 @@ local function set_keymap(mode, lhs, rhs, opts)
   vim.command(string.format('%s %s %s %s', command, args, lhs, rhs))
 end
 
+local function del_keymap(mode, lhs, buffer)
+  local command
+  if mode == '!' then
+    command = 'map!'
+  else
+    command = mode .. 'map'
+  end
+  if buffer then
+    command = command .. ' <buffer>'
+  end
+  vim.command(command .. ' ' .. lhs)
+end
+
 function M.set_keymap(mode, lhs, rhs, opts)
   opts._buffer = false
   set_keymap(mode, lhs, rhs, opts)
@@ -72,6 +85,13 @@ end
 function M.set_buf_keymap(mode, lhs, rhs, opts)
   opts._buffer = true
   set_keymap(mode, lhs, rhs, opts)
+end
+
+function M.del_keymap(mode, lhs)
+  del_keymap(mode, lhs)
+end
+function M.del_buf_keymap(mode, lhs)
+  del_keymap(mode, lhs, '<buffer>')
 end
 
 ------------------------------------------------------------------------------
