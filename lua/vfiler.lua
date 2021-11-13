@@ -89,21 +89,12 @@ function M.start(...)
   -- Split window
   local split = options.split
   if split ~= 'none' then
-    local direction
-    if split == 'horizontal' then
-      direction = 'top'
-    elseif split == 'vertical' then
-      direction = 'left'
-    else
-      core.message.error('Illegal "%s" split option.', split)
-      return false
-    end
-
     vfiler = VFiler.find_hidden(options.name)
     if options.new or not vfiler then
+      core.window.open(split)
       vfiler = VFiler.new(configs)
     else
-      vfiler:open(direction)
+      vfiler:open(split)
       vfiler:reset(configs)
     end
   else

@@ -6,10 +6,6 @@ local vim = require 'vfiler/vim'
 local Context = require 'vfiler/context'
 local View = require 'vfiler/view'
 
-local BUFNAME_PREFIX = 'vfiler'
-local BUFNAME_SEPARATOR = '-'
-local BUFNUMBER_SEPARATOR = ':'
-
 local vfilers = {}
 
 local VFiler = {}
@@ -28,9 +24,9 @@ local function register_events(bufnr, events)
 end
 
 local function generate_name(name)
-  local bufname = BUFNAME_PREFIX
+  local bufname = 'vfiler'
   if #name > 0 then
-    bufname = bufname .. BUFNAME_SEPARATOR .. name
+    bufname = bufname .. ':' .. name
   end
 
   local maxnr = -1
@@ -43,7 +39,7 @@ local function generate_name(name)
   local number = 0
   if maxnr >= 0 then
     number = maxnr + 1
-    bufname = bufname .. BUFNUMBER_SEPARATOR .. tostring(number)
+    bufname = bufname .. ':' .. tostring(number)
   end
   return bufname, name, number
 end
@@ -78,7 +74,6 @@ function VFiler.find_hidden(name)
   -- in hidden buffers
   for bufnr, vfiler in pairs(vfilers) do
     local info = vim.fn.getbufinfo(bufnr)
-    print(info.hidden)
     if (vfiler.name == name) then
       return vfiler.object
     end
@@ -201,8 +196,10 @@ function VFiler:reset(configs)
   self.context = Context.new(configs.options)
   self.view:reset(configs.options)
 
+  -- reset keymapping
   mapping.undefine(self.configs.mappings)
   self._mappings = define_mappings(self.view.bufnr, configs.mappings)
+
   self.configs = core.table.copy(configs)
 end
 

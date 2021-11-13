@@ -30,6 +30,18 @@ function View.new(bufname, options)
   local object = setmetatable({
     bufnr = -1,
     _bufname = bufname,
+    _winoptions = {
+      colorcolumn = '',
+      concealcursor = 'nvc',
+      conceallevel = 2,
+      foldcolumn = 0,
+      foldenable = false,
+      list = false,
+      number = false,
+      relativenumber = false,
+      spell = false,
+      wrap = false,
+    },
   }, View)
   object:_reset(options)
   return object
@@ -84,7 +96,7 @@ end
 function View:move_cursor(path)
   local lnum = self:indexof(path)
   -- Skip header line
-  core.cursor.move(math.max(lnum, 2))
+  core.cursor.move(math.max(lnum, self:top_lnum()))
 end
 
 function View:num_lines()
@@ -96,6 +108,10 @@ function View:open()
 end
 
 function View:redraw()
+  if self.bufnr ~= vim.fn.bufnr() then
+    core.message.warning('Cannot draw because the buffer is different.')
+    return
+  end
   local winnr = self:winnr()
   if winnr < 0 then
     core.message.warning(
@@ -104,23 +120,21 @@ function View:redraw()
     return
   end
 
+  -- set window options
+  vim.set_win_options(winnr, self._winoptions)
+
   -- resize window size
   if self._width > 0 then
-    vim.command('vertical resize ' .. self._width)
-    vim.set_local_option('winfixwidth', true)
+    print('width:', self._width)
+    core.window.resize_width(self._width)
+    vim.set_win_option(winnr, 'winfixwidth', true)
   end
   if self._height > 0 then
-    vim.command('resize ' .. self._height)
-    vim.set_local_option('winfixheight', true)
+    core.window.resize_height(self._height)
+    vim.set_win_option(winnr, 'winfixheight', true)
   end
 
-  local winwidth = vim.fn.winwidth(0) - 1 -- padding end
-  if vim.get_win_option_boolean('number') or
-    vim.get_win_option_boolean('relativenumber') then
-    winwidth = winwidth - vim.get_win_option_value('numberwidth')
-  end
-  winwidth = winwidth - vim.get_win_option_value('foldcolumn')
-
+  local winwidth = vim.fn.winwidth(winnr) - 1 -- padding end
   local cache = self._cache
   if cache.winwidth ~= winwidth or (not cache.column_props) then
     cache.column_props = self:_create_column_props(winwidth)
@@ -136,12 +150,12 @@ function View:redraw()
   -- set buffer lines
   local saved_view = vim.fn.winsaveview()
 
-  vim.set_local_option('modifiable', true)
-  vim.set_local_option('readonly', false)
+  vim.set_buf_option(self.bufnr, 'modifiable', true)
+  vim.set_buf_option(self.bufnr, 'readonly', false)
   vim.command('silent %delete _')
-  vim.fn.setline(1, vim.to_vimlist(lines))
-  vim.set_local_option('modifiable', false)
-  vim.set_local_option('readonly', true)
+  vim.fn.setbufline(self.bufnr, 1, vim.to_vimlist(lines))
+  vim.set_buf_option(self.bufnr, 'modifiable', false)
+  vim.set_buf_option(self.bufnr, 'readonly', true)
 
   vim.fn.winrestview(saved_view)
 end
@@ -161,7 +175,7 @@ end
 function View:reset(options)
   self:_reset(options)
   self:_apply_syntaxes()
-  vim.set_local_option('buflisted', self._listed)
+  vim.set_buf_option(self.bufnr, 'buflisted', self._listed)
 end
 
 function View:selected_items()
@@ -178,6 +192,10 @@ function View:selected_items()
     end
   end
   return selected
+end
+
+function View:top_lnum()
+  return self._header and 2 or 1
 end
 
 function View:winnr()
@@ -209,13 +227,15 @@ end
 
 function View:_create_buffer()
   -- Save swapfile option
-  local swapfile = vim.get_buf_option_boolean('swapfile')
-  vim.set_local_option('swapfile', false)
+  local swapfile = vim.get_option_boolean('swapfile')
+  vim.set_option('swapfile', false)
   vim.command('silent edit ' .. self._bufname)
-  vim.set_local_option('swapfile', swapfile)
+  vim.set_option('swapfile', swapfile)
+
+  local bufnr = vim.fn.bufnr()
 
   -- Set buffer local options
-  vim.set_local_options {
+  vim.set_buf_options(bufnr, {
     bufhidden = 'hide',
     buflisted = self._listed,
     buftype = 'nofile',
@@ -224,30 +244,8 @@ function View:_create_buffer()
     modified = false,
     readonly = false,
     swapfile = false,
-  }
-
-  print(vim.get_win_option(vim.fn.winnr(), 'number'))
-
-  -- Set window local options
-  if vim.fn.exists('&colorcolumn') == 1 then
-    vim.set_local_option('colorcolumn', '')
-  end
-  if vim.fn.has('conceal') == 1 then
-    if vim.get_win_option_value('conceallevel') < 2 then
-      vim.set_local_option('conceallevel', 2)
-    end
-    vim.set_local_option('concealcursor', 'nvc')
-  end
-
-  vim.set_local_options {
-    foldcolumn = '0',
-    foldenable = false,
-    list = false,
-    number = false,
-    spell = false,
-    wrap = false,
-  }
-  return vim.fn.bufnr()
+  })
+  return bufnr
 end
 
 function View:_create_column_props(winwidth)
@@ -294,6 +292,7 @@ function View:_reset(options)
   end
 
   local split = options.split
+  self._header = options.header
   self._width = (split == 'vertical') and options.width or 0
   self._height = (split == 'horizontal') and options.height or 0
   self._listed = options.listed

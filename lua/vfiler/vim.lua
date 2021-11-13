@@ -11,29 +11,45 @@ end
 ------------------------------------------------------------------------------
 
 function M.get_buf_option(buffer, name)
-  return vim.fn.getbufvar(buffer, '&' .. name)
+  return M.fn.getbufvar(buffer, '&' .. name)
 end
 function M.get_buf_option_boolean(buffer, name)
   return M.get_buf_option(buffer, name) == 1
 end
 function M.get_win_option(window, name)
-  return vim.fn.getwinvar(window, '&' .. name)
+  return M.fn.getwinvar(window, '&' .. name)
 end
 function M.get_win_option_boolean(window, name)
-  return vim.fn.get_win_option(window, name) == 1
+  return M.fn.get_win_option(window, name) == 1
+end
+
+local function set_option_command(command, name, value)
+  local option = ''
+  if type(value) == 'boolean' then
+    option = value and name or 'no' .. name
+  else
+    option = ('%s=%s'):format(name, M.fn.escape(value, ' '))
+  end
+  return command .. ' ' .. option
 end
 
 function M.set_option(name, value)
-  set_option_command('set', name, value)
+  M.command(set_option_command('set', name, value))
 end
 function M.set_global_option(name, value)
-  set_option_command('setglobal', name, value)
+  M.command(set_option_command('setglobal', name, value))
 end
 function M.set_buf_option(buffer, name, value)
-  vim.fn.setbufvar(buffer, '&' .. name, value)
+  if type(value) == 'boolean' then
+    value = value and 1 or 0
+  end
+  M.fn.setbufvar(buffer, '&' .. name, value)
 end
 function M.set_win_option(window, name, value)
-  vim.fn.setwinvar(window, '&' .. name, value)
+  if type(value) == 'boolean' then
+    value = value and 1 or 0
+  end
+  M.fn.setwinvar(window, '&' .. name, value)
 end
 
 function M.set_global_options(options)

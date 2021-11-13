@@ -134,13 +134,14 @@ local function choose_window()
   return key == '<ESC>' and nil or winkeys[key]
 end
 
--- TODO:
-
-local function open_directory(context, view, item, direction)
-  if direction == 'edit' then
-    cd(context, view, item.path)
+local function open(context, view, direction)
+  local item = view:get_current()
+  if not item then
+    core.message.warning('Item does not exist.')
     return
-  elseif direction == 'choose' then
+  end
+
+  if direction == 'choose' then
     local winnr = choose_window()
     if not winnr then
       return
@@ -149,52 +150,28 @@ local function open_directory(context, view, item, direction)
     else
       core.window.move(winnr)
     end
-  else
-    core.window.open(direction)
-  end
-
-  local current = VFiler.get_current()
-  local vfiler = VFiler.find_hidden(current.configs.options.name)
-  print(vfiler)
-  if vfiler then
-    vfiler:reset(current.configs)
-  else
-    vfiler = VFiler.new(current.configs)
-  end
-  vfiler:start(item.path)
-end
-
-local function open_file_by_choose(item)
-  local winnr = choose_window()
-  if not winnr then
-    return
-  elseif winnr < 0 then
-    core.window.open('right', item.path)
-  else
-    core.window.move(winnr)
-    core.window.open('edit', item.path)
-  end
-end
-
-local function open_file(item, direction)
-  if direction == 'choose' then
-    open_file_by_choose(item)
-  else
-    core.window.open(direction, item.path)
-  end
-end
-
-local function open(context, view, direction)
-  local item = view:get_current()
-  if not item then
-    core.message.warning('Item does not exist.')
-    return
   end
 
   if item.isdirectory then
-    open_directory(context, view, item, direction)
+    if direction == 'edit' then
+      cd(context, view, item.path)
+    else
+      local current = VFiler.get_current()
+      local name = current.configs.options.name
+      local vfiler = VFiler.find_hidden(name)
+      if vfiler then
+        vfiler:open()
+        vfiler:reset(current.configs)
+      else
+        vfiler = VFiler.new(current.configs)
+      end
+      vfiler:start(item.path)
+    end
   else
-    open_file(item, direction)
+    if direction == 'choose' then
+      direction = 'edit'
+    end
+    core.window.open(direction, item.path)
   end
 end
 
@@ -466,15 +443,14 @@ function M.loop_cursor_down(context, view)
   local lnum = vim.fn.line('.') + 1
   local num_end = view:num_lines()
   if lnum > num_end then
-    -- the meaning of "2" is to skip the header line
-    lnum = 2
+    lnum = view:top_lnum()
   end
   core.cursor.move(lnum)
 end
 
 function M.loop_cursor_up(context, view, loop)
   local lnum = vim.fn.line('.') - 1
-  if lnum <= 1 then
+  if lnum <= view:top_lnum() then
     lnum = view:num_lines()
   end
   core.cursor.move(lnum)
@@ -504,12 +480,11 @@ function M.move_cursor_down(context, view)
 end
 
 function M.move_cursor_top(context, view)
-  core.cursor.move(2)
+  core.cursor.move(view:top_lnum())
 end
 
 function M.move_cursor_up(context, view)
-  -- the meaning of "2" is to skip the header line
-  local lnum = math.max(2, vim.fn.line('.') - 1)
+  local lnum = math.max(view:top_lnum(), vim.fn.line('.') - 1)
   core.cursor.move(lnum)
 end
 
@@ -720,8 +695,8 @@ function M.sync_with_current_filer(context, view)
     return
   end
 
-  linked.context:sync(current.context)
   linked:focus()
+  linked.context:sync(current.context)
   linked:draw()
   current:focus() -- return current window
 end

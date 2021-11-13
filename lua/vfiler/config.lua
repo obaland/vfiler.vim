@@ -7,6 +7,7 @@ M.configs = {}
 local default_options = {
   auto_cd = true,
   columns = 'indent,icon,name,mode,size,time',
+  header = true,
   listed = true,
   name = 'test',
   show_hidden_files = false,
