@@ -35,6 +35,11 @@ function Store.new()
   }, Store)
 end
 
+function Store:copy(store)
+  self._drives = core.table.copy(store._drives)
+  self._dirpaths = core.table.copy(store._dirpaths)
+end
+
 function Store:save(root, path)
   local drive = root:root()
   self._drives[drive] = root.path
@@ -98,6 +103,11 @@ function Context:change_sort(type)
   end
   self.root:sort(type, true)
   self.sort_type = type
+end
+
+function Context:duplicate(context)
+  self._store:copy(context._store)
+  self:switch(context.root.path)
 end
 
 -- @param path string

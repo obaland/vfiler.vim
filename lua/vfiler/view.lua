@@ -96,8 +96,11 @@ function View:open()
 end
 
 function View:redraw()
-  if self.bufnr ~= vim.fn.bufnr() then
-    core.message.warning('Cannot draw because the buffer is different.')
+  local winnr = self:winnr()
+  if winnr < 0 then
+    core.message.warning(
+      'Cannot draw because the buffer is not displayed in the window.'
+      )
     return
   end
 
@@ -222,6 +225,8 @@ function View:_create_buffer()
     readonly = false,
     swapfile = false,
   }
+
+  print(vim.get_win_option(vim.fn.winnr(), 'number'))
 
   -- Set window local options
   if vim.fn.exists('&colorcolumn') == 1 then

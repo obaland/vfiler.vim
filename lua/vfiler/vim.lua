@@ -9,75 +9,57 @@ end
 ------------------------------------------------------------------------------
 -- Set options
 ------------------------------------------------------------------------------
-local function set_option_command(command, name, value)
-  local option = ''
-  if type(value) == 'boolean' then
-    option = value and name or 'no' .. name
-  else
-    option = ('%s=%s'):format(name, M.fn.escape(value, ' '))
-  end
-  return command .. ' ' .. option
-end
 
-function M.set_global_option_command(name, value)
-  return set_option_command('setglobal', name, value)
+function M.get_buf_option(buffer, name)
+  return vim.fn.getbufvar(buffer, '&' .. name)
 end
-
-function M.set_option_command(name, value)
-  return set_option_command('set', name, value)
+function M.get_buf_option_boolean(buffer, name)
+  return M.get_buf_option(buffer, name) == 1
 end
-
-function M.set_local_option_command(name, value)
-  return set_option_command('setlocal', name, value)
+function M.get_win_option(window, name)
+  return vim.fn.getwinvar(window, '&' .. name)
 end
-
-function M.set_global_option(name, value)
-  M.command(M.set_global_option_command(name, value))
+function M.get_win_option_boolean(window, name)
+  return vim.fn.get_win_option(window, name) == 1
 end
 
 function M.set_option(name, value)
-  M.command(M.set_option_command(name, value))
+  set_option_command('set', name, value)
 end
-
-function M.set_local_option(name, value)
-  M.command(M.set_local_option_command(name, value))
+function M.set_global_option(name, value)
+  set_option_command('setglobal', name, value)
 end
-
-function M.set_global_option_commands(options)
-  local commands = {}
-  for key, value in pairs(options) do
-    table.insert(commands, M.set_global_option_command(key, value))
-  end
-  return commands
+function M.set_buf_option(buffer, name, value)
+  vim.fn.setbufvar(buffer, '&' .. name, value)
 end
-
-function M.set_option_commands(options)
-  local commands = {}
-  for key, value in pairs(options) do
-    table.insert(commands, M.set_option_command(key, value))
-  end
-  return commands
-end
-
-function M.set_local_option_commands(options)
-  local commands = {}
-  for key, value in pairs(options) do
-    table.insert(commands, M.set_local_option_command(key, value))
-  end
-  return commands
+function M.set_win_option(window, name, value)
+  vim.fn.setwinvar(window, '&' .. name, value)
 end
 
 function M.set_global_options(options)
-  M.commands(M.set_global_option_commands(options))
+  for name, value in pairs(options) do
+    M.set_global_option(name, value)
+  end
 end
-
 function M.set_options(options)
-  M.commands(M.set_option_commands(options))
+  for name, value in pairs(options) do
+    M.set_option(name, value)
+  end
+end
+function M.set_buf_options(buffer, options)
+  for name, value in pairs(options) do
+    M.set_buf_option(buffer, name, value)
+  end
+end
+function M.set_win_options(window, options)
+  for name, value in pairs(options) do
+    M.set_win_option(window, name, value)
+  end
 end
 
-function M.set_local_options(options)
-  M.commands(M.set_local_option_commands(options))
-end
+------------------------------------------------------------------------------
+-- Utilities
+------------------------------------------------------------------------------
 
 function M.commands(cmds)
   M.command(table.concat(cmds, ' | '))

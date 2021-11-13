@@ -65,16 +65,21 @@ end
 ---@param name string
 function VFiler.find(name)
   -- in tabpage
-  for winnr = 1, vim.fn.winnr('$') do
-    local vfiler = vfilers[vim.fn.winbufnr(winnr)]
-    if vfiler and vfiler.name == name then
+  for bufnr, vfiler in pairs(vfilers) do
+    if vfiler.name == name and vim.fn.winnr(bufnr) >= 0 then
       return vfiler.object
     end
   end
+  return VFiler.find_hidden(name)
+end
 
+---@param name string
+function VFiler.find_hidden(name)
   -- in hidden buffers
   for bufnr, vfiler in pairs(vfilers) do
-    if vim.fn.bufwinnr(bufnr) < 0 and vfiler.name == name then
+    local info = vim.fn.getbufinfo(bufnr)
+    print(info.hidden)
+    if (vfiler.name == name) then
       return vfiler.object
     end
   end
@@ -92,12 +97,9 @@ end
 
 function VFiler.get_displays()
   local filers = {}
-  -- in tabpage
-  local buflist = vim.from_vimlist(vim.fn.tabpagebuflist())
-  for _, bufnr in ipairs(buflist) do
-    local vfiler = vfilers[bufnr]
-    if vfiler then
-      table.insert(filers, vfiler.object)
+  for bufnr, filer in pairs(vfilers) do
+    if vim.fn.winnr(bufnr) >= 0 then
+      table.insert(filers, filer.object)
     end
   end
   return filers
@@ -152,6 +154,16 @@ function VFiler:do_action(key)
   func(self.context, self.view)
 end
 
+function VFiler:draw()
+  self.view(self.context)
+end
+
+function VFiler:focus()
+  if self:displayed() then
+    core.window.move(self.view:winnr())
+  end
+end
+
 function VFiler:handle_event(type)
   local events = self.configs.events
   local func = events[type]
@@ -168,10 +180,6 @@ function VFiler:link(vfiler)
 end
 
 function VFiler:open(...)
-  if self:displayed() then
-    core.window.move(self.view:winnr())
-    return
-  end
   local direction = ...
   if direction then
     core.window.open(direction)
@@ -189,7 +197,7 @@ function VFiler:quit()
 end
 
 function VFiler:reset(configs)
-  self.linked = nil
+  self:unlink()
   self.context = Context.new(configs.options)
   self.view:reset(configs.options)
 

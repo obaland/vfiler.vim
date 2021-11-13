@@ -134,15 +134,34 @@ local function choose_window()
   return key == '<ESC>' and nil or winkeys[key]
 end
 
+-- TODO:
+
 local function open_directory(context, view, item, direction)
-  if direction == 'edit' or direction == 'choose'then
+  if direction == 'edit' then
     cd(context, view, item.path)
     return
+  elseif direction == 'choose' then
+    local winnr = choose_window()
+    if not winnr then
+      return
+    elseif winnr < 0 then
+      core.window.open('right')
+    else
+      core.window.move(winnr)
+    end
+  else
+    core.window.open(direction)
   end
 
-  local vfiler = VFiler.get_current()
-  core.window.open(direction)
-  M.start(item.path, vfiler.configs)
+  local current = VFiler.get_current()
+  local vfiler = VFiler.find_hidden(current.configs.options.name)
+  print(vfiler)
+  if vfiler then
+    vfiler:reset(current.configs)
+  else
+    vfiler = VFiler.new(current.configs)
+  end
+  vfiler:start(item.path)
 end
 
 local function open_file_by_choose(item)
@@ -664,42 +683,47 @@ function M.switch_to_filer(context, view)
   local linked = current.linked
   -- already linked
   if linked then
-    linked:open('right')
+    if linked:displayed() then
+      linked:focus()
+    else
+      linked:open('right')
+    end
     return
   end
 
+  -- create link to filer
   local lnum = vim.fn.line('.')
-  core.window.open('right')
-  local filer = VFiler.find(current.configs.name)
+  local filer = VFiler.find_hidden(current.configs.name)
   if filer then
-    filer:open()
+    filer:open('right')
     filer:reset(current.configs)
   else
+    core.window.open('right')
     filer = VFiler.new(current.configs)
   end
   filer:link(current)
-  filer.context:sync(current.context)
-  filer.view:draw(filer.context)
+  filer.context:duplicate(current.context)
+  filer:draw()
   core.cursor.move(lnum)
 
   -- redraw current
-  current:open()
-  view:draw(context)
+  current:focus()
+  current.view:redraw()
 
-  filer:open() -- return other filer
+  filer:focus() -- return other filer
 end
 
 function M.sync_with_current_filer(context, view)
   local current = VFiler.get_current()
   local linked = current.linked
-  if not linked then
+  if not (linked and linked:displayed()) then
     return
   end
 
   linked.context:sync(current.context)
-  linked:open()
-  M.redraw(linked.context, linked.view)
-  current:open() -- return current window
+  linked:focus()
+  linked:draw()
+  current:focus() -- return current window
 end
 
 function M.toggle_show_hidden(context, view)

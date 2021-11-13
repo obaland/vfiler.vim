@@ -7,31 +7,15 @@ M.fn = vim.fn
 M.o = vim.o
 
 ------------------------------------------------------------------------------
--- Global option
+-- Options
 ------------------------------------------------------------------------------
-M.get_global_option_value = vim.api.nvim_get_option -- Alias
+M.get_global_option = vim.api.nvim_get_option -- Alias
 M.get_global_option_boolean = vim.api.nvim_get_option -- Alias
 
-function M.get_option_value(name)
+function M.get_option(name)
   return vim.o[name]
 end
-M.get_option_boolean = M.get_option_value -- Alias
-
-------------------------------------------------------------------------------
--- Buffer option
-------------------------------------------------------------------------------
-function M.get_buf_option_value(name, value)
-  return vim.bo[name]
-end
-M.get_buf_option_boolean = M.get_buf_option_value -- Alias
-
-------------------------------------------------------------------------------
--- Window option
-------------------------------------------------------------------------------
-function M.get_win_option_value(name)
-  return vim.wo[name]
-end
-M.get_win_option_boolean = M.get_win_option_value -- Alias
+M.get_option_boolean = M.get_option -- Alias
 
 ------------------------------------------------------------------------------
 -- Key mapping

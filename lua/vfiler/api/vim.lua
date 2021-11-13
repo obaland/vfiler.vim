@@ -5,39 +5,30 @@ M.command = vim.command
 M.fn = vim.fn
 
 ------------------------------------------------------------------------------
--- Global option
+-- Options
 ------------------------------------------------------------------------------
 local function get_option(prefix, name)
   return vim.eval(prefix .. name)
 end
 
-function M.get_global_option_value(name)
+function M.get_global_option(name)
   return get_option('&g:', name)
 end
 function M.get_global_option_boolean(name)
-  return M.get_global_option_value(name) == 1
+  return M.get_global_option(name) == 1
 end
 
-function M.get_option_value(name)
+function M.get_option(name)
   return get_option('&', name)
 end
 function M.get_option_boolean(name)
-  return M.get_option_value(name) == 1
+  return M.get_option(name) == 1
 end
 
 ------------------------------------------------------------------------------
--- Buffer option
-------------------------------------------------------------------------------
-M.get_buf_option_value = M.get_option_value -- Alias
-M.get_buf_option_boolean = M.get_option_boolean -- Alias
-
-------------------------------------------------------------------------------
--- Window option
-------------------------------------------------------------------------------
-M.get_win_option_value = M.get_option_value -- Alias
-M.get_win_option_boolean = M.get_option_boolean -- Alias
-
 -- Key mapping
+------------------------------------------------------------------------------
+
 local function set_keymap(mode, lhs, rhs, opts)
   local command = ''
   if opts.noremap then

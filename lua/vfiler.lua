@@ -84,15 +84,42 @@ function M.start(...)
   VFiler.cleanup()
 
   local options = configs.options
-  local vfiler = VFiler.find(options.name)
-  if not (vfiler and vfiler:displayed()) then
-    -- split window
-    local split = options.split
-    if split ~= 'none' then
-      core.window.open(split)
+  local vfiler
+
+  -- Split window
+  local split = options.split
+  if split ~= 'none' then
+    local direction
+    if split == 'horizontal' then
+      direction = 'top'
+    elseif split == 'vertical' then
+      direction = 'left'
+    else
+      core.message.error('Illegal "%s" split option.', split)
+      return false
+    end
+
+    vfiler = VFiler.find_hidden(options.name)
+    if options.new or not vfiler then
+      vfiler = VFiler.new(configs)
+    else
+      vfiler:open(direction)
+      vfiler:reset(configs)
+    end
+  else
+    vfiler = VFiler.find(options.name)
+    if vfiler then
+      if vfiler:displayed() then
+        vfiler:focus()
+      else
+        vfiler:open()
+      end
+      vfiler:reset(configs)
+    else
+      vfiler = VFiler.new(configs)
     end
   end
-  action.start(dirpath, configs)
+  vfiler:start(dirpath)
   return true
 end
 
