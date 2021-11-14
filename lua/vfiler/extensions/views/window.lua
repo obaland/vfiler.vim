@@ -47,18 +47,24 @@ end
 function Window:open(name, texts)
   local option = self:_on_win_option(name, texts)
   self.winid = self:_on_open(name, texts, option)
-  self:_on_apply_options(self.winid)
   self.bufnr = vim.fn.winbufnr(self.winid)
+
+  -- set buffer options
+  vim.set_buf_options(self.bufnr, self.bufoptions)
   return self.winid
 end
 
 function Window:draw(name, texts)
+  local winnr = vim.fn.winbufnr(self.bufnr)
   vim.command('silent %delete _')
-  vim.fn.setline(1, vim.to_vimlist(texts))
+  vim.fn.setbufline(self.bufnr, 1, vim.to_vimlist(texts))
+
+  -- set window options
+  vim.set_win_options(winnr, self.winoptions)
 
   -- set name to statusline
   if name and #name > 0 then
-    vim.set_local_option('statusline', name)
+    vim.set_win_option(winnr, 'statusline', name)
   end
 end
 
@@ -68,11 +74,6 @@ end
 
 function Window:set_win_options(options)
   core.table.merge(self.winoptions, options)
-end
-
-function Window:_on_apply_options(winid)
-  vim.fn.win_executes(winid, vim.set_local_option_commands(self.bufoptions))
-  vim.fn.win_executes(winid, vim.set_local_option_commands(self.winoptions))
 end
 
 function Window:_on_win_option(name, texts)
@@ -110,10 +111,10 @@ function Window:_on_open(name, texts, options)
   core.window.open(options.direction)
 
   -- Save swapfile option
-  local swapfile = vim.get_buf_option_boolean('swapfile')
-  vim.set_local_option('swapfile', false)
+  local swapfile = vim.get_option_boolean('swapfile')
+  vim.set_option('swapfile', false)
   vim.command('silent edit ' .. 'vfiler/' .. name)
-  vim.set_local_option('swapfile', swapfile)
+  vim.set_option('swapfile', swapfile)
 
   -- resize window
   if options.width > 0 then

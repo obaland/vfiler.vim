@@ -50,6 +50,7 @@ end
 function View:create()
   self.bufnr = self:_create_buffer()
   self:_apply_syntaxes()
+  self:_resize(vim.fn.bufwinnr(self.bufnr))
   return self.bufnr
 end
 
@@ -112,6 +113,7 @@ function View:redraw()
     core.message.warning('Cannot draw because the buffer is different.')
     return
   end
+
   local winnr = self:winnr()
   if winnr < 0 then
     core.message.warning(
@@ -122,17 +124,6 @@ function View:redraw()
 
   -- set window options
   vim.set_win_options(winnr, self._winoptions)
-
-  -- resize window size
-  if self._width > 0 then
-    print('width:', self._width)
-    core.window.resize_width(self._width)
-    vim.set_win_option(winnr, 'winfixwidth', true)
-  end
-  if self._height > 0 then
-    core.window.resize_height(self._height)
-    vim.set_win_option(winnr, 'winfixheight', true)
-  end
 
   local winwidth = vim.fn.winwidth(winnr) - 1 -- padding end
   local cache = self._cache
@@ -165,17 +156,18 @@ function View:redraw_line(lnum)
   -- first line is the header line
   local line = lnum == 1 and self:_toheader(item) or self:_toline(item)
 
-  vim.set_local_option('modifiable', true)
-  vim.set_local_option('readonly', false)
-  vim.fn.setline(lnum, line)
-  vim.set_local_option('modifiable', false)
-  vim.set_local_option('readonly', true)
+  vim.set_buf_option(self.bufnr, 'modifiable', true)
+  vim.set_buf_option(self.bufnr, 'readonly', false)
+  vim.fn.setbufline(self.bufnr, lnum, line)
+  vim.set_buf_option(self.bufnr, 'modifiable', false)
+  vim.set_buf_option(self.bufnr, 'readonly', true)
 end
 
 function View:reset(options)
   self:_reset(options)
-  self:_apply_syntaxes()
   vim.set_buf_option(self.bufnr, 'buflisted', self._listed)
+  self:_apply_syntaxes()
+  self:_resize(vim.fn.bufwinnr(self.bufnr))
 end
 
 function View:selected_items()
@@ -301,6 +293,22 @@ function View:_reset(options)
     winwidth = 0,
   }
   self._columns = columns
+end
+
+function View:_resize(winnr)
+  local winfixwidth = false
+  if self._width > 0 then
+    core.window.resize_width(self._width)
+    winfixwidth = true
+  end
+  vim.set_win_option(winnr, 'winfixwidth', winfixwidth)
+
+  local winfixheight = false
+  if self._height > 0 then
+    core.window.resize_height(self._height)
+    winfixheight = true
+  end
+  vim.set_win_option(winnr, 'winfixheight', winfixheight)
 end
 
 ---@param item table

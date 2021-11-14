@@ -73,8 +73,8 @@ end
 function VFiler.find_hidden(name)
   -- in hidden buffers
   for bufnr, vfiler in pairs(vfilers) do
-    local info = vim.fn.getbufinfo(bufnr)
-    if (vfiler.name == name) then
+    local infos = vim.from_vimdict(vim.fn.getbufinfo(bufnr))
+    if (vfiler.name == name) and (infos[1].hidden == 1) then
       return vfiler.object
     end
   end
@@ -150,13 +150,7 @@ function VFiler:do_action(key)
 end
 
 function VFiler:draw()
-  self.view(self.context)
-end
-
-function VFiler:focus()
-  if self:displayed() then
-    core.window.move(self.view:winnr())
-  end
+  self.view:draw(self.context)
 end
 
 function VFiler:handle_event(type)
@@ -175,8 +169,13 @@ function VFiler:link(vfiler)
 end
 
 function VFiler:open(...)
+  if self:displayed() then
+    core.window.move(self.view:winnr())
+    return
+  end
+
   local direction = ...
-  if direction then
+  if direction and direction ~= 'edit' then
     core.window.open(direction)
   end
   self.view:open()

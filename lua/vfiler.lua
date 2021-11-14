@@ -86,30 +86,38 @@ function M.start(...)
   local options = configs.options
   local vfiler
 
-  -- Split window
   local split = options.split
   if split ~= 'none' then
+    -- split window
+    local direction
+    if split == 'horizontal' then
+      direction = 'bottom'
+    elseif split == 'vertical' then
+      direction = 'left'
+    elseif split == 'tab' then
+      direction = 'tab'
+    else
+      core.message.error('Illegal "%s" split option.', split)
+      return false
+    end
     vfiler = VFiler.find_hidden(options.name)
     if options.new or not vfiler then
-      core.window.open(split)
+      core.window.open(direction)
       vfiler = VFiler.new(configs)
     else
-      vfiler:open(split)
+      vfiler:open(direction)
       vfiler:reset(configs)
     end
   else
     vfiler = VFiler.find(options.name)
     if vfiler then
-      if vfiler:displayed() then
-        vfiler:focus()
-      else
-        vfiler:open()
-      end
+      vfiler:open()
       vfiler:reset(configs)
     else
       vfiler = VFiler.new(configs)
     end
   end
+
   vfiler:start(dirpath)
   return true
 end

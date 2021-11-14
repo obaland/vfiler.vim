@@ -67,8 +67,8 @@ function Popup:_on_win_option(name, texts)
     local screen_pos = vim.fn.win_screenpos(self.source_winid)
     local y = screen_pos[1]
     local x = screen_pos[2]
-    options.line = y + math.floor(wheight - ((height / 2) + (wheight / 2)))
-    options.col = x + math.floor(wwidth - ((width / 2) + (wwidth / 2)))
+    options.line = y + math.floor(wheight - ((height / 2) + (wheight / 2))) - 1
+    options.col = x + math.floor(wwidth - ((width / 2) + (wwidth / 2))) - 1
   else
     options.pos = 'center'
   end

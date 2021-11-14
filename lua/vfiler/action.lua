@@ -79,7 +79,7 @@ local choose_keys = {
 local function choose_window()
   local winnrs = {}
   for nr = 1, vim.fn.winnr('$') do
-    if vim.fn.getwinvar(nr, '&filetype') ~= 'vfiler' then
+    if vim.get_win_option(nr, 'filetype') ~= 'vfiler' then
       table.insert(winnrs, nr)
     end
   end
@@ -97,20 +97,18 @@ local function choose_window()
     local key = choose_keys[winnr]
     table.insert(keys, key)
     winkeys[key] = winnr
-
-    local bufnr = vim.fn.winbufnr(winnr)
-    statuslines[winnr] = vim.fn.getbufvar(bufnr, '&statusline')
+    statuslines[winnr] = vim.get_win_option(winnr, 'statusline')
   end
 
   -- Save status
-  local laststatus = vim.get_global_option_value('laststatus')
+  local laststatus = vim.get_global_option('laststatus')
   local save_winnr = vim.fn.winnr()
 
   -- Choose window
   vim.set_global_option('laststatus', 2)
   for key, nr in pairs(winkeys) do
     local status = (' '):rep(vim.fn.winwidth(nr) / 2 - 1) .. key
-    vim.fn.setwinvar(nr, '&statusline', status)
+    vim.set_win_option(nr, 'statusline', status)
     vim.command('redraw')
   end
 
@@ -126,7 +124,7 @@ local function choose_window()
   -- Restore
   vim.set_global_option('laststatus', laststatus)
   for nr, statusline in pairs(statuslines) do
-    vim.fn.setwinvar(nr, '&statusline', statusline)
+    vim.set_win_option(nr, 'statusline', statusline)
     vim.command('redraw')
   end
   core.window.move(save_winnr)
@@ -150,28 +148,28 @@ local function open(context, view, direction)
     else
       core.window.move(winnr)
     end
+  elseif direction ~= 'edit' then
+    core.window.open(direction)
   end
 
   if item.isdirectory then
     if direction == 'edit' then
       cd(context, view, item.path)
+      return
+    end
+
+    local current = VFiler.get_current()
+    local name = current.configs.options.name
+    local vfiler = VFiler.find_hidden(name)
+    if vfiler then
+      vfiler:open()
+      vfiler:reset(current.configs)
     else
-      local current = VFiler.get_current()
-      local name = current.configs.options.name
-      local vfiler = VFiler.find_hidden(name)
-      if vfiler then
-        vfiler:open()
-        vfiler:reset(current.configs)
-      else
-        vfiler = VFiler.new(current.configs)
-      end
-      vfiler:start(item.path)
+      vfiler = VFiler.new(current.configs)
     end
+    vfiler:start(item.path)
   else
-    if direction == 'choose' then
-      direction = 'edit'
-    end
-    core.window.open(direction, item.path)
+    core.window.open('edit', item.path)
   end
 end
 
@@ -291,7 +289,8 @@ end
 
 function M.close_tree_or_cd(context, view)
   local item = view:get_current()
-  if item.level <= 1 and not item.opened then
+  local level = item.level
+  if level == 0 or (level <= 1 and not item.opened) then
     local path = context.root.path
     cd(context, view, context.root:parent_path())
     view:move_cursor(path)
@@ -450,7 +449,7 @@ end
 
 function M.loop_cursor_up(context, view, loop)
   local lnum = vim.fn.line('.') - 1
-  if lnum <= view:top_lnum() then
+  if lnum < view:top_lnum() then
     lnum = view:num_lines()
   end
   core.cursor.move(lnum)
@@ -658,11 +657,7 @@ function M.switch_to_filer(context, view)
   local linked = current.linked
   -- already linked
   if linked then
-    if linked:displayed() then
-      linked:focus()
-    else
-      linked:open('right')
-    end
+    linked:open('right')
     return
   end
 
@@ -682,10 +677,10 @@ function M.switch_to_filer(context, view)
   core.cursor.move(lnum)
 
   -- redraw current
-  current:focus()
+  current:open()
   current.view:redraw()
 
-  filer:focus() -- return other filer
+  filer:open() -- return other filer
 end
 
 function M.sync_with_current_filer(context, view)
@@ -695,10 +690,10 @@ function M.sync_with_current_filer(context, view)
     return
   end
 
-  linked:focus()
+  linked:open()
   linked.context:sync(current.context)
   linked:draw()
-  current:focus() -- return current window
+  current:open() -- return current window
 end
 
 function M.toggle_show_hidden(context, view)

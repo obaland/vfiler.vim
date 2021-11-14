@@ -53,7 +53,7 @@ local function set_keymap(mode, lhs, rhs, opts)
       args = args .. string.format('<%s>', arg)
     end
   end
-  vim.command(string.format('%s %s %s %s', command, args, lhs, rhs))
+  return string.format('%s %s %s %s', command, args, lhs, rhs)
 end
 
 local function del_keymap(mode, lhs, buffer)
@@ -66,23 +66,23 @@ local function del_keymap(mode, lhs, buffer)
   if buffer then
     command = command .. ' <buffer>'
   end
-  vim.command(command .. ' ' .. lhs)
+  return command .. ' ' .. lhs
 end
 
 function M.set_keymap(mode, lhs, rhs, opts)
   opts._buffer = false
-  set_keymap(mode, lhs, rhs, opts)
+  vim.command(set_keymap(mode, lhs, rhs, opts))
 end
 function M.set_buf_keymap(mode, lhs, rhs, opts)
   opts._buffer = true
-  set_keymap(mode, lhs, rhs, opts)
+  vim.command(set_keymap(mode, lhs, rhs, opts))
 end
 
 function M.del_keymap(mode, lhs)
-  del_keymap(mode, lhs)
+  vim.command(del_keymap(mode, lhs))
 end
 function M.del_buf_keymap(mode, lhs)
-  del_keymap(mode, lhs, '<buffer>')
+  vim.command(del_keymap(mode, lhs, '<buffer>'))
 end
 
 ------------------------------------------------------------------------------

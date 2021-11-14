@@ -58,13 +58,12 @@ function ExtensionMenu:_on_get_texts(items)
 end
 
 function ExtensionMenu:_on_draw(texts)
-  vim.set_local_option('modifiable', true)
-  vim.set_local_option('readonly', false)
-
+  local bufnr = self.view.bufnr
+  vim.set_buf_option(bufnr, 'modifiable', true)
+  vim.set_buf_option(bufnr, 'readonly', false)
   self.view:draw(self.name, texts)
-
-  vim.set_local_option('modifiable', false)
-  vim.set_local_option('readonly', true)
+  vim.set_buf_option(bufnr, 'modifiable', false)
+  vim.set_buf_option(bufnr, 'readonly', true)
 end
 
 return ExtensionMenu

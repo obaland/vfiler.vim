@@ -18,7 +18,7 @@ Special Thanks ......... |vfiler-special-thanks|
 INTRODUCTION                                   *vfiler-introduction*
 
 ------------------------------------------------------------------------------
-CONCEPT                                        *vfiler-concept*
+DESCRIPTION                                    *vfiler-direcription*
 
 *vfiler* is a file manager written in Vim script.
 
@@ -29,9 +29,6 @@ CONCEPT                                        *vfiler-concept*
   - Operation between multiple buffers
     It can be treated as 2 window filer. This makes file operations easier to
     handle.
-
-  - Explorer mode
-    It supports Explorer mode like "netrw" or modern IDE environment.
 
   - Not depends on other plugins.
     It works independently without relying on other plugins.
@@ -65,14 +62,6 @@ COMMANDS                                       *vfiler-commands*
 		" Runs vfiler on the specified path in Explorer mode.
                 :VFiler -explorer /foo/bar
 >
-:VFilerCurrentDir [{options}...]               *:VFilerCurrentDir*
-		Equivalent to |:VFiler| except that it starts with current
-                directory.
-
-:VFilerBufferDir [{options}...]                *:VFilerBufferDir*
-		Equivalent to |:VFiler| except that it starts with current
-		buffer directory.
-
 ------------------------------------------------------------------------------
 VARIABLES                                      *vfiler-variables*
 
@@ -369,25 +358,6 @@ Visit the project page for the latest information:
 I am hoping to continually improve it as far as time permits,
 so I'd appreciate it if you can receive various opinions including
 differences within the script.
-
-==============================================================================
-SPECIAL THANKS                                 *vfiler-special-thanks*
-
-When implementing this plug-in, I referred to the following excellent program
-and software.
-I would like to express my special appreciation.
-
-vimfiler
-  https://github.com/Shougo/vimfiler.vim
-
-vaffle
-  https://github.com/cocopon/vaffle.vim
-
-netrw
-  https://github.com/vim-scripts/netrw.vim
-
-xyzzy
-  https://github.com/xyzzy-022/xyzzy
 
 ==============================================================================
 vim:ft=help:norl:ts=8:tw=78:

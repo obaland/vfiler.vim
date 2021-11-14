@@ -109,12 +109,10 @@ M.window = {}
 local open_directions = {
   edit = 'edit',
   bottom = 'belowright split',
-  horizontal = 'split',
   left = 'aboveleft vertical split',
   right = 'belowright vertical split',
   tab = 'tabnew',
   top = 'aboveleft split',
-  vertical = 'vertical split',
 }
 
 ---@param winnr number
