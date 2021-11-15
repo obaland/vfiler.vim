@@ -61,36 +61,36 @@ COMMANDS                                       *vfiler-commands*
                 :VFiler -name=foo -no-list /foo/bar
 
 ------------------------------------------------------------------------------
-OPTIONS                            s           *vfiler-options*
+COMMAND OPTIONS                                *vfiler-command-options*
 
 {options} are options for a filer buffer.  You may give the following
 parameters for an option.  You need to escape spaces with "\".
 
-                                   s           *vfiler-option-no-*
+                                               *vfiler-command-options-no-*
 -no-{option-name}
                 Disable {option-name} flag.
                 Note: If you use both {option-name} and -no-{option-name} in
                 the same vfiler buffer, it is undefined.
 
-                                   s           *vfiler-options-auto-cd*
+                                               *vfiler-command-options-auto-cd*
 -auto-cd
                 Enable auto cd behavior.
 
                 Default: false
 
-                                   s           *vfiler-options-name*
+                                               *vfiler-command-options-name*
 -name={buffer-name}
 		Specifies a buffer name.
 		The default buffer name is blank.
 		Note: Buffer name must not contain spaces.
 
-                                   s           *vfiler-options-new*
+                                               *vfiler-command-options-new*
 -new
                 Create new vfiler buffer.
 
                 Default: false
 
-                                               *vfiler-options-split*
+                                               *vfiler-command-options-split*
 -split={direction}
 		Specify the split direction.
 
@@ -102,13 +102,14 @@ parameters for an option.  You need to escape spaces with "\".
 
                 Default: "no"
 
+                                               *vfiler-command-options-height*
 -height={window-height}
                 Set the height of the window if |vfiler-option-split| is
                 "horizontal".
 
                 Default: 30
 
-                                               *vfiler-option-width*
+                                               *vfiler-command-options-width*
 -width={window-width}
                 Set the width of the window if |vfiler-option-split| is
                 "vertical".
