@@ -1,3 +1,4 @@
+local action = require 'vfiler/extensions/menu/action'
 local core = require 'vfiler/core'
 
 local M = {}
@@ -11,6 +12,18 @@ M.configs = {
       minheight = 1,
       relative = true,
     },
+  },
+
+  mappings = {
+    ['k']     = action.loop_cursor_up,
+    ['j']     = action.loop_cursor_down,
+    ['q']     = action.quit,
+    ['<CR>']  = action.select,
+    ['<ESC>'] = action.quit,
+  },
+
+  events = {
+    BufWinLeave = action.quit,
   },
 }
 

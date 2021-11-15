@@ -3,6 +3,7 @@ local M = {}
 -- Alias
 M.command = vim.command
 M.fn = vim.fn
+M.eval = vim.eval
 
 ------------------------------------------------------------------------------
 -- Options

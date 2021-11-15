@@ -5,14 +5,14 @@ local View = {}
 View.__index = View
 
 local function create_columns(columns)
-  local collection = require 'vfiler/columns/collection'
+  local column = require 'vfiler/column'
   local objects = {}
 
   local cnames = vim.from_vimlist(vim.fn.split(columns, ','))
   for _, cname in ipairs(cnames) do
-    local column = collection.get(cname)
+    local object = column.get(cname)
     if column then
-      table.insert(objects, column)
+      table.insert(objects, object)
     else
       core.message.warning('"%s" is not a valid column.', cname)
     end
@@ -72,6 +72,7 @@ function View:draw(context)
       table.insert(self._items, item)
     end
   end
+  -- TODO: header line
   self:redraw()
 end
 
@@ -312,8 +313,12 @@ function View:_resize(winnr)
 end
 
 ---@param item table
-function View:_toheader(item)
-  return vim.fn.fnamemodify(item.path, ':~')
+function View:_toheader(item, wwidth)
+  local winwidth = self._cache.winwidth
+  local header = vim.fn.fnamemodify(item.path, ':~')
+  return core.string.truncate(
+    header, winwidth, '..', math.floor(winwidth / 2)
+    )
 end
 
 ---@param item table

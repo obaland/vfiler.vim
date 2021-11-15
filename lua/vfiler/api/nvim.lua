@@ -4,6 +4,7 @@ local M = {}
 M.api = vim.api
 M.command = vim.api.nvim_command
 M.fn = vim.fn
+M.eval = vim.api.nvim_eval
 M.o = vim.o
 
 ------------------------------------------------------------------------------

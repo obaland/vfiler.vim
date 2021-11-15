@@ -351,7 +351,7 @@ function M.copy_to_filer(context, view)
   end
   local current = VFiler.get(view.bufnr)
   local linked = current.linked
-  if not (linked and linked.view:displayed()) then
+  if not (linked and linked:displayed()) then
     -- Copy to clipboard
     M.copy(context, view)
     return
@@ -545,6 +545,15 @@ end
 
 function M.open_by_choose(context, view)
   open(context, view, 'choose')
+end
+
+function M.open_by_choose_or_cd(context, view)
+  local item = view:get_current()
+  if item.isdirectory then
+    cd(context, view, item.path)
+  else
+    open(context, view, 'choose')
+  end
 end
 
 function M.open_by_split(context, view)

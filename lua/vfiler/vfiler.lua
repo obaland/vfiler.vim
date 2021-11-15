@@ -62,7 +62,7 @@ end
 function VFiler.find(name)
   -- in tabpage
   for bufnr, vfiler in pairs(vfilers) do
-    if vfiler.name == name and vim.fn.winnr(bufnr) >= 0 then
+    if (vfiler.name == name) and (vim.fn.bufwinnr(bufnr) >= 0) then
       return vfiler.object
     end
   end
@@ -183,7 +183,7 @@ end
 
 function VFiler:quit()
   local bufnr = self.view.bufnr
-  if bufnr >= 0 then
+  if self.configs.options.quit and bufnr >= 0 then
     self.view:delete()
     self:unlink()
     vfilers[bufnr] = nil

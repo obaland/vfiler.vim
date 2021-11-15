@@ -1,22 +1,8 @@
-local action = require 'vfiler/extensions/rename/action'
 local config = require 'vfiler/extensions/rename/config'
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
 local ExtensionRename = {}
-
-config.setup {
-  mappings = {
-    ['q']     = action.quit,
-    ['<ESC>'] = action.quit,
-  },
-
-  events = {
-    BufWriteCmd = action.execute,
-    InsertLeave = action.check,
-    CursorMoved = action.check,
-  },
-}
 
 function ExtensionRename.new(options)
   local Extension = require('vfiler/extensions/extension')

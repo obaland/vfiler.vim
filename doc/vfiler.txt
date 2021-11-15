@@ -53,12 +53,12 @@ COMMANDS                                       *vfiler-commands*
                 exist, vfiler opens current directory. {path} needs to be a
                 directory.
                 {options} are options for a filer buffer:
-                |vfiler-options|
+                |vfiler-command-options|
 
 		Examples:
 		" Starts by specifying the buffer name and widthout adding it
                 to the buffer list.
-                :VFiler -name=foo -no-list /foo/bar
+                :VFiler -name=foo -no-listed /foo/bar
 
 ------------------------------------------------------------------------------
 COMMAND OPTIONS                                *vfiler-command-options*
@@ -78,6 +78,12 @@ parameters for an option.  You need to escape spaces with "\".
 
                 Default: false
 
+                                               *vfiler-command-options-listed*
+-listed
+                Display the vfiler buffer in the buffer list.
+
+                Defualt: true
+
                                                *vfiler-command-options-name*
 -name={buffer-name}
 		Specifies a buffer name.
@@ -87,6 +93,13 @@ parameters for an option.  You need to escape spaces with "\".
                                                *vfiler-command-options-new*
 -new
                 Create new vfiler buffer.
+
+                Default: false
+
+                                      *vfiler-command-options-show-hidden-files*
+-show-hidden-files
+                If enabled, Make hidden files visible by default.
+
 
                 Default: false
 
@@ -100,7 +113,7 @@ parameters for an option.  You need to escape spaces with "\".
                 "no": No split
 
 
-                Default: "no"
+                Default: "none"
 
                                                *vfiler-command-options-height*
 -height={window-height}
@@ -116,9 +129,16 @@ parameters for an option.  You need to escape spaces with "\".
 
                 Default: 90
 
+------------------------------------------------------------------------------
+FUNCTIONS                                      *vfiler-functions*
+
 
 ------------------------------------------------------------------------------
 ACTIONS                                        *vfiler-actions*
+
+
+==============================================================================
+CUSTOMIZATION                                  *vfiler-customization*
 
 
 ==============================================================================

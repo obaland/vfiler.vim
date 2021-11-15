@@ -1,23 +1,8 @@
-local action = require 'vfiler/extensions/menu/action'
 local config = require 'vfiler/extensions/menu/config'
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
 local ExtensionMenu = {}
-
-config.setup {
-  mappings = {
-    ['k']     = action.loop_cursor_up,
-    ['j']     = action.loop_cursor_down,
-    ['q']     = action.quit,
-    ['<CR>']  = action.select,
-    ['<ESC>'] = action.quit,
-  },
-
-  events = {
-    BufWinLeave = action.quit,
-  },
-}
 
 function ExtensionMenu.new(options)
   local Extension = require('vfiler/extensions/extension')
