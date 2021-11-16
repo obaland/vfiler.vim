@@ -429,9 +429,11 @@ function M.loop_cursor_down(context, view)
   local lnum = vim.fn.line('.') + 1
   local num_end = view:num_lines()
   if lnum > num_end then
-    lnum = view:top_lnum()
+    core.cursor.move(view:top_lnum())
+    vim.command('normal zb')
+  else
+    core.cursor.move(lnum)
   end
-  core.cursor.move(lnum)
 end
 
 function M.loop_cursor_up(context, view, loop)
@@ -467,6 +469,7 @@ end
 
 function M.move_cursor_top(context, view)
   core.cursor.move(view:top_lnum())
+  vim.command('normal zb')
 end
 
 function M.move_cursor_up(context, view)

@@ -68,17 +68,15 @@ function View:draw(context)
   -- expand item list
   self._items = {}
   for item in context.root:walk() do
-    if self._show_hidden_files or item.name:sub(1, 1) ~= '.' then
+    if self.show_hidden_files or item.name:sub(1, 1) ~= '.' then
       table.insert(self._items, item)
     end
   end
 
+  -- remove header line
   if not self._header then
-    -- remove header line
     table.remove(self._items, 1)
   end
-
-  -- TODO: header line
   self:redraw()
 end
 
@@ -303,11 +301,11 @@ function View:_reset(options)
   end
 
   local split = options.split
+  self.show_hidden_files = options.show_hidden_files
   self._header = options.header
   self._width = (split == 'vertical') and options.width or 0
   self._height = (split == 'horizontal') and options.height or 0
   self._listed = options.listed
-  self._show_hidden_files = options.show_hidden_files
   self._cache = {
     winwidth = 0,
   }

@@ -5,6 +5,7 @@
 # vfiler.vim: File explorer plugin for Vim/Neovim
 
 ## Description
+
 - **File manager**
 
   You can perform basic operations such as selecting, creating, deleting,
