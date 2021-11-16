@@ -44,6 +44,8 @@ Basically, after installing in any way, start with the **VFiler** command.
 
     :VFiler [{path}]
 
+If {path} is not specified, it will start in the current directory.
+
 Please see the [documentation][vim-doc] for details.
 
 ## Finally
