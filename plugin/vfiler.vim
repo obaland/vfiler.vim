@@ -27,7 +27,6 @@ highlight def link vfilerFile              None
 highlight def link vfilerHeader            Statement
 highlight def link vfilerHidden            Comment
 highlight def link vfilerLink              Constant
-highlight def link vfilerNothing           Directory
 highlight def link vfilerSelected          Title
 highlight def link vfilerSize              Statement
 highlight def link vfilerTime              None

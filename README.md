@@ -24,6 +24,10 @@
   Aiming for the necessary and sufficient functions to increase working
   efficiency and their lightweight operation.
 
+## Requirements
+
+vfiler.vim requires Neovim(0.5.0+) or Vim8.2 + with [if\_lua](http://vimdoc.sourceforge.net/htmldoc/if_lua.html).
+
 ## Instalattion
 
 ### Using [vim-plug](https://github.com/junegunn/vim-plug)
@@ -31,17 +35,11 @@
 ```vim
 Plug 'obaland/vfiler.vim'
 ```
-
-## Requirements
-
-vfiler.vim requires Neovim(0.5.0+) or Vim8.2 + with [if\_lua](http://vimdoc.sourceforge.net/htmldoc/if_lua.html).
-
-
 ## Demo
 
 ### *In preparation*
 
-## Usage
+## Quick Start
 Basically, after installing in any way, start with the **VFiler** command.
 
     :VFiler [{path}]
