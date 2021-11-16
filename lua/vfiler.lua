@@ -1,4 +1,3 @@
-local action = require 'vfiler/action'
 local config = require 'vfiler/config'
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'

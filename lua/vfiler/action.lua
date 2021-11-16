@@ -135,6 +135,8 @@ local function open(context, view, direction)
     return
   end
 
+  local current = VFiler.get_current()
+
   if direction == 'choose' then
     local winnr = choose_window()
     if not winnr then
@@ -154,7 +156,6 @@ local function open(context, view, direction)
       return
     end
 
-    local current = VFiler.get_current()
     local name = current.configs.options.name
     local vfiler = VFiler.find_hidden(name)
     if vfiler then
@@ -181,18 +182,8 @@ local function rename_files(context, view, targets)
       for i = 1, #items do
         local item = items[i]
         local rename = renames[i]
-        local filepath = core.path.join(item.parent.path, rename)
 
-        local result = true
-        if core.path.exists(filepath) then
-          if cmdline.util.confirm_overwrite(rename) == cmdline.choice.YES then
-            result = item:rename(rename)
-          end
-        else
-          result = item:rename(rename)
-        end
-
-        if result then
+        if item:rename(rename) then
           num_renamed = num_renamed + 1
           parents[item.parent.path] = item.parent
         end

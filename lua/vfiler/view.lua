@@ -297,8 +297,8 @@ function View:_create_column_props(winwidth)
 end
 
 function View:_reset(options)
-  local columns = create_columns(options.columns)
-  if not columns then
+  self._columns = create_columns(options.columns)
+  if not self._columns then
     return nil
   end
 
@@ -311,7 +311,6 @@ function View:_reset(options)
   self._cache = {
     winwidth = 0,
   }
-  self._columns = columns
 end
 
 function View:_resize(winnr)
@@ -334,9 +333,7 @@ end
 function View:_toheader(item)
   local winwidth = self._cache.winwidth
   local header = vim.fn.fnamemodify(item.path, ':~')
-  return core.string.truncate(
-    header, winwidth, '..', math.floor(winwidth / 2)
-    )
+  return core.string.truncate(header, winwidth, '<', winwidth)
 end
 
 ---@param item table

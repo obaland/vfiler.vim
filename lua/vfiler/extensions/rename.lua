@@ -28,8 +28,9 @@ function ExtensionRename.new(options)
 end
 
 function ExtensionRename:check()
-  -- TODO:
   vim.command('echo')
+
+  -- Check the difference in the number of target files
   local buflen = vim.fn.line('$')
   local itemlen = #self.items
   if buflen < itemlen then
@@ -42,18 +43,35 @@ function ExtensionRename:check()
 
   local lines = self:get_lines()
   for lnum, line in ipairs(lines) do
+    -- Check for blank line 
     if #line == 0 then
-      core.message.error('Blank line. (%s)', lnum)
+      core.message.error('Blank line. (%d)', lnum)
       return false
     end
+    -- Check for duplicate lines
     for i = lnum + 1, #lines do
       if line == lines[i] then
         core.message.error('Duplicated names. (line: %d and %d)', lnum, i)
         return false
       end
     end
+    -- Check for duplicate path
+    local item = self.items[lnum]
+    local dirpath = item.parent.path
+    local path = core.path.join(dirpath, line)
+    local exists = false
+    if line ~= item.name then
+      if item.isdirectory then
+        exists = core.path.isdirectory(path)
+      else
+        exists = core.path.filereadable(path)
+      end
+    end
+    if exists then
+      core.message.error('Already existing "%s". (%d)', path, lnum)
+      return false
+    end
   end
-
   return true
 end
 
