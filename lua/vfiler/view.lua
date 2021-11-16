@@ -72,6 +72,12 @@ function View:draw(context)
       table.insert(self._items, item)
     end
   end
+
+  if not self._header then
+    -- remove header line
+    table.remove(self._items, 1)
+  end
+
   -- TODO: header line
   self:redraw()
 end
@@ -134,8 +140,11 @@ function View:redraw()
   end
 
   -- create text lines
-  local lines = {self:_toheader(self._items[1])}
-  for i = 2, #self._items do
+  local lines = {}
+  if self._header then
+    table.insert(lines, self:_toheader(self._items[1]))
+  end
+  for i = self:top_lnum(), #self._items do
     table.insert(lines, self:_toline(self._items[i]))
   end
 
@@ -154,8 +163,12 @@ end
 
 function View:redraw_line(lnum)
   local item = self:get_item(lnum)
-  -- first line is the header line
-  local line = lnum == 1 and self:_toheader(item) or self:_toline(item)
+  local line = ''
+  if self._header and lnum == 1 then
+    line = self:_toheader(item)
+  else
+    line = self:_toline(item)
+  end
 
   vim.set_buf_option(self.bufnr, 'modifiable', true)
   vim.set_buf_option(self.bufnr, 'readonly', false)
@@ -198,10 +211,15 @@ end
 function View:_apply_syntaxes()
   local header_group = 'vfilerHeader'
   local syntaxes = {
-    core.syntax.clear_command({header_group}),
-    core.syntax.match_command(header_group, [[\%1l.*]]),
+    core.syntax.clear_command({header_group})
   }
   local highlights = {}
+
+  if self._header then
+    table.insert(
+      syntaxes, core.syntax.match_command(header_group, [[\%1l.*]])
+      )
+  end
 
   for _, column in pairs(self._columns) do
     local column_syntaxes = column:syntaxes()
@@ -313,7 +331,7 @@ function View:_resize(winnr)
 end
 
 ---@param item table
-function View:_toheader(item, wwidth)
+function View:_toheader(item)
   local winwidth = self._cache.winwidth
   local header = vim.fn.fnamemodify(item.path, ':~')
   return core.string.truncate(

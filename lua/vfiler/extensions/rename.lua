@@ -28,6 +28,7 @@ function ExtensionRename.new(options)
 end
 
 function ExtensionRename:check()
+  -- TODO:
   vim.command('echo')
   local buflen = vim.fn.line('$')
   local itemlen = #self.items

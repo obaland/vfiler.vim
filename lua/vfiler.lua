@@ -40,9 +40,9 @@ function M.start(...)
   VFiler.cleanup()
 
   local options = configs.options
+  local split = options.split
 
   local vfiler = nil
-  local split = options.split
   if split ~= 'none' then
     -- split window
     local direction
@@ -56,22 +56,17 @@ function M.start(...)
       core.message.error('Illegal "%s" split option.', split)
       return false
     end
+    core.window.open(direction)
     vfiler = VFiler.find_hidden(options.name)
-    if options.new or not vfiler then
-      core.window.open(direction)
-      vfiler = VFiler.new(configs)
-    else
-      vfiler:open(direction)
-      vfiler:reset(configs)
-    end
   else
     vfiler = VFiler.find(options.name)
-    if vfiler then
-      vfiler:open()
-      vfiler:reset(configs)
-    else
-      vfiler = VFiler.new(configs)
-    end
+  end
+
+  if options.new or not vfiler then
+    vfiler = VFiler.new(configs)
+  else
+    vfiler:open()
+    vfiler:reset(configs)
   end
 
   vfiler:start(dirpath)

@@ -1,3 +1,4 @@
+local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
 local M = {}
@@ -28,7 +29,7 @@ function M.getchar(prompt)
   }
   vim.commands(commands)
   local code = vim.fn.getchar()
-  vim.command('echo ""')
+  vim.command('redraw')
 
   local char = nil
   if (32 <= code) and (code <= 126) then
@@ -52,7 +53,7 @@ function M.input(prompt, ...)
   else
     content = vim.fn.input(prompt, text)
   end
-  vim.command('echo ""')
+  vim.command('redraw')
   return content
 end
 
@@ -63,7 +64,7 @@ function M.input_multiple(prompt, callback)
     return
   end
   if callback then
-    callback(splitted)
+    callback(core.list.unique(splitted))
   end
 end
 

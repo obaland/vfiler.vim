@@ -52,6 +52,7 @@ function Directory:add(item)
   if not self.children then
     self.children = {}
   end
+  self:_remove(item)
   self:_add(item)
 end
 
@@ -186,6 +187,20 @@ function Directory:_ls()
       item = create_item(path, self.sort_type)
     until item
     return item
+  end
+end
+
+function Directory:_remove(item)
+  local pos = nil
+  for i, child in ipairs(self.children) do
+    if (child.name == item.name) and
+       (child.isdirectory == item.isdirectory) then
+       pos = i
+       break
+    end
+  end
+  if pos then
+    table.remove(self.children, pos)
   end
 end
 

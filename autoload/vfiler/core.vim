@@ -24,6 +24,10 @@ function! vfiler#core#warning(message) abort
   echohl WarningMsg | echom '[vfiler]: ' . a:message | echohl None
 endfunction
 
+function! vfiler#core#question(message) abort
+  echohl Question | echo '[vfiler]: ' . a:message | echohl None
+endfunction
+
 function! vfiler#core#yank(content) abort
   " for register
   let @" = a:content

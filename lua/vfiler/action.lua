@@ -31,16 +31,12 @@ local function create_files(dest, contents, create)
   local created = {}
   for _, name in ipairs(contents) do
     local filepath = core.path.join(dest.path, name)
-    if core.path.isdirectory(filepath) then
-      core.message.warning('Skipped, "%s" already exists', name)
-    else
-      local new = create(dest, filepath)
-      if new then
-        dest:add(new)
-        table.insert(created, name)
-      else
-        core.message.error('Failed to create a "%s" file', name)
-      end
+    local new = create(dest, name, filepath)
+    if new then
+      dest:add(new)
+      table.insert(created, name)
+    elseif new == nil then
+      core.message.error('Failed to create a "%s" file', name)
     end
   end
 
@@ -513,11 +509,19 @@ function M.new_directory(context, view)
   local item = view:get_current()
   local dir = (item.isdirectory and item.opened) and item or item.parent
 
+  local function create_directory(dest, name, filepath)
+    if core.path.isdirectory(filepath) then
+      local answer = cmdline.util.confirm_overwrite(name)
+      if answer ~= cmdline.choice.YES then
+        return false
+      end
+    end
+    return Directory.create(filepath, dest.sort_type)
+  end
+
   cmdline.input_multiple('New directory names?',
     function(contents)
-      local result = create_files(dir, contents, function(dest, filepath)
-        return Directory.create(filepath, dest.sort_type)
-      end)
+      local result = create_files(dir, contents, create_directory)
       if result then
         view:draw(context)
       end
@@ -528,11 +532,19 @@ function M.new_file(context, view)
   local item = view:get_current()
   local dir = (item.isdirectory and item.opened) and item or item.parent
 
+  local function create_file(dest, name, filepath)
+    if core.path.filereadable(filepath) then
+      local answer = cmdline.util.confirm_overwrite(name)
+      if answer ~= cmdline.choice.YES then
+        return false
+      end
+    end
+    return File.create(filepath)
+  end
+
   cmdline.input_multiple('New file names?',
     function(contents)
-      local result = create_files(dir, contents, function(dest, filepath)
-        return File.create(filepath)
-      end)
+      local result = create_files(dir, contents, create_file)
       if result then
         view:draw(context)
       end

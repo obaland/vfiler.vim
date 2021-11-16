@@ -140,6 +140,8 @@ end
 function Context:update()
   local rpaths = {}
   walk_expanded(rpaths, self.root.path, self.root)
+  self.root = Directory.new(self.root.path, false, self.sort_type)
+  self.root:open()
   for _, rpath in ipairs(rpaths) do
     self.root:expand(rpath)
   end

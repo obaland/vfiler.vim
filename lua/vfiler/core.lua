@@ -170,13 +170,22 @@ function M.message.warning(format, ...)
   vim.fn['vfiler#core#warning'](format:format(...))
 end
 
+---print question message
+function M.message.question(format, ...)
+  vim.fn['vfiler#core#question'](format:format(...))
+end
+
 ------------------------------------------------------------------------------
 -- Path utilities
 ------------------------------------------------------------------------------
 M.path = {}
 
 function M.path.exists(path)
-  return vim.fn.filereadable(path) == 1 or vim.fn.isdirectory(path) == 1
+  return M.path.filereadable(path) or M.path.isdirectory(path)
+end
+
+function M.path.filereadable(path)
+  return vim.fn.filereadable(path) == 1
 end
 
 function M.path.isdirectory(path)
@@ -325,6 +334,20 @@ function M.list.extend(dest, src)
     table.insert(dest, pos + i, src[i])
   end
   return dest
+end
+
+function M.list.unique(src)
+  local unique = {}
+  for _, v1 in ipairs(src) do
+    for _, v2 in ipairs(unique) do
+      if v1 == v2 then
+        goto continue
+      end
+    end
+    table.insert(unique, v1)
+    ::continue::
+  end
+  return unique
 end
 
 function M.table.copy(src)
