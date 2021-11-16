@@ -1,5 +1,8 @@
-# vfiler.vim
-vfiler is a file manager written in Lua/Vim script.
+<p align="center">
+  <img src="https://github.com/obaland/contents/blob/main/vfiler.vim/logo.png" alt="vfiler-logo" height=260>
+</p>
+
+# vfiler.vim: File explorer plugin for Vim/Neovim
 
 ## Description
 - **File manager**
