@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/obaland/contents/blob/main/vfiler.vim/logo.png" alt="vfiler-logo" height=260>
+  <img src="https://github.com/obaland/contents/blob/main/vfiler.vim/logo.png" alt="vfiler-logo" width=75% height=auto>
 </p>
 
 # vfiler.vim: File explorer plugin for Vim/Neovim
