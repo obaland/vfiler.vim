@@ -37,6 +37,12 @@ vfiler.vim requires Neovim(0.5.0+) or Vim8.2 + with [if\_lua](http://vimdoc.sour
 Plug 'obaland/vfiler.vim'
 ```
 
+### Using [dein.vim](https://github.com/Shougo/dein.vim)
+
+```vim
+call dein('obaland/vfiler.vim')
+```
+
 ## Demo
 ### Basic
 ![basic](https://github.com/obaland/contents/blob/main/vfiler.vim/image-basic.png?raw=true)
