@@ -40,7 +40,7 @@ Plug 'obaland/vfiler.vim'
 ### Using [dein.vim](https://github.com/Shougo/dein.vim)
 
 ```vim
-call dein('obaland/vfiler.vim')
+call dein#add('obaland/vfiler.vim')
 ```
 
 ## Demo
