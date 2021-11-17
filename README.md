@@ -1,7 +1,11 @@
-# vfiler.vim
-vfiler is a file manager written in Vim script.
+<p align="center">
+  <img src="https://github.com/obaland/contents/blob/main/vfiler.vim/logo.png?raw=true" alt="vfiler-logo" width=75% height=auto>
+</p>
 
-## Concept
+# vfiler.vim: File explorer plugin for Vim/Neovim
+
+## Description
+
 - **File manager**
 
   You can perform basic operations such as selecting, creating, deleting,
@@ -12,10 +16,6 @@ vfiler is a file manager written in Vim script.
   It can be treated as 2 window filer. This makes file operations easier to
   handle.
 
-- **Explorer mode**
-
-  It supports Explorer mode like "netrw" or modern IDE environment.
-
 - **Not depends on other plugins.**
 
   It works independently without relying on other plugins.
@@ -25,34 +25,36 @@ vfiler is a file manager written in Vim script.
   Aiming for the necessary and sufficient functions to increase working
   efficiency and their lightweight operation.
 
+## Requirements
+
+vfiler.vim requires Neovim(0.5.0+) or Vim8.2 + with [if\_lua](http://vimdoc.sourceforge.net/htmldoc/if_lua.html).
+
+## Instalattion
+
+### Using [vim-plug](https://github.com/junegunn/vim-plug)
+
+```vim
+Plug 'obaland/vfiler.vim'
+```
+
 ## Demo
 ### Basic
-![VFiler basic operations](https://github.com/obaland/contents/blob/main/vfiler.vim/image-basic.png)
+![basic](https://github.com/obaland/contents/blob/main/vfiler.vim/image-basic.png?raw=true)
 
 ### Operation with two buffers
-![VFiler operations with two buffers](https://github.com/obaland/contents/blob/main/vfiler.vim/image-multiple.png)
+![multiple](https://github.com/obaland/contents/blob/main/vfiler.vim/image-multiple.png?raw=true)
 
-### Explorer mode
-![VFiler explorer mode](https://github.com/obaland/contents/blob/main/vfiler.vim/image-tree.png)
+### Explorer style
+![tree](https://github.com/obaland/contents/blob/main/vfiler.vim/image-tree.png?raw=true)
 
-## Usage
+## Quick Start
 Basically, after installing in any way, start with the **VFiler** command.
 
     :VFiler [{path}]
 
+If {path} is not specified, it will start in the current directory.
+
 Please see the [documentation][vim-doc] for details.
-
-## Special Thanks
-When implementing this plug-in, I referred to the following excellent program and software.  
-I would like to express my special appreciation.  
-
-* [vimfiler](https://github.com/Shougo/vimfiler.vim)
-
-* [vaffle](https://github.com/cocopon/vaffle.vim)
-
-* [netrw](https://github.com/vim-scripts/netrw.vim)
-
-* [xyzzy (filer)](https://github.com/xyzzy-022/xyzzy)
 
 ## Finally
 I am hoping to continually improve it as far as time permits,  

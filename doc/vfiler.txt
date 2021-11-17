@@ -1,26 +1,24 @@
-*vfiler.txt*  File manager for Vim.
+*vfiler.txt*  File manager plugin for Vim/Neovim.
 
-CONTENTS                                       *vfiler-contents*
+CONTENTS                                                     *vfiler-contents*
 
 Introduction ........... |vfiler-introduction|
-  Concept ................ |vfiler-concept|
+  Description ............ |vfiler-description|
   Requirements ........... |vfiler-requirements|
 Interface .............. |vfiler-interface|
-  Commands ............... |vfiler-commands|
-  Variables .............. |vfiler-variables|
+  Command options ........ |vfiler-command-options|
+  Functions .............. |vfiler-functions|
+  Actions ................ |vfiler-actions|
   Key mappings ........... |vfiler-key-mappings|
-  Options ................ |vfiler-options|
+Customization .......... |vfiler-customization|
 Examples ............... |vfiler-examples|
 About .................. |vfiler-about|
-Special Thanks ......... |vfiler-special-thanks|
 
 ==============================================================================
-INTRODUCTION                                   *vfiler-introduction*
+INTRODUCTION                                             *vfiler-introduction*
 
 ------------------------------------------------------------------------------
-CONCEPT                                        *vfiler-concept*
-
-*vfiler* is a file manager written in Vim script.
+DESCRIPTION                                               *vfiler-description*
 
   - File manager >
     You can perform basic operations such as selecting, creating, deleting,
@@ -30,9 +28,6 @@ CONCEPT                                        *vfiler-concept*
     It can be treated as 2 window filer. This makes file operations easier to
     handle.
 
-  - Explorer mode
-    It supports Explorer mode like "netrw" or modern IDE environment.
-
   - Not depends on other plugins.
     It works independently without relying on other plugins.
 
@@ -41,325 +36,269 @@ CONCEPT                                        *vfiler-concept*
     efficiency and their lightweight operation.
 
 ------------------------------------------------------------------------------
-REQUIREMENTS                                   *vfiler-requirements*
+REQUIREMENTS                                             *vfiler-requirements*
 
-vfiler requires Vim (>= 7.4) or Neovim to access full features. It may work in
-earlier version, but not supported.
+vfiler.vim requires Neovim(0.5.0+) or Vim8.2 + with if_lua.
 
 ==============================================================================
-INTERFACE                                      *vfiler-interface*
+INTERFACE                                                   *vfiler-interface*
 
 ------------------------------------------------------------------------------
-COMMANDS                                       *vfiler-commands*
+COMMANDS                                                     *vfiler-commands*
 
-					       *:VFiler*
+					                             *:VFiler*
 :VFiler [{options}...] [{path}]
                 Runs vfiler. This command reuses a buffer if a filer buffer
                 already exists. If you omit {path} and a filer buffer do not
                 exist, vfiler opens current directory. {path} needs to be a
                 directory.
                 {options} are options for a filer buffer:
-                |vfiler-options|
+                |vfiler-command-options|
 
 		Examples:
-		" Runs vfiler on the specified path in Explorer mode.
-                :VFiler -explorer /foo/bar
->
-:VFilerCurrentDir [{options}...]               *:VFilerCurrentDir*
-		Equivalent to |:VFiler| except that it starts with current
-                directory.
-
-:VFilerBufferDir [{options}...]                *:VFilerBufferDir*
-		Equivalent to |:VFiler| except that it starts with current
-		buffer directory.
+		" Starts by specifying the buffer name and widthout adding it
+                to the buffer list.
+                :VFiler -name=foo -no-listed /foo/bar
 
 ------------------------------------------------------------------------------
-VARIABLES                                      *vfiler-variables*
-
-*g:vfiler_as_default_explorer*
-                (Default: 0)
-                If this variable is true, Vim use vfiler as file manager
-                instead of |netrw|. Note: This variable disables |netrw|
-                explorer function.
-
-*g:vfiler_visible_hidden_files*
-                (Default: 0)
-                If enabled, Make hidden files visible by default. You can
-                toggle the option with
-                |<Plug>(vfiler_toggle_visible_hidden_files)| any time.
-
-*g:vfiler_time_format*
-                (Default: '%Y/%m/%d %H:%M')
-		This variable controls displayed time format.
-		The time format option is compatible |strftime()|.
-
-*g:vfiler_safe_mode*
-                (Default: 1)
-                This variable controls filer enter safe mode by default. In
-                safe mode, dangerous command is disabled.
-
-*g:vfiler_auto_cd*
-                (Default: 0)
-                If enabled, changes the working directory to selected one
-                automatically.
-
-*g:vfiler_marked_file_icon*
-                (Default: '*')
-                This variable controls filer marked file icon.
-
-*g:vfiler_tree_closed_icon*
-                (Default: '+')
-                This variable controls filer closed directory tree icon.
-
-*g:vfiler_tree_opened_icon*
-                (Default: '-')
-                This variable controls filer opened directory tree icon.
-
-*g:vfiler_tree_leaf_icon*
-                (Default: '|')
-                This variable controls filer opened directory tree icon.
-
-*g:vfiler_max_number_of_bookmark*
-                (Default: 50)
-                The maximum number of recordable bookmarks.
-
-*g:vfiler_use_default_mappings*
-                (Default: 1)
-                If disabled, vfiler doesn't set up the default mappings. To
-		customize key mappings, see
-		|vfiler-example-custom-key-mappings|.
-
-*g:vfiler_display_current_directory_on_top
-                (Default: 1)
-                If disabled, the top current directory is not displayed.
-
-------------------------------------------------------------------------------
-KEY MAPPINGS                                   *vfiler-key-mappings*
-
-Normal mode key mappings.
-
-*<Plug>(vfiler_loop_cursor_down)*
-		Switches to next line with loop.
-
-*<Plug>(vfiler_loop_cursor_up)*
-		Switches to previous line with loop.
-
-*<Plug>(vfiler_move_cursor_bottom)*
-		Moves the cursor to the bottom of the filer.
-
-*<Plug>(vfiler_move_cursor_top)*
-		Moves the cursor to the top of the filer.
-
-*<Plug>(vfiler_switch_to_directory)*
-		Changes to the directory on the cursor.
-
-*<Plug>(vfiler_open_file)*
-		Open cursor file.
-
-*<Plug>(vfiler_cd_or_open)*
-		Change cursor directory or open cursor file.
-
-*<Plug>(vfiler_yank_full_path)*
-		Yanks full path to clipboard register and unnamed register.
-
-*<Plug>(vfiler_yank_filename)*
-		Yanks filename to clipboard register and unnamed register.
-
-*<Plug>(vfiler_open_by_tabpage)*
-		Open cursor file by tabpage.
-
-*<Plug>(vfiler_open_by_split)*
-		Open cursor file by split.
-
-*<Plug>(vfiler_open_by_vsplit)*
-		Open cursor file by vsplit.
-
-*<Plug>(vfiler_execute_file)*
-		Execute the file with an external program.
-
-*<Plug>(vfiler_toggle_directory_tree)*
-		Expand cursor directory.
-
-*<Plug>(vfiler_toggle_tree_or_open)*
-		Expand cursor directory or edit cursor file.
-
-*<Plug>(vfiler_switch_to_parent_directory)*
-		Switches to parent directory.
-
-*<Plug>(vfiler_switch_to_home_directory)*
-		Switches to home directory.
-
-*<Plug>(vfiler_switch_to_root_directory)*
-		Switches to root directory.
-
-*<Plug>(vfiler_toggle_visible_hidden_files)*
-		Toggles visible hidden files.
-
-*<Plug>(vfiler_toggle_mark_current_line_down)*
-		Toggles mark in cursor line and move down.
-
-*<Plug>(vfiler_toggle_mark_current_line_up)*
-		Toggles mark in cursor line and move up.
-
-*<Plug>(vfiler_toggle_mark_all_lines)*
-		Toggles marks in all lines.
-
-*<Plug>(vfiler_clear_mark_all_lines)*
-		Clears marks in all lines.
-
-*<Plug>(vfiler_switch_to_buffer)*
-                Switch the filer buffer in the tab page. If there is no
-                buffer to switch, create it.
-
-*<Plug>(vfiler_sync_with_current_filer)*
-		Synchronizes another filer current directory with current
-		filer.
-
-*<Plug>(vfiler_switch_to_drive)*
-		Switches to other drive(Windows) or mount point(Mac/Linux).
-
-*<Plug>(vfiler_select_sort_type)*
-		Select the sort type.
-
-*<Plug>(vfiler_reload)*
-                Reload filer.
-
-*<Plug>(vfiler_jump_to_directory)*
-                Jump to specified directory.
-
-*<Plug>(vfiler_toggle_safe_mode)*
-		Toggles safe mode. In safe mode, dangerous command is
-		disabled.
-
-*<Plug>(vfiler_select_bookmark)*
-                Select the recorded bookmark.
-
-*<Plug>(vfiler_add_bookmark)*
-                Add bookmarks.
-
-*<Plug>(vfiler_quit)*
-                Quit the filer.
-
-*<Plug>(vfiler_create_file)*
-		Creates new files. If directory tree is opened, create new
-		files in directory tree.
-
-*<Plug>(vfiler_mkdir)*
-                Make the directories.
-
-*<Plug>(vfiler_delete_file)*
-                Delete files.
-
-*<Plug>(vfiler_rename_file)*
-                Rename files.
-
-*<Plug>(vfiler_copy_file)*
-                Copy files.
-
-*<Plug>(vfiler_move_file)*
-                Move files.
-
-                                                *vfiler-default-key-mappings*
-Following keymappings are default keymappings.
-
-Normal mode key mappings.
-
-{lhs}           {rhs}
---------        -----------------------------
-j               <Plug>(vfiler_loop_cursor_down)
-k               <Plug>(vfiler_loop_cursor_up)
-l               <Plug>(vfiler_wrap_action_l)
-h               <Plug>(vfiler_switch_to_parent_directory)
-gg              <Plug>(vfiler_move_cursor_top)
-G               <Plug>(vfiler_move_cursor_bottom)
-gs              <Plug>(vfiler_toggle_safe_mode)
-.               <Plug>(vfiler_toggle_visible_hidden_files)
-~               <Plug>(vfiler_switch_to_home_directory)
-\               <Plug>(vfiler_switch_to_root_directory)
-o               <Plug>(vfiler_toggle_tree_or_open)
-t               <Plug>(vfiler_open_by_tabpage)
-s               <Plug>(vfiler_open_by_split)
-v               <Plug>(vfiler_open_by_vsplit)
-x               <Plug>(vfiler_execute_file)
-yy              <Plug>(vfiler_yank_full_path)
-P               <Plug>(vfiler_sync_with_current_filer)
-L               <Plug>(vfiler_switch_to_drive)
-S               <Plug>(vfiler_select_sort_type)
-b               <Plug>(vfiler_select_bookmark)
-B               <Plug>(vfiler_add_bookmark)
-q               <Plug>(vfiler_quit)
-<Enter>         <Plug>(vfiler_cd_or_open)
-<Space>         <Plug>(vfiler_toggle_mark_current_line_down)
-<S-Space>       <Plug>(vfiler_toggle_mark_current_line_up)
-*               <Plug>(vfiler_toggle_mark_all_lines)
-U               <Plug>(vfiler_clear_mark_all_lines)
-<Tab>           <Plug>(vfiler_switch_to_buffer)
-<BS>            <Plug>(vfiler_switch_to_parent_directory)
-<C-l>           <Plug>(vfiler_reload)
-<C-j>           <Plug>(vfiler_jump_to_directory)
-N               <Plug>(vfiler_create_file)
-K               <Plug>(vfiler_mkdir)
-d               <Plug>(vfiler_delete_file)
-r               <Plug>(vfiler_rename_file)
-c               <Plug>(vfiler_copy_file)
-m               <Plug>(vfiler_move_file)
-
-------------------------------------------------------------------------------
-OPTIONS                                       *vfiler-options*
+COMMAND OPTIONS                                       *vfiler-command-options*
 
 {options} are options for a filer buffer.  You may give the following
 parameters for an option.  You need to escape spaces with "\".
 
+                                                  *vfiler-command-options-no-*
+-no-{option-name}
+                Disable {option-name} flag.
+                Note: If you use both {option-name} and -no-{option-name} in
+                the same vfiler buffer, it is undefined.
 
-                                              *vfiler-options-buffer-name*
-		-buffer-name={buffer-name}
+                                               *vfiler-command-options-auto-cd*
+-auto-cd
+                Enable auto cd behavior.
+
+                Default: false
+
+                                               *vfiler-command-options-listed*
+-listed
+                Display the vfiler buffer in the buffer list.
+
+                Defualt: true
+
+                                                 *vfiler-command-options-name*
+-name={buffer-name}
 		Specifies a buffer name.
 		The default buffer name is blank.
 		Note: Buffer name must not contain spaces.
 
-                                              *vfiler-options-winwidth*
-		-winwidth={window-width}
-		Specifies the width of a filer buffer.
-		Note: If this option is 0, auto resize feature is disabled.
+                                                  *vfiler-command-options-new*
+-new
+                Create new vfiler buffer.
 
-                                              *vfiler-options-simple*
-		-simple
-		Enable vfiler simple mode.
-		Note: It is default in explorer mode.
+                Default: false
 
-                                              *vfiler-options-split*
-		-split
-		Split filer buffer.
+                                      *vfiler-command-options-show-hidden-files*
+-show-hidden-files
+                If enabled, Make hidden files visible by default.
 
-                                              *vfiler-options-auto-cd*
-		-auto-cd
-		Enable auto cd behavior.
 
-                                              *vfiler-options-explorer*
-		-explorer
-                It behaves as Explorer mode.
+                Default: false
+
+                                                *vfiler-command-options-split*
+-split={direction}
+		Specify the split direction.
+
+                "horizontal": Split buffer horizontally
+                "vertical": Split buffer vertically
+                "tab": Create the new tabpage
+                "no": No split
+
+
+                Default: "none"
+
+                                               *vfiler-command-options-height*
+-height={window-height}
+                Set the height of the window if |vfiler-option-split| is
+                "horizontal".
+
+                Default: 30
+
+                                                *vfiler-command-options-width*
+-width={window-width}
+                Set the width of the window if |vfiler-option-split| is
+                "vertical".
+
+                Default: 90
+
+------------------------------------------------------------------------------
+FUNCTIONS                                                   *vfiler-functions*
+
+
+------------------------------------------------------------------------------
+ACTIONS                                                       *vfiler-actions*
+
+loop_cursor_down                             *vfiler-actions-loop_cursor_down*
+    Switches to next line with loop.
+
+loop_cursor_up                                 *vfiler-actions-loop_cursor_up*
+    Switches to previous line with loop.
+
+move_cursor_bottom                         *vfiler-actions-move_cursor_bottom*
+    Moves the cursor to the bottom of the filer.
+
+move_cursor_top                               *vfiler-actions-move_cursor_top*
+    Moves the cursor to the top of the filer.
+
+open                                                     *vfiler-actions-open*
+    Change cursor directory or open cursor file.
+
+yank_path                                           *vfiler-actions-yank_path*
+    Yanks full path to clipboard register and unnamed register.
+
+yank_name                                           *vfiler-actions-yank_name*
+    Yanks filename to clipboard register and unnamed register.
+
+open_by_tabpage                                *vfiler-actions-open_by_tabpage*
+    Open cursor file by tabpage.
+
+open_by_split                                   *vfiler-actions-open_by_split*
+    Open cursor file by split.
+
+open_by_vsplit                                 *vfiler-actions-open_by_vsplit*
+    Open cursor file by vsplit.
+
+execute_file                                     *vfiler-actions-execute_file*
+    Execute the file with an external program.
+
+open_tree                                           *vfiler-actions-open_tree*
+    Expand cursor directory.
+
+close_tree_or_cd                             *vfiler-actions-close_tree_or_cd*
+    Close cursor directory tree or change to parent directory.
+
+change_to_parent                              *vfiler-actions-change_to_parent*
+    Change to parent directory.
+
+jump_to_home                                     *vfiler-actions-jump_to_home*
+    Jump to home directory.
+
+jump_to_root                                     *vfiler-actions-jump_to_root*
+    Jump to root directory.
+
+toggle_show_hidden                         *vfiler-actions-toggle_show_hidden*
+    Toggles visible hidden files.
+
+toggle_select_down                         *vfiler-actions-toggle_select_down*
+    Toggles mark in cursor line and move down.
+
+toggle_select_up                             *vfiler-actions-toggle_select_up*
+    Toggles mark in cursor line and move up.
+
+toggle_select_all                           *vfiler-actions-toggle_select_all*
+    Toggles marks in all lines.
+
+clear_selected_all                         *vfiler-actions-clear_selected_all*
+    Clears marks in all lines.
+
+switch_to_filer                               *vfiler-actions-switch_to_filer*
+    Switch the filer buffer in the tab page. If there is no
+    buffer to switch, create it.
+
+sync_with_current_filer               *vfiler-actions-sync_with_current_filer*
+    Synchronizes another filer current directory with current filer.
+
+switch_to_drive                               *vfiler-actions-switch_to_drive*
+    Switches to other drive(Windows) or mount point(Mac/Linux).
+
+change_sort                                       *vfiler-actions-change_sort*
+    Change the sort type.
+
+reload                                                 *vfiler-actions-reload*
+    Reload filer.
+
+jump_to_directory                           *vfiler-actions-jump_to_directory*
+    Jump to specified directory.
+
+quit                                                     *vfiler-actions-quit*
+    Quit the filer.
+
+new_file                                             *vfiler-actions-new_file*
+    Creates new files. If directory tree is opened, create new
+    files in directory tree.
+
+new_directory                                   *vfiler-actions-new_directory*
+    Make the directories.
+
+delete                                                 *vfiler-actions-delete*
+    Delete files.
+
+rename                                                 *vfiler-actions-rename*
+    Rename files.
+
+copy                                                     *vfiler-actions-copy*
+    Copy files.
+
+move                                                     *vfiler-actions-move*
+    Move files.
+
+paste                                                   *vfiler-actions-paste*
+    Paste files saved in the clipboard.
+
+------------------------------------------------------------------------------
+KEY MAPPINGS                                             *vfiler-key-mappings*
+
+Following keymappings are default keymappings.
+
+{lhs}           {rhs} (action)
+--------        -----------------------------
+j               loop_cursor_down
+k               loop_cursor_up
+l               open_tree
+h               close_tree_or_cd
+gg              move_cursor_top
+G               move_cursor_bottom
+.               toggle_show_hidden
+~               jump_to_home
+\               jump_to_root
+t               open_by_tabpage
+s               open_by_split
+v               open_by_vsplit
+x               execute_file
+yy              yank_path
+YY              yank_name
+P               paste
+L               switch_to_drive
+S               change_sort
+q               quit
+<CR>            open
+<Space>         toggle_select_down
+<S-Space>       toggle_select_up
+*               toggle_select_all
+U               clear_selected_all
+<Tab>           switch_to_filer
+<BS>            change_to_parent
+<C-l>           reload
+<C-j>           jump_to_directory
+<C-p>           sync_with_current_filer
+N               new_file
+K               new_directory
+dd              delete
+D               delete
+r               rename
+cc              copy
+C               copy
+mm              move
+M               move
 
 ==============================================================================
-EXAMPLES                                       *vfiler-examples*
+CUSTOMIZATION                                           *vfiler-customization*
 
-Customizing key mappings:                  *vfiler-example-custom-key-mappings*
->
-  let g:vfiler_use_default_mappings = 0
 
-  function! s:customize_vfiler_mappings() abort
-    " Customize key mappings here
-    nmap <Bslash> <Plug>(vfiler_switch_to_parent_directory)
-    nmap K        <Plug>(vfiler_mkdir)
-    nmap N        <Plug>(vfiler_create_file)
-  endfunction
-
-  augroup vfiler
-    autocmd!
-    autocmd FileType vfiler call s:customize_vfiler_mappings()
-  augroup END
-<
 ==============================================================================
-ABOUT                                          *vfiler-about*
+EXAMPLES                                                     *vfiler-examples*
+
+
+==============================================================================
+ABOUT                                                           *vfiler-about*
 
 vfiler is developed by obaland and licensed under the MIT License.
 Visit the project page for the latest information:
@@ -369,25 +308,6 @@ Visit the project page for the latest information:
 I am hoping to continually improve it as far as time permits,
 so I'd appreciate it if you can receive various opinions including
 differences within the script.
-
-==============================================================================
-SPECIAL THANKS                                 *vfiler-special-thanks*
-
-When implementing this plug-in, I referred to the following excellent program
-and software.
-I would like to express my special appreciation.
-
-vimfiler
-  https://github.com/Shougo/vimfiler.vim
-
-vaffle
-  https://github.com/cocopon/vaffle.vim
-
-netrw
-  https://github.com/vim-scripts/netrw.vim
-
-xyzzy
-  https://github.com/xyzzy-022/xyzzy
 
 ==============================================================================
 vim:ft=help:norl:ts=8:tw=78:
