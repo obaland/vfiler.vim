@@ -476,7 +476,7 @@ function M.move_to_filer(context, view)
   end
   local current = VFiler.get(view.bufnr)
   local linked = current.linked
-  if not (linked and linked.view:displayed()) then
+  if not (linked and linked:displayed()) then
     -- Move to clipboard
     M.move(context, view)
     return

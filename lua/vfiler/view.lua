@@ -370,7 +370,16 @@ function View:_toline(item)
       if padding > 0 then
         text = text .. (' '):rep(padding)
       end
+      cumulative_width = cumulative_width + padding
     end
+
+    -- If the actual width exceeds the window width,
+    -- it will be interrupted
+    local actual_width = cumulative_width + (i - 1) -- space between columns
+    if actual_width > self._cache.winwidth then
+      break
+    end
+
     table.insert(texts, text)
   end
   return table.concat(texts, ' ')
