@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/obaland/contents/blob/main/vfiler.vim/logo.png" alt="vfiler-logo" width=75% height=auto>
+  <img src="https://github.com/obaland/contents/blob/main/vfiler.vim/logo.png?raw=true" alt="vfiler-logo" width=75% height=auto>
 </p>
 
 # vfiler.vim: File explorer plugin for Vim/Neovim
@@ -37,8 +37,14 @@ vfiler.vim requires Neovim(0.5.0+) or Vim8.2 + with [if\_lua](http://vimdoc.sour
 Plug 'obaland/vfiler.vim'
 ```
 ## Demo
+### Basic
+![basic](https://github.com/obaland/contents/blob/main/vfiler.vim/image-basic.png?raw=true)
 
-### *In preparation*
+### Operation with two buffers
+![multiple](https://github.com/obaland/contents/blob/main/vfiler.vim/image-multiple.png?raw=true)
+
+### Explorer style
+![tree](https://github.com/obaland/contents/blob/main/vfiler.vim/image-tree.png?raw=true)
 
 ## Quick Start
 Basically, after installing in any way, start with the **VFiler** command.
