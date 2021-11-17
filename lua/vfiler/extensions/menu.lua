@@ -39,7 +39,12 @@ function ExtensionMenu:select()
 end
 
 function ExtensionMenu:_on_get_texts(items)
-  return items
+  -- Add padding
+  local texts = {}
+  for _, item in ipairs(items) do
+    table.insert(texts, ' ' .. item)
+  end
+  return texts
 end
 
 function ExtensionMenu:_on_draw(texts)

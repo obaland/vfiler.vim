@@ -58,6 +58,7 @@ function VFiler.cleanup()
   vfilers = valid_filers
 end
 
+--- Find the currently valid filer by name
 ---@param name string
 function VFiler.find(name)
   -- in tabpage
@@ -69,6 +70,7 @@ function VFiler.find(name)
   return VFiler.find_hidden(name)
 end
 
+--- Find the currently hidden filer by name
 ---@param name string
 function VFiler.find_hidden(name)
   -- in hidden buffers
@@ -81,15 +83,18 @@ function VFiler.find_hidden(name)
   return nil -- not found
 end
 
+--- Get the filer from the buffer number
 ---@param bufnr number Buffer number
 function VFiler.get(bufnr)
   return vfilers[bufnr].object
 end
 
+--- Get the filer of the current buffer
 function VFiler.get_current()
   return VFiler.get(vim.fn.bufnr())
 end
 
+--- Get the currently displayed filers
 function VFiler.get_displays()
   local filers = {}
   for bufnr, filer in pairs(vfilers) do
@@ -100,6 +105,7 @@ function VFiler.get_displays()
   return filers
 end
 
+--- Create a filer obuject
 ---@param configs table
 function VFiler.new(configs)
   local options = configs.options
@@ -136,10 +142,13 @@ function VFiler._handle_event(bufnr, type)
   vfiler:handle_event(type)
 end
 
+--- Is the filer displayed?
 function VFiler:displayed()
   return self.view:winnr() >= 0
 end
 
+--- Do the action of the specified key
+---@param key string
 function VFiler:do_action(key)
   local func = self._mappings[key]
   if not func then
@@ -149,10 +158,12 @@ function VFiler:do_action(key)
   func(self.context, self.view)
 end
 
+--- Draw the filer in the current window
 function VFiler:draw()
   self.view:draw(self.context)
 end
 
+--- Handle the specified event
 function VFiler:handle_event(type)
   local events = self.configs.events
   local func = events[type]
@@ -163,11 +174,13 @@ function VFiler:handle_event(type)
   func(self.context, self.view)
 end
 
+--- Link with the specified filer
 function VFiler:link(vfiler)
   self.linked = vfiler
   vfiler.linked = self
 end
 
+--- Open filer
 function VFiler:open(...)
   if self:displayed() then
     core.window.move(self.view:winnr())
@@ -181,6 +194,7 @@ function VFiler:open(...)
   self.view:open()
 end
 
+--- Quit filer
 function VFiler:quit()
   local bufnr = self.view.bufnr
   if self.configs.options.quit and bufnr >= 0 then
@@ -190,6 +204,8 @@ function VFiler:quit()
   end
 end
 
+--- Reset the filer object
+---@param configs table
 function VFiler:reset(configs)
   self:unlink()
   self.context = Context.new(configs.options)
@@ -202,12 +218,15 @@ function VFiler:reset(configs)
   self.configs = core.table.copy(configs)
 end
 
+--- Start the filer
+---@param dirpath string
 function VFiler:start(dirpath)
   self.context:switch(dirpath)
   self.view:draw(self.context)
   core.cursor.move(2)
 end
 
+--- Unlink filer
 function VFiler:unlink()
   local vfiler = self.linked
   if vfiler then

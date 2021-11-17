@@ -43,7 +43,7 @@ function ExtensionRename:check()
 
   local lines = self:get_lines()
   for lnum, line in ipairs(lines) do
-    -- Check for blank line 
+    -- Check for blank line
     if #line == 0 then
       core.message.error('Blank line. (%d)', lnum)
       return false

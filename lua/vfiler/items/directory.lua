@@ -30,7 +30,6 @@ local function create_item(path, sort_type)
 end
 
 function Directory.create(dirpath, sort_type)
-  -- mkdir
   if vim.fn.mkdir(dirpath) ~= 1 then
     return nil
   end

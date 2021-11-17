@@ -74,6 +74,8 @@ end
 local Context = {}
 Context.__index = Context
 
+--- Create a context object
+---@param options table
 function Context.new(options)
   return setmetatable({
     auto_cd = options.auto_cd,
@@ -85,10 +87,14 @@ function Context.new(options)
   }, Context)
 end
 
+--- Clear the internal data
 function Context:clear()
+  self._root = nil
   self._store = Store.new()
 end
 
+--- Save the path in the current context
+---@param path string
 function Context:save(path)
   if not self.root then
     return
@@ -96,6 +102,8 @@ function Context:save(path)
   self._store:save(self.root, path)
 end
 
+--- Change the sort type
+---@param type string
 function Context:change_sort(type)
   if self.sort_type == type then
     return
@@ -104,12 +112,25 @@ function Context:change_sort(type)
   self.sort_type = type
 end
 
+--- Duplicate another context
+---@param context table
 function Context:duplicate(context)
   self._store:copy(context._store)
   self:switch(context.root.path)
 end
 
--- @param path string
+--- Get the parent directory path of the current context
+function Context:parent_path()
+  if self.root.parent then
+    return self.root.parent.path
+  end
+  local path = self.root.path
+  local mods = path:sub(#path, #path) == '/' and ':h:h' or ':h'
+  return vim.fn.fnamemodify(path, mods)
+end
+
+--- Switch the context to the specified directory path
+---@param dirpath string
 function Context:switch(dirpath)
   -- perform auto cd
   if self.auto_cd then
@@ -129,6 +150,8 @@ function Context:switch(dirpath)
   return self.root.path
 end
 
+--- Switch the context to the specified drive path
+---@param drive string
 function Context:switch_drive(drive)
   local dirpath = self._store:restore_dirpath(drive)
   if not dirpath then
@@ -137,6 +160,7 @@ function Context:switch_drive(drive)
   return self:switch(dirpath)
 end
 
+--- Update the current context
 function Context:update()
   local rpaths = {}
   walk_expanded(rpaths, self.root.path, self.root)
@@ -147,6 +171,8 @@ function Context:update()
   end
 end
 
+--- Synchronize with other context
+---@param context table
 function Context:sync(context)
   self._store:save(context.root, context.root.path)
   self:switch(context.root.path)

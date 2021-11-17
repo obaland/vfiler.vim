@@ -24,6 +24,7 @@ local function create_columns(columns)
   return objects
 end
 
+--- Create a view object
 ---@param bufname string
 ---@param options table
 function View.new(bufname, options)
@@ -47,6 +48,7 @@ function View.new(bufname, options)
   return object
 end
 
+--- Create data that includes a buffer
 function View:create()
   self.bufnr = self:_create_buffer()
   self:_apply_syntaxes()
@@ -54,7 +56,7 @@ function View:create()
   return self.bufnr
 end
 
----Delete view object
+--- Delete view object
 function View:delete()
   if self.bufnr >= 0 then
     vim.command('silent bwipeout ' .. self.bufnr)
@@ -62,7 +64,7 @@ function View:delete()
   self.bufnr = -1
 end
 
----Draw context contents
+--- Draw along the context
 ---@param context table
 function View:draw(context)
   -- expand item list
@@ -80,15 +82,18 @@ function View:draw(context)
   self:redraw()
 end
 
+--- Get the item on the current cursor
 function View:get_current()
   return self:get_item(vim.fn.line('.'))
 end
 
+--- Get the item in the specified line number
 ---@param lnum number
 function View:get_item(lnum)
   return self._items[lnum]
 end
 
+--- Find the index of the item in the view buffer for the specified path
 ---@param path string
 function View:indexof(path)
   for i, item in ipairs(self._items) do
@@ -99,20 +104,24 @@ function View:indexof(path)
   return 0
 end
 
+--- Move the cursor to the position of the specified path
 function View:move_cursor(path)
   local lnum = self:indexof(path)
   -- Skip header line
   core.cursor.move(math.max(lnum, self:top_lnum()))
 end
 
+--- Get the number of line in the view buffer
 function View:num_lines()
   return #self._items
 end
 
+--- Open the view buffer for the current window
 function View:open()
   vim.command('silent buffer ' .. self.bufnr)
 end
 
+--- Redraw the current contents
 function View:redraw()
   if self.bufnr ~= vim.fn.bufnr() then
     core.message.warning('Cannot draw because the buffer is different.')
@@ -159,6 +168,7 @@ function View:redraw()
   vim.fn.winrestview(saved_view)
 end
 
+--- Redraw the contents of the specified line number
 function View:redraw_line(lnum)
   local item = self:get_item(lnum)
   local line = ''
@@ -175,6 +185,8 @@ function View:redraw_line(lnum)
   vim.set_buf_option(self.bufnr, 'readonly', true)
 end
 
+--- Reset the view object
+---@param options table
 function View:reset(options)
   self:_reset(options)
   vim.set_buf_option(self.bufnr, 'buflisted', self._listed)
@@ -182,6 +194,7 @@ function View:reset(options)
   self:_resize(vim.fn.bufwinnr(self.bufnr))
 end
 
+--- Get the currently selected items
 function View:selected_items()
   local selected = {}
   for _, item in ipairs(self._items) do
@@ -198,10 +211,12 @@ function View:selected_items()
   return selected
 end
 
+--- Get the top line number where the item is displayed
 function View:top_lnum()
   return self._header and 2 or 1
 end
 
+--- Get the window number of the view
 function View:winnr()
   return vim.fn.bufwinnr(self.bufnr)
 end

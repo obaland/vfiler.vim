@@ -238,18 +238,6 @@ function M.define(name, func)
   M[name] = func
 end
 
-function M.start(dirpath, configs)
-  local options = configs.options
-  local vfiler = VFiler.find(options.name)
-  if vfiler then
-    vfiler:open()
-    vfiler:reset(configs)
-  else
-    vfiler = VFiler.new(configs)
-  end
-  vfiler:start(dirpath)
-end
-
 function M.undefine(name)
   M[name] = nil
 end
@@ -279,7 +267,7 @@ function M.close_tree_or_cd(context, view)
   local level = item.level
   if level == 0 or (level <= 1 and not item.opened) then
     local path = context.root.path
-    cd(context, view, context.root:parent_path())
+    cd(context, view, context:parent_path())
     view:move_cursor(path)
   else
     M.close_tree(context, view)
@@ -314,7 +302,7 @@ function M.change_sort(context, view)
 end
 
 function M.change_to_parent(context, view)
-  cd(context, view, context.root:parent_path())
+  cd(context, view, context:parent_path())
 end
 
 function M.copy(context, view)
@@ -430,6 +418,8 @@ function M.loop_cursor_down(context, view)
   local num_end = view:num_lines()
   if lnum > num_end then
     core.cursor.move(view:top_lnum())
+    -- Correspondence to show the header line
+    -- when moving to the beginning of the line.
     vim.command('normal zb')
   else
     core.cursor.move(lnum)
@@ -469,6 +459,8 @@ end
 
 function M.move_cursor_top(context, view)
   core.cursor.move(view:top_lnum())
+  -- Correspondence to show the header line
+  -- when moving to the beginning of the line.
   vim.command('normal zb')
 end
 
@@ -594,7 +586,7 @@ function M.paste(context, view)
 
   local item = view:get_item(vim.fn.line('.'))
   local dest = (item.isdirectory and item.opened) and item or item.parent
-  if cb:paste(dest) and cb.hold then
+  if cb:paste(dest) and cb.keep then
     context.clipboard = nil
   end
   view:draw(context)

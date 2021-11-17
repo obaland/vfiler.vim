@@ -1,4 +1,3 @@
-local vim = require 'vfiler/vim'
 local action = require 'vfiler/extensions/action'
 
 function action.check(extension)

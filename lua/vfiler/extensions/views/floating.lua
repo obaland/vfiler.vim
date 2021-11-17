@@ -86,6 +86,7 @@ function Floating:_on_open(name, texts, options)
 
   -- set options
   vim.api.nvim_win_set_option(winid, 'winhighlight', 'Normal:Normal')
+  vim.api.nvim_win_set_option(winid, 'number', false)
 
   -- open title window
   if name and #name > 0 then
@@ -109,20 +110,20 @@ function Floating:_open_tile(name, content_option)
   if option.relative == 'win' then
     option.win = self.source_winid
   end
-  local buffer = vim.api.nvim_create_buf(false, true)
-  local window = vim.api.nvim_open_win(buffer, false, option)
+  local bufnr = vim.api.nvim_create_buf(false, true)
+  local winid = vim.api.nvim_open_win(bufnr, false, option)
 
   -- set options
-  vim.api.nvim_win_set_option(window, 'winhighlight', 'Normal:Constant')
-  vim.api.nvim_win_set_option(window, 'cursorline', false)
-  vim.api.nvim_win_set_option(window, 'number', false)
+  vim.api.nvim_win_set_option(winid, 'winhighlight', 'Normal:Constant')
+  vim.api.nvim_win_set_option(winid, 'cursorline', false)
+  vim.api.nvim_win_set_option(winid, 'number', false)
 
   -- set title name
-  vim.api.nvim_buf_set_lines(buffer, 0, -1, true, {title})
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, {title})
 
   self._title = {
-    bufnr = buffer,
-    winid = window,
+    bufnr = bufnr,
+    winid = winid,
   }
 end
 

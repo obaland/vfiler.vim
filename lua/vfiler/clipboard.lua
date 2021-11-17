@@ -2,8 +2,6 @@ local cmdline = require 'vfiler/cmdline'
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
-local Directory = require 'vfiler/items/directory'
-
 local Clipboard = {}
 Clipboard.__index = Clipboard
 
@@ -17,7 +15,7 @@ end
 
 function Clipboard.copy(items)
   return setmetatable({
-    hold = true,
+    keep = true,
     _items = items,
     _done_message_prefix = 'Copied to',
     _fail_message_prefix = 'Failed to copy',
@@ -27,7 +25,7 @@ end
 
 function Clipboard.move(items)
   return setmetatable({
-    hold = false,
+    keep = false,
     _items = items,
     _done_message_prefix = 'Moved to',
     _fail_message_prefix = 'Failed to move',

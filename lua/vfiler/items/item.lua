@@ -13,17 +13,17 @@ function Item.new(filepath, islink)
   end
 
   return setmetatable({
-      isdirectory = core.path.isdirectory(filepath),
-      islink = islink,
-      level = 0,
-      name = vim.fn.fnamemodify(filepath, ':t'),
-      parent = nil,
-      path = core.path.normalize(filepath),
-      selected = false,
-      size = size,
-      time = time,
-      mode = vim.fn.getfperm(filepath)
-    }, Item)
+    isdirectory = core.path.isdirectory(filepath),
+    islink = islink,
+    level = 0,
+    name = vim.fn.fnamemodify(filepath, ':t'),
+    parent = nil,
+    path = core.path.normalize(filepath),
+    selected = false,
+    size = size,
+    time = time,
+    mode = vim.fn.getfperm(filepath)
+  }, Item)
 end
 
 function Item:delete()
@@ -33,15 +33,6 @@ function Item:delete()
   end
   self:_become_orphan()
   return true
-end
-
-function Item:parent_path()
-  if self.parent then
-    return self.parent.path
-  end
-  local path = self.path
-  local mods = self.path:sub(#path, #path) == '/' and ':h:h' or ':h'
-  return vim.fn.fnamemodify(path, mods)
 end
 
 function Item:rename(name)
@@ -89,7 +80,7 @@ function Item:_move(destpath)
   if not core.path.exists(destpath) and core.path.exists(self.path) then
     return false
   end
-  self:_becom_orphan()
+  self:_become_orphan()
   return true
 end
 
