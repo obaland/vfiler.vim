@@ -15,7 +15,7 @@ function M.get_status_string()
   if not (vfiler and vfiler.context.root) then
     return ''
   end
-  return vfiler.context.root.path
+  return vim.fn.fnamemodify(vfiler.context.root.path, ':~')
 end
 
 function M.start_command(args)

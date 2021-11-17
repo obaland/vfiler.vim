@@ -8,7 +8,7 @@ function NameColumn.new()
   self.variable = true
   self.stretch = true
 
-  self.min_width = 32
+  self.min_width = 30
   self.max_width = 0
 
   local Syntax = require('vfiler/columns/syntax')
