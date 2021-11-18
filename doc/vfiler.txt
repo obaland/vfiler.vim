@@ -277,8 +277,8 @@ U               clear_selected_all
 <Tab>           switch_to_filer
 <BS>            change_to_parent
 <C-l>           reload
-<C-j>           jump_to_directory
 <C-p>           sync_with_current_filer
+J               jump_to_directory
 N               new_file
 K               new_directory
 dd              delete

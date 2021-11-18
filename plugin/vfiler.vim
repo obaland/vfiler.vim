@@ -33,6 +33,6 @@ highlight def link vfilerTime              None
 highlight def link vfilerTimeToday         PreProc
 highlight def link vfilerTimeWeek          Type
 
-" define commands
+" Define commands
 command! -nargs=? -complete=customlist,vfiler#complete VFiler
       \ call vfiler#start(<q-args>)
