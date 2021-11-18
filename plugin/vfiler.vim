@@ -35,4 +35,4 @@ highlight def link vfilerTimeWeek          Type
 
 " define commands
 command! -nargs=? -complete=customlist,vfiler#complete VFiler
-      \ call vfiler#start_command(<q-args>)
+      \ call vfiler#start(<q-args>)
