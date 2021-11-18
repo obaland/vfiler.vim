@@ -175,6 +175,7 @@ local function rename_files(context, view, targets)
     return
   end
 
+  local lnum = vim.fn.line('.')
   local ext = Rename.new {
     on_execute = function(items, renames)
       local num_renamed = 0
@@ -194,12 +195,13 @@ local function rename_files(context, view, targets)
         for _, parent in pairs(parents) do
           parent:sort(context.sort_type, false)
         end
-        view:draw(context)
       end
     end,
 
     on_quit = function()
       context.extension = nil
+      M.reload(context, view)
+      core.cursor.move(lnum)
     end,
   }
 

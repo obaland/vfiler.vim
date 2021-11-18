@@ -123,9 +123,7 @@ function Directory:walk()
       end
     end
   end
-  return coroutine.wrap(function()
-    _walk(self)
-  end)
+  return coroutine.wrap(function() _walk(self) end)
 end
 
 function Directory:_add(item)

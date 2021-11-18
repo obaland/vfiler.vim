@@ -82,11 +82,11 @@ function ExtensionRename:execute()
 
   local renames = vim.from_vimlist(vim.fn.getline(1, #self.items))
   vim.set_buf_option(self.bufnr, 'modified', false)
-  self:quit()
 
   if self.on_execute then
     self.on_execute(self.items, renames)
   end
+  self:quit()
 end
 
 function ExtensionRename:get_lines()

@@ -204,7 +204,7 @@ function View:selected_items()
   end
   if #selected == 0 then
     local lnum = vim.fn.line('.')
-    if lnum ~= 1 then
+    if lnum >= self:top_lnum() then
       selected = {self:get_item(lnum)}
     end
   end

@@ -76,6 +76,10 @@ function Window:set_win_options(options)
   core.table.merge(self.winoptions, options)
 end
 
+function Window:winnr()
+  return vim.fn.bufwinnr(self.bufnr)
+end
+
 function Window:_on_win_option(name, texts)
   local options = {
     direction = nil,

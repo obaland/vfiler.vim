@@ -159,7 +159,7 @@ M.message = {}
 function M.message.error(format, ...)
   local msg = format:format(...)
   vim.command(
-    ([[echol ErrorMsg | echom '[vfiler]: %s' | echohl None]]):format(msg)
+    ([[echohl ErrorMsg | echom '[vfiler]: %s' | echohl None]]):format(msg)
     )
 end
 
@@ -172,7 +172,7 @@ end
 function M.message.warning(format, ...)
   local msg = format:format(...)
   vim.command(
-    ([[echol WarningMsg | echom '[vfiler]: %s' | echohl None]]):format(msg)
+    ([[echohl WarningMsg | echom '[vfiler]: %s' | echohl None]]):format(msg)
     )
 end
 
@@ -180,7 +180,7 @@ end
 function M.message.question(format, ...)
   local msg = format:format(...)
   vim.command(
-    ([[echol Question | echo '[vfiler]: %s' | echohl None]]):format(msg)
+    ([[echohl Question | echo '[vfiler]: %s' | echohl None]]):format(msg)
     )
 end
 
