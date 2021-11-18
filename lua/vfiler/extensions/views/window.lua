@@ -55,7 +55,7 @@ function Window:open(name, texts)
 end
 
 function Window:draw(name, texts)
-  local winnr = vim.fn.winbufnr(self.bufnr)
+  local winnr = self:winnr()
   vim.command('silent %delete _')
   vim.fn.setbufline(self.bufnr, 1, vim.to_vimlist(texts))
 

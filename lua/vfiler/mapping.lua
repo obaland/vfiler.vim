@@ -11,6 +11,10 @@ local function escape_key(key)
 end
 
 function M.define(bufnr, mappings, funcstr)
+  if not mappings then
+    return {}
+  end
+
   local options = {
     noremap = true,
     nowait = true,

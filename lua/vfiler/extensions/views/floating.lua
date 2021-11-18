@@ -20,7 +20,11 @@ function Floating:close()
 end
 
 function Floating:draw(name, texts)
+  local winnr = self:winnr()
   vim.api.nvim_buf_set_lines(self.bufnr, 0, -1, true, texts)
+
+  -- set window options
+  vim.set_win_options(winnr, self.winoptions)
 end
 
 function Floating:_on_win_option(name, texts)
@@ -116,7 +120,6 @@ function Floating:_open_tile(name, content_option)
   -- set options
   vim.api.nvim_win_set_option(winid, 'winhighlight', 'Normal:Constant')
   vim.api.nvim_win_set_option(winid, 'cursorline', false)
-  vim.api.nvim_win_set_option(winid, 'number', false)
 
   -- set title name
   vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, {title})

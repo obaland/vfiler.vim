@@ -16,7 +16,7 @@ function ExtensionMenu.new(options)
     readonly = true,
   }
   view:set_win_options {
-    number = true,
+    number = false,
   }
 
   local object = core.inherit(
