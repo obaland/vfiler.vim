@@ -157,22 +157,31 @@ M.message = {}
 
 ---print error message
 function M.message.error(format, ...)
-  vim.fn['vfiler#core#error'](format:format(...))
+  local msg = format:format(...)
+  vim.command(
+    ([[echol ErrorMsg | echom '[vfiler]: %s' | echohl None]]):format(msg)
+    )
 end
 
 ---print information message
 function M.message.info(format, ...)
-  vim.fn['vfiler#core#info'](format:format(...))
+  vim.command(([[echo '[vfiler]: %s']]):format(format:format(...)))
 end
 
 ---print warning message
 function M.message.warning(format, ...)
-  vim.fn['vfiler#core#warning'](format:format(...))
+  local msg = format:format(...)
+  vim.command(
+    ([[echol WarningMsg | echom '[vfiler]: %s' | echohl None]]):format(msg)
+    )
 end
 
 ---print question message
 function M.message.question(format, ...)
-  vim.fn['vfiler#core#question'](format:format(...))
+  local msg = format:format(...)
+  vim.command(
+    ([[echol Question | echo '[vfiler]: %s' | echohl None]]):format(msg)
+    )
 end
 
 ------------------------------------------------------------------------------

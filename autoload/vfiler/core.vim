@@ -11,19 +11,3 @@ function! vfiler#core#clear_undo() abort
 	execute 'setlocal undolevels=' . l:undolevels
 	unlet l:undolevels
 endfunction
-
-function! vfiler#core#info(message) abort
-  echo '[vfiler]: ' . a:message
-endfunction
-
-function! vfiler#core#error(message) abort
-  echohl ErrorMsg | echom '[vfiler]: ' . a:message | echohl None
-endfunction
-
-function! vfiler#core#warning(message) abort
-  echohl WarningMsg | echom '[vfiler]: ' . a:message | echohl None
-endfunction
-
-function! vfiler#core#question(message) abort
-  echohl Question | echo '[vfiler]: ' . a:message | echohl None
-endfunction
