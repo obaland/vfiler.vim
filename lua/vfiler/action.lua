@@ -34,22 +34,22 @@ local function create_files(dest, contents, create)
     local new = create(dest, name, filepath)
     if new then
       dest:add(new)
-      table.insert(created, name)
+      table.insert(created, new)
     elseif new == nil then
       core.message.error('Failed to create a "%s" file', name)
     end
   end
 
   if #created == 0 then
-    return false
+    return nil
   end
 
   if #created == 1 then
-    core.message.info('Created - "%s" file', created[1])
+    core.message.info('Created - "%s" file', created[1].name)
   else
     core.message.info('Created - %d files', #created)
   end
-  return true
+  return created
 end
 
 local function detect_drives()
@@ -501,15 +501,22 @@ function M.new_directory(context, view)
       if answer ~= cmdline.choice.YES then
         return false
       end
+    elseif core.is_windows and core.path.filereadable(filepath) then
+      core.message.warning(
+        'Not created. "%s" file with the same name already exists.', name
+        )
+      return false
     end
     return Directory.create(filepath, dest.sort_type)
   end
 
   cmdline.input_multiple('New directory names?',
     function(contents)
-      local result = create_files(dir, contents, create_directory)
-      if result then
+      local created = create_files(dir, contents, create_directory)
+      if created then
         view:draw(context)
+        -- move the cursor to the created item path
+        view:move_cursor(created[1].path)
       end
     end)
 end
@@ -524,15 +531,22 @@ function M.new_file(context, view)
       if answer ~= cmdline.choice.YES then
         return false
       end
+    elseif core.is_windows and core.path.isdirectory(filepath) then
+      core.message.warning(
+        'Not created. "%s" directory with the same name already exists.', name
+        )
+      return false
     end
     return File.create(filepath)
   end
 
   cmdline.input_multiple('New file names?',
     function(contents)
-      local result = create_files(dir, contents, create_file)
-      if result then
+      local created = create_files(dir, contents, create_file)
+      if created then
         view:draw(context)
+        -- move the cursor to the created item path
+        view:move_cursor(created[1].path)
       end
     end)
 end

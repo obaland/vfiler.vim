@@ -1,13 +1,18 @@
 local core = require 'vfiler/core'
+local vim = require 'vfiler/vim'
 
 local File = {}
 
 function File.create(path)
   -- create file
+  local result
   if core.is_windows then
-    os.execute('type nul > ' .. path)
+    result = vim.fn.system('type nul > ' .. path)
   else
-    os.execute('touch ' .. path)
+    result = vim.fn.system('touch ' .. path)
+  end
+  if #result > 0 then
+    return nil
   end
   return File.new(path, false)
 end
