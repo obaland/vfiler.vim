@@ -34,7 +34,10 @@ function Clipboard.move(items)
 end
 
 function Clipboard.yank(content)
-  vim.fn['vfiler#core#yank'](content)
+  -- for register
+  vim.fn.setreg('"', content)
+  -- for clipboard
+  vim.fn.setreg('+', content)
 end
 
 function Clipboard:paste(dest)

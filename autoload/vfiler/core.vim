@@ -27,13 +27,3 @@ endfunction
 function! vfiler#core#question(message) abort
   echohl Question | echo '[vfiler]: ' . a:message | echohl None
 endfunction
-
-function! vfiler#core#yank(content) abort
-  " for register
-  let @" = a:content
-
-  " for clipboard
-  if has('clipboard') || has('xterm_clipboard')
-    let @+ = a:content
-  endif
-endfunction
