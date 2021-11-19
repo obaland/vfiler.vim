@@ -11,8 +11,8 @@ function! vfiler#popup#map(winid, keys, funcstr) abort
   let l:mappings = {}
   for l:key in a:keys
     let l:escaped = l:key
+    " for special keys, escape the key string
     if l:key =~ '^<.\+>$'
-      " escaped key string
       let l:escaped = eval('"\' . l:key . '"')
     end
     let l:mappings[l:escaped] = printf(

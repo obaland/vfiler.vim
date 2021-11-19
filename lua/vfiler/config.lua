@@ -197,10 +197,10 @@ function M.parse_options(str_args)
     if arg:sub(1, 1) == '-' then
       local name, value, key = parse_option(arg)
       if options[name] == nil then
-        error(string.format("Unknown '%s' option.", key))
+        error(string.format('Unknown "%s" option.', key))
         return nil
       elseif type(value) ~= type(options[name]) then
-        error(string.format("Illegal option value. (%s)", value))
+        error(string.format('Illegal option value. (%s)', value))
         return nil
       end
       options[name] = value
