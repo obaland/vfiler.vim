@@ -170,7 +170,10 @@ execute_file                                     *vfiler-actions-execute_file*
     Execute the file with an external program.
 
 open_tree                                           *vfiler-actions-open_tree*
-    Expand cursor directory.
+    Expand the directory on the cursor.
+
+open_tree_recursive                       *vfiler-actions-open_tree_recursive*
+    Recursively expand the directory on the cursor.
 
 close_tree_or_cd                             *vfiler-actions-close_tree_or_cd*
     Close cursor directory tree or change to parent directory.
@@ -259,6 +262,7 @@ G               move_cursor_bottom
 .               toggle_show_hidden
 ~               jump_to_home
 \               jump_to_root
+o               open_tree_recursive
 t               open_by_tabpage
 s               open_by_split
 v               open_by_vsplit

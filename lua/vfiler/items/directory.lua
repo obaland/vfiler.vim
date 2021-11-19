@@ -85,10 +85,13 @@ function Directory:move(destpath)
   return nil
 end
 
-function Directory:open()
+function Directory:open(recursive)
   self.children = {}
   for item in self:_ls() do
     self:_add(item)
+    if recursive and item.isdirectory then
+      item:open(recursive)
+    end
   end
   self.opened = true
 end

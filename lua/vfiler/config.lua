@@ -41,6 +41,7 @@ M.configs = {
     ['k']         = action.loop_cursor_up,
     ['l']         = action.open_tree,
     ['mm']        = action.move_to_filer,
+    ['o']         = action.open_tree_recursive,
     ['q']         = action.quit,
     ['r']         = action.rename,
     ['s']         = action.open_by_split,

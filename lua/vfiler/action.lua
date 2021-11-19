@@ -593,6 +593,17 @@ function M.open_tree(context, view)
   core.cursor.move(lnum + 1)
 end
 
+function M.open_tree_recursive(context, view)
+  local lnum = vim.fn.line('.')
+  local item = view:get_item(lnum)
+  if not item.isdirectory or item.opened then
+    return
+  end
+  item:open(true)
+  view:draw(context)
+  core.cursor.move(lnum + 1)
+end
+
 function M.paste(context, view)
   local cb = context.clipboard
   if not cb then
