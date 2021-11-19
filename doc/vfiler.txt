@@ -72,7 +72,7 @@ parameters for an option.  You need to escape spaces with "\".
                 Note: If you use both {option-name} and -no-{option-name} in
                 the same vfiler buffer, it is undefined.
 
-                                               *vfiler-command-options-auto-cd*
+                                              *vfiler-command-options-auto-cd*
 -auto-cd
                 Enable auto cd behavior.
 
@@ -96,7 +96,7 @@ parameters for an option.  You need to escape spaces with "\".
 
                 Default: false
 
-                                      *vfiler-command-options-show-hidden-files*
+                                    *vfiler-command-options-show-hidden-files*
 -show-hidden-files
                 If enabled, Make hidden files visible by default.
 
@@ -157,7 +157,7 @@ yank_path                                           *vfiler-actions-yank_path*
 yank_name                                           *vfiler-actions-yank_name*
     Yanks filename to clipboard register and unnamed register.
 
-open_by_tabpage                                *vfiler-actions-open_by_tabpage*
+open_by_tabpage                               *vfiler-actions-open_by_tabpage*
     Open cursor file by tabpage.
 
 open_by_split                                   *vfiler-actions-open_by_split*
@@ -178,7 +178,7 @@ open_tree_recursive                       *vfiler-actions-open_tree_recursive*
 close_tree_or_cd                             *vfiler-actions-close_tree_or_cd*
     Close cursor directory tree or change to parent directory.
 
-change_to_parent                              *vfiler-actions-change_to_parent*
+change_to_parent                             *vfiler-actions-change_to_parent*
     Change to parent directory.
 
 jump_to_home                                     *vfiler-actions-jump_to_home*

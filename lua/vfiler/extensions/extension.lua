@@ -2,7 +2,7 @@ local core = require 'vfiler/core'
 local event = require 'vfiler/event'
 local vim = require 'vfiler/vim'
 
-local extension_resources = {}
+local extensions = {}
 
 local Extension = {}
 Extension.__index = Extension
@@ -35,16 +35,16 @@ end
 
 -- @param bufnr number
 function Extension.get(bufnr)
-  return extension_resources[bufnr]
+  return extensions[bufnr]
 end
 
 -- @param bufnr number
 function Extension.delete(bufnr)
-  local ext = extension_resources[bufnr]
+  local ext = extensions[bufnr]
   if ext then
     ext:quit()
   end
-  extension_resources[bufnr] = nil
+  extensions[bufnr] = nil
 end
 
 function Extension._do_action(bufnr, key)
@@ -95,7 +95,7 @@ function Extension:quit()
     core.window.move(source_winnr)
   end
 
-  extension_resources[self.bufnr] = nil
+  extensions[self.bufnr] = nil
 end
 
 function Extension:start(items, ...)
@@ -132,7 +132,7 @@ function Extension:start(items, ...)
   vim.fn.win_execute(self.winid, ('call cursor(%d, 1)'):format(lnum))
 
   -- add extension table
-  extension_resources[self.bufnr] = self
+  extensions[self.bufnr] = self
 end
 
 function Extension:_on_get_texts(items)
