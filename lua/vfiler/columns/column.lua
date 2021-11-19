@@ -3,11 +3,11 @@ Column.__index = Column
 
 function Column.new(name)
   return setmetatable({
-      name = name,
-      variable = false,
-      stretch = false,
-      _syntax = nil,
-    }, Column)
+    name = name,
+    variable = false,
+    stretch = false,
+    _syntax = nil,
+  }, Column)
 end
 
 function Column:get_text(item, width)
