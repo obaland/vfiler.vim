@@ -39,22 +39,10 @@ function M.start(...)
   VFiler.cleanup()
 
   local options = configs.options
-  local split = options.split
+  local direction = options.direction
 
   local vfiler = nil
-  if split ~= 'none' then
-    -- split window
-    local direction
-    if split == 'horizontal' then
-      direction = 'bottom'
-    elseif split == 'vertical' then
-      direction = 'left'
-    elseif split == 'tab' then
-      direction = 'tab'
-    else
-      core.message.error('Illegal "%s" split option.', split)
-      return false
-    end
+  if direction ~= 'none' then
     core.window.open(direction)
     vfiler = VFiler.find_hidden(options.name)
   else

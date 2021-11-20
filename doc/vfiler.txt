@@ -103,15 +103,16 @@ parameters for an option.  You need to escape spaces with "\".
 
                 Default: false
 
-                                                *vfiler-command-options-split*
--split={direction}
+                                            *vfiler-command-options-direction*
+-direction={direction}
 		Specify the split direction.
 
-                "horizontal": Split buffer horizontally
-                "vertical": Split buffer vertically
-                "tab": Create the new tabpage
-                "no": No split
-
+                "left":   Split to the left.
+                "right":  Split to the right.
+                "top":    Split to the top.
+                "bottom": Split to the bottom.
+                "tab":    Create the new tabpage
+                "none":   No split
 
                 Default: "none"
 
