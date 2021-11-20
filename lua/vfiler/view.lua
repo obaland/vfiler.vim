@@ -315,15 +315,22 @@ function View:_reset(options)
     return nil
   end
 
-  local split = options.split
   self.show_hidden_files = options.show_hidden_files
   self._header = options.header
-  self._width = (split == 'vertical') and options.width or 0
-  self._height = (split == 'horizontal') and options.height or 0
   self._listed = options.listed
   self._cache = {
     winwidth = 0,
   }
+
+  self._width = 0
+  self._height = 0
+
+  local direction = options.direction
+  if direction == 'left' or direction == 'right' then
+    self._width = options.width
+  elseif direction == 'top' or direction == 'bottom' then
+    self._height = options.height
+  end
 end
 
 function View:_resize(winnr)
