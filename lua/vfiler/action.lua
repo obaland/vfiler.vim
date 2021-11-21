@@ -175,9 +175,11 @@ local function rename_files(context, view, targets)
     return
   end
 
-  local lnum = vim.fn.line('.')
   local ext = Rename.new {
-    on_execute = function(items, renames)
+    filer = VFiler.get_current(),
+
+    on_execute = function(filer, items, renames)
+      local renamed = {}
       local num_renamed = 0
       local parents = {}
       for i = 1, #items do
@@ -185,28 +187,25 @@ local function rename_files(context, view, targets)
         local rename = renames[i]
 
         if item:rename(rename) then
+          table.insert(renamed, item)
           num_renamed = num_renamed + 1
           parents[item.parent.path] = item.parent
+          item.selected = false
         end
       end
 
-      if num_renamed > 0 then
-        core.message.info('Renamed - %d files', num_renamed)
+      if #renamed > 0 then
+        core.message.info('Renamed - %d files', #renamed)
         for _, parent in pairs(parents) do
           parent:sort(context.sort_type, false)
         end
+        M.reload(filer.context, filer.view)
+        filer.view:move_cursor(renamed[1].path)
       end
-    end,
-
-    on_quit = function()
-      context.extension = nil
-      M.reload(context, view)
-      core.cursor.move(lnum)
     end,
   }
 
   ext:start(targets)
-  context.extension = ext
 end
 
 local function rename_one_file(context, view, target)
@@ -282,25 +281,22 @@ function M.change_sort(context, view)
   end
 
   local menu = Menu.new {
+    filer = VFiler.get_current(),
     name = 'Select Sort',
 
-    on_selected = function(sort_type)
-      if context.sort_type ~= sort_type then
-        local item = view:get_current()
-
-        context:change_sort(sort_type)
-        view:draw(context)
-        view:move_cursor(item.path)
+    on_selected = function(filer, sort_type)
+      if context.sort_type == sort_type then
+        return
       end
-    end,
 
-    on_quit = function()
-      context.extension = nil
+      local item = filer.view:get_current()
+      filer.context:change_sort(sort_type)
+      filer.view:draw(filer.context)
+      filer.view:move_cursor(item.path)
     end,
   }
 
   menu:start(sort.types(), context.sort_type)
-  context.extension = menu
 end
 
 function M.change_to_parent(context, view)
@@ -411,7 +407,7 @@ function M.jump_to_home(context, view)
 end
 
 function M.jump_to_root(context, view)
-  local dirpath = context.root:root()
+  local dirpath = core.path.root(context.root.path)
   cd(context, view, dirpath)
 end
 
@@ -635,7 +631,8 @@ function M.redraw_all(context, view)
 end
 
 function M.reload(context, view)
-  context:update()
+  context:save(view:get_current().path)
+  local path = context:switch(context.root.path)
   view:draw(context)
 end
 
@@ -664,26 +661,25 @@ function M.switch_to_drive(context, view)
     return
   end
 
-  local root = context.root:root()
+  local root = core.path.root(context.root.path)
   local menu = Menu.new {
+    filer = VFiler.get_current(),
     name = 'Select Drive',
-    on_selected = function(drive)
+
+    on_selected = function(filer, drive)
       if root == drive then
         return
       end
 
-      context:save(view:get_current().path)
-      local path = context:switch_drive(drive)
-      view:draw(context)
-      view:move_cursor(path)
-    end,
-    on_quit = function()
-      context.extension = nil
+      local path = filer.view:get_current().path
+      filer.context:save(path)
+      path = filer.context:switch_drive(drive)
+      filer.view:draw(filer.context)
+      filer.view:move_cursor(path)
     end,
   }
 
   menu:start(drives, root)
-  context.extension = menu
 end
 
 function M.switch_to_filer(context, view)

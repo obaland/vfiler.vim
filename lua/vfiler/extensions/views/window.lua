@@ -7,30 +7,30 @@ Window.__index = Window
 
 function Window.new(options)
   return setmetatable({
-      source_winid = vim.fn.win_getid(),
-      options = core.table.copy(options),
-      winid = 0,
-      bufnr = 0,
-      -- default buffer options
-      bufoptions = {
-        bufhidden = 'delete',
-        buflisted = false,
-        buftype = 'nofile',
-        swapfile = false,
-      },
-      -- default window options
-      winoptions = {
-        colorcolumn = '',
-        conceallevel =  2,
-        concealcursor = 'nvc',
-        foldcolumn = '0',
-        foldenable = false,
-        list = false,
-        number = true,
-        spell = false,
-        wrap = false,
-      },
-    }, Window)
+    source_winid = vim.fn.win_getid(),
+    options = core.table.copy(options),
+    winid = 0,
+    bufnr = 0,
+    -- default buffer options
+    bufoptions = {
+      bufhidden = 'delete',
+      buflisted = false,
+      buftype = 'nofile',
+      swapfile = false,
+    },
+    -- default window options
+    winoptions = {
+      colorcolumn = '',
+      conceallevel =  2,
+      concealcursor = 'nvc',
+      foldcolumn = '0',
+      foldenable = false,
+      list = false,
+      number = true,
+      spell = false,
+      wrap = false,
+    },
+  }, Window)
 end
 
 function Window:close()

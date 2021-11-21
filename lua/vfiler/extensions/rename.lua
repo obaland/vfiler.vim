@@ -20,7 +20,7 @@ function ExtensionRename.new(options)
   }
 
   local object = core.inherit(
-    ExtensionRename, Extension, 'Rename', view, config.configs
+    ExtensionRename, Extension, options.filer, 'Rename', view, config.configs
     )
   object.on_quit = options.on_quit
   object.on_execute = options.on_execute
@@ -84,9 +84,14 @@ function ExtensionRename:execute()
   vim.set_buf_option(self.bufnr, 'modified', false)
 
   if self.on_execute then
-    self.on_execute(self.items, renames)
+    -- move to filer view
+    core.window.move(self.filer.view:winnr())
+    self.on_execute(self.filer, self.items, renames)
   end
-  self:quit()
+
+  -- move to extension view
+  core.window.move(self.view:winnr())
+  self:quit(self.filer)
 end
 
 function ExtensionRename:get_lines()

@@ -121,7 +121,7 @@ function M.window.move(winnr)
   if winnr > 0 then
     command = winnr .. command
   end
-  vim.command(([[noautocmd execute '%s']]).format(command))
+  vim.command(([[noautocmd execute '%s']]):format(command))
 end
 
 ---@param direction string
@@ -223,6 +223,19 @@ function M.path.normalize(path)
     return '/'
   end
   return M.path.escape(vim.fn.fnamemodify(path, ':p'))
+end
+
+function M.path.root(path)
+  local root = ''
+  if M.is_windows then
+    if path:match('^//') then
+      -- for UNC path
+      root = path:match('^//[^/]*/[^/]*')
+    else
+      root = (M.path.normalize(path)):match('^%a+:')
+    end
+  end
+  return root .. '/'
 end
 
 ------------------------------------------------------------------------------

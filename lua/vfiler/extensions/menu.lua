@@ -20,7 +20,7 @@ function ExtensionMenu.new(options)
   }
 
   local object = core.inherit(
-    ExtensionMenu, Extension, options.name, view, configs
+    ExtensionMenu, Extension, options.filer, options.name, view, configs
     )
   object.on_quit = options.on_quit
   object.on_selected = options.on_selected
@@ -30,11 +30,15 @@ end
 function ExtensionMenu:select()
   local item = self.items[vim.fn.line('.')]
 
-  self:quit()
-
   if self.on_selected then
-    self.on_selected(item)
+    -- move to filer view
+    core.window.move(self.filer.view:winnr())
+    self.on_selected(self.filer, item)
   end
+
+  -- move to extension view
+  core.window.move(self.view:winnr())
+  self:quit()
   return item
 end
 

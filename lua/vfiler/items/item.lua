@@ -47,19 +47,6 @@ function Item:rename(name)
   return true
 end
 
-function Item:root()
-  local root = ''
-  if core.is_windows then
-    if self.path:match('^//') then
-      -- for UNC path
-      root = self.path:match('^//[^/]*/[^/]*')
-    else
-      root = (core.path.normalize(self.path)):match('^%a+:')
-    end
-  end
-  return root .. '/'
-end
-
 --- Remove from parent tree
 function Item:_become_orphan()
   if not self.parent then
