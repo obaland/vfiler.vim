@@ -6,6 +6,7 @@ Introduction ........... |vfiler-introduction|
   Description ............ |vfiler-description|
   Requirements ........... |vfiler-requirements|
 Interface .............. |vfiler-interface|
+  Commands ............... |vfiler-commands|
   Command options ........ |vfiler-command-options|
   Functions .............. |vfiler-functions|
   Actions ................ |vfiler-actions|
