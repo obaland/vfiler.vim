@@ -72,6 +72,17 @@ local choose_keys = {
   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
 }
 
+local function choose_window_statusline(winwidth, char)
+  local caption_width = winwidth / 2
+  local padding = (' '):rep(caption_width / 2)
+  local margin = (' '):rep(caption_width / 2)
+  return ('%s%s%s%s%s%s%s'):format(
+    '%#StatusLine#', margin,
+    '%#vfilerStatusLine_ChoiceWindow#', padding, char, padding,
+    '%#StatusLine#'
+    )
+end
+
 local function choose_window()
   local winnrs = {}
   for nr = 1, vim.fn.winnr('$') do
@@ -103,8 +114,9 @@ local function choose_window()
   -- Choose window
   vim.set_global_option('laststatus', 2)
   for key, nr in pairs(winkeys) do
-    local status = (' '):rep(vim.fn.winwidth(nr) / 2 - 1) .. key
-    vim.set_win_option(nr, 'statusline', status)
+    vim.set_win_option(
+      nr, 'statusline', choose_window_statusline(vim.fn.winwidth(nr), key)
+      )
     vim.command('redraw')
   end
 
