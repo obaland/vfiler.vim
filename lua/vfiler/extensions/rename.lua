@@ -83,15 +83,10 @@ function ExtensionRename:execute()
   local renames = vim.from_vimlist(vim.fn.getline(1, #self.items))
   vim.set_buf_option(self.bufnr, 'modified', false)
 
+  self:quit(self.filer)
   if self.on_execute then
-    -- move to filer view
-    core.window.move(self.filer.view:winnr())
     self.on_execute(self.filer, self.items, renames)
   end
-
-  -- move to extension view
-  core.window.move(self.view:winnr())
-  self:quit(self.filer)
 end
 
 function ExtensionRename:get_lines()

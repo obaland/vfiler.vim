@@ -30,15 +30,11 @@ end
 function ExtensionMenu:select()
   local item = self.items[vim.fn.line('.')]
 
+  self:quit()
+
   if self.on_selected then
-    -- move to filer view
-    core.window.move(self.filer.view:winnr())
     self.on_selected(self.filer, item)
   end
-
-  -- move to extension view
-  core.window.move(self.view:winnr())
-  self:quit()
   return item
 end
 
