@@ -315,6 +315,12 @@ function M.copy(context, view)
   else
     core.message.info('Copy to the clipboard - %d files', #selected)
   end
+
+  -- clear selected mark
+  for _, item in ipairs(selected) do
+    item.selected = false
+  end
+  view:redraw()
 end
 
 function M.copy_to_filer(context, view)
@@ -335,7 +341,14 @@ function M.copy_to_filer(context, view)
   cb:paste(linked.context.root)
   linked:open()
   M.redraw(linked.context, linked.view)
+
   current:open() -- Return to current
+
+  -- clear selected mark
+  for _, item in ipairs(selected) do
+    item.selected = false
+  end
+  view:redraw()
 end
 
 function M.delete(context, view)
@@ -451,6 +464,12 @@ function M.move(context, view)
   else
     core.message.info('Move to the clipboard - %d files', #selected)
   end
+
+  -- clear selected mark
+  for _, item in ipairs(selected) do
+    item.selected = false
+  end
+  view:redraw()
 end
 
 function M.move_cursor_bottom(context, view)
@@ -763,9 +782,10 @@ function M.toggle_select_up(context, view)
 end
 
 function M.yank_name(context, view)
+  local selected = view:selected_items()
   local names = {}
-  for _, selected in ipairs(view:selected_items()) do
-    table.insert(names, selected.name)
+  for _, item in ipairs(selected) do
+    table.insert(names, item.name)
   end
   if #names == 1 then
     Clipboard.yank(names[1])
@@ -775,12 +795,19 @@ function M.yank_name(context, view)
     Clipboard.yank(content)
     core.message.info('Yanked %d names', #names)
   end
+
+  -- clear selected mark
+  for _, item in ipairs(selected) do
+    item.selected = false
+  end
+  view:redraw()
 end
 
 function M.yank_path(context, view)
+  local selected = view:selected_items()
   local paths = {}
-  for _, selected in ipairs(view:selected_items()) do
-    table.insert(paths, selected.path)
+  for _, item in ipairs(selected) do
+    table.insert(paths, item.path)
   end
   if #paths == 1 then
     Clipboard.yank(paths[1])
@@ -790,6 +817,12 @@ function M.yank_path(context, view)
     Clipboard.yank(content)
     core.message.info('Yanked %d paths', #paths)
   end
+
+  -- clear selected mark
+  for _, item in ipairs(selected) do
+    item.selected = false
+  end
+  view:redraw()
 end
 
 return M

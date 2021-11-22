@@ -37,7 +37,8 @@ function Directory.create(dirpath, sort_type)
 end
 
 function Directory.new(dirpath, islink, sort_type)
-  local Item = require('vfiler/items/item')
+  local Item = require 'vfiler/items/item'
+
   local self = core.inherit(Directory, Item, dirpath, islink)
   self.children = nil
   self.opened = false
