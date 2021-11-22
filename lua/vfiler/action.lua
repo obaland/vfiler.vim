@@ -411,6 +411,13 @@ function M.jump_to_root(context, view)
   cd(context, view, dirpath)
 end
 
+function M.latest_update(context, view)
+  local time = vim.fn.getftime(context.root.path)
+  if time > context.root.time then
+    M.reload(context, view)
+  end
+end
+
 function M.loop_cursor_down(context, view)
   local lnum = vim.fn.line('.') + 1
   local num_end = view:num_lines()

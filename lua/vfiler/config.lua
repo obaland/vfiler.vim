@@ -63,8 +63,9 @@ M.configs = {
   },
 
   events = {
-    BufEnter = action.reload,
-    FocusGained = action.reload_all,
+    CursorHold = action.latest_update,
+    FileType = action.reload,
+    FocusGained = action.latest_update,
     VimResized = action.redraw_all,
   },
 }
