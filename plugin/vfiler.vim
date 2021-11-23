@@ -21,19 +21,19 @@ endif
 let g:loaded_vfiler = 1
 
 " Syntax highlights
-highlight def link vfilerDirectory         Directory
-highlight def link vfilerExecutable        PreProc
-highlight def link vfilerFile              None
-highlight def link vfilerHeader            Statement
-highlight def link vfilerHidden            Comment
-highlight def link vfilerLink              Constant
-highlight def link vfilerSelected          Title
-highlight def link vfilerSize              Statement
-highlight def link vfilerTime              None
-highlight def link vfilerTimeToday         PreProc
-highlight def link vfilerTimeWeek          Type
+highlight default link vfilerDirectory         Directory
+highlight default link vfilerExecutable        PreProc
+highlight default link vfilerFile              None
+highlight default link vfilerHeader            Statement
+highlight default link vfilerHidden            Comment
+highlight default link vfilerLink              Constant
+highlight default link vfilerSelected          Title
+highlight default link vfilerSize              Statement
+highlight default link vfilerTime              None
+highlight default link vfilerTimeToday         PreProc
+highlight default link vfilerTimeWeek          Type
 
-highlight def vfilerStatusLine_ChoiceWindow ctermfg=230 ctermbg=12 guifg=#ffffd7 guibg=#268bd2
+highlight default vfilerStatusLine_ChooseWindowKey ctermfg=230 ctermbg=12 guifg=#ffffd7 guibg=#268bd2
 
 " Define commands
 command! -nargs=? -complete=customlist,vfiler#complete VFiler

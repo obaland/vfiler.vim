@@ -4,10 +4,7 @@
 " License: MIT license
 "=============================================================================
 
-let s:keymappings = {}
-
-function! vfiler#popup#map(winid, keys, funcstr) abort
-  let l:bufnr = winbufnr(a:winid)
+function! vfiler#popup#map(winid, bufnr, keys, funcstr) abort
   let l:mappings = {}
   for l:key in a:keys
     let l:escaped = l:key
@@ -16,26 +13,16 @@ function! vfiler#popup#map(winid, keys, funcstr) abort
       let l:escaped = eval('"\' . l:key . '"')
     end
     let l:mappings[l:escaped] = printf(
-          \ ":lua %s(%d, '%s')", a:funcstr, l:bufnr, l:key
+          \ ":lua %s(%d, '%s')", a:funcstr, a:bufnr, l:key
           \ )
   endfor
-  let s:keymappings[a:winid] = l:mappings
-endfunction
-
-function! vfiler#popup#unmap(winid) abort
-  call remove(s:keymappings, a:winid)
+  call setwinvar(a:winid, 'keymappings', l:mappings)
 endfunction
 
 function! vfiler#popup#filter(winid, key) abort
-  if !has_key(s:keymappings, a:winid)
-    call vfiler#core#error('There is no keymappings.')
-    popup_close(a:winid)
-    return v:true
-  endif
-
-  let l:mappings = s:keymappings[a:winid]
+  let l:mappings = getwinvar(a:winid, 'keymappings')
   if has_key(l:mappings, a:key)
     call win_execute(a:winid, l:mappings[a:key])
-  end
+  endif
   return v:true
 endfunction

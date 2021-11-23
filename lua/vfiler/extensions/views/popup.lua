@@ -14,7 +14,6 @@ function Popup:close()
     vim.fn.win_execute(
       self.source_winid, ('call popup_close(%d)'):format(self.winid)
       )
-    vim.fn['vfiler#popup#unmap'](self.winid)
   end
 end
 
@@ -23,7 +22,9 @@ function Popup:define_mapping(mappings, funcstr)
   for key, _ in pairs(mappings) do
     table.insert(keys, key)
   end
-  vim.fn['vfiler#popup#map'](self.winid, vim.to_vimlist(keys), funcstr)
+  vim.fn['vfiler#popup#map'](
+    self.winid, self.bufnr, vim.to_vimlist(keys), funcstr
+    )
   -- Note: same mapping datas
   return core.table.copy(mappings)
 end
