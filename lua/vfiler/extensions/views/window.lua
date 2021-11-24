@@ -113,8 +113,6 @@ end
 function Window:_on_open(name, texts, options)
   -- open window
   core.window.open(options.direction)
-
-  -- Save swapfile option
   vim.command('silent edit ' .. 'vfiler/' .. name)
 
   -- resize window
@@ -165,6 +163,5 @@ function Window:_winwidth(wwidth, value, min, max, texts)
   end
   return math.floor(core.math.within(width, min, max))
 end
-
 
 return Window

@@ -7,10 +7,10 @@ Introduction ........... |vfiler-introduction|
   Requirements ........... |vfiler-requirements|
 Interface .............. |vfiler-interface|
   Commands ............... |vfiler-commands|
-  Command options ........ |vfiler-command-options|
   Functions .............. |vfiler-functions|
-  Configurations ......... |vfiler-configurations|
   Actions ................ |vfiler-actions|
+  Options ................ |vfiler-options|
+  Configurations ......... |vfiler-configurations|
   Key mappings ........... |vfiler-key-mappings|
 Customization .......... |vfiler-customization|
 About .................. |vfiler-about|
@@ -49,89 +49,18 @@ COMMANDS                                                     *vfiler-commands*
 
 					                             *:VFiler*
 :VFiler [{options}...] [{path}]
-                Runs vfiler. This command reuses a buffer if a filer buffer
-                already exists. If you omit {path} and a filer buffer do not
-                exist, vfiler opens current directory. {path} needs to be a
-                directory.
-                {options} are options for a filer buffer:
-                |vfiler-command-options|
+    Runs vfiler. This command reuses a buffer if a filer buffer already
+    exists. If you omit {path} and a filer buffer do not exist, vfiler opens
+    current directory. {path} needs to be a directory.
+    {options} are options for a filer buffer:
+    |vfiler-options|
 
-		Examples:
-		" Starts by specifying the buffer name and widthout adding it
-                to the buffer list.
-                :VFiler -name=foo -no-listed /foo/bar
-
-------------------------------------------------------------------------------
-COMMAND OPTIONS                                       *vfiler-command-options*
-
-{options} are options for a filer buffer.  You may give the following
-parameters for an option.  You need to escape spaces with "\".
-
-                                                  *vfiler-command-options-no-*
--no-{option-name}
-                Disable {option-name} flag.
-                Note: If you use both {option-name} and -no-{option-name} in
-                the same vfiler buffer, it is undefined.
-
-                                              *vfiler-command-options-auto-cd*
--auto-cd
-                Enable auto cd behavior.
-
-                Default: false
-
-                                               *vfiler-command-options-listed*
--listed
-                Display the vfiler buffer in the buffer list.
-
-                Defualt: true
-
-                                                 *vfiler-command-options-name*
--name={buffer-name}
-		Specifies a buffer name.
-		The default buffer name is blank.
-		Note: Buffer name must not contain spaces.
-
-                                                  *vfiler-command-options-new*
--new
-                Create new vfiler buffer.
-
-                Default: false
-
-                                    *vfiler-command-options-show-hidden-files*
--show-hidden-files
-                If enabled, Make hidden files visible by default.
-
-
-                Default: false
-
-                                            *vfiler-command-options-direction*
--direction={direction}
-		Specify the split direction.
-
-                "left":   Split to the left.
-                "right":  Split to the right.
-                "top":    Split to the top.
-                "bottom": Split to the bottom.
-                "tab":    Create the new tabpage
-                "none":   No split
-
-                Default: "none"
-
-                                               *vfiler-command-options-height*
--height={window-height}
-                Set the height of the window if
-                |vfiler-command-options-direction| is
-                "top" or "bottom".
-
-                Default: 30
-
-                                                *vfiler-command-options-width*
--width={window-width}
-                Set the width of the window if
-                |vfiler-command-options-direction| is
-                "left" or "right".
-
-                Default: 90
+    Example:
+>
+      " Starts by specifying the buffer name and widthout adding it to the
+      " buffer list.
+      :VFiler -name=foo -no-listed /foo/bar
+<
 
 ------------------------------------------------------------------------------
 FUNCTIONS                                                   *vfiler-functions*
@@ -150,7 +79,7 @@ vfiler.start_command({args})                          *vfiler.start_command()*
     Start vfiler from the command line arguments.
 
     {args} is a command line argument string.
-    see |vfiler-command-options|.
+    see |vfiler-options|.
 
 vfiler.config.setup({configs})                         *vfiler.config.setup()*
     Setup various configuration values.
@@ -274,13 +203,99 @@ paste                                                   *vfiler-actions-paste*
     Paste files saved in the clipboard.
 
 ------------------------------------------------------------------------------
+OPTIONS                                                       *vfiler-options*
+
+{options} are options for a filer buffer.  You may give the following
+parameters for an option.  You need to escape spaces with "\".
+
+-no-{option-name}                                         *vfiler-options-no-*
+    Disable {option-name} flag.
+    Note: If you use both {option-name} and -no-{option-name} in the same
+    vfiler buffer, it is undefined.
+
+-auto-cd                                              *vfiler-options-auto-cd*
+    Enable auto cd behavior.
+    Default: false
+
+-columns={column1,column2,...}                        *vfiler-options-columns*
+    Specify the vfiler columns.
+    see |vfiler-columns|.
+    Default: "indent,icon,name,mode,size,time"
+
+-listed                                                *vfiler-options-listed*
+    Display the vfiler buffer in the buffer list.
+    Defualt: true
+
+-name={buffer-name}                                      *vfiler-options-name*
+    Specifies a buffer name.
+    The default buffer name is blank.
+    Note: Buffer name must not contain spaces.
+
+-new                                                      *vfiler-options-new*
+    Create new vfiler buffer.
+    Default: false
+
+-show-hidden-files                          *vfiler-options-show-hidden-files*
+    If enabled, Make hidden files visible by default.
+    Default: false
+
+-direction={direction}                              *vfiler-options-direction*
+    Specify the split direction.
+
+    "left":   Split to the left.
+    "right":  Split to the right.
+    "top":    Split to the top.
+    "bottom": Split to the bottom.
+    "tab":    Create the new tabpage
+    "none":   No split
+
+    Default: "none"
+
+-height={window-height}                                *vfiler-options-height*
+    Set the height of the window if |vfiler-options-direction| is
+    "top" or "bottom".
+    Default: 30
+
+-width={window-width}                                   *vfiler-options-width*
+    Set the width of the window if |vfiler-options-direction| is
+    "left" or "right".
+    Default: 90
+
+------------------------------------------------------------------------------
+COLUMNS                                                       *vfiler-columns*
+
+name                                                     *vfiler-columns-name*
+    File name.
+
+indent                                                 *vfiler-columns-indent*
+    Tree indentaion.
+
+icon                                                     *vfiler-columns-icon*
+    Icon such as directory, and marks.
+
+mode                                                     *vfiler-actions-mode*
+    File mode.
+
+size                                                     *vfiler-actions-size*
+    File size.
+
+time                                                     *vfiler-actions-time*
+    File modified time.
+
+type                                                     *vfiler-actions-type*
+    File type.
+
+space                                                   *vfiler-actions-space*
+    Space column for padding.
+
+------------------------------------------------------------------------------
 CONFIGURATIONS                                         *vfiler-configurations*
 
 There are two main types of configurations, {options} and {mappings}.
 
 options                                        *vfiler-configurations-options*
     Sets the behavior of vfiler.
-    The meaning of each option is the same as the |vfiler-command-options|.
+    The meaning of each option is the same as the |vfiler-options|.
 
 mappings                                      *vfiler-configurations-mappings*
     Associate the action with the key mapping.
