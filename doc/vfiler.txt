@@ -274,19 +274,19 @@ indent                                                 *vfiler-columns-indent*
 icon                                                     *vfiler-columns-icon*
     Icon such as directory, and marks.
 
-mode                                                     *vfiler-actions-mode*
+mode                                                     *vfiler-columns-mode*
     File mode.
 
-size                                                     *vfiler-actions-size*
+size                                                     *vfiler-columns-size*
     File size.
 
-time                                                     *vfiler-actions-time*
+time                                                     *vfiler-columns-time*
     File modified time.
 
-type                                                     *vfiler-actions-type*
+type                                                     *vfiler-columns-type*
     File type.
 
-space                                                   *vfiler-actions-space*
+space                                                   *vfiler-columns-space*
     Space column for padding.
 
 ------------------------------------------------------------------------------
