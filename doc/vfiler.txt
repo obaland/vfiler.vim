@@ -9,10 +9,10 @@ Interface .............. |vfiler-interface|
   Commands ............... |vfiler-commands|
   Command options ........ |vfiler-command-options|
   Functions .............. |vfiler-functions|
+  Configurations ......... |vfiler-configurations|
   Actions ................ |vfiler-actions|
   Key mappings ........... |vfiler-key-mappings|
 Customization .......... |vfiler-customization|
-Examples ............... |vfiler-examples|
 About .................. |vfiler-about|
 
 ==============================================================================
@@ -136,6 +136,29 @@ parameters for an option.  You need to escape spaces with "\".
 ------------------------------------------------------------------------------
 FUNCTIONS                                                   *vfiler-functions*
 
+vfiler.start([{dirpath}, {configs}])                          *vfiler.start()*
+    Start vfiler.
+
+    If {dirpath} is nil or empty, it means that the current directory path is
+    specified.
+
+    {configs} is a table that stores various setting values.
+    For nil, the value set just before this function is called is applied.
+    see |vfiler-configurations|.
+
+vfiler.start_command({args})                          *vfiler.start_command()*
+    Start vfiler from the command line arguments.
+
+    {args} is a command line argument string.
+    see |vfiler-command-options|.
+
+vfiler.config.setup({configs})                         *vfiler.config.setup()*
+    Setup various configuration values.
+
+    {configs} is a table, overwritten with the specified value.
+    The return value will be the overwritten configuration values,
+    and can be passed to the |vfiler.start()| function.
+    see |vfiler-configurations|.
 
 ------------------------------------------------------------------------------
 ACTIONS                                                       *vfiler-actions*
@@ -251,6 +274,47 @@ paste                                                   *vfiler-actions-paste*
     Paste files saved in the clipboard.
 
 ------------------------------------------------------------------------------
+CONFIGURATIONS                                         *vfiler-configurations*
+
+There are two main types of configurations, {options} and {mappings}.
+
+options                                        *vfiler-configurations-options*
+    Sets the behavior of vfiler.
+    The meaning of each option is the same as the |vfiler-command-options|.
+
+mappings                                      *vfiler-configurations-mappings*
+    Associate the action with the key mapping.
+    Set the key string and action as a key-value pair.
+
+Example: >
+    require'vfiler/config'.setup {
+      options = {
+        auto_cd = false,
+        columns = 'indent,icon,name,mode,size,time',
+        header = true,
+        listed = true,
+        -- ...
+        width = 90,
+        height = 30,
+        new = false,
+        quit = true,
+      },
+
+      mappings = {
+        ['.']         = action.toggle_show_hidden,
+        ['<BS>']      = action.change_to_parent,
+        ['<C-l>']     = action.reload,
+        ['<C-p>']     = action.sync_with_current_filer,
+        ['<CR>']      = action.open,
+        -- ...
+        ['S']         = action.change_sort,
+        ['U']         = action.clear_selected_all,
+        ['YY']        = action.yank_name,
+      },
+    }
+<
+
+------------------------------------------------------------------------------
 KEY MAPPINGS                                             *vfiler-key-mappings*
 
 Following keymappings are default keymappings.
@@ -300,10 +364,35 @@ M               move
 ==============================================================================
 CUSTOMIZATION                                           *vfiler-customization*
 
+Here are some examples of customization.
 
-==============================================================================
-EXAMPLES                                                     *vfiler-examples*
+Explorer style                           *vfiler-customization-explorer-style*
+    In addition to the settings for Explorer,
+    we'll also change the actions to make it easier to use.
 
+>
+    local action = require'vfiler/action'
+    require'vfiler/config'.setup {
+      options = {
+        auto_cd = true,
+        name = 'explorer',
+        direction = 'left',
+        width = 30,
+        columns = 'indent,icon,name',
+      },
+
+      mappings = {
+        -- Change open action
+        ['<CR>']  = action.open_by_choose_or_cd,
+
+        -- Disable switch to filer
+        ['<Tab>'] = nil,
+      },
+    }
+
+    local path = vim.fn.getcwd()
+    require'vfiler'.start(path)
+<
 
 ==============================================================================
 ABOUT                                                           *vfiler-about*

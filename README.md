@@ -62,6 +62,34 @@ If {path} is not specified, it will start in the current directory.
 
 Please see the [documentation][vim-doc] for details.
 
+## Configuration
+### Explorer style
+
+```lua
+local action = require'vfiler/action'
+require'vfiler/config'.setup {
+  options = {
+    auto_cd = true,
+    name = 'explorer',
+    direction = 'left',
+    width = 30,
+    columns = 'indent,icon,name',
+  },
+
+  mappings = {
+    -- Change open action
+    ['<CR>']  = action.open_by_choose_or_cd,
+
+    -- Disable switch to filer
+    ['<Tab>'] = nil,
+  },
+}
+
+local path = vim.fn.getcwd()
+require'vfiler'.start(path)
+
+```
+
 ## Finally
 I am hoping to continually improve it as far as time permits,  
 so I'd appreciate it if you can receive various opinions including differences within the script.
