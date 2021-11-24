@@ -39,7 +39,7 @@ local function generate_name(name)
   local number = 0
   if maxnr >= 0 then
     number = maxnr + 1
-    bufname = bufname .. ':' .. tostring(number)
+    bufname = bufname .. '-' .. tostring(number)
   end
   return bufname, name, number
 end
