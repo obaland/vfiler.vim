@@ -20,7 +20,7 @@ function ExtensionMenu.new(options)
   }
 
   local object = core.inherit(
-    ExtensionMenu, Extension, options.name, view, configs
+    ExtensionMenu, Extension, options.filer, options.name, view, configs
     )
   object.on_quit = options.on_quit
   object.on_selected = options.on_selected
@@ -33,7 +33,7 @@ function ExtensionMenu:select()
   self:quit()
 
   if self.on_selected then
-    self.on_selected(item)
+    self.on_selected(self.filer, item)
   end
   return item
 end

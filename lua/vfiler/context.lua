@@ -7,60 +7,99 @@ local function walk_expanded(rpaths, root_path, dir)
   if not dir.children then
     return
   end
-  local expanded = false
+
+  local path = dir.path:sub(#root_path)
+  if not rpaths[path] then
+    rpaths[path] = {}
+  end
+  local attribute = rpaths[path]
+
   for _, child in ipairs(dir.children) do
     if child.isdirectory and child.children then
       walk_expanded(rpaths, root_path, child)
-      expanded = true
+    end
+    if child.selected then
+      attribute[child.name] = {
+        selected = true
+      }
     end
   end
-  if not expanded then
-    local path = dir.path:sub(#root_path + 1)
-    if #path > 0 then
-      table.insert(rpaths, path)
+end
+
+local function expand(names, dir)
+  local name = table.remove(names, 1)
+  for _, child in ipairs(dir.children) do
+    if child.name == name then
+      if not child.children then
+        child:open()
+      end
+      if #names == 0 then
+        return child
+      else
+        return expand(names, child)
+      end
     end
   end
+  return dir
 end
 
 ------------------------------------------------------------------------------
--- Store class
+-- Snapshot class
 
-local Store = {}
-Store.__index = Store
+local Snapshot = {}
+Snapshot.__index = Snapshot
 
-function Store.new()
+function Snapshot.new()
   return setmetatable({
     _drives = {},
     _dirpaths = {},
-  }, Store)
+  }, Snapshot)
 end
 
-function Store:copy(store)
-  self._drives = core.table.copy(store._drives)
-  self._dirpaths = core.table.copy(store._dirpaths)
+function Snapshot:copy(snapshot)
+  self._drives = core.table.copy(snapshot._drives)
+  self._dirpaths = core.table.copy(snapshot._dirpaths)
 end
 
-function Store:save(root, path)
-  local drive = root:root()
+function Snapshot:save(root, path)
+  local drive = core.path.root(root.path)
   self._drives[drive] = root.path
 
   local rpaths = {}
   walk_expanded(rpaths, root.path, root)
+
   self._dirpaths[root.path] = {
     path = path,
     expanded_rpaths = rpaths,
   }
 end
 
-function Store:restore_path(dirpath)
-  local stored = self._dirpaths[dirpath]
-  if not stored then
-    return nil
+function Snapshot:load(root)
+  local dirpath = self._dirpaths[root.path]
+  if not dirpath then
+    return root.path
   end
-  return stored.path, stored.expanded_rpaths
+
+  for rpath, attributes in pairs(dirpath.expanded_rpaths) do
+    -- expand
+    local dir = root
+    local names = core.string.split(rpath, '/')
+    if #names > 0 then
+      dir = expand(names, root)
+    end
+
+    -- restore attribute
+    for _, child in ipairs(dir.children) do
+      local attribute = attributes[child.name]
+      if attribute then
+        child.selected = attribute.selected
+      end
+    end
+  end
+  return dirpath.path
 end
 
-function Store:restore_dirpath(drive)
+function Snapshot:load_dirpath(drive)
   local dirpath = self._drives[drive]
   if not dirpath then
     return nil
@@ -83,14 +122,14 @@ function Context.new(options)
     extension = nil,
     root = nil,
     sort_type = options.sort,
-    _store = Store.new(),
+    _snapshot = Snapshot.new(),
   }, Context)
 end
 
 --- Clear the internal data
 function Context:clear()
   self._root = nil
-  self._store = Store.new()
+  self._snapshot = Snapshot.new()
 end
 
 --- Save the path in the current context
@@ -99,7 +138,7 @@ function Context:save(path)
   if not self.root then
     return
   end
-  self._store:save(self.root, path)
+  self._snapshot:save(self.root, path)
 end
 
 --- Change the sort type
@@ -115,7 +154,7 @@ end
 --- Duplicate another context
 ---@param context table
 function Context:duplicate(context)
-  self._store:copy(context._store)
+  self._snapshot:copy(context._snapshot)
   self:switch(context.root.path)
 end
 
@@ -139,42 +178,23 @@ function Context:switch(dirpath)
 
   self.root = Directory.new(dirpath, false, self.sort_type)
   self.root:open()
-
-  local path, expanded_rpaths = self._store:restore_path(dirpath)
-  if path then
-    for _, rpath in ipairs(expanded_rpaths) do
-      self.root:expand(rpath)
-    end
-    return path
-  end
-  return self.root.path
+  return self._snapshot:load(self.root)
 end
 
 --- Switch the context to the specified drive path
 ---@param drive string
 function Context:switch_drive(drive)
-  local dirpath = self._store:restore_dirpath(drive)
+  local dirpath = self._snapshot:load_dirpath(drive)
   if not dirpath then
     dirpath = drive
   end
   return self:switch(dirpath)
 end
 
---- Update the current context
-function Context:update()
-  local rpaths = {}
-  walk_expanded(rpaths, self.root.path, self.root)
-  self.root = Directory.new(self.root.path, false, self.sort_type)
-  self.root:open()
-  for _, rpath in ipairs(rpaths) do
-    self.root:expand(rpath)
-  end
-end
-
 --- Synchronize with other context
 ---@param context table
 function Context:sync(context)
-  self._store:save(context.root, context.root.path)
+  self._snapshot:save(context.root, context.root.path)
   self:switch(context.root.path)
 end
 

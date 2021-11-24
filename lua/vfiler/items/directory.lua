@@ -37,7 +37,8 @@ function Directory.create(dirpath, sort_type)
 end
 
 function Directory.new(dirpath, islink, sort_type)
-  local Item = require('vfiler/items/item')
+  local Item = require 'vfiler/items/item'
+
   local self = core.inherit(Directory, Item, dirpath, islink)
   self.children = nil
   self.opened = false
@@ -71,11 +72,6 @@ function Directory:copy(destpath)
     return nil
   end
   return Directory.new(destpath, self.islink, self.sort_type)
-end
-
-function Directory:expand(relative_path)
-  local names = core.string.split(relative_path, '/')
-  return self:_expand(names)
 end
 
 function Directory:move(destpath)
@@ -140,22 +136,6 @@ function Directory:_add(item)
   item.parent = self
   item.level = self.level + 1
   table.insert(self.children, pos, item)
-end
-
-function Directory:_expand(names)
-  if not self.children then
-    self:open()
-  end
-  local name = table.remove(names, 1)
-  for _, child in ipairs(self.children) do
-    if child.name == name then
-      if #names == 0 then
-        child:open()
-        return
-      end
-      child:_expand(names)
-    end
-  end
 end
 
 function Directory:_ls()

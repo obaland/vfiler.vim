@@ -72,6 +72,17 @@ local choose_keys = {
   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
 }
 
+local function choose_window_statusline(winwidth, char)
+  local caption_width = winwidth / 4
+  local padding = (' '):rep(caption_width / 2)
+  local margin = (' '):rep((winwidth - caption_width) / 2)
+  return ('%s%s%s%s%s%s%s'):format(
+    '%#StatusLine#', margin,
+    '%#vfilerStatusLine_ChooseWindowKey#', padding, char, padding,
+    '%#StatusLine#'
+    )
+end
+
 local function choose_window()
   local winnrs = {}
   for nr = 1, vim.fn.winnr('$') do
@@ -103,8 +114,9 @@ local function choose_window()
   -- Choose window
   vim.set_global_option('laststatus', 2)
   for key, nr in pairs(winkeys) do
-    local status = (' '):rep(vim.fn.winwidth(nr) / 2 - 1) .. key
-    vim.set_win_option(nr, 'statusline', status)
+    vim.set_win_option(
+      nr, 'statusline', choose_window_statusline(vim.fn.winwidth(nr), key)
+      )
     vim.command('redraw')
   end
 
@@ -175,9 +187,11 @@ local function rename_files(context, view, targets)
     return
   end
 
-  local lnum = vim.fn.line('.')
   local ext = Rename.new {
-    on_execute = function(items, renames)
+    filer = VFiler.get_current(),
+
+    on_execute = function(filer, items, renames)
+      local renamed = {}
       local num_renamed = 0
       local parents = {}
       for i = 1, #items do
@@ -185,28 +199,25 @@ local function rename_files(context, view, targets)
         local rename = renames[i]
 
         if item:rename(rename) then
+          table.insert(renamed, item)
           num_renamed = num_renamed + 1
           parents[item.parent.path] = item.parent
+          item.selected = false
         end
       end
 
-      if num_renamed > 0 then
-        core.message.info('Renamed - %d files', num_renamed)
+      if #renamed > 0 then
+        core.message.info('Renamed - %d files', #renamed)
         for _, parent in pairs(parents) do
           parent:sort(context.sort_type, false)
         end
+        M.reload(filer.context, filer.view)
+        filer.view:move_cursor(renamed[1].path)
       end
-    end,
-
-    on_quit = function()
-      context.extension = nil
-      M.reload(context, view)
-      core.cursor.move(lnum)
     end,
   }
 
   ext:start(targets)
-  context.extension = ext
 end
 
 local function rename_one_file(context, view, target)
@@ -282,25 +293,22 @@ function M.change_sort(context, view)
   end
 
   local menu = Menu.new {
+    filer = VFiler.get_current(),
     name = 'Select Sort',
 
-    on_selected = function(sort_type)
-      if context.sort_type ~= sort_type then
-        local item = view:get_current()
-
-        context:change_sort(sort_type)
-        view:draw(context)
-        view:move_cursor(item.path)
+    on_selected = function(filer, sort_type)
+      if context.sort_type == sort_type then
+        return
       end
-    end,
 
-    on_quit = function()
-      context.extension = nil
+      local item = filer.view:get_current()
+      filer.context:change_sort(sort_type)
+      filer.view:draw(filer.context)
+      filer.view:move_cursor(item.path)
     end,
   }
 
   menu:start(sort.types(), context.sort_type)
-  context.extension = menu
 end
 
 function M.change_to_parent(context, view)
@@ -319,6 +327,12 @@ function M.copy(context, view)
   else
     core.message.info('Copy to the clipboard - %d files', #selected)
   end
+
+  -- clear selected mark
+  for _, item in ipairs(selected) do
+    item.selected = false
+  end
+  view:redraw()
 end
 
 function M.copy_to_filer(context, view)
@@ -339,7 +353,14 @@ function M.copy_to_filer(context, view)
   cb:paste(linked.context.root)
   linked:open()
   M.redraw(linked.context, linked.view)
+
   current:open() -- Return to current
+
+  -- clear selected mark
+  for _, item in ipairs(selected) do
+    item.selected = false
+  end
+  view:redraw()
 end
 
 function M.delete(context, view)
@@ -411,8 +432,15 @@ function M.jump_to_home(context, view)
 end
 
 function M.jump_to_root(context, view)
-  local dirpath = context.root:root()
+  local dirpath = core.path.root(context.root.path)
   cd(context, view, dirpath)
+end
+
+function M.latest_update(context, view)
+  local time = vim.fn.getftime(context.root.path)
+  if time > context.root.time then
+    M.reload(context, view)
+  end
 end
 
 function M.loop_cursor_down(context, view)
@@ -448,6 +476,12 @@ function M.move(context, view)
   else
     core.message.info('Move to the clipboard - %d files', #selected)
   end
+
+  -- clear selected mark
+  for _, item in ipairs(selected) do
+    item.selected = false
+  end
+  view:redraw()
 end
 
 function M.move_cursor_bottom(context, view)
@@ -635,7 +669,8 @@ function M.redraw_all(context, view)
 end
 
 function M.reload(context, view)
-  context:update()
+  context:save(view:get_current().path)
+  local path = context:switch(context.root.path)
   view:draw(context)
 end
 
@@ -664,26 +699,25 @@ function M.switch_to_drive(context, view)
     return
   end
 
-  local root = context.root:root()
+  local root = core.path.root(context.root.path)
   local menu = Menu.new {
+    filer = VFiler.get_current(),
     name = 'Select Drive',
-    on_selected = function(drive)
+
+    on_selected = function(filer, drive)
       if root == drive then
         return
       end
 
-      context:save(view:get_current().path)
-      local path = context:switch_drive(drive)
-      view:draw(context)
-      view:move_cursor(path)
-    end,
-    on_quit = function()
-      context.extension = nil
+      local path = filer.view:get_current().path
+      filer.context:save(path)
+      path = filer.context:switch_drive(drive)
+      filer.view:draw(filer.context)
+      filer.view:move_cursor(path)
     end,
   }
 
   menu:start(drives, root)
-  context.extension = menu
 end
 
 function M.switch_to_filer(context, view)
@@ -760,9 +794,10 @@ function M.toggle_select_up(context, view)
 end
 
 function M.yank_name(context, view)
+  local selected = view:selected_items()
   local names = {}
-  for _, selected in ipairs(view:selected_items()) do
-    table.insert(names, selected.name)
+  for _, item in ipairs(selected) do
+    table.insert(names, item.name)
   end
   if #names == 1 then
     Clipboard.yank(names[1])
@@ -772,12 +807,19 @@ function M.yank_name(context, view)
     Clipboard.yank(content)
     core.message.info('Yanked %d names', #names)
   end
+
+  -- clear selected mark
+  for _, item in ipairs(selected) do
+    item.selected = false
+  end
+  view:redraw()
 end
 
 function M.yank_path(context, view)
+  local selected = view:selected_items()
   local paths = {}
-  for _, selected in ipairs(view:selected_items()) do
-    table.insert(paths, selected.path)
+  for _, item in ipairs(selected) do
+    table.insert(paths, item.path)
   end
   if #paths == 1 then
     Clipboard.yank(paths[1])
@@ -787,6 +829,12 @@ function M.yank_path(context, view)
     Clipboard.yank(content)
     core.message.info('Yanked %d paths', #paths)
   end
+
+  -- clear selected mark
+  for _, item in ipairs(selected) do
+    item.selected = false
+  end
+  view:redraw()
 end
 
 return M

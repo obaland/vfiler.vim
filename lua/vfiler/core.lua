@@ -121,7 +121,7 @@ function M.window.move(winnr)
   if winnr > 0 then
     command = winnr .. command
   end
-  vim.command(([[noautocmd execute '%s']]).format(command))
+  vim.command(([[noautocmd execute '%s']]):format(command))
 end
 
 ---@param direction string
@@ -159,7 +159,7 @@ M.message = {}
 function M.message.error(format, ...)
   local msg = format:format(...)
   vim.command(
-    ([[echohl ErrorMsg | echom '[vfiler]: %s' | echohl None]]):format(msg)
+    ([[echohl ErrorMsg | echomsg '[vfiler]: %s' | echohl None]]):format(msg)
     )
 end
 
@@ -172,7 +172,7 @@ end
 function M.message.warning(format, ...)
   local msg = format:format(...)
   vim.command(
-    ([[echohl WarningMsg | echom '[vfiler]: %s' | echohl None]]):format(msg)
+    ([[echohl WarningMsg | echomsg '[vfiler]: %s' | echohl None]]):format(msg)
     )
 end
 
@@ -189,6 +189,10 @@ end
 ------------------------------------------------------------------------------
 M.path = {}
 
+function M.path.escape(path)
+  return path:gsub('\\', '/')
+end
+
 function M.path.exists(path)
   return M.path.filereadable(path) or M.path.isdirectory(path)
 end
@@ -202,9 +206,12 @@ function M.path.isdirectory(path)
 end
 
 function M.path.join(path, name)
+  path = M.path.escape(path)
   if path:sub(#path, #path) ~= '/' then
     path = path .. '/'
   end
+
+  name = M.path.escape(name)
   if name:sub(1, 1) == '/' then
     name = name:sub(2)
   end
@@ -215,12 +222,20 @@ function M.path.normalize(path)
   if path == '/' then
     return '/'
   end
+  return M.path.escape(vim.fn.fnamemodify(path, ':p'))
+end
 
-  local result = vim.fn.fnamemodify(path, ':p')
+function M.path.root(path)
+  local root = ''
   if M.is_windows then
-    result = result:gsub('\\', '/')
+    if path:match('^//') then
+      -- for UNC path
+      root = path:match('^//[^/]*/[^/]*')
+    else
+      root = (M.path.normalize(path)):match('^%a+:')
+    end
   end
-  return result
+  return root .. '/'
 end
 
 ------------------------------------------------------------------------------

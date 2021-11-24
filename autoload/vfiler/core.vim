@@ -5,9 +5,9 @@
 "=============================================================================
 
 function! vfiler#core#clear_undo() abort
-	let l:undolevels = &undolevels
-	setlocal undolevels=-1
-	silent execute "normal! I \<BS>\<Esc>"
-	execute 'setlocal undolevels=' . l:undolevels
-	unlet l:undolevels
+  let l:undolevels = &undolevels
+  setlocal undolevels=-1
+  silent execute "normal! I \<BS>\<Esc>"
+  execute 'setlocal undolevels=' . l:undolevels
+  unlet l:undolevels
 endfunction

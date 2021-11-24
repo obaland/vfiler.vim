@@ -14,7 +14,7 @@ M.configs = {
     name = '',
     show_hidden_files = false,
     sort = 'name',
-    split = 'none',
+    direction = 'none',
     width = 90,
     height = 30,
     new = false,
@@ -41,7 +41,6 @@ M.configs = {
     ['k']         = action.loop_cursor_up,
     ['l']         = action.open_tree,
     ['mm']        = action.move_to_filer,
-    ['o']         = action.open_tree_recursive,
     ['q']         = action.quit,
     ['r']         = action.rename,
     ['s']         = action.open_by_split,
@@ -64,9 +63,9 @@ M.configs = {
   },
 
   events = {
-    BufEnter = action.reload,
-    BufLeave = action.reload,
-    FocusGained = action.reload_all,
+    CursorHold = action.latest_update,
+    FileType = action.reload,
+    FocusGained = action.latest_update,
     VimResized = action.redraw_all,
   },
 }
@@ -197,10 +196,10 @@ function M.parse_options(str_args)
     if arg:sub(1, 1) == '-' then
       local name, value, key = parse_option(arg)
       if options[name] == nil then
-        error(string.format("Unknown '%s' option.", key))
+        error(string.format('Unknown "%s" option.', key))
         return nil
       elseif type(value) ~= type(options[name]) then
-        error(string.format("Illegal option value. (%s)", value))
+        error(string.format('Illegal option value. (%s)', value))
         return nil
       end
       options[name] = value

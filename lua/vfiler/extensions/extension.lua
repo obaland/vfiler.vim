@@ -7,10 +7,11 @@ local extensions = {}
 local Extension = {}
 Extension.__index = Extension
 
-function Extension.new(name, view, configs)
+function Extension.new(filer, name, view, configs)
   return setmetatable({
     source_bufnr = vim.fn.bufnr(),
     configs = core.table.copy(configs),
+    filer = filer,
     items = nil,
     name = name,
     bufnr = 0,
@@ -84,10 +85,16 @@ function Extension:handle_event(type)
 end
 
 function Extension:quit()
+  -- guard duplicate calls
+  if not extensions[self.bufnr] then
+    return
+  end
+  extensions[self.bufnr] = nil
+
   vim.command('echo') -- Clear prompt message
   self.view:close()
   if self.on_quit then
-    self.on_quit()
+    self.on_quit(self.filer)
   end
 
   local source_winnr = vim.fn.bufwinnr(self.source_bufnr)
@@ -95,7 +102,8 @@ function Extension:quit()
     core.window.move(source_winnr)
   end
 
-  extensions[self.bufnr] = nil
+  -- unlink
+  self.filer.context.extension = nil
 end
 
 function Extension:start(items, ...)
@@ -133,6 +141,9 @@ function Extension:start(items, ...)
 
   -- add extension table
   extensions[self.bufnr] = self
+
+  -- link to filer
+  self.filer.context.extension = self
 end
 
 function Extension:_on_get_texts(items)
