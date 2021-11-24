@@ -10,6 +10,7 @@ Interface .............. |vfiler-interface|
   Functions .............. |vfiler-functions|
   Actions ................ |vfiler-actions|
   Options ................ |vfiler-options|
+  Columns ................ |vfiler-columns|
   Configurations ......... |vfiler-configurations|
   Key mappings ........... |vfiler-key-mappings|
 Customization .......... |vfiler-customization|
