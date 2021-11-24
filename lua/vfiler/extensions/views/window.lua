@@ -115,10 +115,7 @@ function Window:_on_open(name, texts, options)
   core.window.open(options.direction)
 
   -- Save swapfile option
-  local swapfile = vim.get_option_boolean('swapfile')
-  vim.set_option('swapfile', false)
   vim.command('silent edit ' .. 'vfiler/' .. name)
-  vim.set_option('swapfile', swapfile)
 
   -- resize window
   if options.width > 0 then

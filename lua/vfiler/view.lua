@@ -250,15 +250,10 @@ function View:_apply_syntaxes()
 end
 
 function View:_create_buffer()
-  -- Save swapfile option
-  local swapfile = vim.get_option_boolean('swapfile')
-  vim.set_option('swapfile', false)
   vim.command('silent edit ' .. self._bufname)
-  vim.set_option('swapfile', swapfile)
-
-  local bufnr = vim.fn.bufnr()
 
   -- Set buffer local options
+  local bufnr = vim.fn.bufnr()
   vim.set_buf_options(bufnr, {
     bufhidden = 'hide',
     buflisted = self._listed,
