@@ -216,6 +216,7 @@ end
 
 function M.setup(configs)
   core.table.merge(M.configs, configs)
+  return M.configs
 end
 
 return M
