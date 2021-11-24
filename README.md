@@ -65,29 +65,34 @@ Please see the [documentation][vim-doc] for details.
 ## Configuration
 ### Explorer style
 
-```lua
-local action = require'vfiler/action'
-require'vfiler/config'.setup {
-  options = {
-    auto_cd = true,
-    name = 'explorer',
-    direction = 'left',
-    width = 30,
-    columns = 'indent,icon,name',
-  },
+```vim
+function VFilerForExplorer()
+lua<<EOF
+  local action = require'vfiler/action'
+  require'vfiler/config'.setup {
+    options = {
+      auto_cd = true,
+      name = 'explorer',
+      direction = 'left',
+      width = 30,
+      columns = 'indent,icon,name',
+    },
 
-  mappings = {
-    -- Change open action
-    ['<CR>']  = action.open_by_choose_or_cd,
+    mappings = {
+      -- Change open action
+      ['<CR>']  = action.open_by_choose_or_cd,
 
-    -- Disable switch to filer
-    ['<Tab>'] = nil,
-  },
-}
+      -- Disable switch to filer
+      ['<Tab>'] = nil,
+    },
+  }
 
-local path = vim.fn.getcwd()
-require'vfiler'.start(path)
+  local path = vim.fn.getcwd()
+  require'vfiler'.start(path)
+EOF
+endfunction
 
+command! -nargs=0 VFilerExplorer call VFilerForExplorer()
 ```
 
 ## Finally
