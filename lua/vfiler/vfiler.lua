@@ -19,23 +19,23 @@ end
 
 --- Do the action of the specified key
 local function do_action(vfiler, key)
-  local func = vfiler._mappings[key]
-  if not func then
+  local action = vfiler._mappings[key]
+  if not action then
     core.message.error('Not defined in the key')
     return
   end
-  func(vfiler.context, vfiler.view)
+  action(vfiler)
 end
 
 --- Handle the specified event
 local function handle_event(vfiler, type)
   local events = vfiler.configs.events
-  local func = events[type]
-  if not func then
+  local action = events[type]
+  if not action then
     core.message.error('Event "%s" is not registered.', type)
     return
   end
-  func(vfiler.context, vfiler.view)
+  action(vfiler)
 end
 
 local function register_events(bufnr, events)
@@ -200,6 +200,11 @@ function VFiler:quit()
     self:unlink()
     vfilers[bufnr] = nil
   end
+end
+
+--- Redraw the filer in the current window
+function VFiler:redraw()
+  self.view:redraw()
 end
 
 --- Reset the filer object
