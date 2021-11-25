@@ -677,14 +677,14 @@ end
 function M.rename(vfiler)
   local selected = vfiler.view:selected_items()
   if #selected == 1 then
-    rename_one_file(context, view, selected[1])
+    rename_one_file(vfiler, selected[1])
   elseif #selected > 1 then
-    rename_files(context, view, selected)
+    rename_files(vfiler, selected)
   end
 end
 
-function M.switch_to_drive(context, view)
-  if context.extension then
+function M.switch_to_drive(vfiler)
+  if vfiler.context.extension then
     return
   end
 
@@ -693,9 +693,9 @@ function M.switch_to_drive(context, view)
     return
   end
 
-  local root = core.path.root(context.root.path)
+  local root = core.path.root(vfiler.context.root.path)
   local menu = Menu.new {
-    filer = VFiler.get_current(),
+    filer = vfiler,
     name = 'Select Drive',
 
     on_selected = function(filer, drive)
@@ -714,9 +714,8 @@ function M.switch_to_drive(context, view)
   menu:start(drives, root)
 end
 
-function M.switch_to_filer(context, view)
-  local current = VFiler.get_current()
-  local linked = current.context.linked
+function M.switch_to_filer(vfiler)
+  local linked = vfiler.context.linked
   -- already linked
   if linked then
     linked:open('right')
@@ -725,70 +724,70 @@ function M.switch_to_filer(context, view)
 
   -- create link to filer
   local lnum = vim.fn.line('.')
-  local filer = VFiler.find_hidden(current.configs.name)
-  if filer then
-    filer:open('right')
-    filer:reset(current.configs)
+  local newfiler = VFiler.find_hidden(vfiler.configs.name)
+  if newfiler then
+    newfiler:open('right')
+    newfiler:reset(vfiler.configs)
   else
     core.window.open('right')
-    filer = VFiler.new(current.configs)
+    newfiler = VFiler.new(vfiler.configs)
   end
-  filer:link(current)
-  filer.context:duplicate(current.context)
-  filer:draw()
+  newfiler:link(vfiler)
+  newfiler.context:duplicate(vfiler.context)
+  newfiler:draw()
   core.cursor.move(lnum)
 
   -- redraw current
-  current:open()
-  current.view:redraw()
+  vfiler:open()
+  vfiler:redraw()
 
-  filer:open() -- return other filer
+  newfiler:open() -- return other filer
 end
 
-function M.sync_with_current_filer(context, view)
-  local current = VFiler.get_current()
-  local linked = current.context.linked
+function M.sync_with_current_filer(vfiler)
+  local linked = vfiler.context.linked
   if not (linked and linked:displayed()) then
     return
   end
 
   linked:open()
-  linked.context:sync(current.context)
+  linked.context:sync(vfiler.context)
   linked:draw()
-  current:open() -- return current window
+  vfiler:open() -- return current window
 end
 
-function M.toggle_show_hidden(context, view)
-  view.show_hidden_files = not view.show_hidden_files
-  view:draw(context)
+function M.toggle_show_hidden(vfiler)
+  vfiler.view.show_hidden_files = not vfiler.view.show_hidden_files
+  vfiler:draw()
 end
 
-function M.toggle_select(context, view)
+function M.toggle_select(vfiler)
   local lnum = vim.fn.line('.')
-  local item = view:get_item(lnum)
+  local item = vfiler.view:get_item(lnum)
   item.selected = not item.selected
-  view:redraw_line(lnum)
+  vfiler.view:redraw_line(lnum)
 end
 
-function M.toggle_select_all(context, view)
-  for _, item in ipairs(context.root:walk()) do
+function M.toggle_select_all(vfiler)
+  local root = vfiler.context.root
+  for _, item in ipairs(root:walk()) do
     item.selected = not item.selected
   end
-  view:redraw()
+  vfiler:redraw()
 end
 
-function M.toggle_select_down(context, view)
-  M.toggle_select(context, view)
-  M.move_cursor_down(context, view)
+function M.toggle_select_down(vfiler)
+  M.toggle_select(vfiler)
+  M.move_cursor_down(vfiler)
 end
 
-function M.toggle_select_up(context, view)
-  M.toggle_select(context, view)
-  M.move_cursor_up(context, view)
+function M.toggle_select_up(vfiler)
+  M.toggle_select(vfiler)
+  M.move_cursor_up(vfiler)
 end
 
-function M.yank_name(context, view)
-  local selected = view:selected_items()
+function M.yank_name(vfiler)
+  local selected = vfiler.view:selected_items()
   local names = {}
   for _, item in ipairs(selected) do
     table.insert(names, item.name)
@@ -806,11 +805,11 @@ function M.yank_name(context, view)
   for _, item in ipairs(selected) do
     item.selected = false
   end
-  view:redraw()
+  vfiler:redraw()
 end
 
-function M.yank_path(context, view)
-  local selected = view:selected_items()
+function M.yank_path(vfiler)
+  local selected = vfiler.view:selected_items()
   local paths = {}
   for _, item in ipairs(selected) do
     table.insert(paths, item.path)
@@ -828,7 +827,7 @@ function M.yank_path(context, view)
   for _, item in ipairs(selected) do
     item.selected = false
   end
-  view:redraw()
+  vfiler:redraw()
 end
 
 return M
