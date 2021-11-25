@@ -120,6 +120,7 @@ function Context.new(options)
     auto_cd = options.auto_cd,
     clipboard = nil,
     extension = nil,
+    linked = nil,
     root = nil,
     sort_type = options.sort,
     _snapshot = Snapshot.new(),

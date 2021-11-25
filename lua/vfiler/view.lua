@@ -347,7 +347,7 @@ end
 ---@param item table
 function View:_toheader(item)
   local winwidth = self._cache.winwidth
-  local header = vim.fn.fnamemodify(item.path, ':~')
+  local header = core.path.escape(vim.fn.fnamemodify(item.path, ':~'))
   return core.string.truncate(header, winwidth, '<', winwidth)
 end
 

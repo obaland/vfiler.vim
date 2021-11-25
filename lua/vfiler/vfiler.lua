@@ -17,6 +17,27 @@ local function define_mappings(bufnr, mappings)
     )
 end
 
+--- Do the action of the specified key
+local function do_action(vfiler, key)
+  local func = vfiler._mappings[key]
+  if not func then
+    core.message.error('Not defined in the key')
+    return
+  end
+  func(vfiler.context, vfiler.view)
+end
+
+--- Handle the specified event
+local function handle_event(vfiler, type)
+  local events = vfiler.configs.events
+  local func = events[type]
+  if not func then
+    core.message.error('Event "%s" is not registered.', type)
+    return
+  end
+  func(vfiler.context, vfiler.view)
+end
+
 local function register_events(bufnr, events)
   event.register(
     'vfiler', bufnr, events, [[require('vfiler/vfiler')._handle_event]]
@@ -118,7 +139,6 @@ function VFiler.new(configs)
   local object = setmetatable({
     configs = core.table.copy(configs),
     context = Context.new(options),
-    linked = nil,
     view = view,
     _mappings = define_mappings(bufnr, configs.mappings),
   }, VFiler)
@@ -134,12 +154,12 @@ end
 
 function VFiler._do_action(bufnr, key)
   local vfiler = VFiler.get(bufnr)
-  vfiler:do_action(key)
+  do_action(vfiler, key)
 end
 
 function VFiler._handle_event(bufnr, type)
   local vfiler = VFiler.get(bufnr)
-  vfiler:handle_event(type)
+  handle_event(vfiler, type)
 end
 
 --- Is the filer displayed?
@@ -147,37 +167,15 @@ function VFiler:displayed()
   return self.view:winnr() >= 0
 end
 
---- Do the action of the specified key
----@param key string
-function VFiler:do_action(key)
-  local func = self._mappings[key]
-  if not func then
-    core.message.error('Not defined in the key')
-    return
-  end
-  func(self.context, self.view)
-end
-
 --- Draw the filer in the current window
 function VFiler:draw()
   self.view:draw(self.context)
 end
 
---- Handle the specified event
-function VFiler:handle_event(type)
-  local events = self.configs.events
-  local func = events[type]
-  if not func then
-    core.message.error('Event "%s" is not registered.', type)
-    return
-  end
-  func(self.context, self.view)
-end
-
 --- Link with the specified filer
 function VFiler:link(vfiler)
-  self.linked = vfiler
-  vfiler.linked = self
+  self.context.linked = vfiler
+  vfiler.context.linked = self
 end
 
 --- Open filer
@@ -214,7 +212,6 @@ function VFiler:reset(configs)
   -- reset keymapping
   mapping.undefine(self.configs.mappings)
   self._mappings = define_mappings(self.view.bufnr, configs.mappings)
-
   self.configs = core.table.copy(configs)
 end
 
@@ -228,11 +225,11 @@ end
 
 --- Unlink filer
 function VFiler:unlink()
-  local vfiler = self.linked
+  local vfiler = self.context.linked
   if vfiler then
-    vfiler.linked = nil
+    vfiler.context.linked = nil
   end
-  self.linked = nil
+  self.context.linked = nil
 end
 
 return VFiler

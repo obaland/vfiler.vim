@@ -341,7 +341,7 @@ function M.copy_to_filer(context, view)
     return
   end
   local current = VFiler.get(view.bufnr)
-  local linked = current.linked
+  local linked = current.context.linked
   if not (linked and linked:displayed()) then
     -- Copy to clipboard
     M.copy(context, view)
@@ -511,7 +511,7 @@ function M.move_to_filer(context, view)
     return
   end
   local current = VFiler.get(view.bufnr)
-  local linked = current.linked
+  local linked = current.context.linked
   if not (linked and linked:displayed()) then
     -- Move to clipboard
     M.move(context, view)
@@ -722,7 +722,7 @@ end
 
 function M.switch_to_filer(context, view)
   local current = VFiler.get_current()
-  local linked = current.linked
+  local linked = current.context.linked
   -- already linked
   if linked then
     linked:open('right')
@@ -753,7 +753,7 @@ end
 
 function M.sync_with_current_filer(context, view)
   local current = VFiler.get_current()
-  local linked = current.linked
+  local linked = current.context.linked
   if not (linked and linked:displayed()) then
     return
   end
