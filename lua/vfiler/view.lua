@@ -4,6 +4,24 @@ local vim = require 'vfiler/vim'
 local View = {}
 View.__index = View
 
+local function create_buffer(bufname, options)
+  vim.command('silent edit ' .. bufname)
+
+  -- Set buffer local options
+  local bufnr = vim.fn.bufnr()
+  vim.set_buf_options(bufnr, {
+    bufhidden = 'hide',
+    buflisted = options.buflisted,
+    buftype = 'nofile',
+    filetype = 'vfiler',
+    modifiable = false,
+    modified = false,
+    readonly = false,
+    swapfile = false,
+  })
+  return bufnr
+end
+
 local function create_columns(columns)
   local column = require 'vfiler/column'
   local objects = {}
@@ -26,8 +44,8 @@ end
 
 --- Create a view object
 ---@param bufname string
----@param options table
-function View.new(bufname, options)
+---@param context table
+function View.new(bufname, context)
   local object = setmetatable({
     bufnr = -1,
     _bufname = bufname,
@@ -44,16 +62,11 @@ function View.new(bufname, options)
       wrap = false,
     },
   }, View)
-  object:_reset(options)
+  object:_initialize(context)
+  object.bufnr = create_buffer(bufname, {buflisted = context.listed})
+  object:_apply_syntaxes()
+  object:_resize()
   return object
-end
-
---- Create data that includes a buffer
-function View:create()
-  self.bufnr = self:_create_buffer()
-  self:_apply_syntaxes()
-  self:_resize(vim.fn.bufwinnr(self.bufnr))
-  return self.bufnr
 end
 
 --- Delete view object
@@ -70,7 +83,7 @@ function View:draw(context)
   -- expand item list
   self._items = {}
   for item in context.root:walk() do
-    if self.show_hidden_files or item.name:sub(1, 1) ~= '.' then
+    if context.show_hidden_files or item.name:sub(1, 1) ~= '.' then
       table.insert(self._items, item)
     end
   end
@@ -185,13 +198,13 @@ function View:redraw_line(lnum)
   vim.set_buf_option(self.bufnr, 'readonly', true)
 end
 
---- Reset the view object
----@param options table
-function View:reset(options)
-  self:_reset(options)
+--- Reset from another view
+---@param context table
+function View:reset(context)
+  self:_initialize(context)
   vim.set_buf_option(self.bufnr, 'buflisted', self._listed)
   self:_apply_syntaxes()
-  self:_resize(vim.fn.bufwinnr(self.bufnr))
+  self:_resize()
 end
 
 --- Get the currently selected items
@@ -249,24 +262,6 @@ function View:_apply_syntaxes()
   vim.commands(highlights)
 end
 
-function View:_create_buffer()
-  vim.command('silent edit ' .. self._bufname)
-
-  -- Set buffer local options
-  local bufnr = vim.fn.bufnr()
-  vim.set_buf_options(bufnr, {
-    bufhidden = 'hide',
-    buflisted = self._listed,
-    buftype = 'nofile',
-    filetype = 'vfiler',
-    modifiable = false,
-    modified = false,
-    readonly = false,
-    swapfile = false,
-  })
-  return bufnr
-end
-
 function View:_create_column_props(winwidth)
   local props = {}
   local variable_columns = {}
@@ -304,31 +299,30 @@ function View:_create_column_props(winwidth)
   return props
 end
 
-function View:_reset(options)
-  self._columns = create_columns(options.columns)
+function View:_initialize(context)
+  self._columns = create_columns(context.columns)
   if not self._columns then
     return nil
   end
 
-  self.show_hidden_files = options.show_hidden_files
-  self._header = options.header
-  self._listed = options.listed
-  self._cache = {
-    winwidth = 0,
-  }
+  self._cache = {winwidth = 0}
+  self._listed = context.listed
+  self._header = context.header
 
   self._width = 0
   self._height = 0
 
-  local direction = options.direction
+  local direction = context.direction
   if direction == 'left' or direction == 'right' then
-    self._width = options.width
+    self._width = context.width
   elseif direction == 'top' or direction == 'bottom' then
-    self._height = options.height
+    self._height = context.height
   end
 end
 
-function View:_resize(winnr)
+function View:_resize()
+  local winnr = self:winnr()
+
   local winfixwidth = false
   if self._width > 0 then
     core.window.resize_width(self._width)

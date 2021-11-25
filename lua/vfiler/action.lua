@@ -141,46 +141,6 @@ local function choose_window()
   return key == '<ESC>' and nil or winkeys[key]
 end
 
-local function open(vfiler, direction)
-  local item = vfiler.view:get_current()
-  if not item then
-    core.message.warning('Item does not exist.')
-    return
-  end
-
-  if direction == 'choose' then
-    local winnr = choose_window()
-    if not winnr then
-      return
-    elseif winnr < 0 then
-      core.window.open('right')
-    else
-      core.window.move(winnr)
-    end
-  elseif direction ~= 'edit' then
-    core.window.open(direction)
-  end
-
-  if item.isdirectory then
-    if direction == 'edit' then
-      cd(vfiler, item.path)
-      return
-    end
-
-    local name = vfiler.configs.options.name
-    local newfiler = VFiler.find_hidden(name)
-    if newfiler then
-      newfiler:open()
-      newfiler:reset(vfiler.configs)
-    else
-      newfiler = VFiler.new(vfiler.configs)
-    end
-    newfiler:start(item.path)
-  else
-    core.window.open('edit', item.path)
-  end
-end
-
 local function rename_files(vfiler, targets)
   if vfiler.context.extension then
     return
@@ -245,12 +205,38 @@ end
 ------------------------------------------------------------------------------
 -- Interfaces
 ------------------------------------------------------------------------------
-function M.define(name, func)
-  M[name] = func
-end
 
-function M.undefine(name)
-  M[name] = nil
+function M.open_file(vfiler, path, direction)
+  if direction == 'choose' then
+    local winnr = choose_window()
+    if not winnr then
+      return
+    elseif winnr < 0 then
+      core.window.open('right')
+    else
+      core.window.move(winnr)
+    end
+  elseif direction ~= 'edit' then
+    core.window.open(direction)
+  end
+
+  if core.path.isdirectory(path) then
+    if direction == 'edit' then
+      cd(vfiler, path)
+      return
+    end
+
+    local newfiler = VFiler.find_hidden(vfiler.context.name)
+    if newfiler then
+      newfiler:open()
+      newfiler:reset(vfiler.context)
+    else
+      newfiler = VFiler.new(vfiler.context)
+    end
+    newfiler:start(path)
+  else
+    core.window.open('edit', path)
+  end
 end
 
 ------------------------------------------------------------------------------
@@ -582,11 +568,13 @@ function M.new_file(vfiler)
 end
 
 function M.open(vfiler)
-  open(vfiler, 'edit')
+  local path = vfiler.view:get_current().path
+  M.open_file(vfiler, path, 'edit')
 end
 
 function M.open_by_choose(vfiler)
-  open(vfiler, 'choose')
+  local path = vfiler.view:get_current().path
+  M.open_file(vfiler, path, vfiler.'choose')
 end
 
 function M.open_by_choose_or_cd(vfiler)
@@ -594,20 +582,23 @@ function M.open_by_choose_or_cd(vfiler)
   if item.isdirectory then
     cd(vfiler, item.path)
   else
-    open(vfiler, 'choose')
+    M.open_file(vfiler, item.path, 'choose')
   end
 end
 
 function M.open_by_split(vfiler)
-  open(vfiler, 'bottom')
+  local path = vfiler.view:get_current().path
+  M.open_file(vfiler, path, 'bottom')
 end
 
 function M.open_by_tabpage(vfiler)
-  open(vfiler, 'tab')
+  local path = vfiler.view:get_current().path
+  M.open_file(vfiler, path, 'tab')
 end
 
 function M.open_by_vsplit(vfiler)
-  open(vfiler, 'right')
+  local path = vfiler.view:get_current().path
+  M.open_file(vfiler, path, 'right')
 end
 
 function M.open_tree(vfiler)
@@ -724,16 +715,16 @@ function M.switch_to_filer(vfiler)
 
   -- create link to filer
   local lnum = vim.fn.line('.')
-  local newfiler = VFiler.find_hidden(vfiler.configs.name)
+  local newfiler = VFiler.find_hidden(vfiler.context.name)
   if newfiler then
     newfiler:open('right')
-    newfiler:reset(vfiler.configs)
+    newfiler:reset(vfiler.context)
   else
     core.window.open('right')
-    newfiler = VFiler.new(vfiler.configs)
+    local context = vfiler.context:duplicate()
+    newfiler = VFiler.new(context)
   end
   newfiler:link(vfiler)
-  newfiler.context:duplicate(vfiler.context)
   newfiler:draw()
   core.cursor.move(lnum)
 

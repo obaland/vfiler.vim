@@ -19,7 +19,7 @@ end
 
 --- Do the action of the specified key
 local function do_action(vfiler, key)
-  local action = vfiler._mappings[key]
+  local action = vfiler._defined_mappings[key]
   if not action then
     core.message.error('Not defined in the key')
     return
@@ -29,8 +29,7 @@ end
 
 --- Handle the specified event
 local function handle_event(vfiler, type)
-  local events = vfiler.configs.events
-  local action = events[type]
+  local action = vfiler.context.events[type]
   if not action then
     core.message.error('Event "%s" is not registered.', type)
     return
@@ -44,7 +43,7 @@ local function register_events(bufnr, events)
     )
 end
 
-local function generate_name(name)
+local function generate_bufname(name)
   local bufname = 'vfiler'
   if #name > 0 then
     bufname = bufname .. ':' .. name
@@ -52,7 +51,8 @@ local function generate_name(name)
 
   local maxnr = -1
   for _, vfiler in pairs(vfilers) do
-    if name == vfiler.name then
+    local object = vfiler.object
+    if name == object.context.name then
       maxnr = math.max(vfiler.number, maxnr)
     end
   end
@@ -62,7 +62,7 @@ local function generate_name(name)
     number = maxnr + 1
     bufname = bufname .. '-' .. tostring(number)
   end
-  return bufname, name, number
+  return bufname, number
 end
 
 --- Cleanup vfiler buffers
@@ -84,8 +84,9 @@ end
 function VFiler.find(name)
   -- in tabpage
   for bufnr, vfiler in pairs(vfilers) do
-    if (vfiler.name == name) and (vim.fn.bufwinnr(bufnr) >= 0) then
-      return vfiler.object
+    local object = vfiler.object
+    if (object.context.name == name) and (vim.fn.bufwinnr(bufnr) >= 0) then
+      return object
     end
   end
   return VFiler.find_hidden(name)
@@ -96,9 +97,10 @@ end
 function VFiler.find_hidden(name)
   -- in hidden buffers
   for bufnr, vfiler in pairs(vfilers) do
+    local object = vfiler.object
     local infos = vim.from_vimdict(vim.fn.getbufinfo(bufnr))
-    if (vfiler.name == name) and (infos[1].hidden == 1) then
-      return vfiler.object
+    if (object.context.name == name) and (infos[1].hidden == 1) then
+      return object
     end
   end
   return nil -- not found
@@ -127,26 +129,22 @@ function VFiler.get_displays()
 end
 
 --- Create a filer obuject
----@param configs table
-function VFiler.new(configs)
-  local options = configs.options
-  local bufname, name, number = generate_name(options.name)
-  local view = View.new(bufname, options)
-  local bufnr = view:create()
+---@param context table
+function VFiler.new(context)
+  local bufname, number = generate_bufname(context.name)
+  local view = View.new(bufname, context)
 
-  register_events(bufnr, configs.events)
+  register_events(view.bufnr, context.events)
 
   local object = setmetatable({
-    configs = core.table.copy(configs),
-    context = Context.new(options),
+    context = context,
     view = view,
-    _mappings = define_mappings(bufnr, configs.mappings),
+    _defined_mappings = define_mappings(view.bufnr, context.mappings),
   }, VFiler)
 
   -- add vfiler resource
-  vfilers[bufnr] = {
+  vfilers[view.bufnr] = {
     object = object,
-    name = name,
     number = number,
   }
   return object
@@ -180,8 +178,9 @@ end
 
 --- Open filer
 function VFiler:open(...)
-  if self:displayed() then
-    core.window.move(self.view:winnr())
+  local winnr = self.view:winnr()
+  if winnr >= 0 then
+    core.window.move(winnr)
     return
   end
 
@@ -195,7 +194,7 @@ end
 --- Quit filer
 function VFiler:quit()
   local bufnr = self.view.bufnr
-  if self.configs.options.quit and bufnr >= 0 then
+  if self.context.quit and bufnr >= 0 then
     self.view:delete()
     self:unlink()
     vfilers[bufnr] = nil
@@ -207,25 +206,24 @@ function VFiler:redraw()
   self.view:redraw()
 end
 
---- Reset the filer object
----@param configs table
-function VFiler:reset(configs)
+--- Reset
+---@param context table
+function VFiler:reset(context)
+  -- clear the data so far
   self:unlink()
-  self.context = Context.new(configs.options)
-  self.view:reset(configs.options)
+  mapping.undefine(self.context.mappings)
 
-  -- reset keymapping
-  mapping.undefine(self.configs.mappings)
-  self._mappings = define_mappings(self.view.bufnr, configs.mappings)
-  self.configs = core.table.copy(configs)
+  self.context:reset(context)
+  self.view:reset(context)
+  self._defined_mappings = define_mappings(self.view.bufnr, context.mappings)
 end
 
 --- Start the filer
 ---@param dirpath string
 function VFiler:start(dirpath)
   self.context:switch(dirpath)
-  self.view:draw(self.context)
-  core.cursor.move(2)
+  self:draw()
+  core.cursor.move(self.view:top_lnum())
 end
 
 --- Unlink filer
