@@ -3,7 +3,7 @@ local vim = require 'vfiler/vim'
 
 local IconColumn = {}
 
-local icon_configs = {
+IconColumn.configs = {
   selected = '*',
   file = ' ',
   closed = '+',
@@ -11,16 +11,12 @@ local icon_configs = {
 }
 
 function IconColumn.setup(configs)
-  core.table.merge(icon_configs, configs)
+  core.table.merge(IconColumn.configs, configs)
 end
 
 function IconColumn.new()
   local Column = require('vfiler/columns/column')
   local self = core.inherit(IconColumn, Column, 'icon')
-  self.selected = '*'
-  self.file = ' '
-  self.closed_directory = '+'
-  self.opened_directory = '-'
 
   local Syntax = require('vfiler/columns/syntax')
   self._syntax = Syntax.new {
@@ -59,13 +55,13 @@ function IconColumn:get_text(item, width)
     iname = 'file'
     sname = 'file'
   end
-  return self._syntax:surround_text(sname, icon_configs[iname])
+  return self._syntax:surround_text(sname, self.configs[iname])
 end
 
 function IconColumn:get_width(items, width)
   -- decide width
   local iwidth = -1
-  for _, icon in pairs(icon_configs) do
+  for _, icon in pairs(self.configs) do
     iwidth = math.max(iwidth, vim.fn.strwidth(icon))
   end
   return iwidth
