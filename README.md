@@ -42,6 +42,15 @@ Plug 'obaland/vfiler.vim'
 ```vim
 call dein#add('obaland/vfiler.vim')
 ```
+## Usage
+### Quick Start
+Basically, after installing in any way, start with the **VFiler** command.
+
+    :VFiler [{path}]
+
+If {path} is not specified, it will start in the current directory.
+
+Please see the [documentation][vim-doc] for details.
 
 ## Demo
 ### Basic
@@ -52,15 +61,6 @@ call dein#add('obaland/vfiler.vim')
 
 ### Explorer style
 ![tree](https://github.com/obaland/contents/blob/main/vfiler.vim/image-tree.png?raw=true)
-
-## Quick Start
-Basically, after installing in any way, start with the **VFiler** command.
-
-    :VFiler [{path}]
-
-If {path} is not specified, it will start in the current directory.
-
-Please see the [documentation][vim-doc] for details.
 
 ## Configuration
 ### Explorer style
