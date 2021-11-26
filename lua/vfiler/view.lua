@@ -82,8 +82,11 @@ end
 function View:draw(context)
   -- expand item list
   self._items = {}
-  for item in context.root:walk() do
-    if context.show_hidden_files or item.name:sub(1, 1) ~= '.' then
+  local root = context.root
+  for item in root:walk() do
+    local hidden = item.name:sub(1, 1) == '.'
+    if item.path == root.path or
+      (context.show_hidden_files or not hidden) then
       table.insert(self._items, item)
     end
   end

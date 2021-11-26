@@ -75,8 +75,8 @@ local choose_keys = {
 
 local function choose_window_statusline(winwidth, char)
   local caption_width = winwidth / 4
-  local padding = (' '):rep(caption_width / 2)
-  local margin = (' '):rep((winwidth - caption_width) / 2)
+  local padding = (' '):rep(math.ceil(caption_width / 2))
+  local margin = (' '):rep(math.ceil((winwidth - caption_width) / 2))
   return ('%s%s%s%s%s%s%s'):format(
     '%#StatusLine#', margin,
     '%#vfilerStatusLine_ChooseWindowKey#', padding, char, padding,
