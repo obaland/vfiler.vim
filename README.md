@@ -46,11 +46,17 @@ call dein#add('obaland/vfiler.vim')
 ### Quick Start
 Basically, after installing in any way, start with the **VFiler** command.
 
-    :VFiler [{path}]
+    :VFiler [{options}...] [{path}]
 
 If {path} is not specified, it will start in the current directory.
-
+{options} are options for a filer buffer.
 Please see the [documentation][vim-doc] for details.
+
+### Start by calling a lua function
+vfiler can also be started by calling a lua function.
+```lua
+require'vfiler'.start(path)
+```
 
 ## Demo
 ### Basic
