@@ -103,4 +103,4 @@ so I'd appreciate it if you can receive various opinions including differences w
 Paddington is licensed under the MIT license.  
 Copyright © 2018, obaland
 
-[vim-doc]: https://github.com/obaland/vfiler.vim/blob/master/doc/vfiler.txt
+[vim-doc]: https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.txt
