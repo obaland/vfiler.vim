@@ -245,8 +245,7 @@ end
 ------------------------------------------------------------------------------
 
 function M.clear_selected_all(vfiler)
-  local root = vfiler.contxt.root
-  for _, item in ipairs(root:walk()) do
+  for _, item in ipairs(vfiler.view:selected_items()) do
     item.selected = false
   end
   vfiler:redraw()
