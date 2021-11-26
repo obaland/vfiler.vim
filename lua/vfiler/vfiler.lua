@@ -98,7 +98,7 @@ function VFiler.find_hidden(name)
   -- in hidden buffers
   for bufnr, vfiler in pairs(vfilers) do
     local object = vfiler.object
-    local infos = vim.from_vimdict(vim.fn.getbufinfo(bufnr))
+    local infos = vim.from_vimlist(vim.fn.getbufinfo(bufnr))
     if (object.context.name == name) and (infos[1].hidden == 1) then
       return object
     end

@@ -67,7 +67,7 @@ local function del_keymap(mode, lhs, buffer)
   if buffer then
     command = command .. ' <buffer>'
   end
-  return command .. ' ' .. lhs
+  return 'silent ' .. command .. ' ' .. lhs
 end
 
 function M.set_keymap(mode, lhs, rhs, opts)
@@ -83,7 +83,7 @@ function M.del_keymap(mode, lhs)
   vim.command(del_keymap(mode, lhs))
 end
 function M.del_buf_keymap(mode, lhs)
-  vim.command(del_keymap(mode, lhs, '<buffer>'))
+  vim.command(del_keymap(mode, lhs, true))
 end
 
 ------------------------------------------------------------------------------
