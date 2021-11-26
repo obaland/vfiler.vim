@@ -5,12 +5,14 @@ local File = {}
 
 function File.create(path)
   -- create file
-  local result
+  local command = ''
   if core.is_windows then
-    result = vim.fn.system('type nul > ' .. path)
+    command = ('type nul > "%s"'):format(path)
   else
-    result = vim.fn.system('touch ' .. path)
+    command = ('touch "%s"'):format(path)
   end
+
+  local result = vim.fn.system(command)
   if #result > 0 then
     return nil
   end

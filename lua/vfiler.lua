@@ -2,6 +2,7 @@ local config = require 'vfiler/config'
 local core = require 'vfiler/core'
 local vim = require 'vfiler/vim'
 
+local Context = require 'vfiler/context'
 local VFiler = require 'vfiler/vfiler'
 
 local M = {}
@@ -15,7 +16,8 @@ function M.get_status_string()
   if not (vfiler and vfiler.context.root) then
     return ''
   end
-  return vim.fn.fnamemodify(vfiler.context.root.path, ':~')
+  local path = vim.fn.fnamemodify(vfiler.context.root.path, ':~')
+  return core.path.escape(path)
 end
 
 function M.start_command(args)
@@ -49,11 +51,12 @@ function M.start(...)
     vfiler = VFiler.find(options.name)
   end
 
+  local context = Context.new(configs)
   if options.new or not vfiler then
-    vfiler = VFiler.new(configs)
+    vfiler = VFiler.new(context)
   else
     vfiler:open()
-    vfiler:reset(configs)
+    vfiler:reset(context)
   end
 
   vfiler:start(dirpath)

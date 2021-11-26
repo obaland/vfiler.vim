@@ -114,22 +114,36 @@ local Context = {}
 Context.__index = Context
 
 --- Create a context object
----@param options table
-function Context.new(options)
-  return setmetatable({
-    auto_cd = options.auto_cd,
-    clipboard = nil,
-    extension = nil,
-    root = nil,
-    sort_type = options.sort,
-    _snapshot = Snapshot.new(),
-  }, Context)
+---@param configs table
+function Context.new(configs)
+  local self = Context._initialize()
+  self.events = core.table.copy(configs.events)
+  self.mappings = core.table.copy(configs.mappings)
+  self._snapshot = Snapshot.new()
+
+  -- set options
+  for key, value in pairs(configs.options) do
+    -- skip ignore option
+    if key == 'new' then
+      goto continue
+    end
+
+    if self[key] then
+      core.message.warning('Duplicate "%s" option.', key)
+    end
+    self[key] = value
+    ::continue::
+  end
+  return self
 end
 
---- Clear the internal data
-function Context:clear()
-  self._root = nil
-  self._snapshot = Snapshot.new()
+function Context._initialize()
+  return setmetatable({
+    clipboard = nil,
+    extension = nil,
+    linked = nil,
+    root = nil,
+  }, Context)
 end
 
 --- Save the path in the current context
@@ -144,18 +158,20 @@ end
 --- Change the sort type
 ---@param type string
 function Context:change_sort(type)
-  if self.sort_type == type then
+  if self.sort == type then
     return
   end
   self.root:sort(type, true)
-  self.sort_type = type
+  self.sort = type
 end
 
---- Duplicate another context
----@param context table
-function Context:duplicate(context)
-  self._snapshot:copy(context._snapshot)
-  self:switch(context.root.path)
+--- Duplicate context
+function Context:duplicate()
+  local new = Context._initialize()
+  new:reset(self)
+  new._snapshot:copy(self._snapshot)
+  new:switch(self.root.path)
+  return new
 end
 
 --- Get the parent directory path of the current context
@@ -168,6 +184,26 @@ function Context:parent_path()
   return vim.fn.fnamemodify(path, mods)
 end
 
+--- Reset from another context
+---@param context table
+function Context:reset(context)
+  -- copy options
+  for key, value in pairs(context) do
+    local type = type(value)
+    if type == 'string' or type == 'boolean' or type == 'number' then
+      self[key] = value
+    end
+  end
+  self.mappings = core.table.copy(context.mappings)
+  self.events = core.table.copy(context.events)
+  self.clipboard = nil
+  self.extensions = nil
+  self.linked = nil
+  self.root = nil
+  self._snapshot = Snapshot.new()
+  self:switch(context.root.path)
+end
+
 --- Switch the context to the specified directory path
 ---@param dirpath string
 function Context:switch(dirpath)
@@ -176,7 +212,7 @@ function Context:switch(dirpath)
     vim.command('silent lcd ' .. dirpath)
   end
 
-  self.root = Directory.new(dirpath, false, self.sort_type)
+  self.root = Directory.new(dirpath, false, self.sort)
   self.root:open()
   return self._snapshot:load(self.root)
 end
