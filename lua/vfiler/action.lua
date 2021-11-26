@@ -167,7 +167,7 @@ local function rename_files(vfiler, targets)
       if #renamed > 0 then
         core.message.info('Renamed - %d files', #renamed)
         for _, parent in pairs(parents) do
-          parent:sort(filer.context.sort_type, false)
+          parent:sort(filer.context.sort, false)
         end
         M.reload(filer)
         filer.view:move_cursor(renamed[1].path)
@@ -198,7 +198,7 @@ local function rename_one_file(vfiler, target)
   end
 
   core.message.info('Renamed - "%s" -> "%s"', name, rename)
-  target.parent:sort(vfiler.context.sort_type, false)
+  target.parent:sort(vfiler.context.sort, false)
   vfiler:draw()
 end
 
@@ -231,7 +231,8 @@ function M.open_file(vfiler, path, direction)
       newfiler:open()
       newfiler:reset(vfiler.context)
     else
-      newfiler = VFiler.new(vfiler.context)
+      local context = vfiler.context:duplicate()
+      newfiler = VFiler.new(context)
     end
     newfiler:start(path)
   else
@@ -282,7 +283,7 @@ function M.change_sort(vfiler)
     name = 'Select Sort',
 
     on_selected = function(filer, sort_type)
-      if filer.context.sort_type == sort_type then
+      if filer.context.sort == sort_type then
         return
       end
 
@@ -574,7 +575,7 @@ end
 
 function M.open_by_choose(vfiler)
   local path = vfiler.view:get_current().path
-  M.open_file(vfiler, path, vfiler.'choose')
+  M.open_file(vfiler, path, 'choose')
 end
 
 function M.open_by_choose_or_cd(vfiler)
@@ -630,7 +631,7 @@ function M.paste(vfiler)
     return
   end
 
-  local item = vfiler.view:get_item(vim.fn.line('.'))
+  local item = vfiler.view:get_current()
   local dest = (item.isdirectory and item.opened) and item or item.parent
   if cb:paste(dest) and cb.keep then
     vfiler.context.clipboard = nil
@@ -748,7 +749,7 @@ function M.sync_with_current_filer(vfiler)
 end
 
 function M.toggle_show_hidden(vfiler)
-  vfiler.view.show_hidden_files = not vfiler.view.show_hidden_files
+  vfiler.context.show_hidden_files = not vfiler.context.show_hidden_files
   vfiler:draw()
 end
 

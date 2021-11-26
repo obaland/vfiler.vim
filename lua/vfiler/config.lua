@@ -63,6 +63,7 @@ M.configs = {
   },
 
   events = {
+    BufEnter = action.redraw,
     CursorHold = action.latest_update,
     FileType = action.reload,
     FocusGained = action.latest_update,

@@ -201,6 +201,7 @@ function Context:reset(context)
   self.linked = nil
   self.root = nil
   self._snapshot = Snapshot.new()
+  self:switch(context.root.path)
 end
 
 --- Switch the context to the specified directory path

@@ -202,7 +202,7 @@ end
 ---@param context table
 function View:reset(context)
   self:_initialize(context)
-  vim.set_buf_option(self.bufnr, 'buflisted', self._listed)
+  vim.set_buf_option(self.bufnr, 'buflisted', context.listed)
   self:_apply_syntaxes()
   self:_resize()
 end
@@ -306,7 +306,6 @@ function View:_initialize(context)
   end
 
   self._cache = {winwidth = 0}
-  self._listed = context.listed
   self._header = context.header
 
   self._width = 0
