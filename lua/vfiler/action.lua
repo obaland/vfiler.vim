@@ -419,9 +419,20 @@ end
 
 function M.latest_update(vfiler)
   local root = vfiler.context.root
-  local time = vim.fn.getftime(root.path)
-  if time > root.time then
+  if vim.fn.getftime(root.path) > root.time then
     M.reload(vfiler)
+    return
+  end
+
+  local view = vfiler.view
+  for i = view:top_lnum(), view:num_lines() do
+    local item = view:get_item(i)
+    if item.isdirectory and item.opened then
+      if vim.fn.getftime(item.path) > item.time then
+        M.reload(vfiler)
+        return
+      end
+    end
   end
 end
 

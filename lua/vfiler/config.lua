@@ -159,6 +159,10 @@ local function parse_option(arg)
   return key:gsub('%-', '_'), value, key
 end
 
+function M.clear_mappings()
+  M.configs.mappings = {}
+end
+
 function M.complete(arglead)
   local list = {}
 
@@ -215,6 +219,8 @@ function M.parse_options(str_args)
   return options, path
 end
 
+--- Setup vfiler configs
+---@param configs table
 function M.setup(configs)
   core.table.merge(M.configs, configs)
   return M.configs
