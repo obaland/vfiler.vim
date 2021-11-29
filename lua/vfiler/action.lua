@@ -657,23 +657,11 @@ function M.redraw(vfiler)
   vfiler:draw()
 end
 
-function M.redraw_all(vfiler)
-  for _, filer in ipairs(VFiler.get_displays()) do
-    M.redraw(filer)
-  end
-end
-
 function M.reload(vfiler)
   local context = vfiler.context
   context:save(vfiler.view:get_current().path)
   context:switch(context.root.path)
   vfiler:draw()
-end
-
-function M.reload_all(vfiler)
-  for _, filer in ipairs(VFiler.get_displays()) do
-    M.reload(filer)
-  end
 end
 
 function M.rename(vfiler)

@@ -67,7 +67,7 @@ M.configs = {
     CursorHold = action.latest_update,
     FileType = action.reload,
     FocusGained = action.latest_update,
-    VimResized = action.redraw_all,
+    VimResized = action.redraw,
   },
 }
 
