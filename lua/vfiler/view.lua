@@ -152,6 +152,11 @@ function View:redraw()
     return
   end
 
+  -- auto resize window
+  if self._auto_resize then
+    self:_resize()
+  end
+
   -- set window options
   vim.set_win_options(winnr, self._winoptions)
 
@@ -309,16 +314,17 @@ function View:_initialize(context)
     return nil
   end
 
+  self._auto_resize = context.auto_resize
   self._cache = {winwidth = 0}
   self._header = context.header
 
   self._width = 0
   self._height = 0
 
-  local direction = context.direction
-  if direction == 'left' or direction == 'right' then
+  local layout = context.layout
+  if layout == 'left' or layout == 'right' then
     self._width = context.width
-  elseif direction == 'top' or direction == 'bottom' then
+  elseif layout == 'top' or layout == 'bottom' then
     self._height = context.height
   end
 end

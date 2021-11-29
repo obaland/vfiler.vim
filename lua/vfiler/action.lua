@@ -12,22 +12,6 @@ local VFiler = require 'vfiler/vfiler'
 
 local M = {}
 
-local function cd(vfiler, dirpath)
-  local context = vfiler.context
-  if context.root and context.root.path == dirpath then
-    -- Same directory path
-    return
-  end
-
-  local current = vfiler.view:get_current()
-  if current then
-    context:save(current.path)
-  end
-  local path = context:switch(dirpath)
-  vfiler:draw()
-  vfiler.view:move_cursor(path)
-end
-
 local function create_files(dest, contents, create)
   local created = {}
   for _, name in ipairs(contents) do
@@ -206,8 +190,30 @@ end
 -- Interfaces
 ------------------------------------------------------------------------------
 
-function M.open_file(vfiler, path, direction)
-  if direction == 'choose' then
+function M.cd(vfiler, dirpath)
+  local context = vfiler.context
+  if context.root and context.root.path == dirpath then
+    -- Same directory path
+    return
+  end
+
+  local current = vfiler.view:get_current()
+  if current then
+    context:save(current.path)
+  end
+  local path = context:switch(dirpath)
+  vfiler:draw()
+  vfiler.view:move_cursor(path)
+end
+
+function M.open_file(vfiler, path, open)
+  local isdirectory = core.path.isdirectory(path)
+  if isdirectory and open == 'edit' then
+    M.cd(vfiler, path)
+    return
+  end
+
+  if open == 'choose' then
     local winnr = choose_window()
     if not winnr then
       return
@@ -216,16 +222,17 @@ function M.open_file(vfiler, path, direction)
     else
       core.window.move(winnr)
     end
-  elseif direction ~= 'edit' then
-    core.window.open(direction)
+  elseif open ~= 'edit' then
+    core.window.open(open)
   end
 
-  if core.path.isdirectory(path) then
-    if direction == 'edit' then
-      cd(vfiler, path)
-      return
-    end
+  -- redraw the caller filer
+  local dest_winnr = vim.fn.winnr()
+  vfiler:open()
+  vfiler:redraw()
+  core.window.move(dest_winnr)
 
+  if isdirectory then
     local newfiler = VFiler.find_hidden(vfiler.context.name)
     if newfiler then
       newfiler:open()
@@ -265,7 +272,7 @@ function M.close_tree_or_cd(vfiler)
   local level = item.level
   if level == 0 or (level <= 1 and not item.opened) then
     local path = vfiler.context.root.path
-    cd(vfiler, vfiler.context:parent_path())
+    M.cd(vfiler, vfiler.context:parent_path())
     vfiler.view:move_cursor(path)
   else
     M.close_tree(vfiler)
@@ -297,7 +304,7 @@ function M.change_sort(vfiler)
 end
 
 function M.change_to_parent(vfiler)
-  cd(vfiler, vfiler.context:parent_path())
+  M.cd(vfiler, vfiler.context:parent_path())
 end
 
 function M.copy(vfiler)
@@ -403,18 +410,18 @@ function M.jump_to_directory(vfiler)
     core.message.error('Not exists the "%s" path.', dirpath)
     return
   end
-  cd(vfiler, dirpath)
+  M.cd(vfiler, dirpath)
   vim.command('echo') -- clear prompt message
 end
 
 function M.jump_to_home(vfiler)
   local dirpath = vim.fn.expand('~')
-  cd(vfiler, dirpath)
+  M.cd(vfiler, dirpath)
 end
 
 function M.jump_to_root(vfiler)
   local dirpath = core.path.root(vfiler.context.root.path)
-  cd(vfiler, dirpath)
+  M.cd(vfiler, dirpath)
 end
 
 function M.latest_update(vfiler)
@@ -591,7 +598,7 @@ end
 function M.open_by_choose_or_cd(vfiler)
   local item = vfiler.view:get_current()
   if item.isdirectory then
-    cd(vfiler, item.path)
+    M.cd(vfiler, item.path)
   else
     M.open_file(vfiler, item.path, 'choose')
   end

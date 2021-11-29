@@ -82,7 +82,7 @@ end
 
 function Window:_on_win_option(name, texts)
   local options = {
-    direction = nil,
+    layout = nil,
     width = 0,
     height = 0,
   }
@@ -90,20 +90,20 @@ function Window:_on_win_option(name, texts)
   local wwidth = vim.fn.winwidth(self.source_winid)
   local wheight = vim.fn.winheight(self.source_winid)
 
-  for _, dir in ipairs({'top', 'bottom', 'left', 'right'}) do
-    local ops = self.options[dir]
+  for _, layout in ipairs({'top', 'bottom', 'left', 'right'}) do
+    local ops = self.options[layout]
     if ops then
-      options.direction = dir
-      if dir == 'top' or dir == 'bottom' then
+      options.layout = layout
+      if layout == 'top' or layout == 'bottom' then
         options.height = self:_winheight(wheight, ops, 1, wheight - 1, texts)
-      elseif dir == 'right' or dir == 'left' then
+      elseif layout == 'right' or layout == 'left' then
         options.width = self:_winwidth(wwidth, ops, 1, wwidth - 1, texts)
       end
       break
     end
   end
 
-  if not options.direction then
+  if not options.layout then
     core.message.error('Unsupported option.')
     return nil
   end
@@ -112,7 +112,7 @@ end
 
 function Window:_on_open(name, texts, options)
   -- open window
-  core.window.open(options.direction)
+  core.window.open(options.layout)
   vim.command('silent edit ' .. 'vfiler/' .. name)
 
   -- resize window

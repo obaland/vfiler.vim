@@ -184,9 +184,9 @@ function VFiler:open(...)
     return
   end
 
-  local direction = ...
-  if direction and direction ~= 'edit' then
-    core.window.open(direction)
+  local layout = ...
+  if layout and layout ~= 'edit' then
+    core.window.open(layout)
   end
   self.view:open()
 end

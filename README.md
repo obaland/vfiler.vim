@@ -78,8 +78,8 @@ lua<<EOF
   require'vfiler/config'.setup {
     options = {
       auto_cd = true,
+      layout = 'left',
       name = 'explorer',
-      direction = 'left',
       width = 30,
       columns = 'indent,icon,name',
     },

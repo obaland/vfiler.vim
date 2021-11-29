@@ -217,6 +217,11 @@ parameters for an option.  You need to escape spaces with "\".
     Enable auto cd behavior.
     Default: false
 
+-auto-resize                                      *vfiler-options-auto-resize*
+    Enabled, it will automatically resize to the size specified by "width"
+    and "height" options.
+    Default: false
+
 -columns={column1,column2,...}                        *vfiler-options-columns*
     Specify the vfiler columns.
     see |vfiler-columns|.
@@ -239,8 +244,8 @@ parameters for an option.  You need to escape spaces with "\".
     If enabled, Make hidden files visible by default.
     Default: false
 
--direction={direction}                              *vfiler-options-direction*
-    Specify the split direction.
+-layout={type}                                         *vfiler-options-layout*
+    Specify the layout of the window.
 
     "left":   Split to the left.
     "right":  Split to the right.
@@ -252,13 +257,15 @@ parameters for an option.  You need to escape spaces with "\".
     Default: "none"
 
 -height={window-height}                                *vfiler-options-height*
-    Set the height of the window if |vfiler-options-direction| is
-    "top" or "bottom".
+    Set the height of the window.
+    It is a valid value when the window is splitted by
+    the |vfiler-options-layout| option etc.
     Default: 30
 
 -width={window-width}                                   *vfiler-options-width*
-    Set the width of the window if |vfiler-options-direction| is
-    "left" or "right".
+    Set the width of the window.
+    It is a valid value when the window is splitted by
+    the |vfiler-options-layout| option etc.
     Default: 90
 
 ------------------------------------------------------------------------------
@@ -390,8 +397,8 @@ Explorer style                           *vfiler-customization-explorer-style*
     require'vfiler/config'.setup {
       options = {
         auto_cd = true,
+        layout = 'left',
         name = 'explorer',
-        direction = 'left',
         width = 30,
         columns = 'indent,icon,name',
       },

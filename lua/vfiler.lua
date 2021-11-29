@@ -49,11 +49,11 @@ function M.start(...)
   VFiler.cleanup()
 
   local options = configs.options
-  local direction = options.direction
+  local layout = options.layout
 
   local vfiler = nil
-  if direction ~= 'none' then
-    core.window.open(direction)
+  if layout ~= 'none' then
+    core.window.open(layout)
     vfiler = VFiler.find_hidden(options.name)
   else
     vfiler = VFiler.find(options.name)
