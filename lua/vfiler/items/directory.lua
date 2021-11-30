@@ -154,20 +154,15 @@ function Directory:_ls()
     end
   end
 
-  local index = 0
-
-  return function()
-    local item = nil
-    repeat
-      index = index + 1
-      local path = paths[index]
-      if not path then
-        break
+  local function _ls(sort_type)
+    for _, path in ipairs(paths) do
+      local item = create_item(path, sort_type)
+      if item then
+        coroutine.yield(item)
       end
-      item = create_item(path, self.sort_type)
-    until item
-    return item
+    end
   end
+  return coroutine.wrap(function() _ls(self.sort_type) end)
 end
 
 function Directory:_remove(item)
