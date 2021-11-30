@@ -11,6 +11,7 @@ M.configs = {
     auto_resize = false,
     columns = 'indent,icon,name,mode,size,time',
     header = true,
+    keep = false,
     listed = true,
     name = '',
     show_hidden_files = false,

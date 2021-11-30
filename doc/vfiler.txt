@@ -400,28 +400,28 @@ Explorer style                           *vfiler-customization-explorer-style*
     In addition to the settings for Explorer,
     we'll also change the actions to make it easier to use.
 
+    When starting with a command:
+>
+    :VFiler -name=explorer -auto-cd -auto-resize -keep -layout=left
+            \ -width=30 -columns=indent,icon,name
+<
+
+    When string with a lua script:
 >
     local action = require'vfiler/action'
     require'vfiler/config'.setup {
       options = {
         auto_cd = true,
+        auto_resize = true,
+        keep = true,
         layout = 'left',
         name = 'explorer',
         width = 30,
         columns = 'indent,icon,name',
       },
-
-      mappings = {
-        -- Change open action
-        ['<CR>']  = action.open_by_choose_or_cd,
-
-        -- Disable switch to filer
-        ['<Tab>'] = nil,
-      },
     }
 
-    local path = vim.fn.getcwd()
-    require'vfiler'.start(path)
+    require'vfiler'.start()
 <
 
 ==============================================================================
