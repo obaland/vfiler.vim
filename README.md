@@ -93,6 +93,9 @@ require'vfiler/config'.setup {
 require'vfiler'.start()
 ```
 
+## vfiler extensions
+- [obaland/vfiler-fzf](https://github.com/obaland/vfiler-fzf)
+
 ## Lastly
 I am hoping to continually improve it as far as time permits,  
 so I'd appreciate it if you can receive various opinions including differences within the script.
