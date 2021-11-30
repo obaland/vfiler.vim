@@ -33,7 +33,7 @@ highlight default link vfilerTime              None
 highlight default link vfilerTimeToday         PreProc
 highlight default link vfilerTimeWeek          Type
 
-highlight default vfilerStatusLine_ChooseWindowKey ctermfg=230 ctermbg=12 guifg=#ffffd7 guibg=#268bd2
+highlight default vfilerStatusLine_ChooseWindowKey ctermfg=230 ctermbg=57 guifg=#ffffd7 guibg=#44788E
 
 " Define commands
 command! -nargs=? -complete=customlist,vfiler#complete VFiler

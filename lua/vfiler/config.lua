@@ -8,13 +8,15 @@ local M = {}
 M.configs = {
   options = {
     auto_cd = false,
+    auto_resize = false,
     columns = 'indent,icon,name,mode,size,time',
     header = true,
+    keep = false,
     listed = true,
     name = '',
     show_hidden_files = false,
     sort = 'name',
-    direction = 'none',
+    layout = 'none',
     width = 90,
     height = 30,
     new = false,
@@ -67,7 +69,7 @@ M.configs = {
     CursorHold = action.latest_update,
     FileType = action.reload,
     FocusGained = action.latest_update,
-    VimResized = action.redraw_all,
+    VimResized = action.redraw,
   },
 }
 
@@ -159,6 +161,10 @@ local function parse_option(arg)
   return key:gsub('%-', '_'), value, key
 end
 
+function M.clear_mappings()
+  M.configs.mappings = {}
+end
+
 function M.complete(arglead)
   local list = {}
 
@@ -215,6 +221,8 @@ function M.parse_options(str_args)
   return options, path
 end
 
+--- Setup vfiler configs
+---@param configs table
 function M.setup(configs)
   core.table.merge(M.configs, configs)
   return M.configs

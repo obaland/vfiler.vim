@@ -106,7 +106,7 @@ end
 ------------------------------------------------------------------------------
 M.window = {}
 
-local open_directions = {
+local open_layout = {
   edit = 'edit',
   bottom = 'belowright split',
   left = 'aboveleft vertical split',
@@ -124,12 +124,12 @@ function M.window.move(winnr)
   vim.command(([[noautocmd execute '%s']]):format(command))
 end
 
----@param direction string
+---@param layout string
 ---@vararg string
-function M.window.open(direction, ...)
-  local dir = open_directions[direction]
+function M.window.open(layout, ...)
+  local dir = open_layout[layout]
   if not dir then
-    M.message.error('Illegal "%s" open direction.', direction)
+    M.message.error('Illegal "%s" open layout.', layout)
     return
   end
 

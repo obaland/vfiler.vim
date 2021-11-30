@@ -70,35 +70,27 @@ require'vfiler'.start(path)
 
 ## Configuration
 ### Explorer style
-
+#### Starting with a command:
 ```vim
-function VFilerForExplorer()
-lua<<EOF
-  local action = require'vfiler/action'
-  require'vfiler/config'.setup {
-    options = {
-      auto_cd = true,
-      name = 'explorer',
-      direction = 'left',
-      width = 30,
-      columns = 'indent,icon,name',
-    },
+:VFiler -auto-cd -auto-resize -keep -layout=left -name=explorer -width=30 columns=indent,icon,name
+```
 
-    mappings = {
-      -- Change open action
-      ['<CR>']  = action.open_by_choose_or_cd,
+#### Starting with a lua script:
+```lua
+local action = require'vfiler/action'
+require'vfiler/config'.setup {
+  options = {
+    auto_cd = true,
+    auto_resize = true,
+    keep = true,
+    layout = 'left',
+    name = 'explorer',
+    width = 30,
+    columns = 'indent,icon,name',
+  },
+}
 
-      -- Disable switch to filer
-      ['<Tab>'] = nil,
-    },
-  }
-
-  local path = vim.fn.getcwd()
-  require'vfiler'.start(path)
-EOF
-endfunction
-
-command! -nargs=0 VFilerExplorer call VFilerForExplorer()
+require'vfiler'.start()
 ```
 
 ## Lastly

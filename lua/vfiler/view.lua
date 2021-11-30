@@ -152,6 +152,11 @@ function View:redraw()
     return
   end
 
+  -- auto resize window
+  if self._auto_resize then
+    self:_resize()
+  end
+
   -- set window options
   vim.set_win_options(winnr, self._winoptions)
 
@@ -294,10 +299,11 @@ function View:_create_column_props(winwidth)
     end
   end
 
-  local cumulative_width = 0
+  local start_col = 0
   for _, prop in ipairs(props) do
-    cumulative_width = cumulative_width + prop.width
-    prop.cumulative_width = cumulative_width
+    prop.start_col = start_col
+    prop.end_col = start_col + prop.width
+    start_col = prop.end_col + 1 -- "1" is space between columns
   end
   return props
 end
@@ -308,16 +314,17 @@ function View:_initialize(context)
     return nil
   end
 
+  self._auto_resize = context.auto_resize
   self._cache = {winwidth = 0}
   self._header = context.header
 
   self._width = 0
   self._height = 0
 
-  local direction = context.direction
-  if direction == 'left' or direction == 'right' then
+  local layout = context.layout
+  if layout == 'left' or layout == 'right' then
     self._width = context.width
-  elseif direction == 'top' or direction == 'bottom' then
+  elseif layout == 'top' or layout == 'bottom' then
     self._height = context.height
   end
 end
@@ -349,36 +356,36 @@ end
 
 ---@param item table
 function View:_toline(item)
+  local col = 0
   local texts = {}
-  local cumulative_width = 0
   for i, column in ipairs(self._columns) do
     local prop = self._cache.column_props[i]
 
     local cwidth = prop.width
     if column.variable then
-      cwidth = math.max(cwidth, (prop.cumulative_width - cumulative_width))
+      cwidth = cwidth + (prop.start_col - col)
     end
 
     local text, width = column:get_text(item, cwidth)
-    cumulative_width = cumulative_width + width
+    col = col + width
 
     if column.stretch then
       -- Adjust to fit column end base position
-      local padding = prop.cumulative_width - cumulative_width
+      local padding = prop.end_col - col
       if padding > 0 then
         text = text .. (' '):rep(padding)
+        col = prop.end_col
       end
-      cumulative_width = cumulative_width + padding
     end
 
     -- If the actual width exceeds the window width,
     -- it will be interrupted
-    local actual_width = cumulative_width + (i - 1) -- space between columns
-    if actual_width > self._cache.winwidth then
+    if col > self._cache.winwidth then
       break
     end
 
     table.insert(texts, text)
+    col = col + 1 -- "1" is space between columns
   end
   return table.concat(texts, ' ')
 end
