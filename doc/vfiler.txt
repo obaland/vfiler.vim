@@ -227,6 +227,14 @@ parameters for an option.  You need to escape spaces with "\".
     see |vfiler-columns|.
     Default: "indent,icon,name,mode,size,time"
 
+-header                                                *vfiler-options-header*
+    Display the header line
+    Defualt: true
+
+-keep                                                    *vfiler-options-keep*
+    Keep the vfiler window with the open action.
+    Defualt: false
+
 -listed                                                *vfiler-options-listed*
     Display the vfiler buffer in the buffer list.
     Defualt: true

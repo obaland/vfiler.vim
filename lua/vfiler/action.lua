@@ -208,9 +208,14 @@ end
 
 function M.open_file(vfiler, path, open)
   local isdirectory = core.path.isdirectory(path)
-  if isdirectory and open == 'edit' then
-    M.cd(vfiler, path)
-    return
+  if open == 'edit' then
+    if isdirectory then
+      M.cd(vfiler, path)
+      return
+    elseif vfiler.context.keep then
+      -- change the action if the "keep" option is enabled
+      open = 'choose'
+    end
   end
 
   if open == 'choose' then
