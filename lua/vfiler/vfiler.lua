@@ -13,18 +13,18 @@ VFiler.__index = VFiler
 
 local function define_mappings(bufnr, mappings)
   return mapping.define(
-    bufnr, mappings, [[require('vfiler/vfiler')._do_action]]
+    bufnr, mappings, [[require('vfiler/vfiler')._do_action_from_key]]
     )
 end
 
 --- Do the action of the specified key
-local function do_action(vfiler, key)
+local function do_action_from_key(vfiler, key)
   local action = vfiler._defined_mappings[key]
   if not action then
     core.message.error('Not defined in the key')
     return
   end
-  action(vfiler, vfiler._context, vfiler._view)
+  vfiler:do_action(action)
 end
 
 --- Handle the specified event
@@ -34,7 +34,7 @@ local function handle_event(vfiler, type)
     core.message.error('Event "%s" is not registered.', type)
     return
   end
-  action(vfiler, vfiler._context, vfiler._view)
+  vfiler:do_action(action)
 end
 
 local function register_events(bufnr, events)
@@ -150,9 +150,9 @@ function VFiler.new(context)
   return object
 end
 
-function VFiler._do_action(bufnr, key)
+function VFiler._do_action_from_key(bufnr, key)
   local vfiler = VFiler.get(bufnr)
-  do_action(vfiler, key)
+  do_action_from_key(vfiler, key)
 end
 
 function VFiler._handle_event(bufnr, type)
@@ -163,6 +163,11 @@ end
 --- Is the filer displayed?
 function VFiler:displayed()
   return self._view:winnr() >= 0
+end
+
+--- Do action
+function VFiler:do_action(action)
+  action(self, self._context, self._view)
 end
 
 --- Draw the filer in the current window
