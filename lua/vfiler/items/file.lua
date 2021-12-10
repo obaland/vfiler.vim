@@ -1,5 +1,5 @@
-local core = require 'vfiler/core'
-local vim = require 'vfiler/vim'
+local core = require('vfiler/core')
+local vim = require('vfiler/vim')
 
 local File = {}
 
@@ -22,6 +22,9 @@ end
 function File.new(path, islink)
   local Item = require('vfiler/items/item')
   local self = core.inherit(File, Item, path, islink)
+  if not self then
+    return nil
+  end
   self.type = self.islink and 'L' or 'F'
   return self
 end

@@ -1,6 +1,6 @@
-local core = require 'vfiler/core'
-local mapping = require 'vfiler/mapping'
-local vim = require 'vfiler/vim'
+local core = require('vfiler/core')
+local mapping = require('vfiler/mapping')
+local vim = require('vfiler/vim')
 
 local Window = {}
 Window.__index = Window

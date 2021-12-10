@@ -1,6 +1,6 @@
-local core = require 'vfiler/core'
-local event = require 'vfiler/event'
-local vim = require 'vfiler/vim'
+local core = require('vfiler/core')
+local event = require('vfiler/event')
+local vim = require('vfiler/vim')
 
 local extensions = {}
 

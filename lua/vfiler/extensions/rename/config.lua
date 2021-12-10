@@ -1,5 +1,5 @@
-local action = require 'vfiler/extensions/rename/action'
-local core = require 'vfiler/core'
+local action = require('vfiler/extensions/rename/action')
+local core = require('vfiler/core')
 
 local M = {}
 

@@ -1,10 +1,10 @@
-local core = require 'vfiler/core'
-local event = require 'vfiler/event'
-local mapping = require 'vfiler/mapping'
-local vim = require 'vfiler/vim'
+local core = require('vfiler/core')
+local event = require('vfiler/event')
+local mapping = require('vfiler/mapping')
+local vim = require('vfiler/vim')
 
-local Context = require 'vfiler/context'
-local View = require 'vfiler/view'
+local Context = require('vfiler/context')
+local View = require('vfiler/view')
 
 local vfilers = {}
 

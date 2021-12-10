@@ -1,4 +1,4 @@
-local vim = require 'vfiler/vim'
+local vim = require('vfiler/vim')
 
 local M = {}
 
@@ -14,7 +14,10 @@ M.is_mac = (not M.is_windows) and (not M.is_cygwin) and (
   )
 
 function M.inherit(class, super, ...)
-  local self = (super and super.new(...) or {})
+  local self = super and super.new(...) or nil
+  if not self then
+    return nil
+  end
   setmetatable(self, {__index = class})
   setmetatable(class, {__index = super})
   return self
@@ -410,6 +413,18 @@ M.math = {}
 -- Within the max and min between
 function M.math.within(v, min, max)
   return math.min(math.max(v, min), max)
+end
+
+------------------------------------------------------------------------------
+-- Icon
+------------------------------------------------------------------------------
+M.icon = {}
+
+local frames = {'⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'}
+
+function M.icon.frame(sec)
+  local index = (math.floor(sec * 10) % #frames) + 1
+  return frames[index]
 end
 
 return M

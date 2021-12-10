@@ -1,8 +1,9 @@
-local core = require 'vfiler/core'
-local sort = require 'vfiler/sort'
-local vim = require 'vfiler/vim'
+local core = require('vfiler/core')
+local sort = require('vfiler/sort')
+local vim = require('vfiler/vim')
 
-local File = require 'vfiler/items/file'
+local File = require('vfiler/items/file')
+local Job = require('vfiler/async/job')
 
 local Directory = {}
 
@@ -29,6 +30,59 @@ local function create_item(path, sort_type)
   return item
 end
 
+local function get_open_command(dirpath, sort_type)
+  local command = ''
+  if core.is_windows then
+    -- decide sort option
+    local sort_op = '/o:'
+    if sort_type:find('^[A-Z]') then
+      sort_op = sort_op .. '-'
+    end
+    local sort_chars = {
+      extension = 'ge',
+      name = 'gn',
+      size = 'gs',
+      time = 'd',
+    }
+    sort_op = sort_op .. sort_chars[sort_type:lower()]
+    command = ([[cmd /c dir /b /a %s "%s"]]):format(sort_op, dirpath)
+  else
+    -- decide sort option
+    local sort_op = sort_type:find('^[A-Z]') and '--reverse' or ''
+    sort_type = sort_type:lower()
+    if sort_type ~= 'name' then
+      sort_op = sort_op .. ' --sort=' .. sort_type
+    end
+    if sort_type ~= 'time' then
+      sort_op = sort_op .. ' --group-directories-first'
+    end
+    command = ([[ls -1A %s]]):format(sort_op)
+  end
+  return command
+end
+
+local function new_open_job(directory, recursive)
+  return Job.new {
+    command = get_open_command(directory.path, directory.sort_type),
+
+    on_received = function(job, filename)
+      local path = core.path.join(directory.path, filename)
+      local item = create_item(path, directory.sort_type)
+      if item then
+        directory:_append(item)
+
+        if item.isdirectory and recursive then
+          item.children = {}
+          item.opened = true
+          local child_job = new_open_job(item, recursive)
+          job:chain(child_job)
+          child_job:start()
+        end
+      end
+    end,
+  }
+end
+
 function Directory.create(dirpath, sort_type)
   if vim.fn.mkdir(dirpath) ~= 1 then
     return nil
@@ -37,7 +91,7 @@ function Directory.create(dirpath, sort_type)
 end
 
 function Directory.new(dirpath, islink, sort_type)
-  local Item = require 'vfiler/items/item'
+  local Item = require('vfiler/items/item')
 
   local self = core.inherit(Directory, Item, dirpath, islink)
   self.children = nil
@@ -79,6 +133,16 @@ function Directory:move(destpath)
     return Directory.new(destpath, self.islink, self.sort_type)
   end
   return nil
+end
+
+function Directory:open_async(recursive, async_options)
+  self.children = {}
+  self.opened = true
+  local job = new_open_job(self, recursive)
+  for key, value in pairs(async_options) do
+    job[key] = value
+  end
+  return job
 end
 
 function Directory:open(recursive)
@@ -136,6 +200,12 @@ function Directory:_add(item)
   item.parent = self
   item.level = self.level + 1
   table.insert(self.children, pos, item)
+end
+
+function Directory:_append(item)
+  item.parent = self
+  item.level = self.level + 1
+  table.insert(self.children, item)
 end
 
 function Directory:_ls()

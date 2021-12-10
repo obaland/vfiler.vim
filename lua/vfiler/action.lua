@@ -1,14 +1,14 @@
-local core = require 'vfiler/core'
-local cmdline = require 'vfiler/cmdline'
-local sort = require 'vfiler/sort'
-local vim = require 'vfiler/vim'
+local core = require('vfiler/core')
+local cmdline = require('vfiler/cmdline')
+local sort = require('vfiler/sort')
+local vim = require('vfiler/vim')
 
-local Clipboard = require 'vfiler/clipboard'
-local Menu = require 'vfiler/extensions/menu'
-local Rename = require 'vfiler/extensions/rename'
-local Directory = require 'vfiler/items/directory'
-local File = require 'vfiler/items/file'
-local VFiler = require 'vfiler/vfiler'
+local Clipboard = require('vfiler/clipboard')
+local Menu = require('vfiler/extensions/menu')
+local Rename = require('vfiler/extensions/rename')
+local Directory = require('vfiler/items/directory')
+local File = require('vfiler/items/file')
+local VFiler = require('vfiler/vfiler')
 
 local M = {}
 
@@ -590,6 +590,42 @@ function M.new_file(vfiler)
     end)
 end
 
+-- Demo code
+--[[
+function M.open_async(vfiler)
+  local lnum = vim.fn.line('.')
+  local item = vfiler.view:get_item(lnum)
+  if not item.isdirectory then
+    return
+  end
+
+  local loop = require('vfiler/async/loop').new {
+    interval = 1,
+    callback = function()
+      vfiler.context:set_waiting_status('Open "%s" ...', item.path)
+    end,
+  }
+
+  local switch_job = vfiler.context:switch_async(item.path, {
+    on_completed = function(job)
+      loop:stop()
+      vfiler:draw()
+      vfiler.context:update_status()
+    end,
+
+    on_canceled = function(job)
+      item:close()
+      loop:stop()
+      vfiler.view:redraw_line(lnum)
+      vfiler.context:update_status()
+    end,
+  })
+  vfiler.view:clear()
+  loop:start()
+  switch_job:start()
+end
+]]
+
 function M.open(vfiler)
   local path = vfiler.view:get_current().path
   M.open_file(vfiler, path, 'edit')
@@ -736,7 +772,7 @@ function M.switch_to_filer(vfiler)
     newfiler = VFiler.new(context)
   end
   newfiler:link(vfiler)
-  newfiler:draw()
+  newfiler:start(vfiler.context.root.path)
   core.cursor.move(lnum)
 
   -- redraw current

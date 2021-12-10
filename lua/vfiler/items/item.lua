@@ -1,5 +1,5 @@
-local core = require 'vfiler/core'
-local vim = require 'vfiler/vim'
+local core = require('vfiler/core')
+local vim = require('vfiler/vim')
 
 local Item = {}
 Item.__index = Item
@@ -8,7 +8,6 @@ function Item.new(filepath, islink)
   local size = vim.fn.getfsize(filepath)
   local time = vim.fn.getftime(filepath)
   if size < 0 or time < 0 then
-    core.message.error('Failed - Invalid path "%s"', filepath)
     return nil
   end
 
@@ -22,7 +21,7 @@ function Item.new(filepath, islink)
     selected = false,
     size = size,
     time = time,
-    mode = vim.fn.getfperm(filepath)
+    mode = vim.fn.getfperm(filepath),
   }, Item)
 end
 

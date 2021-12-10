@@ -1,7 +1,7 @@
-local core = require 'vfiler/core'
-local vim = require 'vfiler/vim'
+local core = require('vfiler/core')
+local vim = require('vfiler/vim')
 
-local Extension = require 'vfiler/extensions/extension'
+local Extension = require('vfiler/extensions/extension')
 
 local M = {}
 

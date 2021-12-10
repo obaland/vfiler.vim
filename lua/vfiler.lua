@@ -1,9 +1,9 @@
-local config = require 'vfiler/config'
-local core = require 'vfiler/core'
-local vim = require 'vfiler/vim'
+local config = require('vfiler/config')
+local core = require('vfiler/core')
+local vim = require('vfiler/vim')
 
-local Context = require 'vfiler/context'
-local VFiler = require 'vfiler/vfiler'
+local Context = require('vfiler/context')
+local VFiler = require('vfiler/vfiler')
 
 local M = {}
 

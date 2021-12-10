@@ -1,7 +1,8 @@
-local core = require 'vfiler/core'
-local vim = require 'vfiler/vim'
+local core = require('vfiler/core')
+local vim = require('vfiler/vim')
 
-local Directory = require 'vfiler/items/directory'
+local Directory = require('vfiler/items/directory')
+local Job = require('vfiler/async/job')
 
 local function walk_expanded(rpaths, root_path, dir)
   if not dir.children then
@@ -116,7 +117,8 @@ Context.__index = Context
 --- Create a context object
 ---@param configs table
 function Context.new(configs)
-  local self = Context._initialize()
+  local self = setmetatable({}, Context)
+  self:_initialize()
   self.events = core.table.copy(configs.events)
   self.mappings = core.table.copy(configs.mappings)
   self._snapshot = Snapshot.new()
@@ -137,13 +139,21 @@ function Context.new(configs)
   return self
 end
 
-function Context._initialize()
-  return setmetatable({
-    clipboard = nil,
-    extension = nil,
-    linked = nil,
-    root = nil,
-  }, Context)
+function Context:_initialize()
+  self.clipboard = nil
+  self.extension = nil
+  self.linked = nil
+  self.root = nil
+  self.status = ''
+  self._async_jobs = {}
+end
+
+--- Cancel all jobs currently in progress
+function Context:cancel_all_jobs()
+  for _, job in ipairs(self._async_jobs) do
+    job:cancel()
+  end
+  self._async_jobs = {}
 end
 
 --- Save the path in the current context
@@ -161,16 +171,33 @@ function Context:change_sort(type)
   if self.sort == type then
     return
   end
+  self:cancel_all_jobs()
   self.root:sort(type, true)
   self.sort = type
 end
 
+--- Create async root job
+function Context:new_root_job()
+  local number = #self._async_jobs + 1
+  local job = Job.new {
+    on_canceled = function(j)
+      self._async_jobs[number] = nil
+    end,
+
+    on_completed = function(j)
+      self._async_jobs[number] = nil
+    end,
+  }
+  self._async_jobs[number] = job
+  return job
+end
+
 --- Duplicate context
 function Context:duplicate()
-  local new = Context._initialize()
+  local new = setmetatable({}, Context)
+  new:_initialize()
   new:reset(self)
   new._snapshot:copy(self._snapshot)
-  new:switch(self.root.path)
   return new
 end
 
@@ -187,6 +214,8 @@ end
 --- Reset from another context
 ---@param context table
 function Context:reset(context)
+  self:cancel_all_jobs()
+  self:_initialize()
   -- copy options
   for key, value in pairs(context) do
     local type = type(value)
@@ -196,14 +225,25 @@ function Context:reset(context)
   end
   self.mappings = core.table.copy(context.mappings)
   self.events = core.table.copy(context.events)
-  self.clipboard = nil
-  self.extensions = nil
-  self.linked = nil
-  self.root = nil
   self._snapshot = Snapshot.new()
-  if context.root then
-    self:switch(context.root.path)
+end
+
+--- Switch the context to the specified directory path
+---@param dirpath string
+function Context:switch_async(dirpath, async_options)
+  -- perform auto cd
+  if self.auto_cd then
+    vim.command('silent lcd ' .. dirpath)
   end
+  self:update_status()
+
+  -- TODO: expand
+  self.root = Directory.new(dirpath, false, self.sort)
+
+  local root_job = self:new_root_job()
+  local job = self.root:open_async(false, async_options)
+  root_job:chain(job)
+  return job
 end
 
 --- Switch the context to the specified directory path
@@ -216,6 +256,7 @@ function Context:switch(dirpath)
 
   self.root = Directory.new(dirpath, false, self.sort)
   self.root:open()
+  self:update_status()
   return self._snapshot:load(self.root)
 end
 
@@ -232,8 +273,22 @@ end
 --- Synchronize with other context
 ---@param context table
 function Context:sync(context)
+  self:cancel_all_jobs()
   self._snapshot:save(context.root, context.root.path)
   self:switch(context.root.path)
+end
+
+function Context:update_status()
+  local path = vim.fn.fnamemodify(self.root.path, ':~')
+  self.status = '[in] ' .. core.path.escape(path)
+  vim.command('redrawstatus')
+end
+
+function Context:set_waiting_status(format, ...)
+  local frame = core.icon.frame(os.clock())
+  local message = format:format(...)
+  self.status = frame .. ' ' .. message
+  vim.command('redrawstatus')
 end
 
 return Context

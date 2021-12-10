@@ -1,5 +1,5 @@
-local core = require 'vfiler/core'
-local vim = require 'vfiler/vim'
+local core = require('vfiler/core')
+local vim = require('vfiler/vim')
 
 local Syntax = {}
 Syntax.__index = Syntax

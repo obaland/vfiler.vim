@@ -1,6 +1,6 @@
-local config = require 'vfiler/extensions/menu/config'
-local core = require 'vfiler/core'
-local vim = require 'vfiler/vim'
+local config = require('vfiler/extensions/menu/config')
+local core = require('vfiler/core')
+local vim = require('vfiler/vim')
 
 local ExtensionMenu = {}
 

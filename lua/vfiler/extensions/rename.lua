@@ -1,6 +1,6 @@
-local config = require 'vfiler/extensions/rename/config'
-local core = require 'vfiler/core'
-local vim = require 'vfiler/vim'
+local config = require('vfiler/extensions/rename/config')
+local core = require('vfiler/core')
+local vim = require('vfiler/vim')
 
 local ExtensionRename = {}
 

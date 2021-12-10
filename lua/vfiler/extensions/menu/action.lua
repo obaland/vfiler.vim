@@ -1,4 +1,4 @@
-local action = require 'vfiler/extensions/action'
+local action = require('vfiler/extensions/action')
 
 function action.select(extension)
   extension:select()
