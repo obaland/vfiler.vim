@@ -103,7 +103,7 @@ function Extension:quit()
   end
 
   -- unlink
-  self.filer.context.extension = nil
+  self.filer._context.extension = nil
 end
 
 function Extension:start(items, ...)
@@ -143,7 +143,7 @@ function Extension:start(items, ...)
   extensions[self.bufnr] = self
 
   -- link to filer
-  self.filer.context.extension = self
+  self.filer._context.extension = self
 end
 
 function Extension:_on_get_texts(items)

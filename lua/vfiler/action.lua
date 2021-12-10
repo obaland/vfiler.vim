@@ -125,14 +125,14 @@ local function choose_window()
   return key == '<ESC>' and nil or winkeys[key]
 end
 
-local function rename_files(vfiler, targets)
-  if vfiler.context.extension then
+local function rename_files(vfiler, context, view, targets)
+  if context.extension then
     return
   end
 
   local ext = Rename.new {
     filer = vfiler,
-    on_execute = function(filer, items, renames)
+    on_execute = function(filer, c, v, items, renames)
       local renamed = {}
       local num_renamed = 0
       local parents = {}
@@ -151,10 +151,10 @@ local function rename_files(vfiler, targets)
       if #renamed > 0 then
         core.message.info('Renamed - %d files', #renamed)
         for _, parent in pairs(parents) do
-          parent:sort(filer.context.sort, false)
+          parent:sort(c.sort, false)
         end
-        M.reload(filer)
-        filer.view:move_cursor(renamed[1].path)
+        M.reload(filer, c, v)
+        v:move_cursor(renamed[1].path)
       end
     end,
   }
@@ -162,7 +162,7 @@ local function rename_files(vfiler, targets)
   ext:start(targets)
 end
 
-local function rename_one_file(vfiler, target)
+local function rename_one_file(vfiler, context, view, target)
   local name = target.name
   local rename = cmdline.input('New file name - ' .. name, name , 'file')
   if #rename == 0 then
@@ -182,37 +182,36 @@ local function rename_one_file(vfiler, target)
   end
 
   core.message.info('Renamed - "%s" -> "%s"', name, rename)
-  target.parent:sort(vfiler.context.sort, false)
-  vfiler:draw()
+  target.parent:sort(context.sort, false)
+  view:draw(context)
 end
 
 ------------------------------------------------------------------------------
 -- Interfaces
 ------------------------------------------------------------------------------
 
-function M.cd(vfiler, dirpath)
-  local context = vfiler.context
+function M.cd(vfiler, context, view, dirpath)
   if context.root and context.root.path == dirpath then
     -- Same directory path
     return
   end
 
-  local current = vfiler.view:get_current()
+  local current = view:get_current()
   if current then
     context:save(current.path)
   end
   local path = context:switch(dirpath)
-  vfiler:draw()
-  vfiler.view:move_cursor(path)
+  view:draw(context)
+  view:move_cursor(path)
 end
 
-function M.open_file(vfiler, path, open)
+function M.open_file(vfiler, context, view, path, open)
   local isdirectory = core.path.isdirectory(path)
   if open == 'edit' then
     if isdirectory then
-      M.cd(vfiler, path)
+      M.cd(vfiler, context, view, path)
       return
-    elseif vfiler.context.keep then
+    elseif context.keep then
       -- change the action if the "keep" option is enabled
       open = 'choose'
     end
@@ -234,17 +233,17 @@ function M.open_file(vfiler, path, open)
   -- redraw the caller filer
   local dest_winnr = vim.fn.winnr()
   vfiler:open()
-  vfiler:redraw()
+  view:redraw()
   core.window.move(dest_winnr)
 
   if isdirectory then
-    local newfiler = VFiler.find_hidden(vfiler.context.name)
+    local newfiler = VFiler.find_hidden(context.name)
     if newfiler then
       newfiler:open()
-      newfiler:reset(vfiler.context)
+      newfiler:reset(context)
     else
-      local context = vfiler.context:duplicate()
-      newfiler = VFiler.new(context)
+      local newcontext = context:duplicate()
+      newfiler = VFiler.new(newcontext)
     end
     newfiler:start(path)
   else
@@ -256,36 +255,36 @@ end
 -- actions
 ------------------------------------------------------------------------------
 
-function M.clear_selected_all(vfiler)
-  for _, item in ipairs(vfiler.view:selected_items()) do
+function M.clear_selected_all(vfiler, context, view)
+  for _, item in ipairs(view:selected_items()) do
     item.selected = false
   end
-  vfiler:redraw()
+  view:redraw()
 end
 
-function M.close_tree(vfiler)
-  local item = vfiler.view:get_current()
+function M.close_tree(vfiler, context, view)
+  local item = view:get_current()
   local target = (item.isdirectory and item.opened) and item or item.parent
 
   target:close()
-  vfiler:draw()
-  vfiler.view:move_cursor(target.path)
+  view:draw(context)
+  view:move_cursor(target.path)
 end
 
-function M.close_tree_or_cd(vfiler)
-  local item = vfiler.view:get_current()
+function M.close_tree_or_cd(vfiler, context, view)
+  local item = view:get_current()
   local level = item.level
   if level == 0 or (level <= 1 and not item.opened) then
-    local path = vfiler.context.root.path
-    M.cd(vfiler, vfiler.context:parent_path())
-    vfiler.view:move_cursor(path)
+    local path = context.root.path
+    M.cd(vfiler, context, view, context:parent_path())
+    view:move_cursor(path)
   else
-    M.close_tree(vfiler)
+    M.close_tree(vfiler, context, view)
   end
 end
 
-function M.change_sort(vfiler)
-  if vfiler.context.extension then
+function M.change_sort(vfiler, context, view)
+  if context.extension then
     return
   end
 
@@ -293,32 +292,32 @@ function M.change_sort(vfiler)
     filer = vfiler,
     name = 'Select Sort',
 
-    on_selected = function(filer, sort_type)
-      if filer.context.sort == sort_type then
+    on_selected = function(filer, c, v, sort_type)
+      if c.sort == sort_type then
         return
       end
 
-      local item = filer.view:get_current()
-      filer.context:change_sort(sort_type)
-      filer:draw()
-      filer.view:move_cursor(item.path)
+      local item = v:get_current()
+      c:change_sort(sort_type)
+      v:draw(c)
+      v:move_cursor(item.path)
     end,
   }
 
-  menu:start(sort.types(), vfiler.context.sort_type)
+  menu:start(sort.types(), context.sort_type)
 end
 
-function M.change_to_parent(vfiler)
-  M.cd(vfiler, vfiler.context:parent_path())
+function M.change_to_parent(vfiler, context, view)
+  M.cd(vfiler, context, view, context:parent_path())
 end
 
-function M.copy(vfiler)
-  local selected = vfiler.view:selected_items()
+function M.copy(vfiler, context, view)
+  local selected = view:selected_items()
   if #selected == 0 then
     return
   end
 
-  vfiler.context.clipboard = Clipboard.copy(selected)
+  context.clipboard = Clipboard.copy(selected)
   if #selected == 1 then
     core.message.info('Copy to the clipboard - %s', selected[1].name)
   else
@@ -329,24 +328,24 @@ function M.copy(vfiler)
   for _, item in ipairs(selected) do
     item.selected = false
   end
-  vfiler:redraw()
+  view:redraw()
 end
 
-function M.copy_to_filer(vfiler)
-  local selected = vfiler.view:selected_items()
+function M.copy_to_filer(vfiler, context, view)
+  local selected = view:selected_items()
   if #selected == 0 then
     return
   end
-  local linked = vfiler.context.linked
+  local linked = context.linked
   if not (linked and linked:displayed()) then
     -- Copy to clipboard
-    M.copy(vfiler)
+    M.copy(vfiler, context, view)
     return
   end
 
   -- Copy to linked filer
   local cb = Clipboard.copy(selected)
-  cb:paste(linked.context.root)
+  cb:paste(linked:get_root_item())
   linked:open()
   linked:draw()
 
@@ -357,11 +356,11 @@ function M.copy_to_filer(vfiler)
   for _, item in ipairs(selected) do
     item.selected = false
   end
-  vfiler:redraw()
+  view:redraw()
 end
 
-function M.delete(vfiler)
-  local selected = vfiler.view:selected_items()
+function M.delete(vfiler, context, view)
+  local selected = view:selected_items()
   if #selected == 0 then
     return
   end
@@ -393,11 +392,11 @@ function M.delete(vfiler)
   else
     core.message.info('Deleted - %d files', #deleted)
   end
-  vfiler:draw()
+  view:draw(context)
 end
 
-function M.execute_file(vfiler)
-  local item = vfiler.view:get_current()
+function M.execute_file(vfiler, context, view)
+  local item = view:get_current()
   if item then
     core.file.execute(item.path)
   else
@@ -405,7 +404,7 @@ function M.execute_file(vfiler)
   end
 end
 
-function M.jump_to_directory(vfiler)
+function M.jump_to_directory(vfiler, context, view)
   local dirpath = cmdline.input('Jump to?', '', 'dir')
   if #dirpath == 0 then
     return
@@ -415,44 +414,43 @@ function M.jump_to_directory(vfiler)
     core.message.error('Not exists the "%s" path.', dirpath)
     return
   end
-  M.cd(vfiler, dirpath)
+  M.cd(vfiler, context, view, dirpath)
   vim.command('echo') -- clear prompt message
 end
 
-function M.jump_to_home(vfiler)
+function M.jump_to_home(vfiler, context, view)
   local dirpath = vim.fn.expand('~')
-  M.cd(vfiler, dirpath)
+  M.cd(vfiler, context, view, dirpath)
 end
 
-function M.jump_to_root(vfiler)
-  local dirpath = core.path.root(vfiler.context.root.path)
-  M.cd(vfiler, dirpath)
+function M.jump_to_root(vfiler, context, view)
+  local dirpath = core.path.root(context.root.path)
+  M.cd(vfiler, context, view, dirpath)
 end
 
-function M.latest_update(vfiler)
-  local root = vfiler.context.root
+function M.latest_update(vfiler, context, view)
+  local root = context.root
   if vim.fn.getftime(root.path) > root.time then
-    M.reload(vfiler)
+    M.reload(vfiler, context, view)
     return
   end
 
-  local view = vfiler.view
   for i = view:top_lnum(), view:num_lines() do
     local item = view:get_item(i)
     if item.isdirectory and item.opened then
       if vim.fn.getftime(item.path) > item.time then
-        M.reload(vfiler)
+        M.reload(vfiler, context, view)
         return
       end
     end
   end
 end
 
-function M.loop_cursor_down(vfiler)
+function M.loop_cursor_down(vfiler, context, view)
   local lnum = vim.fn.line('.') + 1
-  local num_end = vfiler.view:num_lines()
+  local num_end = view:num_lines()
   if lnum > num_end then
-    core.cursor.move(vfiler.view:top_lnum())
+    core.cursor.move(view:top_lnum())
     -- Correspondence to show the header line
     -- when moving to the beginning of the line.
     vim.command('normal zb')
@@ -461,21 +459,21 @@ function M.loop_cursor_down(vfiler)
   end
 end
 
-function M.loop_cursor_up(vfiler)
+function M.loop_cursor_up(vfiler, context, view)
   local lnum = vim.fn.line('.') - 1
-  if lnum < vfiler.view:top_lnum() then
-    lnum = vfiler.view:num_lines()
+  if lnum < view:top_lnum() then
+    lnum = view:num_lines()
   end
   core.cursor.move(lnum)
 end
 
-function M.move(vfiler)
-  local selected = vfiler.view:selected_items()
+function M.move(vfiler, context, view)
+  local selected = view:selected_items()
   if #selected == 0 then
     return
   end
 
-  vfiler.context.clipboard = Clipboard.move(selected)
+  context.clipboard = Clipboard.move(selected)
   if #selected == 1 then
     core.message.info('Move to the clipboard - %s', selected[1].name)
   else
@@ -486,54 +484,54 @@ function M.move(vfiler)
   for _, item in ipairs(selected) do
     item.selected = false
   end
-  vfiler:redraw()
+  view:redraw()
 end
 
-function M.move_cursor_bottom(vfiler)
-  core.cursor.move(vfiler.view:num_lines())
+function M.move_cursor_bottom(vfiler, context, view)
+  core.cursor.move(view:num_lines())
 end
 
-function M.move_cursor_down(vfiler)
+function M.move_cursor_down(vfiler, context, view)
   local lnum = vim.fn.line('.') + 1
   core.cursor.move(lnum)
 end
 
-function M.move_cursor_top(vfiler)
-  core.cursor.move(vfiler.view:top_lnum())
+function M.move_cursor_top(vfiler, context, view)
+  core.cursor.move(view:top_lnum())
   -- Correspondence to show the header line
   -- when moving to the beginning of the line.
   vim.command('normal zb')
 end
 
-function M.move_cursor_up(vfiler)
-  local lnum = math.max(vfiler.view:top_lnum(), vim.fn.line('.') - 1)
+function M.move_cursor_up(vfiler, context, view)
+  local lnum = math.max(view:top_lnum(), vim.fn.line('.') - 1)
   core.cursor.move(lnum)
 end
 
-function M.move_to_filer(vfiler)
-  local selected = vfiler.view:selected_items()
+function M.move_to_filer(vfiler, context, view)
+  local selected = view:selected_items()
   if #selected == 0 then
     return
   end
-  local linked = vfiler.context.linked
+  local linked = context.linked
   if not (linked and linked:displayed()) then
     -- Move to clipboard
-    M.move(vfiler)
+    M.move(vfiler, context, view)
     return
   end
 
   -- Move to linked filer
   local cb = Clipboard.move(selected)
-  cb:paste(linked.context.root)
+  cb:paste(linked:get_root_item())
   linked:open()
   linked:draw()
 
   vfiler:open()
-  vfiler:draw()
+  view:draw(context)
 end
 
-function M.new_directory(vfiler)
-  local item = vfiler.view:get_current()
+function M.new_directory(vfiler, context, view)
+  local item = view:get_current()
   local dir = (item.isdirectory and item.opened) and item or item.parent
 
   local function create_directory(dest, name, filepath)
@@ -554,15 +552,15 @@ function M.new_directory(vfiler)
     function(contents)
       local created = create_files(dir, contents, create_directory)
       if created then
-        vfiler:draw()
+        view:draw(context)
         -- move the cursor to the created item path
-        vfiler.view:move_cursor(created[1].path)
+        view:move_cursor(created[1].path)
       end
     end)
 end
 
-function M.new_file(vfiler)
-  local item = vfiler.view:get_current()
+function M.new_file(vfiler, context, view)
+  local item = view:get_current()
   local dir = (item.isdirectory and item.opened) and item or item.parent
 
   local function create_file(dest, name, filepath)
@@ -583,9 +581,9 @@ function M.new_file(vfiler)
     function(contents)
       local created = create_files(dir, contents, create_file)
       if created then
-        vfiler:draw()
+        view:draw(context)
         -- move the cursor to the created item path
-        vfiler.view:move_cursor(created[1].path)
+        view:move_cursor(created[1].path)
       end
     end)
 end
@@ -626,103 +624,102 @@ function M.open_async(vfiler)
 end
 ]]
 
-function M.open(vfiler)
-  local path = vfiler.view:get_current().path
-  M.open_file(vfiler, path, 'edit')
+function M.open(vfiler, context, view)
+  local path = view:get_current().path
+  M.open_file(vfiler, context, view, path, 'edit')
 end
 
-function M.open_by_choose(vfiler)
-  local path = vfiler.view:get_current().path
-  M.open_file(vfiler, path, 'choose')
+function M.open_by_choose(vfiler, context, view)
+  local path = view:get_current().path
+  M.open_file(vfiler, context, view, path, 'choose')
 end
 
-function M.open_by_choose_or_cd(vfiler)
-  local item = vfiler.view:get_current()
+function M.open_by_choose_or_cd(vfiler, context, view)
+  local item = view:get_current()
   if item.isdirectory then
-    M.cd(vfiler, item.path)
+    M.cd(vfiler, context, view, item.path)
   else
-    M.open_file(vfiler, item.path, 'choose')
+    M.open_file(vfiler, context, view, item.path, 'choose')
   end
 end
 
-function M.open_by_split(vfiler)
-  local path = vfiler.view:get_current().path
-  M.open_file(vfiler, path, 'bottom')
+function M.open_by_split(vfiler, context, view)
+  local path = view:get_current().path
+  M.open_file(vfiler, context, view, path, 'bottom')
 end
 
-function M.open_by_tabpage(vfiler)
-  local path = vfiler.view:get_current().path
-  M.open_file(vfiler, path, 'tab')
+function M.open_by_tabpage(vfiler, context, view)
+  local path = view:get_current().path
+  M.open_file(vfiler, context, view, path, 'tab')
 end
 
-function M.open_by_vsplit(vfiler)
-  local path = vfiler.view:get_current().path
-  M.open_file(vfiler, path, 'right')
+function M.open_by_vsplit(vfiler, context, view)
+  local path = view:get_current().path
+  M.open_file(vfiler, context, view, path, 'right')
 end
 
-function M.open_tree(vfiler)
+function M.open_tree(vfiler, context, view)
   local lnum = vim.fn.line('.')
-  local item = vfiler.view:get_item(lnum)
+  local item = view:get_item(lnum)
   if not item.isdirectory or item.opened then
     return
   end
   item:open()
-  vfiler:draw()
+  view:draw(context)
   core.cursor.move(lnum + 1)
 end
 
-function M.open_tree_recursive(vfiler)
+function M.open_tree_recursive(vfiler, context, view)
   local lnum = vim.fn.line('.')
-  local item = vfiler.view:get_item(lnum)
+  local item = view:get_item(lnum)
   if not item.isdirectory or item.opened then
     return
   end
   item:open(true)
-  vfiler:draw()
+  view:draw(context)
   core.cursor.move(lnum + 1)
 end
 
-function M.paste(vfiler)
-  local cb = vfiler.context.clipboard
+function M.paste(vfiler, context, view)
+  local cb = context.clipboard
   if not cb then
     core.message.warning('No clipboard')
     return
   end
 
-  local item = vfiler.view:get_current()
+  local item = view:get_current()
   local dest = (item.isdirectory and item.opened) and item or item.parent
   if cb:paste(dest) and cb.keep then
-    vfiler.context.clipboard = nil
+    context.clipboard = nil
   end
-  vfiler:draw()
+  view:draw(context)
 end
 
-function M.quit(vfiler)
+function M.quit(vfiler, context, view)
   vfiler:quit()
 end
 
-function M.redraw(vfiler)
-  vfiler:draw()
+function M.redraw(vfiler, context, view)
+  view:draw(context)
 end
 
-function M.reload(vfiler)
-  local context = vfiler.context
-  context:save(vfiler.view:get_current().path)
+function M.reload(vfiler, context, view)
+  context:save(view:get_current().path)
   context:switch(context.root.path)
-  vfiler:draw()
+  view:draw(context)
 end
 
-function M.rename(vfiler)
-  local selected = vfiler.view:selected_items()
+function M.rename(vfiler, context, view)
+  local selected = view:selected_items()
   if #selected == 1 then
-    rename_one_file(vfiler, selected[1])
+    rename_one_file(vfiler, context, view, selected[1])
   elseif #selected > 1 then
-    rename_files(vfiler, selected)
+    rename_files(vfiler, context, view, selected)
   end
 end
 
-function M.switch_to_drive(vfiler)
-  if vfiler.context.extension then
+function M.switch_to_drive(vfiler, context, view)
+  if context.extension then
     return
   end
 
@@ -731,29 +728,29 @@ function M.switch_to_drive(vfiler)
     return
   end
 
-  local root = core.path.root(vfiler.context.root.path)
+  local root = core.path.root(context.root.path)
   local menu = Menu.new {
     filer = vfiler,
     name = 'Select Drive',
 
-    on_selected = function(filer, drive)
+    on_selected = function(filer, c, v, drive)
       if root == drive then
         return
       end
 
-      local path = filer.view:get_current().path
-      filer.context:save(path)
-      path = filer.context:switch_drive(drive)
-      filer.view:draw(filer.context)
-      filer.view:move_cursor(path)
+      local path = v:get_current().path
+      c:save(path)
+      path = c:switch_drive(drive)
+      v:draw(c)
+      v:move_cursor(path)
     end,
   }
 
   menu:start(drives, root)
 end
 
-function M.switch_to_filer(vfiler)
-  local linked = vfiler.context.linked
+function M.switch_to_filer(vfiler, context, view)
+  local linked = context.linked
   -- already linked
   if linked then
     linked:open('right')
@@ -762,70 +759,68 @@ function M.switch_to_filer(vfiler)
 
   -- create link to filer
   local lnum = vim.fn.line('.')
-  local newfiler = VFiler.find_hidden(vfiler.context.name)
+  local newfiler = VFiler.find_hidden(context.name)
   if newfiler then
     newfiler:open('right')
-    newfiler:reset(vfiler.context)
+    newfiler:reset(context)
   else
     core.window.open('right')
-    local context = vfiler.context:duplicate()
-    newfiler = VFiler.new(context)
+    newfiler = vfiler:duplicate()
   end
   newfiler:link(vfiler)
-  newfiler:start(vfiler.context.root.path)
+  newfiler:start(context.root.path)
   core.cursor.move(lnum)
 
   -- redraw current
   vfiler:open()
-  vfiler:redraw()
+  view:draw(context)
 
   newfiler:open() -- return other filer
 end
 
-function M.sync_with_current_filer(vfiler)
-  local linked = vfiler.context.linked
+function M.sync_with_current_filer(vfiler, context, view)
+  local linked = context.linked
   if not (linked and linked:displayed()) then
     return
   end
 
   linked:open()
-  linked.context:sync(vfiler.context)
+  linked:sync(context)
   linked:draw()
   vfiler:open() -- return current window
 end
 
-function M.toggle_show_hidden(vfiler)
-  vfiler.context.show_hidden_files = not vfiler.context.show_hidden_files
-  vfiler:draw()
+function M.toggle_show_hidden(vfiler, context, view)
+  context.show_hidden_files = not context.show_hidden_files
+  view:draw(context)
 end
 
-function M.toggle_select(vfiler)
+function M.toggle_select(vfiler, context, view)
   local lnum = vim.fn.line('.')
-  local item = vfiler.view:get_item(lnum)
+  local item = view:get_item(lnum)
   item.selected = not item.selected
-  vfiler.view:redraw_line(lnum)
+  view:redraw_line(lnum)
 end
 
-function M.toggle_select_all(vfiler)
-  local root = vfiler.context.root
-  for _, item in ipairs(root:walk()) do
+function M.toggle_select_all(vfiler, context, view)
+  for item in context.root:walk() do
     item.selected = not item.selected
   end
-  vfiler:redraw()
+  view:redraw()
 end
 
-function M.toggle_select_down(vfiler)
-  M.toggle_select(vfiler)
-  M.move_cursor_down(vfiler)
+function M.toggle_select_down(vfiler, context, view)
+  M.toggle_select(vfiler, context, view)
+  M.move_cursor_down(vfiler, context, view)
 end
 
-function M.toggle_select_up(vfiler)
-  M.toggle_select(vfiler)
-  M.move_cursor_up(vfiler)
+function M.toggle_select_up(vfiler, context, view)
+  M.toggle_select(vfiler, context, view)
+  M.move_cursor_up(vfiler, context, view)
 end
 
-function M.yank_name(vfiler)
-  local selected = vfiler.view:selected_items()
+function M.yank_name(vfiler, context, view)
+  local selected = view:selected_items()
   local names = {}
   for _, item in ipairs(selected) do
     table.insert(names, item.name)
@@ -843,11 +838,11 @@ function M.yank_name(vfiler)
   for _, item in ipairs(selected) do
     item.selected = false
   end
-  vfiler:redraw()
+  view:redraw()
 end
 
-function M.yank_path(vfiler)
-  local selected = vfiler.view:selected_items()
+function M.yank_path(vfiler, context, view)
+  local selected = view:selected_items()
   local paths = {}
   for _, item in ipairs(selected) do
     table.insert(paths, item.path)
@@ -865,7 +860,7 @@ function M.yank_path(vfiler)
   for _, item in ipairs(selected) do
     item.selected = false
   end
-  vfiler:redraw()
+  view:redraw()
 end
 
 return M

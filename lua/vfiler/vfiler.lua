@@ -24,17 +24,17 @@ local function do_action(vfiler, key)
     core.message.error('Not defined in the key')
     return
   end
-  action(vfiler)
+  action(vfiler, vfiler._context, vfiler._view)
 end
 
 --- Handle the specified event
 local function handle_event(vfiler, type)
-  local action = vfiler.context.events[type]
+  local action = vfiler._context._events[type]
   if not action then
     core.message.error('Event "%s" is not registered.', type)
     return
   end
-  action(vfiler)
+  action(vfiler, vfiler._context, vfiler._view)
 end
 
 local function register_events(bufnr, events)
@@ -52,7 +52,7 @@ local function generate_bufname(name)
   local maxnr = -1
   for _, vfiler in pairs(vfilers) do
     local object = vfiler.object
-    if name == object.context.name then
+    if name == object._context.name then
       maxnr = math.max(vfiler.number, maxnr)
     end
   end
@@ -85,7 +85,7 @@ function VFiler.find(name)
   -- in tabpage
   for bufnr, vfiler in pairs(vfilers) do
     local object = vfiler.object
-    if (object.context.name == name) and (vim.fn.bufwinnr(bufnr) >= 0) then
+    if (object._context.name == name) and (vim.fn.bufwinnr(bufnr) >= 0) then
       return object
     end
   end
@@ -99,7 +99,7 @@ function VFiler.find_hidden(name)
   for bufnr, vfiler in pairs(vfilers) do
     local object = vfiler.object
     local infos = vim.from_vimlist(vim.fn.getbufinfo(bufnr))
-    if (object.context.name == name) and (infos[1].hidden == 1) then
+    if (object._context.name == name) and (infos[1].hidden == 1) then
       return object
     end
   end
@@ -137,9 +137,9 @@ function VFiler.new(context)
   register_events(view.bufnr, context.events)
 
   local object = setmetatable({
-    context = context,
-    view = view,
-    _defined_mappings = define_mappings(view.bufnr, context.mappings),
+    _context = context,
+    _view = view,
+    _defined_mappings = define_mappings(view.bufnr, context._mappings),
   }, VFiler)
 
   -- add vfiler resource
@@ -162,23 +162,42 @@ end
 
 --- Is the filer displayed?
 function VFiler:displayed()
-  return self.view:winnr() >= 0
+  return self._view:winnr() >= 0
 end
 
 --- Draw the filer in the current window
 function VFiler:draw()
-  self.view:draw(self.context)
+  self._view:draw(self._context)
+end
+
+--- Duplicate the vfiler
+function VFiler:duplicate()
+  local newcontext = self._context:duplicate()
+  return VFiler.new(newcontext)
+end
+
+--- Get root item
+function VFiler:get_root_item()
+  return self._context.root
+end
+
+--- Get current status (for statusline)
+function VFiler:get_status()
+  if not self._context then
+    return ''
+  end
+  return self._context.status
 end
 
 --- Link with the specified filer
 function VFiler:link(vfiler)
-  self.context.linked = vfiler
-  vfiler.context.linked = self
+  self._context.linked = vfiler
+  vfiler._context.linked = self
 end
 
 --- Open filer
 function VFiler:open(...)
-  local winnr = self.view:winnr()
+  local winnr = self._view:winnr()
   if winnr >= 0 then
     core.window.move(winnr)
     return
@@ -188,22 +207,17 @@ function VFiler:open(...)
   if layout and layout ~= 'edit' then
     core.window.open(layout)
   end
-  self.view:open()
+  self._view:open()
 end
 
 --- Quit filer
 function VFiler:quit()
-  local bufnr = self.view.bufnr
-  if self.context.quit and bufnr >= 0 then
-    self.view:delete()
+  local bufnr = self._view.bufnr
+  if self._context.quit and bufnr >= 0 then
+    self._view:delete()
     self:unlink()
     vfilers[bufnr] = nil
   end
-end
-
---- Redraw the filer in the current window
-function VFiler:redraw()
-  self.view:redraw()
 end
 
 --- Reset
@@ -211,28 +225,36 @@ end
 function VFiler:reset(context)
   -- clear the data so far
   self:unlink()
-  mapping.undefine(self.context.mappings)
+  mapping.undefine(self._context._mappings)
 
-  self.context:reset(context)
-  self.view:reset(context)
-  self._defined_mappings = define_mappings(self.view.bufnr, context.mappings)
+  self._context:reset(context)
+  self._view:reset(context)
+  self._defined_mappings = define_mappings(
+    self.view.bufnr, context._mappings
+    )
 end
 
 --- Start the filer
 ---@param dirpath string
 function VFiler:start(dirpath)
-  self.context:switch(dirpath)
+  self._context:switch(dirpath)
   self:draw()
-  core.cursor.move(self.view:top_lnum())
+  core.cursor.move(self._view:top_lnum())
+end
+
+--- Synchronize to the vfiler
+---@param context table
+function VFiler:sync(context)
+  self._context:sync(context)
 end
 
 --- Unlink filer
 function VFiler:unlink()
-  local vfiler = self.context.linked
+  local vfiler = self._context.linked
   if vfiler then
-    vfiler.context.linked = nil
+    vfiler._context.linked = nil
   end
-  self.context.linked = nil
+  self._context.linked = nil
 end
 
 return VFiler

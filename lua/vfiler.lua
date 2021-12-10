@@ -18,11 +18,10 @@ end
 ---@return string: status string
 function M.get_status_string()
   local vfiler = VFiler.get_current()
-  if not (vfiler and vfiler.context.root) then
+  if not vfiler then
     return ''
   end
-  local path = vim.fn.fnamemodify(vfiler.context.root.path, ':~')
-  return core.path.escape(path)
+  return vfiler:get_status()
 end
 
 ---Start vfiler from command line arguments

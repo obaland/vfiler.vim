@@ -33,7 +33,8 @@ function ExtensionMenu:select()
   self:quit()
 
   if self.on_selected then
-    self.on_selected(self.filer, item)
+    local filer = self.filer
+    self.on_selected(filer, filer._context, filer._view, item)
   end
   return item
 end

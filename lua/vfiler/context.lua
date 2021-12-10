@@ -119,8 +119,8 @@ Context.__index = Context
 function Context.new(configs)
   local self = setmetatable({}, Context)
   self:_initialize()
-  self.events = core.table.copy(configs.events)
-  self.mappings = core.table.copy(configs.mappings)
+  self._events = core.table.copy(configs.events)
+  self._mappings = core.table.copy(configs.mappings)
   self._snapshot = Snapshot.new()
 
   -- set options
@@ -223,8 +223,8 @@ function Context:reset(context)
       self[key] = value
     end
   end
-  self.mappings = core.table.copy(context.mappings)
-  self.events = core.table.copy(context.events)
+  self._mappings = core.table.copy(context.mappings)
+  self._events = core.table.copy(context.events)
   self._snapshot = Snapshot.new()
 end
 
