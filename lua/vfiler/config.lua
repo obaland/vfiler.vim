@@ -176,7 +176,7 @@ function M.complete(arglead)
   -- Complete directory path
   local condidate_files = vim.from_vimlist(
     vim.fn.glob(arglead .. '*', 1, 1, 1)
-    )
+  )
   for _, path in ipairs(condidate_files) do
     if core.path.isdirectory(path) then
       table.insert(list, core.path.normalize(path))

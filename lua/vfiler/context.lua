@@ -2,50 +2,67 @@ local core = require('vfiler/core')
 local vim = require('vfiler/vim')
 
 local Directory = require('vfiler/items/directory')
-local Job = require('vfiler/async/job')
 
-local function walk_expanded(rpaths, root_path, dir)
-  if not dir.children then
-    return
-  end
-
-  local path = dir.path:sub(#root_path)
-  if not rpaths[path] then
-    rpaths[path] = {}
-  end
-  local attribute = rpaths[path]
-
-  for _, child in ipairs(dir.children) do
-    if child.isdirectory and child.children then
-      walk_expanded(rpaths, root_path, child)
+local function expand(root, attribute)
+  for _, child in ipairs(root.children) do
+    local opened = attribute.opened_attributes[child.name]
+    if opened then
+      child:open()
+      expand(child, opened)
     end
-    if child.selected then
-      attribute[child.name] = {
-        selected = true
-      }
+
+    local selected = attribute.selected_names[child.name]
+    if selected then
+      child.selected = true
     end
   end
+  return root
 end
 
-local function expand(names, dir)
-  local name = table.remove(names, 1)
-  for _, child in ipairs(dir.children) do
-    if child.name == name then
-      if not child.children then
-        child:open()
-      end
-      if #names == 0 then
-        return child
-      else
-        return expand(names, child)
-      end
+------------------------------------------------------------------------------
+-- ItemAttribute class
+------------------------------------------------------------------------------
+local ItemAttribute = {}
+ItemAttribute.__index = ItemAttribute
+
+function ItemAttribute.copy(attribute)
+  local root_attr = ItemAttribute.new(attribute.name)
+  for name, attr in pairs(attribute.opened_attributes) do
+    root_attr.opened_attributes[name] = ItemAttribute.copy(attr)
+  end
+  for name, selected in pairs(attribute.selected_names) do
+    root_attr.selected_names[name] = selected
+  end
+  return root_attr
+end
+
+function ItemAttribute.parse(root)
+  local root_attr = ItemAttribute.new(root.name)
+  if not root.children then
+    return root_attr
+  end
+  for _, child in ipairs(root.children) do
+    if child.isdirectory and child.opened then
+      root_attr.opened_attributes[child.name] = ItemAttribute.parse(child)
+    end
+    if child.selected then
+      root_attr.selected_names[child.name] = true
     end
   end
-  return dir
+  return root_attr
+end
+
+function ItemAttribute.new(name)
+  return setmetatable({
+    name = name,
+    opened_attributes = {},
+    selected_names = {},
+  }, ItemAttribute)
 end
 
 ------------------------------------------------------------------------------
 -- Snapshot class
+------------------------------------------------------------------------------
 
 local Snapshot = {}
 Snapshot.__index = Snapshot
@@ -53,51 +70,36 @@ Snapshot.__index = Snapshot
 function Snapshot.new()
   return setmetatable({
     _drives = {},
-    _dirpaths = {},
+    _attributes = {},
   }, Snapshot)
 end
 
 function Snapshot:copy(snapshot)
   self._drives = core.table.copy(snapshot._drives)
-  self._dirpaths = core.table.copy(snapshot._dirpaths)
+  for path, attribute in pairs(self._attributes) do
+    self._attributes[path] = {
+      previus_path = attribute.previus_path,
+      object = ItemAttribute.copy(attribute.object),
+    }
+  end
 end
 
 function Snapshot:save(root, path)
   local drive = core.path.root(root.path)
   self._drives[drive] = root.path
-
-  local rpaths = {}
-  walk_expanded(rpaths, root.path, root)
-
-  self._dirpaths[root.path] = {
-    path = path,
-    expanded_rpaths = rpaths,
+  self._attributes[root.path] = {
+    previus_path = path,
+    object = ItemAttribute.parse(root),
   }
 end
 
 function Snapshot:load(root)
-  local dirpath = self._dirpaths[root.path]
-  if not dirpath then
-    return root.path
+  local attribute = self._attributes[root.path]
+  if not attribute then
+    return nil
   end
-
-  for rpath, attributes in pairs(dirpath.expanded_rpaths) do
-    -- expand
-    local dir = root
-    local names = core.string.split(rpath, '/')
-    if #names > 0 then
-      dir = expand(names, root)
-    end
-
-    -- restore attribute
-    for _, child in ipairs(dir.children) do
-      local attribute = attributes[child.name]
-      if attribute then
-        child.selected = attribute.selected
-      end
-    end
-  end
-  return dirpath.path
+  expand(root, attribute.object)
+  return attribute.previus_path
 end
 
 function Snapshot:load_dirpath(drive)
@@ -110,6 +112,7 @@ end
 
 ------------------------------------------------------------------------------
 -- Context class
+------------------------------------------------------------------------------
 
 local Context = {}
 Context.__index = Context
@@ -144,16 +147,6 @@ function Context:_initialize()
   self.extension = nil
   self.linked = nil
   self.root = nil
-  self.status = ''
-  self._async_jobs = {}
-end
-
---- Cancel all jobs currently in progress
-function Context:cancel_all_jobs()
-  for _, job in ipairs(self._async_jobs) do
-    job:cancel()
-  end
-  self._async_jobs = {}
 end
 
 --- Save the path in the current context
@@ -171,25 +164,8 @@ function Context:change_sort(type)
   if self.sort == type then
     return
   end
-  self:cancel_all_jobs()
   self.root:sort(type, true)
   self.sort = type
-end
-
---- Create async root job
-function Context:new_root_job()
-  local number = #self._async_jobs + 1
-  local job = Job.new {
-    on_canceled = function(j)
-      self._async_jobs[number] = nil
-    end,
-
-    on_completed = function(j)
-      self._async_jobs[number] = nil
-    end,
-  }
-  self._async_jobs[number] = job
-  return job
 end
 
 --- Duplicate context
@@ -230,24 +206,6 @@ end
 
 --- Switch the context to the specified directory path
 ---@param dirpath string
-function Context:switch_async(dirpath, async_options)
-  -- perform auto cd
-  if self.auto_cd then
-    vim.command('silent lcd ' .. dirpath)
-  end
-  self:update_status()
-
-  -- TODO: expand
-  self.root = Directory.new(dirpath, false, self.sort)
-
-  local root_job = self:new_root_job()
-  local job = self.root:open_async(false, async_options)
-  root_job:chain(job)
-  return job
-end
-
---- Switch the context to the specified directory path
----@param dirpath string
 function Context:switch(dirpath)
   -- perform auto cd
   if self.auto_cd then
@@ -281,13 +239,6 @@ end
 function Context:update_status()
   local path = vim.fn.fnamemodify(self.root.path, ':~')
   self.status = '[in] ' .. core.path.escape(path)
-  vim.command('redrawstatus')
-end
-
-function Context:set_waiting_status(format, ...)
-  local frame = core.icon.frame(os.clock())
-  local message = format:format(...)
-  self.status = frame .. ' ' .. message
   vim.command('redrawstatus')
 end
 

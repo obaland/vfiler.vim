@@ -14,7 +14,7 @@ VFiler.__index = VFiler
 local function define_mappings(bufnr, mappings)
   return mapping.define(
     bufnr, mappings, [[require('vfiler/vfiler')._do_action_from_key]]
-    )
+  )
 end
 
 --- Do the action of the specified key
@@ -40,7 +40,7 @@ end
 local function register_events(bufnr, events)
   event.register(
     'vfiler', bufnr, events, [[require('vfiler/vfiler')._handle_event]]
-    )
+  )
 end
 
 local function generate_bufname(name)
@@ -236,7 +236,7 @@ function VFiler:reset(context)
   self._view:reset(context)
   self._defined_mappings = define_mappings(
     self.view.bufnr, context._mappings
-    )
+  )
 end
 
 --- Start the filer

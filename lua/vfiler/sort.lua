@@ -26,7 +26,7 @@ function M.set(type, compare)
   -- set descending order at the same time
   local desc_name = to_desc_name(type)
   M.compares[desc_name] = function(item2, item1)
-      return compare(item1, item2)
+    return compare(item1, item2)
   end
 end
 

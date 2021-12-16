@@ -11,7 +11,7 @@ M.is_mac = (not M.is_windows) and (not M.is_cygwin) and (
   (vim.fn.has('mac') == 1) or (vim.fn.has('macunix') == 1) or
   (vim.fn.has('gui_macvim') == 1) or
   (vim.fn.isdirectory('/proc') ~= 1) and (vim.fn.executable('sw_vers') == 1)
-  )
+)
 
 function M.inherit(class, super, ...)
   local self = super and super.new(...) or nil
@@ -43,28 +43,28 @@ if M.is_windows then
   function M.dir.copy(src, dest)
     local command = ('robocopy /e %s %s'):format(
       M.string.shellescape(src), M.string.shellescape(dest)
-      )
+    )
     vim.fn.system(command)
   end
 
   function M.file.copy(src, dest)
     local command = ('copy /y %s %s'):format(
       M.string.shellescape(src), M.string.shellescape(dest)
-      )
+    )
     vim.fn.system(command)
   end
 else
   function M.dir.copy(src, dest)
     local command = ('cp -fR %s %s'):format(
       M.string.shellescape(src), M.string.shellescape(dest)
-      )
+    )
     vim.fn.system(command)
   end
 
   function M.file.copy(src, dest)
     local command = ('cp -f %s %s'):format(
       M.string.shellescape(src), M.string.shellescape(dest)
-      )
+    )
     vim.fn.system(command)
   end
 end
@@ -74,7 +74,7 @@ function M.file.execute(path)
   if M.is_windows then
     command = ('start rundll32 url.dll,FileProtocolHandler %s'):format(
       vim.fn.escape(path, '#%')
-      )
+    )
   elseif M.is_mac and vim.fn.executable('open') == 1 then
     -- For Mac OS
     command = ('open %s &'):format(vim.fn.shellescape(path))
@@ -163,7 +163,7 @@ function M.message.error(format, ...)
   local msg = format:format(...)
   vim.command(
     ([[echohl ErrorMsg | echomsg '[vfiler]: %s' | echohl None]]):format(msg)
-    )
+  )
 end
 
 ---print information message
@@ -176,7 +176,7 @@ function M.message.warning(format, ...)
   local msg = format:format(...)
   vim.command(
     ([[echohl WarningMsg | echomsg '[vfiler]: %s' | echohl None]]):format(msg)
-    )
+  )
 end
 
 ---print question message
@@ -184,7 +184,7 @@ function M.message.question(format, ...)
   local msg = format:format(...)
   vim.command(
     ([[echohl Question | echo '[vfiler]: %s' | echohl None]]):format(msg)
-    )
+  )
 end
 
 ------------------------------------------------------------------------------
@@ -319,7 +319,7 @@ if M.is_windows then
   function M.string.shellescape(str)
     return ('"%s"'):format(
       trim_end(vim.fn.escape(str:gsub('/', [[\]])), '/')
-      )
+    )
   end
 else
   function M.string.shellescape(str)

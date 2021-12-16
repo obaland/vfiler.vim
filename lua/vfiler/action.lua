@@ -588,42 +588,6 @@ function M.new_file(vfiler, context, view)
     end)
 end
 
--- Demo code
---[[
-function M.open_async(vfiler)
-  local lnum = vim.fn.line('.')
-  local item = vfiler.view:get_item(lnum)
-  if not item.isdirectory then
-    return
-  end
-
-  local loop = require('vfiler/async/loop').new {
-    interval = 1,
-    callback = function()
-      vfiler.context:set_waiting_status('Open "%s" ...', item.path)
-    end,
-  }
-
-  local switch_job = vfiler.context:switch_async(item.path, {
-    on_completed = function(job)
-      loop:stop()
-      vfiler:draw()
-      vfiler.context:update_status()
-    end,
-
-    on_canceled = function(job)
-      item:close()
-      loop:stop()
-      vfiler.view:redraw_line(lnum)
-      vfiler.context:update_status()
-    end,
-  })
-  vfiler.view:clear()
-  loop:start()
-  switch_job:start()
-end
-]]
-
 function M.open(vfiler, context, view)
   local path = view:get_current().path
   M.open_file(vfiler, context, view, path, 'edit')

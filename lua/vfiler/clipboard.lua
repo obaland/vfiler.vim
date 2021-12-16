@@ -64,11 +64,11 @@ function Clipboard:paste(dest)
   if #pasted == 1 then
     core.message.info(
       '%s "%s" - %s', self._done_message_prefix, dest.path, pasted[1].name
-      )
+    )
   elseif #pasted > 1 then
     core.message.info(
       '%s "%s" - %d files', self._done_message_prefix, dest.path, #pasted
-      )
+    )
   else
     return false
   end

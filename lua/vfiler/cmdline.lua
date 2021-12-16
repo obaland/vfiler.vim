@@ -77,7 +77,7 @@ function M.util.confirm_overwrite(name)
   return M.confirm(
     ('"%s" already exists. Overwrite?'):format(name),
     {M.choice.YES, M.choice.NO}, 1
-    )
+  )
 end
 
 return M

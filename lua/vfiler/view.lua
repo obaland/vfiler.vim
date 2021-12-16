@@ -23,7 +23,7 @@ local function create_buffer(bufname, options)
 end
 
 local function create_columns(columns)
-  local column = require 'vfiler/column'
+  local column = require('vfiler/column')
   local objects = {}
 
   local cnames = vim.from_vimlist(vim.fn.split(columns, ','))
@@ -125,6 +125,9 @@ function View:move_cursor(path)
   local lnum = self:indexof(path)
   -- Skip header line
   core.cursor.move(math.max(lnum, self:top_lnum()))
+  -- Correspondence to show the header line
+  -- when moving to the beginning of the line.
+  vim.command('normal zb')
 end
 
 --- Get the number of line in the view buffer
@@ -148,7 +151,7 @@ function View:redraw()
   if winnr < 0 then
     core.message.warning(
       'Cannot draw because the buffer is not displayed in the window.'
-      )
+    )
     return
   end
 
@@ -252,7 +255,7 @@ function View:_apply_syntaxes()
   if self._header then
     table.insert(
       syntaxes, core.syntax.match_command(header_group, [[\%1l.*]])
-      )
+    )
   end
 
   for _, column in pairs(self._columns) do

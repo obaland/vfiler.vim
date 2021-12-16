@@ -26,7 +26,7 @@ function M.define(bufnr, mappings, funcstr)
     local escaped = escape_key(key)
     local rhs = ([[:lua %s(%d, '%s')<CR>]]):format(
       funcstr, bufnr, vim.fn.escape(escaped, '\\')
-      )
+    )
 
     keymaps[escaped] = func
     vim.set_buf_keymap('n', key, rhs, options)
