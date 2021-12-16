@@ -171,7 +171,7 @@ function View:redraw()
   end
 
   -- create text lines
-  local lines = {}
+  local lines = vim.to_vimlist({})
   if self._header then
     table.insert(lines, self:_toheader(self._items[1]))
   end
@@ -184,8 +184,8 @@ function View:redraw()
 
   vim.set_buf_option(self.bufnr, 'modifiable', true)
   vim.set_buf_option(self.bufnr, 'readonly', false)
-  vim.command('silent %delete _')
-  vim.fn.setbufline(self.bufnr, 1, vim.to_vimlist(lines))
+  vim.fn.setbufline(self.bufnr, 1, lines)
+  vim.fn.deletebufline(self.bufnr, #lines + 1, '$')
   vim.set_buf_option(self.bufnr, 'modifiable', false)
   vim.set_buf_option(self.bufnr, 'readonly', true)
 
