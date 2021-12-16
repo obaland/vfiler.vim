@@ -273,7 +273,7 @@ end
 
 function M.close_tree_or_cd(vfiler, context, view)
   local item = view:get_current()
-  local level = item.level
+  local level = item and item.level or 0
   if level == 0 or (level <= 1 and not item.opened) then
     local path = context.root.path
     M.cd(vfiler, context, view, context:parent_path())

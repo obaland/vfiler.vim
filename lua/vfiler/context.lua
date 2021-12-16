@@ -190,7 +190,6 @@ end
 --- Reset from another context
 ---@param context table
 function Context:reset(context)
-  self:cancel_all_jobs()
   self:_initialize()
   -- copy options
   for key, value in pairs(context) do
@@ -199,8 +198,8 @@ function Context:reset(context)
       self[key] = value
     end
   end
-  self._mappings = core.table.copy(context.mappings)
-  self._events = core.table.copy(context.events)
+  self._mappings = core.table.copy(context._mappings)
+  self._events = core.table.copy(context._events)
   self._snapshot = Snapshot.new()
 end
 
@@ -231,7 +230,6 @@ end
 --- Synchronize with other context
 ---@param context table
 function Context:sync(context)
-  self:cancel_all_jobs()
   self._snapshot:save(context.root, context.root.path)
   self:switch(context.root.path)
 end

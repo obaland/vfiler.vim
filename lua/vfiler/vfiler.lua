@@ -235,7 +235,7 @@ function VFiler:reset(context)
   self._context:reset(context)
   self._view:reset(context)
   self._defined_mappings = define_mappings(
-    self.view.bufnr, context._mappings
+    self._view.bufnr, context._mappings
   )
 end
 

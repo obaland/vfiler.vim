@@ -186,6 +186,7 @@ function View:redraw()
   vim.set_buf_option(self.bufnr, 'readonly', false)
   vim.fn.setbufline(self.bufnr, 1, lines)
   vim.fn.deletebufline(self.bufnr, #lines + 1, '$')
+  vim.command('echo ""')
   vim.set_buf_option(self.bufnr, 'modifiable', false)
   vim.set_buf_option(self.bufnr, 'readonly', true)
 

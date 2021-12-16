@@ -29,7 +29,7 @@ function M.getchar(prompt)
   }
   vim.commands(commands)
   local code = vim.fn.getchar()
-  vim.command('redraw')
+  vim.command('echo ""')
 
   local char = nil
   if (32 <= code) and (code <= 126) then
