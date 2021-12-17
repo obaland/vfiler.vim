@@ -35,19 +35,21 @@ function M.start_command(args)
 end
 
 ---Start vfiler
-function M.start(...)
-  local args = {...}
-  local dirpath = args[1]
-  if not dirpath or dirpath == '' then
+function M.start(dirpath, configs)
+  if not dirpath or #dirpath <= 0 then
     dirpath = vim.fn.getcwd()
   end
-
-  local configs = core.table.copy(config.configs)
-  core.table.merge(configs, args[2] or {})
+  dirpath = vim.fn.fnamemodify(dirpath, ':p')
+  if vim.fn.isdirectory(dirpath) ~= 1 then
+    core.message.error('Does not exist "%s".', dirpath)
+    return false
+  end
+  local combined_configs = core.table.copy(config.configs)
+  core.table.merge(combined_configs, configs or {})
 
   VFiler.cleanup()
 
-  local options = configs.options
+  local options = combined_configs.options
   local layout = options.layout
 
   local vfiler = nil
@@ -58,7 +60,7 @@ function M.start(...)
     vfiler = VFiler.find(options.name)
   end
 
-  local context = Context.new(configs)
+  local context = Context.new(combined_configs)
   if options.new or not vfiler then
     vfiler = VFiler.new(context)
   else

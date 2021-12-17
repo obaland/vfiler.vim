@@ -93,10 +93,9 @@ function Popup:_on_open(name, texts, options)
     zindex = 200,
     width = options.width,
   }
-
   return vim.fn.popup_create(
     vim.to_vimlist(texts), vim.to_vimdict(popup_options)
-    )
+  )
 end
 
 return Popup

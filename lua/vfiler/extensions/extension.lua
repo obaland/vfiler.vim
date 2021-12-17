@@ -54,34 +54,30 @@ function Extension._do_action(bufnr, key)
     core.message.error('Extension does not exist.')
     return
   end
-  ext:do_action(key)
+  local action = ext.configs.mappings[key]
+  if not action then
+    core.message.error('Not defined in the key')
+    return
+  end
+  ext:do_action(action)
 end
 
 function Extension._handle_event(bufnr, type)
   local ext = Extension.get(bufnr)
   if ext then
-    ext:handle_event(type)
+    local action = ext.configs.events[type]
+    if not action then
+      core.message.error('Event "%s" is not registered.', type)
+      return
+    end
+    ext:do_action(action)
   end
 end
 
----@param key string
-function Extension:do_action(key)
-  local func = self.configs.mappings[key]
-  if not func then
-    core.message.error('Not defined in the key')
-    return
-  end
-  func(self)
-end
-
-function Extension:handle_event(type)
-  local events = self.configs.events
-  local func = events[type]
-  if not func then
-    core.message.error('Event "%s" is not registered.', type)
-    return
-  end
-  func(self)
+--- Do action
+---@param action function
+function Extension:do_action(action)
+  action(self)
 end
 
 function Extension:quit()
@@ -106,6 +102,11 @@ function Extension:quit()
   self.filer._context.extension = nil
 end
 
+function Extension:draw()
+  local texts = self:_on_get_texts(self.items)
+  self:_on_draw(texts)
+end
+
 function Extension:start(items, ...)
   local lnum = 1
   if ... then
@@ -127,16 +128,16 @@ function Extension:start(items, ...)
   self.configs.mappings = self.view:define_mapping(
     self.configs.mappings,
     [[require('vfiler/extensions/extension')._do_action]]
-    )
+  )
 
   -- register events
   event.register(
     'vfiler_extension', self.bufnr, self.configs.events,
     [[require('vfiler/extensions/extension')._handle_event]]
-    )
+  )
 
   -- draw line texts and syntax
-  self:_on_draw(texts)
+  self:draw()
   vim.fn.win_execute(self.winid, ('call cursor(%d, 1)'):format(lnum))
 
   -- add extension table
@@ -144,6 +145,11 @@ function Extension:start(items, ...)
 
   -- link to filer
   self.filer._context.extension = self
+  self:_on_start()
+end
+
+function Extension:_on_start()
+  -- Not implemented
 end
 
 function Extension:_on_get_texts(items)

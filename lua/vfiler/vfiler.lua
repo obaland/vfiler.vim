@@ -3,7 +3,6 @@ local event = require('vfiler/event')
 local mapping = require('vfiler/mapping')
 local vim = require('vfiler/vim')
 
-local Context = require('vfiler/context')
 local View = require('vfiler/view')
 
 local vfilers = {}
@@ -13,33 +12,7 @@ VFiler.__index = VFiler
 
 local function define_mappings(bufnr, mappings)
   return mapping.define(
-    bufnr, mappings, [[require('vfiler/vfiler')._do_action_from_key]]
-  )
-end
-
---- Do the action of the specified key
-local function do_action_from_key(vfiler, key)
-  local action = vfiler._defined_mappings[key]
-  if not action then
-    core.message.error('Not defined in the key')
-    return
-  end
-  vfiler:do_action(action)
-end
-
---- Handle the specified event
-local function handle_event(vfiler, type)
-  local action = vfiler._context._events[type]
-  if not action then
-    core.message.error('Event "%s" is not registered.', type)
-    return
-  end
-  vfiler:do_action(action)
-end
-
-local function register_events(bufnr, events)
-  event.register(
-    'vfiler', bufnr, events, [[require('vfiler/vfiler')._handle_event]]
+    bufnr, mappings, [[require('vfiler/vfiler')._do_action]]
   )
 end
 
@@ -134,7 +107,11 @@ function VFiler.new(context)
   local bufname, number = generate_bufname(context.name)
   local view = View.new(bufname, context)
 
-  register_events(view.bufnr, context.events)
+  -- register events
+  event.register(
+    'vfiler', view.bufnr, context.events,
+    [[require('vfiler/vfiler')._handle_event]]
+  )
 
   local object = setmetatable({
     _context = context,
@@ -150,14 +127,24 @@ function VFiler.new(context)
   return object
 end
 
-function VFiler._do_action_from_key(bufnr, key)
+function VFiler._do_action(bufnr, key)
   local vfiler = VFiler.get(bufnr)
-  do_action_from_key(vfiler, key)
+  local action = vfiler._defined_mappings[key]
+  if not action then
+    core.message.error('Not defined in the key')
+    return
+  end
+  vfiler:do_action(action)
 end
 
 function VFiler._handle_event(bufnr, type)
   local vfiler = VFiler.get(bufnr)
-  handle_event(vfiler, type)
+  local action = vfiler._context._events[type]
+  if not action then
+    core.message.error('Event "%s" is not registered.', type)
+    return
+  end
+  vfiler:do_action(action)
 end
 
 --- Is the filer displayed?

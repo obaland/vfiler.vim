@@ -28,6 +28,7 @@ M.configs = {
     ['<BS>']      = action.change_to_parent,
     ['<C-l>']     = action.reload,
     ['<C-p>']     = action.sync_with_current_filer,
+    ['<C-s>']     = action.toggle_sort,
     ['<CR>']      = action.open,
     ['<S-Space>'] = action.toggle_select_up,
     ['<Space>']   = action.toggle_select_down,

@@ -3,6 +3,7 @@ local cmdline = require('vfiler/cmdline')
 local sort = require('vfiler/sort')
 local vim = require('vfiler/vim')
 
+local Bookmark = require('vfiler/extensions/bookmark')
 local Clipboard = require('vfiler/clipboard')
 local Menu = require('vfiler/extensions/menu')
 local Rename = require('vfiler/extensions/rename')
@@ -446,6 +447,21 @@ function M.latest_update(vfiler, context, view)
   end
 end
 
+function M.list_bookmark(vfiler, context, view)
+  if context.extension then
+    return
+  end
+
+  local bookmark = Bookmark.new {
+    filer = vfiler,
+    name = 'Bookmark',
+    on_selected = function(filer, c, v, path, open_type)
+      M.open_file(filer, c, v, path, open_type)
+    end,
+  }
+  bookmark:start()
+end
+
 function M.loop_cursor_down(vfiler, context, view)
   local lnum = vim.fn.line('.') + 1
   local num_end = view:num_lines()
@@ -571,7 +587,7 @@ function M.new_file(vfiler, context, view)
     elseif core.is_windows and core.path.isdirectory(filepath) then
       core.message.warning(
         'Not created. "%s" directory with the same name already exists.', name
-        )
+      )
       return false
     end
     return File.create(filepath)
@@ -781,6 +797,21 @@ end
 function M.toggle_select_up(vfiler, context, view)
   M.toggle_select(vfiler, context, view)
   M.move_cursor_up(vfiler, context, view)
+end
+
+function M.toggle_sort(vfiler, context, view)
+  local sort_type = context.sort
+  local initial = sort_type:sub(1, 1)
+  local backward = sort_type:sub(2)
+
+  if initial:find('^[A-Z]') then
+    initial = initial:lower()
+  else
+    initial = initial:upper()
+  end
+  sort_type = initial .. backward
+  context:change_sort(initial .. backward)
+  view:draw(context)
 end
 
 function M.yank_name(vfiler, context, view)

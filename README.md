@@ -55,7 +55,7 @@ Please see the [documentation][vim-doc] for details.
 ### Start by calling a lua function
 vfiler can also be started by calling a lua function.
 ```lua
-require'vfiler'.start(path)
+require('vfiler').start(path)
 ```
 
 ## Demo
@@ -77,8 +77,8 @@ require'vfiler'.start(path)
 
 #### Starting with a lua script:
 ```lua
-local action = require'vfiler/action'
-require'vfiler/config'.setup {
+local action = require('vfiler/action')
+require('vfiler/config').setup {
   options = {
     auto_cd = true,
     auto_resize = true,
@@ -90,7 +90,7 @@ require'vfiler/config'.setup {
   },
 }
 
-require'vfiler'.start()
+require('vfiler').start()
 ```
 
 ## vfiler extensions

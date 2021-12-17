@@ -155,6 +155,9 @@ toggle_select_up                             *vfiler-actions-toggle_select_up*
 toggle_select_all                           *vfiler-actions-toggle_select_all*
     Toggles marks in all lines.
 
+toggle_sort                                       *vfiler-actions-toggle_sort*
+    Toggle the ascending / descending order of the current sort method.
+
 clear_selected_all                         *vfiler-actions-clear_selected_all*
     Clears marks in all lines.
 
@@ -169,7 +172,7 @@ switch_to_drive                               *vfiler-actions-switch_to_drive*
     Switches to other drive(Windows) or mount point(Mac/Linux).
 
 change_sort                                       *vfiler-actions-change_sort*
-    Change the sort type.
+    Change the sort method.
 
 reload                                                 *vfiler-actions-reload*
     Reload filer.
@@ -317,7 +320,7 @@ mappings                                      *vfiler-configurations-mappings*
     Set the key string and action as a key-value pair.
 
 Example: >
-    require'vfiler/config'.setup {
+    require('vfiler/config').setup {
       options = {
         auto_cd = false,
         columns = 'indent,icon,name,mode,size,time',
@@ -380,6 +383,7 @@ U               clear_selected_all
 <BS>            change_to_parent
 <C-l>           reload
 <C-p>           sync_with_current_filer
+<C-s>           toggle_sort
 J               jump_to_directory
 N               new_file
 K               new_directory
@@ -408,8 +412,8 @@ Explorer style                           *vfiler-customization-explorer-style*
 
     When string with a lua script:
 >
-    local action = require'vfiler/action'
-    require'vfiler/config'.setup {
+    local action = require('vfiler/action')
+    require('vfiler/config').setup {
       options = {
         auto_cd = true,
         auto_resize = true,
@@ -421,7 +425,7 @@ Explorer style                           *vfiler-customization-explorer-style*
       },
     }
 
-    require'vfiler'.start()
+    require('vfiler').start()
 <
 
 ==============================================================================

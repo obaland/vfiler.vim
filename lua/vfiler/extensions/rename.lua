@@ -2,9 +2,9 @@ local config = require('vfiler/extensions/rename/config')
 local core = require('vfiler/core')
 local vim = require('vfiler/vim')
 
-local ExtensionRename = {}
+local Rename = {}
 
-function ExtensionRename.new(options)
+function Rename.new(options)
   local Extension = require('vfiler/extensions/extension')
 
   local view = Extension.create_view({left = '0.5'})
@@ -20,14 +20,14 @@ function ExtensionRename.new(options)
   }
 
   local object = core.inherit(
-    ExtensionRename, Extension, options.filer, 'Rename', view, config.configs
+    Rename, Extension, options.filer, 'Rename', view, config.configs
     )
   object.on_quit = options.on_quit
   object.on_execute = options.on_execute
   return object
 end
 
-function ExtensionRename:check()
+function Rename:check()
   vim.command('echo')
 
   -- Check the difference in the number of target files
@@ -75,7 +75,7 @@ function ExtensionRename:check()
   return true
 end
 
-function ExtensionRename:execute()
+function Rename:execute()
   if not self:check() then
     return
   end
@@ -90,12 +90,12 @@ function ExtensionRename:execute()
   end
 end
 
-function ExtensionRename:get_lines()
+function Rename:get_lines()
   local lines = vim.fn.getline(1, #self.items)
   return vim.from_vimlist(lines)
 end
 
-function ExtensionRename:_on_get_texts(items)
+function Rename:_on_get_texts(items)
   local texts = {}
   for _, item in ipairs(items) do
     table.insert(texts, item.name)
@@ -103,7 +103,7 @@ function ExtensionRename:_on_get_texts(items)
   return texts
 end
 
-function ExtensionRename:_on_draw(texts)
+function Rename:_on_draw(texts)
   self.view:draw(self.name, texts)
   vim.fn['vfiler#core#clear_undo']()
   vim.set_buf_option(self.bufnr, 'modified', false)
@@ -132,4 +132,4 @@ function ExtensionRename:_on_draw(texts)
   }
 end
 
-return ExtensionRename
+return Rename

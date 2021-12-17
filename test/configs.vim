@@ -16,7 +16,7 @@ endif
 function! s:parse_options(args)
   let args = a:args
 lua<<EOF
-  options, dirpath = require'vfiler/config'.parse_options(vim.eval('args'))
+  options, dirpath = require('vfiler/config').parse_options(vim.eval('args'))
 EOF
   return luaeval('vim.dict(options)')
 endfunction
@@ -24,7 +24,7 @@ endfunction
 function! s:parse_path(args)
   let args = a:args
 lua<<EOF
-  options, dirpath = require'vfiler/config'.parse_options(vim.eval('args'))
+  options, dirpath = require('vfiler/config').parse_options(vim.eval('args'))
 EOF
   return luaeval('dirpath')
 endfunction

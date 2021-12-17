@@ -1,4 +1,5 @@
 local core = require('vfiler/core')
+local vim = require('vfiler/vim')
 
 local M = {}
 
@@ -60,21 +61,11 @@ end
 -- default sort collection
 ------------------------------------------------------------------------------
 
--- name ascending
-M.set('name', function(item2, item1)
-  if item2.isdirectory and not item1.isdirectory then
-    return true
-  elseif not item2.isdirectory and item1.isdirectory then
-    return false
-  end
-
-  local name1 = item1.name
-  local name2 = item2.name
-  local length = math.min(#name1, #name2)
-
+local function sort_string(str2, str1)
+  local length = math.min(#str1, #str2)
   for i = 1, length do
-    local word1 = (name1:sub(i, i)):lower()
-    local word2 = (name2:sub(i, i)):lower()
+    local word1 = (str1:sub(i, i)):lower()
+    local word2 = (str2:sub(i, i)):lower()
 
     if word2 < word1 then
       return true
@@ -82,7 +73,35 @@ M.set('name', function(item2, item1)
       return false
     end
   end
-  return (#name2 - #name1) < 0
+  return (#str2 - #str1) < 0
+end
+
+-- extension ascending
+M.set('extension', function(item2, item1)
+  if item2.isdirectory and not item1.isdirectory then
+    return true
+  elseif not item2.isdirectory and item1.isdirectory then
+    return false
+  elseif item2.isdirectory and item1.isdirectory then
+    return sort_string(item2.name, item1.name)
+  end
+
+  local ext1 = vim.fn.fnamemodify(item1.name, ':e')
+  local ext2 = vim.fn.fnamemodify(item2.name, ':e')
+  if #ext1 == 0 and #ext2 == 0 then
+    return sort_string(item2.name, item1.name)
+  end
+  return sort_string(ext2, ext1)
+end)
+
+-- name ascending
+M.set('name', function(item2, item1)
+  if item2.isdirectory and not item1.isdirectory then
+    return true
+  elseif not item2.isdirectory and item1.isdirectory then
+    return false
+  end
+  return sort_string(item2.name, item1.name)
 end)
 
 -- size ascending
