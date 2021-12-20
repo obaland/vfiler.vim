@@ -4,7 +4,7 @@ local vim = require('vfiler/vim')
 
 local Menu = {}
 
-function Menu.new(options)
+function Menu.new(filer, name, options)
   local Extension = require('vfiler/extensions/extension')
 
   local configs = config.configs
@@ -19,24 +19,24 @@ function Menu.new(options)
     number = false,
   }
 
-  local self = core.inherit(
-    Menu, Extension, options.filer, options.name, view, configs
+  return core.inherit(
+    Menu, Extension, filer, name, view, configs, options
   )
-  self.on_quit = options.on_quit
-  self.on_selected = options.on_selected
-  return self
 end
 
 function Menu:select()
-  local item = self.items[vim.fn.line('.')]
-
+  local item = self:get_current()
   self:quit()
 
   if self.on_selected then
-    local filer = self.filer
+    local filer = self._filer
     self.on_selected(filer, filer._context, filer._view, item)
   end
   return item
+end
+
+function Menu:_on_create_items(configs)
+  return self.initial_items
 end
 
 function Menu:_on_get_texts(items)
@@ -48,13 +48,25 @@ function Menu:_on_get_texts(items)
   return texts
 end
 
-function Menu:_on_draw(texts)
-  local bufnr = self.view.bufnr
+function Menu:_on_draw(view, texts)
+  local bufnr = view.bufnr
   vim.set_buf_option(bufnr, 'modifiable', true)
   vim.set_buf_option(bufnr, 'readonly', false)
-  self.view:draw(self.name, texts)
+  view:draw(self.name, texts)
   vim.set_buf_option(bufnr, 'modifiable', false)
   vim.set_buf_option(bufnr, 'readonly', true)
+end
+
+function Menu:_on_start(winid, bufnr, items, configs)
+  if not self.default then
+    return 1
+  end
+  for i = 1, #items do
+    if items[i] == self.default then
+      return i
+    end
+  end
+  return 1
 end
 
 return Menu

@@ -35,20 +35,20 @@ end
 -- Lua data to Vim data
 ------------------------------------------------------------------------------
 function M.to_vimlist(data)
-  return data
+  return data or {}
 end
 function M.to_vimdict(data)
-  return data
+  return data or {}
 end
 
 ------------------------------------------------------------------------------
 -- Vim data to Lua data
 ------------------------------------------------------------------------------
 function M.from_vimlist(data)
-  return data
+  return data or {}
 end
 function M.from_vimdict(data)
-  return data
+  return data or {}
 end
 
 return M

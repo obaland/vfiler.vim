@@ -12,6 +12,7 @@ M.is_mac = (not M.is_windows) and (not M.is_cygwin) and (
   (vim.fn.has('gui_macvim') == 1) or
   (vim.fn.isdirectory('/proc') ~= 1) and (vim.fn.executable('sw_vers') == 1)
 )
+M.is_nvim = vim.fn.has('nvim') == 1
 
 function M.inherit(class, super, ...)
   local self = super and super.new(...) or nil

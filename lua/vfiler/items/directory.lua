@@ -74,7 +74,7 @@ end
 function Directory:create_directory(name)
   local dirpath = core.path.join(self.path, name)
   local directory = Directory.create(dirpath)
-  if not core.path.isdirectory(directory) then
+  if not core.path.isdirectory(dirpath) then
     return nil
   end
   self:add(directory)

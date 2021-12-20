@@ -7,9 +7,6 @@ Item.__index = Item
 function Item.new(filepath, islink)
   local size = vim.fn.getfsize(filepath)
   local time = vim.fn.getftime(filepath)
-  if size < 0 or time < 0 then
-    return nil
-  end
 
   return setmetatable({
     isdirectory = core.path.isdirectory(filepath),

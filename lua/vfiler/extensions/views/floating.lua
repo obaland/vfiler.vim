@@ -57,10 +57,10 @@ function Floating:_on_win_option(name, texts)
   -- adjust width: match to the top
   options.width = self:_winwidth(
     wwidth, floating.width or 'auto', options.minwidth, wwidth, texts
-    )
+  )
   options.height = self:_winheight(
     wheight, floating.height or 'auto', options.minheight, wheight, texts
-    )
+  )
 
   -- claculate position
   options.row = math.floor((wheight - options.height) / 2)

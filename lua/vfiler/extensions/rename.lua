@@ -4,7 +4,7 @@ local vim = require('vfiler/vim')
 
 local Rename = {}
 
-function Rename.new(options)
+function Rename.new(filer, options)
   local Extension = require('vfiler/extensions/extension')
 
   local view = Extension.create_view({left = '0.5'})
@@ -19,12 +19,9 @@ function Rename.new(options)
     number = true,
   }
 
-  local object = core.inherit(
-    Rename, Extension, options.filer, 'Rename', view, config.configs
-    )
-  object.on_quit = options.on_quit
-  object.on_execute = options.on_execute
-  return object
+  return core.inherit(
+    Rename, Extension, filer, 'Rename', view, config.configs, options
+  )
 end
 
 function Rename:check()
@@ -32,7 +29,7 @@ function Rename:check()
 
   -- Check the difference in the number of target files
   local buflen = vim.fn.line('$')
-  local itemlen = #self.items
+  local itemlen = self:num_lines()
   if buflen < itemlen then
     core.message.error('Too few lines.')
     return false
@@ -56,7 +53,7 @@ function Rename:check()
       end
     end
     -- Check for duplicate path
-    local item = self.items[lnum]
+    local item = self:get_item(lnum)
     local dirpath = item.parent.path
     local path = core.path.join(dirpath, line)
     local exists = false
@@ -80,19 +77,23 @@ function Rename:execute()
     return
   end
 
-  local renames = vim.from_vimlist(vim.fn.getline(1, #self.items))
+  local renames = vim.from_vimlist(vim.fn.getline(1, #self._items))
   vim.set_buf_option(self.bufnr, 'modified', false)
 
-  local filer = self.filer
+  local filer = self._filer
   self:quit(filer)
   if self.on_execute then
-    self.on_execute(filer, filer.context, filer.view, self.items, renames)
+    self.on_execute(filer, filer._context, filer._view, self._items, renames)
   end
 end
 
 function Rename:get_lines()
-  local lines = vim.fn.getline(1, #self.items)
+  local lines = vim.fn.getline(1, self:num_lines())
   return vim.from_vimlist(lines)
+end
+
+function Rename:_on_create_items(configs)
+  return self.initial_items
 end
 
 function Rename:_on_get_texts(items)
@@ -103,8 +104,8 @@ function Rename:_on_get_texts(items)
   return texts
 end
 
-function Rename:_on_draw(texts)
-  self.view:draw(self.name, texts)
+function Rename:_on_draw(view, texts)
+  view:draw(self.name, texts)
   vim.fn['vfiler#core#clear_undo']()
   vim.set_buf_option(self.bufnr, 'modified', false)
 

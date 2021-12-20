@@ -81,7 +81,7 @@ function M.commands(cmds)
   M.command(table.concat(cmds, ' | '))
 end
 
-function M.fn.win_executes(window, cmds)
+function M.win_executes(window, cmds)
   M.fn.win_execute(window, table.concat(cmds, ' | '))
 end
 

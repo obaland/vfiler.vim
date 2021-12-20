@@ -7,8 +7,6 @@ local Bookmark = require('vfiler/extensions/bookmark')
 local Clipboard = require('vfiler/clipboard')
 local Menu = require('vfiler/extensions/menu')
 local Rename = require('vfiler/extensions/rename')
-local Directory = require('vfiler/items/directory')
-local File = require('vfiler/items/file')
 local VFiler = require('vfiler/vfiler')
 
 local M = {}
@@ -130,8 +128,8 @@ local function rename_files(vfiler, context, view, targets)
     return
   end
 
-  local ext = Rename.new {
-    filer = vfiler,
+  local ext = Rename.new(vfiler, {
+    initial_items = targets,
     on_execute = function(filer, c, v, items, renames)
       local renamed = {}
       local num_renamed = 0
@@ -152,9 +150,8 @@ local function rename_files(vfiler, context, view, targets)
         v:move_cursor(renamed[1].path)
       end
     end,
-  }
-
-  ext:start(targets)
+  })
+  ext:start()
 end
 
 local function rename_one_file(vfiler, context, view, target)
@@ -282,9 +279,9 @@ function M.change_sort(vfiler, context, view)
     return
   end
 
-  local menu = Menu.new {
-    filer = vfiler,
-    name = 'Select Sort',
+  local menu = Menu.new(vfiler, 'Select Sort', {
+    initial_items = sort.types(),
+    default = context.sort,
 
     on_selected = function(filer, c, v, sort_type)
       if c.sort == sort_type then
@@ -296,9 +293,8 @@ function M.change_sort(vfiler, context, view)
       v:draw(c)
       v:move_cursor(item.path)
     end,
-  }
-
-  menu:start(sort.types(), context.sort_type)
+  })
+  menu:start()
 end
 
 function M.change_to_parent(vfiler, context, view)
@@ -440,18 +436,21 @@ function M.latest_update(vfiler, context, view)
   end
 end
 
+function M.add_bookmark(vfiler, context, view)
+  local item = view:get_current()
+  Bookmark.add(item)
+end
+
 function M.list_bookmark(vfiler, context, view)
   if context.extension then
     return
   end
 
-  local bookmark = Bookmark.new {
-    filer = vfiler,
-    name = 'Bookmark',
+  local bookmark = Bookmark.new(vfiler, {
     on_selected = function(filer, c, v, path, open_type)
       M.open_file(filer, c, v, path, open_type)
     end,
-  }
+  })
   bookmark:start()
 end
 
@@ -702,9 +701,9 @@ function M.switch_to_drive(vfiler, context, view)
   end
 
   local root = core.path.root(context.root.path)
-  local menu = Menu.new {
-    filer = vfiler,
-    name = 'Select Drive',
+  local menu = Menu.new(vfiler, 'Select Drive', {
+    initial_items = drives,
+    default = root,
 
     on_selected = function(filer, c, v, drive)
       if root == drive then
@@ -717,9 +716,8 @@ function M.switch_to_drive(vfiler, context, view)
       v:draw(c)
       v:move_cursor(path)
     end,
-  }
-
-  menu:start(drives, root)
+  })
+  menu:start()
 end
 
 function M.switch_to_filer(vfiler, context, view)

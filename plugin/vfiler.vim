@@ -35,6 +35,8 @@ highlight default link vfilerTimeWeek          Type
 
 highlight default vfilerStatusLine_ChooseWindowKey ctermfg=230 ctermbg=57 guifg=#ffffd7 guibg=#44788E
 
+highlight default link vfilerBookmark_NoMessage WarningMsg
+
 " Define commands
 command! -nargs=? -complete=customlist,vfiler#complete VFiler
       \ call vfiler#start(<q-args>)

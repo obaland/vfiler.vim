@@ -7,23 +7,29 @@ local extensions = {}
 local Extension = {}
 Extension.__index = Extension
 
-function Extension.new(filer, name, view, configs)
-  return setmetatable({
-    source_bufnr = vim.fn.bufnr(),
-    configs = core.table.copy(configs),
-    filer = filer,
-    items = nil,
+function Extension.new(filer, name, view, configs, options)
+  local self = setmetatable({
     name = name,
     bufnr = 0,
     winid = 0,
-    view = view,
+    _source_bufnr = vim.fn.bufnr(),
+    _configs = core.table.copy(configs),
+    _filer = filer,
+    _items = nil,
+    _options = core.table.copy(configs),
+    _view = view,
   }, Extension)
+  -- set options
+  for key, value in pairs(options) do
+    self[key] = value
+  end
+  return self
 end
 
 function Extension.create_view(options)
   local view = nil
   if options.floating then
-    if vim.fn.has('nvim') == 1 then
+    if core.is_nvim then
       view = require('vfiler/extensions/views/floating')
     else
       view = require('vfiler/extensions/views/popup')
@@ -54,7 +60,7 @@ function Extension._do_action(bufnr, key)
     core.message.error('Extension does not exist.')
     return
   end
-  local action = ext.configs.mappings[key]
+  local action = ext._configs.mappings[key]
   if not action then
     core.message.error('Not defined in the key')
     return
@@ -65,7 +71,7 @@ end
 function Extension._handle_event(bufnr, type)
   local ext = Extension.get(bufnr)
   if ext then
-    local action = ext.configs.events[type]
+    local action = ext._configs.events[type]
     if not action then
       core.message.error('Event "%s" is not registered.', type)
       return
@@ -80,6 +86,22 @@ function Extension:do_action(action)
   action(self)
 end
 
+--- Get the item on the current cursor
+function Extension:get_current()
+  return self:get_item(vim.fn.line('.'))
+end
+
+--- Get the item in the specified line number
+---@param lnum number
+function Extension:get_item(lnum)
+  return self._items[lnum]
+end
+
+--- Get the number of line in the view buffer
+function Extension:num_lines()
+  return #self._items
+end
+
 function Extension:quit()
   -- guard duplicate calls
   if not extensions[self.bufnr] then
@@ -88,51 +110,43 @@ function Extension:quit()
   extensions[self.bufnr] = nil
 
   vim.command('echo') -- Clear prompt message
-  self.view:close()
+  self._view:close()
   if self.on_quit then
-    self.on_quit(self.filer)
+    self.on_quit(self._filer)
   end
 
-  local source_winnr = vim.fn.bufwinnr(self.source_bufnr)
+  local source_winnr = vim.fn.bufwinnr(self._source_bufnr)
   if source_winnr >= 0 then
     core.window.move(source_winnr)
   end
 
   -- unlink
-  self.filer._context.extension = nil
+  self._filer._context.extension = nil
 end
 
 function Extension:draw()
-  local texts = self:_on_get_texts(self.items)
-  self:_on_draw(texts)
+  local texts = self:_on_get_texts(self._items)
+  self:_on_draw(self._view, texts)
 end
 
-function Extension:start(items, ...)
-  local lnum = 1
-  if ... then
-    local default = ...
-    for i, item in ipairs(items) do
-      if item == default then
-        lnum = i
-        break
-      end
-    end
-  end
-
-  local texts = self:_on_get_texts(items)
-  self.winid = self.view:open(self.name, texts)
+function Extension:start()
+  self._items = self:_on_create_items(self._configs)
+  local texts = self:_on_get_texts(self._items)
+  self.winid = self._view:open(self.name, texts)
   self.bufnr = vim.fn.winbufnr(self.winid)
-  self.items = items
+  local lnum = self:_on_start(
+    self.winid, self.bufnr, self._items, self._configs
+  )
 
   -- define key mappings (overwrite)
-  self.configs.mappings = self.view:define_mapping(
-    self.configs.mappings,
+  self._configs.mappings = self._view:define_mapping(
+    self._configs.mappings,
     [[require('vfiler/extensions/extension')._do_action]]
   )
 
   -- register events
   event.register(
-    'vfiler_extension', self.bufnr, self.configs.events,
+    'vfiler_extension', self.bufnr, self._configs.events,
     [[require('vfiler/extensions/extension')._handle_event]]
   )
 
@@ -144,19 +158,24 @@ function Extension:start(items, ...)
   extensions[self.bufnr] = self
 
   -- link to filer
-  self.filer._context.extension = self
-  self:_on_start()
+  self._filer._context.extension = self
 end
 
-function Extension:_on_start()
+function Extension:_on_create_items(configs)
   -- Not implemented
+  return {}
+end
+
+function Extension:_on_start(winid, bufnr, items, configs)
+  -- Not implemented
+  return 1
 end
 
 function Extension:_on_get_texts(items)
   return nil
 end
 
-function Extension:_on_draw(texts)
+function Extension:_on_draw(view, texts)
   -- Not implemented
 end
 
