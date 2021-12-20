@@ -158,16 +158,6 @@ function Context:save(path)
   self._snapshot:save(self.root, path)
 end
 
---- Change the sort type
----@param type string
-function Context:change_sort(type)
-  if self.sort == type then
-    return
-  end
-  self.root:sort(type, true)
-  self.sort = type
-end
-
 --- Duplicate context
 function Context:duplicate()
   local new = setmetatable({}, Context)
@@ -211,7 +201,7 @@ function Context:switch(dirpath)
     vim.command('silent lcd ' .. dirpath)
   end
 
-  self.root = Directory.new(dirpath, false, self.sort)
+  self.root = Directory.new(dirpath, false)
   self.root:open()
   self:update_status()
   return self._snapshot:load(self.root)

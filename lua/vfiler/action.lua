@@ -19,7 +19,6 @@ local function create_files(dest, contents, create)
     local filepath = core.path.join(dest.path, name)
     local new = create(dest, name, filepath)
     if new then
-      dest:add(new)
       table.insert(created, new)
     elseif new == nil then
       core.message.error('Failed to create a "%s" file', name)
@@ -136,7 +135,6 @@ local function rename_files(vfiler, context, view, targets)
     on_execute = function(filer, c, v, items, renames)
       local renamed = {}
       local num_renamed = 0
-      local parents = {}
       for i = 1, #items do
         local item = items[i]
         local rename = renames[i]
@@ -144,16 +142,12 @@ local function rename_files(vfiler, context, view, targets)
         if item:rename(rename) then
           table.insert(renamed, item)
           num_renamed = num_renamed + 1
-          parents[item.parent.path] = item.parent
           item.selected = false
         end
       end
 
       if #renamed > 0 then
         core.message.info('Renamed - %d files', #renamed)
-        for _, parent in pairs(parents) do
-          parent:sort(c.sort, false)
-        end
         M.reload(filer, c, v)
         v:move_cursor(renamed[1].path)
       end
@@ -183,7 +177,6 @@ local function rename_one_file(vfiler, context, view, target)
   end
 
   core.message.info('Renamed - "%s" -> "%s"', name, rename)
-  target.parent:sort(context.sort, false)
   view:draw(context)
 end
 
@@ -299,7 +292,7 @@ function M.change_sort(vfiler, context, view)
       end
 
       local item = v:get_current()
-      c:change_sort(sort_type)
+      c.sort = sort_type
       v:draw(c)
       v:move_cursor(item.path)
     end,
@@ -561,7 +554,7 @@ function M.new_directory(vfiler, context, view)
         )
       return false
     end
-    return Directory.create(filepath, dest.sort_type)
+    return dest:create_directory(name)
   end
 
   cmdline.input_multiple('New directory names?',
@@ -590,7 +583,7 @@ function M.new_file(vfiler, context, view)
       )
       return false
     end
-    return File.create(filepath)
+    return dest:create_file(name)
   end
 
   cmdline.input_multiple('New file names?',
@@ -783,7 +776,7 @@ function M.toggle_select(vfiler, context, view)
 end
 
 function M.toggle_select_all(vfiler, context, view)
-  for item in context.root:walk() do
+  for item in view:walk_items() do
     item.selected = not item.selected
   end
   view:redraw()
@@ -809,8 +802,7 @@ function M.toggle_sort(vfiler, context, view)
   else
     initial = initial:upper()
   end
-  sort_type = initial .. backward
-  context:change_sort(initial .. backward)
+  context.sort = initial .. backward
   view:draw(context)
 end
 

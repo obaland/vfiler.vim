@@ -1,8 +1,23 @@
 local core = require('vfiler/core')
+local sort = require('vfiler/sort')
 local vim = require('vfiler/vim')
 
 local View = {}
 View.__index = View
+
+local function walk(root, sort_compare)
+  local function _walk(item, compare)
+    local children = item.children
+    if children then
+      table.sort(children, compare)
+      for _, child in ipairs(children) do
+        coroutine.yield(child)
+        _walk(child, compare)
+      end
+    end
+  end
+  return coroutine.wrap(function() _walk(root, sort_compare) end)
+end
 
 local function create_buffer(bufname, options)
   vim.command('silent edit ' .. bufname)
@@ -82,18 +97,15 @@ end
 function View:draw(context)
   -- expand item list
   self._items = {}
-  local root = context.root
-  for item in root:walk() do
+  if self._header then
+    table.insert(self._items, context.root)
+  end
+  local compare = sort.get(context.sort)
+  for item in walk(context.root, compare) do
     local hidden = item.name:sub(1, 1) == '.'
-    if item.path == root.path or
-      (context.show_hidden_files or not hidden) then
+    if context.show_hidden_files or not hidden then
       table.insert(self._items, item)
     end
-  end
-
-  -- remove header line
-  if not self._header then
-    table.remove(self._items, 1)
   end
   self:redraw()
 end
@@ -239,6 +251,16 @@ end
 --- Get the top line number where the item is displayed
 function View:top_lnum()
   return self._header and 2 or 1
+end
+
+--- Walk view items
+function View:walk_items()
+  local function _walk_items()
+    for _, item in ipairs(self._items) do
+      coroutine.yield(item)
+    end
+  end
+  return coroutine.wrap(_walk_items)
 end
 
 --- Get the window number of the view

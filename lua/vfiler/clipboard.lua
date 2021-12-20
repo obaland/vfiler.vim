@@ -57,7 +57,6 @@ function Clipboard:paste(dest)
     else
       core.message.error('%s "%s"', self._fail_format, item.name)
     end
-
     ::continue::
   end
 
