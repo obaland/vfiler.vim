@@ -63,9 +63,6 @@ M.configs = {
     ['S']         = action.change_sort,
     ['U']         = action.clear_selected_all,
     ['YY']        = action.yank_name,
-
-    ['b']         = action.list_bookmark,
-    ['B']         = action.add_bookmark,
   },
 
   events = {
