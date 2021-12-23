@@ -6,7 +6,6 @@ local Item = require('vfiler/extensions/bookmark/items/item')
 local Category = {}
 Category.__index = Category
 Category.__eq = function(a, b)
-  print('call eq')
   return a.name == b.name
 end
 
