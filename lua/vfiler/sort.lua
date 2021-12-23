@@ -57,11 +57,7 @@ function M.types()
   return types
 end
 
-------------------------------------------------------------------------------
--- default sort collection
-------------------------------------------------------------------------------
-
-local function sort_string(str2, str1)
+function M.compare_string(str2, str1)
   local length = math.min(#str1, #str2)
   for i = 1, length do
     local word1 = (str1:sub(i, i)):lower()
@@ -76,6 +72,10 @@ local function sort_string(str2, str1)
   return (#str2 - #str1) < 0
 end
 
+------------------------------------------------------------------------------
+-- default sort collection
+------------------------------------------------------------------------------
+
 -- extension ascending
 M.set('extension', function(item2, item1)
   if item2.isdirectory and not item1.isdirectory then
@@ -83,15 +83,15 @@ M.set('extension', function(item2, item1)
   elseif not item2.isdirectory and item1.isdirectory then
     return false
   elseif item2.isdirectory and item1.isdirectory then
-    return sort_string(item2.name, item1.name)
+    return M.compare_string(item2.name, item1.name)
   end
 
   local ext1 = vim.fn.fnamemodify(item1.name, ':e')
   local ext2 = vim.fn.fnamemodify(item2.name, ':e')
   if #ext1 == 0 and #ext2 == 0 then
-    return sort_string(item2.name, item1.name)
+    return M.compare_string(item2.name, item1.name)
   end
-  return sort_string(ext2, ext1)
+  return M.compare_string(ext2, ext1)
 end)
 
 -- name ascending
@@ -101,7 +101,7 @@ M.set('name', function(item2, item1)
   elseif not item2.isdirectory and item1.isdirectory then
     return false
   end
-  return sort_string(item2.name, item1.name)
+  return M.compare_string(item2.name, item1.name)
 end)
 
 -- size ascending

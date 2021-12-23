@@ -4,6 +4,10 @@ local core = require('vfiler/core')
 local M = {}
 
 M.configs = {
+  options = {
+    left = '0.5',
+  },
+
   mappings = {
     ['q']     = action.quit,
     ['<ESC>'] = action.quit,

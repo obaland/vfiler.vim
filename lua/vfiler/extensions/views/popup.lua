@@ -3,9 +3,9 @@ local vim = require('vfiler/vim')
 
 local Popup = {}
 
-function Popup.new(options)
+function Popup.new()
   local Window = require('vfiler/extensions/views/window')
-  return core.inherit(Popup, Window, options)
+  return core.inherit(Popup, Window)
 end
 
 function Popup:close()
@@ -13,7 +13,7 @@ function Popup:close()
     -- Note: If you do not run it from the calling window, you will get an error
     vim.fn.win_execute(
       self.source_winid, ('call popup_close(%d)'):format(self.winid)
-      )
+    )
   end
 end
 
@@ -24,77 +24,43 @@ function Popup:define_mapping(mappings, funcstr)
   end
   vim.fn['vfiler#popup#map'](
     self.winid, self.bufnr, vim.to_vimlist(keys), funcstr
-    )
+  )
   -- Note: same mapping datas
   return core.table.copy(mappings)
 end
 
-function Popup:draw(name, texts)
+function Popup:draw(lines)
   -- Nothing to do
 end
 
-function Popup:_on_win_option(name, texts)
-  local floating = self.options.floating
-  local wwidth = vim.fn.winwidth(self.source_winid)
-  local wheight = vim.fn.winheight(self.source_winid)
-
-  local options = {
-    minwidth = 1,
-    minheight = 1,
-    line = 0,
-    col = 0,
-  }
-
-  -- decide width and height
-  if floating.minwidth then
-    options.minwidth = self:_winvalue(wwidth, floating.minwidth)
-  end
-  if floating.minheight then
-    options.minheight = self:_winvalue(wheight, floating.minheight)
-  end
-
-  -- decide position
-  if floating.relative then
-    options.pos = 'topleft'
-
-    local width = self:_winwidth(
-      wwidth, floating.width or 'auto', options.minwidth, wwidth, texts
-      )
-
-    local height = self:_winheight(
-      wheight, floating.height or 'auto', options.minheight, wheight, texts
-      )
-
-    local screen_pos = vim.fn.win_screenpos(self.source_winid)
-    local y = screen_pos[1]
-    local x = screen_pos[2]
-    options.line = y + math.floor(wheight - ((height / 2) + (wheight / 2))) - 1
-    options.col = x + math.floor(wwidth - ((width / 2) + (wwidth / 2))) - 1
-  else
-    options.pos = 'center'
-  end
-  return options
-end
-
-function Popup:_on_open(name, texts, options)
+function Popup:_on_open(lines, options)
   local popup_options = {
     border = vim.to_vimlist({1, 1, 1, 1}),
-    col = options.col,
     cursorline = true,
     drag = false,
     filter = 'vfiler#popup#filter',
-    line = options.line,
     mapping = false,
     minheight = options.minheight,
     minwidth = options.minwidth,
-    pos = options.pos,
-    title = name,
+    title = options.name,
     wrap = false,
     zindex = 200,
     width = options.width,
   }
+  if options.relative then
+    popup_options.pos = 'topleft'
+    local wwidth = vim.fn.winwidth(self.source_winid)
+    local wheight = vim.fn.winheight(self.source_winid)
+    local screen_pos = vim.fn.win_screenpos(self.source_winid)
+    local y = screen_pos[1]
+    local x = screen_pos[2]
+    popup_options.line = y + math.floor(wheight - ((options.height / 2) + (wheight / 2))) - 1
+    popup_options.col = x + math.floor(wwidth - ((options.width / 2) + (wwidth / 2))) - 1
+  else
+    popup_options.pos = 'center'
+  end
   return vim.fn.popup_create(
-    vim.to_vimlist(texts), vim.to_vimdict(popup_options)
+    vim.to_vimlist(lines), vim.to_vimdict(popup_options)
   )
 end
 

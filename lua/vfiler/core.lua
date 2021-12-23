@@ -34,6 +34,12 @@ function M.cursor.move(lnum)
   vim.fn.cursor(lnum, 1)
 end
 
+--@param window number
+--@param lnum number
+function M.cursor.winmove(window, lnum)
+  vim.fn.win_execute(window, ('call cursor(%d, 1)'):format(lnum))
+end
+
 ------------------------------------------------------------------------------
 -- File and Directory
 ------------------------------------------------------------------------------

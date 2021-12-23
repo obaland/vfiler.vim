@@ -25,25 +25,29 @@ end
 ------------------------------------------------------------------------------
 -- actions
 ------------------------------------------------------------------------------
-function M.delete(extension)
-end
 
 function M.loop_cursor_down(extension)
   local pos = vim.fn.line('.') + 1
-  vim.fn.cursor(pos > vim.fn.line('$') and 1 or pos, 1)
+  if pos > extension:num_lines() then
+    pos = 1
+  end
+  core.cursor.winmove(extension.winid, pos)
 end
 
 function M.loop_cursor_up(extension)
   local pos = vim.fn.line('.') - 1
-  vim.fn.cursor(pos < 1 and vim.fn.line('$') or pos, 1)
+  if pos < 1 then
+    pos = extension:num_lines()
+  end
+  core.cursor.winmove(extension.winid, pos)
 end
 
 function M.move_cursor_down(extension)
-  vim.fn.cursor(vim.fn.line('.') + 1, 1)
+  core.cursor.winmove(extension.winid, vim.fn.line('.') + 1)
 end
 
 function M.move_cursor_up(extension)
-  vim.fn.cursor(vim.fn.line('.') - 1, 1)
+  core.cursor.winmove(extension.winid, vim.fn.line('.') - 1)
 end
 
 function M.quit(extension)

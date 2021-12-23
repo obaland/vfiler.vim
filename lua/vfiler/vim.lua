@@ -82,7 +82,9 @@ function M.commands(cmds)
 end
 
 function M.win_executes(window, cmds)
-  M.fn.win_execute(window, table.concat(cmds, ' | '))
+  for _, cmd in ipairs(cmds) do
+    M.fn.win_execute(window, cmd)
+  end
 end
 
 return M

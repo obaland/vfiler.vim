@@ -5,22 +5,15 @@ local vim = require('vfiler/vim')
 local Rename = {}
 
 function Rename.new(filer, options)
+  local configs = config.configs
+  if configs.options.floating then
+    core.message.error('Not supported for floating.')
+    return nil
+  end
+
   local Extension = require('vfiler/extensions/extension')
-
-  local view = Extension.create_view({left = '0.5'})
-  view:set_buf_options {
-    buftype = 'acwrite',
-    filetype = 'vfiler_rename',
-    modifiable = true,
-    modified = false,
-    readonly = false,
-  }
-  view:set_win_options {
-    number = true,
-  }
-
   return core.inherit(
-    Rename, Extension, filer, 'Rename', view, config.configs, options
+    Rename, Extension, filer, 'Rename', configs, options
   )
 end
 
@@ -78,12 +71,11 @@ function Rename:execute()
   end
 
   local renames = vim.from_vimlist(vim.fn.getline(1, #self._items))
-  vim.set_buf_option(self.bufnr, 'modified', false)
+  vim.set_buf_option(self._view.bufnr, 'modified', false)
 
-  local filer = self._filer
-  self:quit(filer)
+  self:quit()
   if self.on_execute then
-    self.on_execute(filer, filer._context, filer._view, self._items, renames)
+    self._filer:do_action(self.on_execute, self._items, renames)
   end
 end
 
@@ -92,23 +84,23 @@ function Rename:get_lines()
   return vim.from_vimlist(lines)
 end
 
-function Rename:_on_create_items(configs)
-  return self.initial_items
+function Rename:_on_set_buf_options(configs)
+  return {
+    buftype = 'acwrite',
+    filetype = 'vfiler_rename',
+    modifiable = true,
+    modified = false,
+    readonly = false,
+  }
 end
 
-function Rename:_on_get_texts(items)
-  local texts = {}
-  for _, item in ipairs(items) do
-    table.insert(texts, item.name)
-  end
-  return texts
+function Rename:_on_set_win_options(configs)
+  return {
+    number = true,
+  }
 end
 
-function Rename:_on_draw(view, texts)
-  view:draw(self.name, texts)
-  vim.fn['vfiler#core#clear_undo']()
-  vim.set_buf_option(self.bufnr, 'modified', false)
-
+function Rename:_on_start(winid, bufnr, items, configs)
   -- syntaxes
   local group_notchanged = 'vfilerRename_NotChanged'
   local group_changed = 'vfilerRename_Changed'
@@ -118,19 +110,40 @@ function Rename:_on_draw(view, texts)
     core.syntax.match_command(group_changed, [[^.\+$]]),
   }
   -- Create "NotChanged" syntax for each line
-  for i, text in ipairs(texts) do
-    local pattern = ([[^\%%%dl%s$]]):format(i, text)
+  for i, item in ipairs(items) do
+    local pattern = ([[^\%%%dl%s$]]):format(i, item.name)
     table.insert(
       syntaxes, core.syntax.match_command(group_notchanged, pattern)
-      )
+    )
   end
-  vim.commands(syntaxes)
+  vim.win_executes(winid, syntaxes)
 
   -- highlights
-  vim.commands {
+  vim.win_executes(winid, {
     core.highlight.link_command(group_changed, 'Special'),
     core.highlight.link_command(group_notchanged, 'Normal'),
-  }
+  })
+  return 1 -- initial lnum
+end
+
+function Rename:_on_initialize_items(configs)
+  return self.initial_items
+end
+
+function Rename:_on_get_lines(items)
+  local width = 0
+  local lines = {}
+  for _, item in ipairs(items) do
+    width = math.max(width, vim.fn.strwidth(item.name))
+    table.insert(lines, item.name)
+  end
+  return lines, width
+end
+
+function Rename:_on_draw(view, lines)
+  view:draw(lines)
+  vim.fn['vfiler#core#clear_undo']()
+  vim.set_buf_option(view.bufnr, 'modified', false)
 end
 
 return Rename

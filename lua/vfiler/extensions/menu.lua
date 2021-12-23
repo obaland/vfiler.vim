@@ -6,21 +6,8 @@ local Menu = {}
 
 function Menu.new(filer, name, options)
   local Extension = require('vfiler/extensions/extension')
-
-  local configs = config.configs
-  local view = Extension.create_view(configs.options)
-  view:set_buf_options {
-    filetype = 'vfiler_menu',
-    modifiable = false,
-    modified = false,
-    readonly = true,
-  }
-  view:set_win_options {
-    number = false,
-  }
-
   return core.inherit(
-    Menu, Extension, filer, name, view, configs, options
+    Menu, Extension, filer, name, config.configs, options
   )
 end
 
@@ -29,30 +16,47 @@ function Menu:select()
   self:quit()
 
   if self.on_selected then
-    local filer = self._filer
-    self.on_selected(filer, filer._context, filer._view, item)
+    self._filer:do_action(self.on_selected, item)
   end
   return item
 end
 
-function Menu:_on_create_items(configs)
+function Menu:_on_initialize_items(configs)
   return self.initial_items
 end
 
-function Menu:_on_get_texts(items)
-  -- Add padding
-  local texts = {}
-  for _, item in ipairs(items) do
-    table.insert(texts, ' ' .. item)
-  end
-  return texts
+function Menu:_on_set_buf_options(configs)
+  return {
+    filetype = 'vfiler_menu',
+    modifiable = false,
+    modified = false,
+    readonly = true,
+  }
 end
 
-function Menu:_on_draw(view, texts)
+function Menu:_on_set_win_options(configs)
+  return {
+    number = false,
+  }
+end
+
+function Menu:_on_get_lines(items)
+  local width = 0
+  local lines = {}
+  for _, item in ipairs(items) do
+    -- add padding
+    local line = ' ' .. item
+    width = math.max(width, vim.fn.strwidth(line))
+    table.insert(lines, line)
+  end
+  return lines, width
+end
+
+function Menu:_on_draw(view, lines)
   local bufnr = view.bufnr
   vim.set_buf_option(bufnr, 'modifiable', true)
   vim.set_buf_option(bufnr, 'readonly', false)
-  view:draw(self.name, texts)
+  view:draw(lines)
   vim.set_buf_option(bufnr, 'modifiable', false)
   vim.set_buf_option(bufnr, 'readonly', true)
 end

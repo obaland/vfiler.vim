@@ -153,8 +153,8 @@ function VFiler:displayed()
 end
 
 --- Do action
-function VFiler:do_action(action)
-  action(self, self._context, self._view)
+function VFiler:do_action(action, ...)
+  action(self, self._context, self._view, ...)
 end
 
 --- Draw the filer in the current window
