@@ -13,6 +13,7 @@ M.configs = {
     ['k']     = action.loop_cursor_up,
     ['l']     = action.open_tree,
     ['q']     = action.quit,
+    ['r']     = action.rename,
     ['s']     = action.open_by_split,
     ['t']     = action.open_by_tabpage,
     ['v']     = action.open_by_vsplit,

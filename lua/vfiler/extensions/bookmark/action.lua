@@ -25,8 +25,24 @@ function action.delete(extension)
   extension:redraw()
 end
 
+function action.rename(extension)
+  local item = extension:get_current()
+  local name = item.name
+  local rename = cmdline.input('New file name - ' .. name, name)
+
+  item.name = rename
+  extension:save()
+  core.message.info('Renamed - "%s" -> "%s"', name, rename)
+  extension:restart()
+end
+
 function action.open(extension)
-  select(extension, 'edit')
+  local item = extension:get_current()
+  if item.iscategory then
+    action.open_tree(extension)
+  else
+    select(extension, 'edit')
+  end
 end
 
 function action.open_by_split(extension)

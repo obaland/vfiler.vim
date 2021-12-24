@@ -84,7 +84,7 @@ function Rename:get_lines()
   return vim.from_vimlist(lines)
 end
 
-function Rename:_on_set_buf_options(configs)
+function Rename:_on_buf_options(configs)
   return {
     buftype = 'acwrite',
     filetype = 'vfiler_rename',
@@ -94,13 +94,13 @@ function Rename:_on_set_buf_options(configs)
   }
 end
 
-function Rename:_on_set_win_options(configs)
+function Rename:_on_win_options(configs)
   return {
     number = true,
   }
 end
 
-function Rename:_on_start(winid, bufnr, items, configs)
+function Rename:_on_opened(winid, bufnr, items, configs)
   -- syntaxes
   local group_notchanged = 'vfilerRename_NotChanged'
   local group_changed = 'vfilerRename_Changed'
@@ -126,7 +126,7 @@ function Rename:_on_start(winid, bufnr, items, configs)
   return 1 -- initial lnum
 end
 
-function Rename:_on_initialize_items(configs)
+function Rename:_on_initialize(configs)
   return self.initial_items
 end
 

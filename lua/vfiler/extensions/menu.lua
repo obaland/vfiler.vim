@@ -21,11 +21,11 @@ function Menu:select()
   return item
 end
 
-function Menu:_on_initialize_items(configs)
+function Menu:_on_initialize(configs)
   return self.initial_items
 end
 
-function Menu:_on_set_buf_options(configs)
+function Menu:_on_buf_options(configs)
   return {
     filetype = 'vfiler_menu',
     modifiable = false,
@@ -34,7 +34,7 @@ function Menu:_on_set_buf_options(configs)
   }
 end
 
-function Menu:_on_set_win_options(configs)
+function Menu:_on_win_options(configs)
   return {
     number = false,
   }
@@ -61,7 +61,7 @@ function Menu:_on_draw(view, lines)
   vim.set_buf_option(bufnr, 'readonly', true)
 end
 
-function Menu:_on_start(winid, bufnr, items, configs)
+function Menu:_on_opened(winid, bufnr, items, configs)
   if not self.default then
     return 1
   end

@@ -175,7 +175,7 @@ end
 
 function Extension:quit()
   -- guard duplicate calls
-  if not extensions[self._view.bufnr] then
+  if not (self._view and extensions[self._view.bufnr]) then
     return
   end
   extensions[self._view.bufnr] = nil
@@ -196,13 +196,16 @@ function Extension:quit()
 end
 
 function Extension:redraw()
-  self._items = self:_on_update_items(self._configs)
+  self._items = self:_on_update(self._configs)
   local lines = self:_on_get_lines(self._items)
   self:_on_draw(self._view, lines)
 end
 
 function Extension:start()
-  self._items = self:_on_initialize_items(self._configs)
+  self._items = self:_on_initialize(self._configs)
+  if not self._items then
+    return
+  end
   local lines, width = self:_on_get_lines(self._items)
 
   -- to view options
@@ -219,13 +222,13 @@ function Extension:start()
   local view_options = to_view_options(
     self._configs.options, self.name, win_size, content_size
   )
-  view_options.bufoptions = self:_on_set_buf_options(self._configs)
-  view_options.winoptions = self:_on_set_win_options(self._configs)
+  view_options.bufoptions = self:_on_buf_options(self._configs)
+  view_options.winoptions = self:_on_win_options(self._configs)
   self._view:open(lines, view_options)
 
   self.winid = self._view.winid
   local bufnr = self._view.bufnr
-  local lnum = self:_on_start(
+  local lnum = self:_on_opened(
     self.winid, bufnr, self._items, self._configs
   )
 
@@ -252,29 +255,46 @@ function Extension:start()
   self._filer._context.extension = self
 end
 
-function Extension:_on_initialize_items(configs)
-  -- Not implemented
-  return {}
+function Extension:restart()
+  self:_close()
+  self:start()
 end
 
-function Extension:_on_update_items(configs)
-  -- Not implemented
-  return {}
+function Extension:_close()
+  -- guard duplicate calls
+  if not (self._view and extensions[self._view.bufnr]) then
+    return false
+  end
+  extensions[self._view.bufnr] = nil
+
+  vim.command('echo') -- Clear prompt message
+  self._view:close()
+  return true
 end
 
-function Extension:_on_set_buf_options(configs)
+function Extension:_on_initialize(configs)
   -- Not implemented
-  return {}
+  return {} -- return items
 end
 
-function Extension:_on_set_win_options(configs)
+function Extension:_on_update(configs)
   -- Not implemented
-  return {}
+  return {} -- return items
 end
 
-function Extension:_on_start(winid, bufnr, items, configs)
+function Extension:_on_buf_options(configs)
   -- Not implemented
-  return 1
+  return {} -- return buffer options
+end
+
+function Extension:_on_win_options(configs)
+  -- Not implemented
+  return {} -- return window options
+end
+
+function Extension:_on_opened(winid, bufnr, items, configs)
+  -- Not implemented
+  return 1 -- return initial cursor lnum
 end
 
 function Extension:_on_get_lines(items, winwidth)

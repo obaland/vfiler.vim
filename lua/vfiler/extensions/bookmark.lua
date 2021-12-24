@@ -8,7 +8,6 @@ local Item = require('vfiler/extensions/bookmark/items/item')
 
 local DIRPATH = core.path.normalize('~/vimfiles/vfiler')
 local FILENAME = 'bookmark.json'
-local NO_BOOKMARKS_MESSAGE = 'No bookmarks'
 
 local columns = {
   require('vfiler/extensions/bookmark/columns/indent').new(),
@@ -16,6 +15,8 @@ local columns = {
   require('vfiler/extensions/bookmark/columns/name').new(),
   require('vfiler/extensions/bookmark/columns/path').new(),
 }
+
+local current_category_names = {}
 
 local function write_json(json)
   if not core.path.isdirectory(DIRPATH) then
@@ -36,20 +37,13 @@ local function read_json()
   local file = io.open(path, 'r')
   local json = file:read('a')
   file:close()
-  return Category.from_json(json)
-end
 
-local function expand_items(root)
-  local items = {}
+  local root = Category.from_json(json)
+  current_category_names = {}
   for _, category in ipairs(root.children) do
-    table.insert(items, category)
-    if category.opened then
-      for _, item in ipairs(category.children) do
-        table.insert(items, item)
-      end
-    end
+    table.insert(current_category_names, category.name)
   end
-  return items
+  return root
 end
 
 local function get_line(item, column_widths)
@@ -74,11 +68,25 @@ end
 
 local Bookmark = {}
 
+function Bookmark.complete(arglead)
+  local list = {}
+  for _, name in ipairs(current_category_names) do
+    if name:find(arglead) then
+      table.insert(list, name)
+    end
+  end
+  if #list > 1 then
+    table.sort(list)
+  end
+  return list
+end
+
 function Bookmark.add(item)
   local root = read_json()
-
-  -- TODO: completion
-  local category_name = cmdline.input('Category name?', 'defualt')
+  local completion = 'customlist,vfiler#extensions#bookmark#complete'
+  local category_name = cmdline.input(
+    'Category name?', 'defualt', completion
+  )
   if not category_name or #category_name == 0 then
     return
   end
@@ -94,9 +102,18 @@ function Bookmark.add(item)
     root:add(category)
   end
 
+  if category:find_item(name) then
+    if cmdline.util.confirm_overwrite(name) ~= cmdline.choice.YES then
+      return
+    end
+  end
+
   local bookmark_item = Item.new(name, item.path)
   category:add(bookmark_item)
   write_json(root:to_json())
+  core.message.info(
+    'Add bookmark - %s/%s (%s)', category.name, item.name, item.path
+  )
 end
 
 function Bookmark.new(filer, options)
@@ -127,16 +144,30 @@ function Bookmark:select(path, open)
   return item
 end
 
-function Bookmark:_on_initialize_items(configs)
+function Bookmark:_on_initialize(configs)
   self._root = read_json()
-  return expand_items(self._root)
+  if #self._root.children == 0 then
+    core.message.warning('No bookmarks.')
+    self:quit()
+    return nil
+  end
+  return self:_on_update(configs)
 end
 
-function Bookmark:_on_update_items(configs)
-  return expand_items(self._root)
+function Bookmark:_on_update(configs)
+  local items = {}
+  for _, category in ipairs(self._root.children) do
+    table.insert(items, category)
+    if category.opened then
+      for _, item in ipairs(category.children) do
+        table.insert(items, item)
+      end
+    end
+  end
+  return items
 end
 
-function Bookmark:_on_set_buf_options(configs)
+function Bookmark:_on_buf_options(configs)
   return {
     filetype = 'vfiler_bookmark',
     modifiable = false,
@@ -145,30 +176,24 @@ function Bookmark:_on_set_buf_options(configs)
   }
 end
 
-function Bookmark:_on_set_win_options(configs)
+function Bookmark:_on_win_options(configs)
   return {
     number = false,
   }
 end
 
-function Bookmark:_on_start(winid, bufnr, items, configs)
+function Bookmark:_on_opened(winid, bufnr, items, configs)
   -- syntaxes and highlights
-  local nomessage_group = 'vfilerBookmark_Warning'
-  local syntaxes = {
-    core.syntax.clear_command({nomessage_group}),
-    core.syntax.match_command(
-      nomessage_group, [[\%1l]] .. NO_BOOKMARKS_MESSAGE
-    ),
-  }
+  local syntaxes = {}
   local highlights = {}
   for _, column in pairs(columns) do
-    local column_syntaxes = column:syntaxes()
-    if column_syntaxes then
-      core.list.extend(syntaxes, column_syntaxes)
+    local commands = column:syntaxes()
+    if commands then
+      core.list.extend(syntaxes, commands)
     end
-    local column_highlights = column:highlights()
-    if column_highlights then
-      core.list.extend(highlights, column_highlights)
+    commands = column:highlights()
+    if commands then
+      core.list.extend(highlights, commands)
     end
   end
 
@@ -178,9 +203,6 @@ function Bookmark:_on_start(winid, bufnr, items, configs)
 end
 
 function Bookmark:_on_get_lines(items)
-  if #items == 0 then
-    return {NO_BOOKMARKS_MESSAGE}
-  end
   local width = 0
   local lines = {}
   for _, item in ipairs(items) do

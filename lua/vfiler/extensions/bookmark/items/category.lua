@@ -6,6 +6,7 @@ local Item = require('vfiler/extensions/bookmark/items/item')
 local Category = {}
 Category.__index = Category
 Category.__eq = function(a, b)
+  -- TODO:
   return a.name == b.name
 end
 
@@ -53,6 +54,15 @@ function Category:delete()
       return
     end
   end
+end
+
+function Category:find_item(name)
+  for _, child in ipairs(self.children) do
+    if not child.iscategory and child.name == name then
+      return child
+    end
+  end
+  return nil
 end
 
 function Category:find_category(name)
