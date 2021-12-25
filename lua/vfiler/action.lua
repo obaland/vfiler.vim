@@ -35,16 +35,27 @@ local function create_files(dest, contents, create)
   return created
 end
 
+local function get_mount_path()
+  return core.is_mac and '/Volumes' or '/mnt'
+end
+
 local function detect_drives()
-  if not core.is_windows then
-    return {}
-  end
   local drives = {}
-  for byte = ('A'):byte(), ('Z'):byte() do
-    local drive = string.char(byte) .. ':/'
-    if core.path.isdirectory(drive) then
-      table.insert(drives, drive)
+  if core.is_windows then
+    for byte = ('A'):byte(), ('Z'):byte() do
+      local drive = string.char(byte) .. ':/'
+      if core.path.isdirectory(drive) then
+        table.insert(drives, drive)
+      end
     end
+  else
+    local mount = core.path.join(get_mount_path(), '*')
+    for _, path in ipairs(vim.fn.glob(mount, 1, 1)) do
+      if core.path.isdirectory(path) then
+        table.insert(drives, vim.fn.fnamemodify(path, ':t'))
+      end
+    end
+    table.sort(drives)
   end
   return drives
 end
@@ -706,8 +717,12 @@ function M.switch_to_drive(vfiler, context, view)
     default = root,
 
     on_selected = function(filer, c, v, drive)
-      if root == drive then
-        return
+      if core.is_windows then
+        if root == drive then
+          return
+        end
+      else
+        drive = core.path.join(get_mount_path(), drive)
       end
 
       local path = v:get_current().path

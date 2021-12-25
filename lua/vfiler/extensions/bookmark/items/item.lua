@@ -3,10 +3,6 @@ local vim = require('vfiler/vim')
 
 local Item = {}
 Item.__index = Item
-Item.__eq = function(a, b)
-  -- TODO:
-  return a.name == b.name
-end
 
 function Item.new(name, path)
   return setmetatable({

@@ -205,6 +205,12 @@ move                                                     *vfiler-actions-move*
 paste                                                   *vfiler-actions-paste*
     Paste files saved in the clipboard.
 
+add_bookmark                                     *vfiler-actions-add_bookmark*
+    Add the item in the current line to the bookmark.
+
+list_bookmark                                   *vfiler-actions-list_bookmark*
+    List the bookmarks.
+
 ------------------------------------------------------------------------------
 OPTIONS                                                       *vfiler-options*
 
