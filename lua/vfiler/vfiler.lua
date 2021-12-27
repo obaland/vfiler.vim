@@ -109,7 +109,7 @@ function VFiler.new(context)
 
   -- register events
   event.register(
-    'vfiler', view.bufnr, context.events,
+    'vfiler', view.bufnr, context._events,
     [[require('vfiler/vfiler')._handle_event]]
   )
 

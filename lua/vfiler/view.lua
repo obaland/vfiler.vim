@@ -107,6 +107,8 @@ function View:draw(context)
       table.insert(self._items, item)
     end
   end
+
+  self._winoptions.statusline = context:status() -- update status
   self:redraw()
 end
 

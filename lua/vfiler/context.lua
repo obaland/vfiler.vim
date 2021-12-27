@@ -203,7 +203,6 @@ function Context:switch(dirpath)
 
   self.root = Directory.new(dirpath, false)
   self.root:open()
-  self:update_status()
   return self._snapshot:load(self.root)
 end
 
@@ -224,10 +223,9 @@ function Context:sync(context)
   self:switch(context.root.path)
 end
 
-function Context:update_status()
+function Context:status()
   local path = vim.fn.fnamemodify(self.root.path, ':~')
-  self.status = '[in] ' .. core.path.escape(path)
-  vim.command('redrawstatus')
+  return '[in] ' .. core.path.escape(path)
 end
 
 return Context

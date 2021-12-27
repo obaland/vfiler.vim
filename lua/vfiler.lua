@@ -7,16 +7,6 @@ local VFiler = require('vfiler/vfiler')
 
 local M = {}
 
----Get status string for "statusline"
----@return string: status string
-function M.get_status_string()
-  local vfiler = VFiler.get_current()
-  if not vfiler then
-    return ''
-  end
-  return vfiler:get_status()
-end
-
 ---Start vfiler from command line arguments
 ---@param args string: command line argumets
 function M.start_command(args)

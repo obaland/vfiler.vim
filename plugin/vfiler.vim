@@ -53,4 +53,4 @@ endfunction
 
 " Define commands
 command! -nargs=? -complete=customlist,s:complete VFiler
-      \ call vfiler#start(<q-args>)
+      \ call luaeval('require("vfiler").start_command(_A)', <q-args>)
