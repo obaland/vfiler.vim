@@ -88,25 +88,6 @@ for name, value in pairs(M.configs.options) do
   table.insert(command_option_names, '-' .. opname)
 end
 
-local function complete_options(arglead)
-  local target
-  if arglead:find('^-no') then
-    target = command_not_option_names
-  else
-    target = command_option_names
-  end
-  local list = {}
-  for _, name in ipairs(target) do
-    if name:find(arglead) then
-      table.insert(list, name)
-    end
-  end
-  if #list > 1 then
-    table.sort(list)
-  end
-  return list
-end
-
 local function error(message)
   core.message.error('Argument error - %s', message)
 end
@@ -168,21 +149,21 @@ function M.clear_mappings()
   M.configs.mappings = {}
 end
 
-function M.complete(arglead)
-  local list = {}
-
-  if #arglead > 0 and arglead:sub(1, 1) == '-' then
-    -- Complete options
-    return vim.to_vimlist(complete_options(arglead))
+function M.complete_options(arglead)
+  if #arglead == 0 or arglead:sub(1, 1) ~= '-' then
+    return vim.to_vimlist({})
   end
 
-  -- Complete directory path
-  local condidate_files = vim.from_vimlist(
-    vim.fn.glob(arglead .. '*', 1, 1, 1)
-  )
-  for _, path in ipairs(condidate_files) do
-    if core.path.isdirectory(path) then
-      table.insert(list, core.path.normalize(path))
+  local target
+  if arglead:find('^-no') then
+    target = command_not_option_names
+  else
+    target = command_option_names
+  end
+  local list = {}
+  for _, name in ipairs(target) do
+    if name:find(arglead) then
+      table.insert(list, name)
     end
   end
   if #list > 1 then

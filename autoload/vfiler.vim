@@ -11,7 +11,3 @@ endfunction
 function! vfiler#get_status_string() abort
   return luaeval('require("vfiler").get_status_string()')
 endfunction
-
-function! vfiler#complete(arglead, cmdline, cursorpos) abort
-  return luaeval('require("vfiler").complete(_A)', a:arglead)
-endfunction

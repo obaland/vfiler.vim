@@ -7,13 +7,6 @@ local VFiler = require('vfiler/vfiler')
 
 local M = {}
 
----Get complete item list for command
----@param arglead string
----@return table: complete item list
-function M.complete(arglead)
-  return config.complete(arglead)
-end
-
 ---Get status string for "statusline"
 ---@return string: status string
 function M.get_status_string()
