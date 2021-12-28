@@ -18,18 +18,47 @@ function M.choose_window_key(winwidth, key)
 end
 
 --- Status line string for status
----@param winwidth number
 ---@param context table
 function M.status(winwidth, context)
-  local name = ' ' .. vim.fn.expand('%') .. ' '
+  local status = {}
+
+  -- number of items, and current item number
+  local offset = 0
+  local num = vim.fn.line('$')
+  if context.header then
+    num = num - 1
+    offset = 1
+  end
+
+  local digit = 0
+  while num > 0 do
+    digit = digit + 1
+    num = math.modf(num / 10)
+  end
+
+  local num_items = ([[ %%%d{line('.')-%d}/%%{line('$')-%d} ]]):format(
+    digit, offset, offset
+  )
+  table.insert(status, '%=%#vfilerStatusLine_Section#')
+  table.insert(status, num_items)
+  local width = (digit * 2) + 3
+
+  -- current root path
   local path = (' [in] %s '):format(
     core.path.escape(vim.fn.fnamemodify(context.root.path, ':~'))
   )
-  local status = {'%#StatusLine#', path}
-  local strwidth = vim.fn.strwidth
-  if (strwidth(name) + strwidth(path)) <= winwidth then
+  width = width + vim.fn.strwidth(path)
+  if width <= winwidth then
+    table.insert(status, 1, path)
+    table.insert(status, 1, '%#StatusLine#')
+  end
+
+  -- filer name
+  local name = (' %s '):format(vim.fn.expand('%'))
+  width = width + vim.fn.strwidth(name)
+  if width <= winwidth then
     table.insert(status, 1, name)
-    table.insert(status, 1, '%#vfilerStatusLine_Name#')
+    table.insert(status, 1, '%#vfilerStatusLine_Section#')
   end
   return table.concat(status, '')
 end
