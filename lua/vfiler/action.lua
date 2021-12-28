@@ -66,17 +66,6 @@ local choose_keys = {
   '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
 }
 
-local function choose_window_statusline(winwidth, char)
-  local caption_width = winwidth / 4
-  local padding = (' '):rep(math.ceil(caption_width / 2))
-  local margin = (' '):rep(math.ceil((winwidth - caption_width) / 2))
-  return ('%s%s%s%s%s%s%s'):format(
-    '%#StatusLine#', margin,
-    '%#vfilerStatusLine_ChooseWindowKey#', padding, char, padding,
-    '%#StatusLine#'
-    )
-end
-
 local function choose_window()
   local winnrs = {}
   for nr = 1, vim.fn.winnr('$') do
@@ -93,12 +82,12 @@ local function choose_window()
   -- Map window keys, and save statuslines
   local keys = {}
   local winkeys = {}
-  local statuslines = {}
+  local prev_statuslines = {}
   for _, winnr in ipairs(winnrs) do
     local key = choose_keys[winnr]
     table.insert(keys, key)
     winkeys[key] = winnr
-    statuslines[winnr] = vim.get_win_option(winnr, 'statusline')
+    prev_statuslines[winnr] = vim.get_win_option(winnr, 'statusline')
   end
 
   -- Save status
@@ -106,11 +95,12 @@ local function choose_window()
   local save_winnr = vim.fn.winnr()
 
   -- Choose window
+  local statusline = require('vfiler/statusline')
   vim.set_global_option('laststatus', 2)
   for key, nr in pairs(winkeys) do
     vim.set_win_option(
-      nr, 'statusline', choose_window_statusline(vim.fn.winwidth(nr), key)
-      )
+      nr, 'statusline', statusline.choose_window_key(vim.fn.winwidth(nr), key)
+    )
     vim.command('redraw')
   end
 
@@ -125,8 +115,8 @@ local function choose_window()
 
   -- Restore
   vim.set_global_option('laststatus', laststatus)
-  for nr, statusline in pairs(statuslines) do
-    vim.set_win_option(nr, 'statusline', statusline)
+  for nr, prev_statusline in pairs(prev_statuslines) do
+    vim.set_win_option(nr, 'statusline', prev_statusline)
     vim.command('redraw')
   end
   core.window.move(save_winnr)

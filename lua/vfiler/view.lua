@@ -108,7 +108,9 @@ function View:draw(context)
     end
   end
 
-  self._winoptions.statusline = context:status() -- update status
+  local statusline = require('vfiler/statusline')
+  local winwidth = vim.fn.winwidth(self:winnr())
+  self._winoptions.statusline = statusline.status(winwidth, context)
   self:redraw()
 end
 

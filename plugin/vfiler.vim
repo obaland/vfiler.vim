@@ -34,6 +34,7 @@ highlight default link vfilerTimeToday         PreProc
 highlight default link vfilerTimeWeek          Type
 
 highlight default vfilerStatusLine_ChooseWindowKey ctermfg=230 ctermbg=57 guifg=#ffffd7 guibg=#44788E
+highlight default vfilerStatusLine_Name ctermfg=230 ctermbg=57 guifg=#ffffd7 guibg=#44788E
 
 highlight default link vfilerBookmark_Category  Title
 highlight default link vfilerBookmark_Directory Directory
@@ -41,6 +42,7 @@ highlight default link vfilerBookmark_File      None
 highlight default link vfilerBookmark_Link      Constant
 highlight default link vfilerBookmark_Path      Comment
 
+" Commands
 function! s:complete(arglead, cmdline, cursorpos) abort
   let list = luaeval(
         \ 'require("vfiler/config").complete_options(_A)', a:arglead

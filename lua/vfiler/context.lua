@@ -223,9 +223,4 @@ function Context:sync(context)
   self:switch(context.root.path)
 end
 
-function Context:status()
-  local path = vim.fn.fnamemodify(self.root.path, ':~')
-  return '[in] ' .. core.path.escape(path)
-end
-
 return Context
