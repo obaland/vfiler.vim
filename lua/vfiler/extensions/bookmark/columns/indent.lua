@@ -19,13 +19,13 @@ function IndentColumn.new()
   self._syntax = Syntax.new {
     syntaxes = {
       indent = {
-        group = 'vfilerBookmark_Indent',
+        group = 'vfilerBookmarkIndent',
         start_mark = 'I@\\',
-        highlight = 'vfilerBookmark_Category',
+        highlight = 'vfilerBookmarkCategory',
       },
     },
     end_mark = '\\@I',
-    ignore_group = 'vfilerBookmark_IndentIgnore',
+    ignore_group = 'vfilerBookmarkIndent_Ignore',
   }
   return self
 end

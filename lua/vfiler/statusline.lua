@@ -10,11 +10,12 @@ function M.choose_window_key(winwidth, key)
   local caption_width = winwidth / 4
   local padding = (' '):rep(math.ceil(caption_width / 2))
   local margin = (' '):rep(math.ceil((winwidth - caption_width) / 2))
-  return ('%s%s%s%s%s%s%s'):format(
-    '%#StatusLine#', margin,
-    '%#vfilerStatusLine_ChooseWindowKey#', padding, key, padding,
-    '%#StatusLine#'
-  )
+  local status = {
+    '%#vfilerStatusLine#', margin,
+    '%#vfilerStatusLineSection#', padding, key, padding,
+    '%#vfilerStatusLine#',
+  }
+  return table.concat(status, '')
 end
 
 --- Status line string for status
@@ -39,7 +40,7 @@ function M.status(winwidth, context)
   local num_items = ([[ %%%d{line('.')-%d}/%%{line('$')-%d} ]]):format(
     digit, offset, offset
   )
-  table.insert(status, '%=%#vfilerStatusLine_Section#')
+  table.insert(status, '%=%#vfilerStatusLineSection#')
   table.insert(status, num_items)
   local width = (digit * 2) + 3
 
@@ -50,7 +51,7 @@ function M.status(winwidth, context)
   width = width + vim.fn.strwidth(path)
   if width <= winwidth then
     table.insert(status, 1, path)
-    table.insert(status, 1, '%#StatusLine#')
+    table.insert(status, 1, '%#vfilerStatusLine#')
   end
 
   -- filer name
@@ -58,7 +59,7 @@ function M.status(winwidth, context)
   width = width + vim.fn.strwidth(name)
   if width <= winwidth then
     table.insert(status, 1, name)
-    table.insert(status, 1, '%#vfilerStatusLine_Section#')
+    table.insert(status, 1, '%#vfilerStatusLineSection#')
   end
   return table.concat(status, '')
 end

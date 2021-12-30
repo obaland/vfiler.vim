@@ -40,7 +40,7 @@ DESCRIPTION                                               *vfiler-description*
 ------------------------------------------------------------------------------
 REQUIREMENTS                                             *vfiler-requirements*
 
-vfiler.vim requires Neovim(0.5.0+) or Vim8.2 + with if_lua.
+vfiler.vim requires Neovim(0.5.0+) or Vim8.2+ with if_lua.
 
 ==============================================================================
 INTERFACE                                                   *vfiler-interface*

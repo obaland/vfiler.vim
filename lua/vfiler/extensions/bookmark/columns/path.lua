@@ -25,18 +25,18 @@ function PathColumn.new()
   self._syntax = Syntax.new {
     syntaxes = {
       path = {
-        group = 'vfilerBookmark_ItemPath',
+        group = 'vfilerBookmarkItem_Path',
         start_mark = 'p@p\\',
-        highlight = 'vfilerBookmark_Path',
+        highlight = 'vfilerBookmarkPath',
       },
       notexist = {
-        group = 'vfilerBookmark_ItemNotExist',
+        group = 'vfilerBookmarkItem_NotExist',
         start_mark = 'p@n\\',
-        highlight = 'vfilerBookmark_Warning',
+        highlight = 'vfilerBookmarkWarning',
       },
     },
     end_mark = '\\p@',
-    ignore_group = 'vfilerBookmark_PathIgnore',
+    ignore_group = 'vfilerBookmarkPath_Ignore',
   }
   return self
 end

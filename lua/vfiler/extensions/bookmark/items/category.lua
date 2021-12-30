@@ -25,11 +25,15 @@ function Category.from_json(json)
   local root = Category.new('root')
   for _, category_dict in ipairs(document.bookmarks) do
     local category = Category.new(category_dict.name)
-    for _, item_dict in ipairs(category_dict.items) do
-      local item = Item.new(item_dict.name, item_dict.path)
-      category:add(item)
+    if category_dict.items then
+      for _, item_dict in ipairs(category_dict.items) do
+        local item = Item.new(item_dict.name, item_dict.path)
+        category:add(item)
+      end
     end
-    root:add(category)
+    if #category.children > 0 then
+      root:add(category)
+    end
   end
   return root
 end

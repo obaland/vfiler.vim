@@ -12,28 +12,28 @@ function NameColumn.new()
   self._syntax = Syntax.new {
     syntaxes = {
       category = {
-        group = 'vfilerBookmark_NameCategory',
+        group = 'vfilerBookmarkName_Category',
         start_mark = 'n@c\\',
-        highlight = 'vfilerBookmark_Category',
+        highlight = 'vfilerBookmarkCategory',
       },
       file = {
-        group = 'vfilerBookmark_NameFile',
+        group = 'vfilerBookmarkName_File',
         start_mark = 'n@f\\',
-        highlight = 'vfilerBookmark_File',
+        highlight = 'vfilerBookmarkFile',
       },
       directory = {
-        group = 'vfilerBookmark_NameDirectory',
+        group = 'vfilerBookmarkName_Directory',
         start_mark = 'n@d\\',
-        highlight = 'vfilerBookmark_Directory',
+        highlight = 'vfilerBookmarkDirectory',
       },
       link = {
-        group = 'vfilerBookmark_NameLink',
+        group = 'vfilerBookmarkName_Link',
         start_mark = 'n@l\\',
-        highlight = 'vfilerBookmark_Link',
+        highlight = 'vfilerBookmarkLink',
       },
     },
     end_mark = '\\n@',
-    ignore_group = 'vfilerBookmark_NameIgnore',
+    ignore_group = 'vfilerBookmarkName_Ignore',
   }
   return self
 end

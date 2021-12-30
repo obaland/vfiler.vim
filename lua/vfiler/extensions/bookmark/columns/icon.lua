@@ -27,23 +27,23 @@ function IconColumn.new()
   self._syntax = Syntax.new {
     syntaxes = {
       file = {
-        group = 'vfilerBookmark_IconFile',
+        group = 'vfilerBookmarkIcon_File',
         start_mark = 'i@f\\',
-        highlight = 'vfilerBookmark_File',
+        highlight = 'vfilerBookmarkFile',
       },
       directory = {
-        group = 'vfilerBookmark_IconDirectory',
+        group = 'vfilerBookmarkIcon_Directory',
         start_mark = 'i@d\\',
-        highlight = 'vfilerBookmark_Directory',
+        highlight = 'vfilerBookmarkDirectory',
       },
       category = {
-        group = 'vfilerBookmark_IconCategory',
+        group = 'vfilerBookmarkIcon_Category',
         start_mark = 'i@c\\',
-        highlight = 'vfilerBookmark_Category',
+        highlight = 'vfilerBookmarkCategory',
       },
     },
     end_mark = '\\i@',
-    ignore_group = 'vfilerBookmark_IconIgnore',
+    ignore_group = 'vfilerBookmarkIcon_Ignore',
   }
   return self
 end

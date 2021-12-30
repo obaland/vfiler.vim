@@ -33,16 +33,15 @@ highlight default link vfilerTime              None
 highlight default link vfilerTimeToday         PreProc
 highlight default link vfilerTimeWeek          Type
 
-highlight default vfilerStatusLine_ChooseWindowKey
-      \ ctermfg=230 ctermbg=57 guifg=#ffffd7 guibg=#44788E
-highlight default vfilerStatusLine_Section
+highlight default link vfilerStatusLine        StatusLine
+highlight default vfilerStatusLineSection
       \ ctermfg=230 ctermbg=57 guifg=#ffffd7 guibg=#44788E
 
-highlight default link vfilerBookmark_Category  Title
-highlight default link vfilerBookmark_Directory Directory
-highlight default link vfilerBookmark_File      None
-highlight default link vfilerBookmark_Link      Constant
-highlight default link vfilerBookmark_Path      Comment
+highlight default link vfilerBookmarkCategory  Title
+highlight default link vfilerBookmarkDirectory Directory
+highlight default link vfilerBookmarkFile      None
+highlight default link vfilerBookmarkLink      Constant
+highlight default link vfilerBookmarkPath      Comment
 
 " Commands
 function! s:complete(arglead, cmdline, cursorpos) abort
