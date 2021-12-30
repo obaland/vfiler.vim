@@ -55,14 +55,11 @@ end
 --- Find the currently valid filer by name
 ---@param name string
 function VFiler.find(name)
-  -- in tabpage
-  for bufnr, vfiler in pairs(vfilers) do
-    local object = vfiler.object
-    if (object._context.name == name) and (vim.fn.bufwinnr(bufnr) >= 0) then
-      return object
-    end
+  local finded = VFiler.find_visible(name)
+  if not finded then
+    return VFiler.find_hidden(name)
   end
-  return VFiler.find_hidden(name)
+  return finded
 end
 
 --- Find the currently hidden filer by name
@@ -73,6 +70,19 @@ function VFiler.find_hidden(name)
     local object = vfiler.object
     local infos = vim.from_vimlist(vim.fn.getbufinfo(bufnr))
     if (object._context.name == name) and (infos[1].hidden == 1) then
+      return object
+    end
+  end
+  return nil -- not found
+end
+
+--- Find the currently visible filer by name
+---@param name string
+function VFiler.find_visible(name)
+  -- in tabpage
+  for bufnr, vfiler in pairs(vfilers) do
+    local object = vfiler.object
+    if (object._context.name == name) and (vim.fn.bufwinnr(bufnr) >= 0) then
       return object
     end
   end

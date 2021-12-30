@@ -1,3 +1,4 @@
+local action = require('vfiler/action')
 local config = require('vfiler/config')
 local core = require('vfiler/core')
 local vim = require('vfiler/vim')
@@ -27,28 +28,30 @@ function M.start(dirpath, configs)
     core.message.error('Does not exist "%s".', dirpath)
     return false
   end
-  local combined_configs = core.table.copy(config.configs)
-  core.table.merge(combined_configs, configs or {})
+  local merged_configs = core.table.copy(config.configs)
+  core.table.merge(merged_configs, configs or {})
 
   VFiler.cleanup()
 
-  local options = combined_configs.options
-  local layout = options.layout
-
-  local vfiler = nil
-  if layout ~= 'none' then
-    core.window.open(layout)
-    vfiler = VFiler.find_hidden(options.name)
-  else
-    vfiler = VFiler.find(options.name)
+  local options = merged_configs.options
+  local vfiler = VFiler.find_visible(options.name)
+  if vfiler then
+    vfiler:open()
+    vfiler:do_action(action.cd, dirpath)
+    return true
   end
 
-  local context = Context.new(combined_configs)
+  local layout = options.layout
+  if layout ~= 'none' then
+    core.window.open(layout)
+  end
+
+  vfiler = VFiler.find_hidden(options.name)
   if options.new or not vfiler then
+    local context = Context.new(merged_configs)
     vfiler = VFiler.new(context)
   else
     vfiler:open()
-    vfiler:reset(context)
   end
 
   vfiler:start(dirpath)
