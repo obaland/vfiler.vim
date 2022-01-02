@@ -12,7 +12,9 @@ VFiler.__index = VFiler
 
 local function define_mappings(bufnr, mappings)
   return mapping.define(
-    bufnr, mappings, [[require('vfiler/vfiler')._do_action]]
+    bufnr,
+    mappings,
+    [[require('vfiler/vfiler')._do_action]]
   )
 end
 
@@ -119,7 +121,9 @@ function VFiler.new(context)
 
   -- register events
   event.register(
-    'vfiler', view.bufnr, context._events,
+    'vfiler',
+    view.bufnr,
+    context._events,
     [[require('vfiler/vfiler')._handle_event]]
   )
 
@@ -232,7 +236,8 @@ function VFiler:reset(context)
   self._context:reset(context)
   self._view:reset(context)
   self._defined_mappings = define_mappings(
-    self._view.bufnr, context._mappings
+    self._view.bufnr,
+    context._mappings
   )
 end
 

@@ -12,7 +12,8 @@ function Popup:close()
   if self.winid > 0 then
     -- Note: If you do not run it from the calling window, you will get an error
     vim.fn.win_execute(
-      self.source_winid, ('call popup_close(%d)'):format(self.winid)
+      self.source_winid,
+      ('call popup_close(%d)'):format(self.winid)
     )
   end
 end
@@ -23,7 +24,10 @@ function Popup:define_mapping(mappings, funcstr)
     table.insert(keys, key)
   end
   vim.fn['vfiler#popup#map'](
-    self.winid, self.bufnr, vim.to_vimlist(keys), funcstr
+    self.winid,
+    self.bufnr,
+    vim.to_vimlist(keys),
+    funcstr
   )
   -- Note: same mapping datas
   return core.table.copy(mappings)
@@ -35,7 +39,7 @@ end
 
 function Popup:_on_open(lines, options)
   local popup_options = {
-    border = vim.to_vimlist({1, 1, 1, 1}),
+    border = vim.to_vimlist({ 1, 1, 1, 1 }),
     cursorline = true,
     drag = false,
     filter = 'vfiler#popup#filter',
@@ -54,13 +58,22 @@ function Popup:_on_open(lines, options)
     local screen_pos = vim.fn.win_screenpos(self.source_winid)
     local y = screen_pos[1]
     local x = screen_pos[2]
-    popup_options.line = y + math.floor(wheight - ((options.height / 2) + (wheight / 2))) - 1
-    popup_options.col = x + math.floor(wwidth - ((options.width / 2) + (wwidth / 2))) - 1
+    popup_options.line = y
+      + math.floor(
+        wheight - ((options.height / 2) + (wheight / 2))
+      )
+      - 1
+    popup_options.col = x
+      + math.floor(
+        wwidth - ((options.width / 2) + (wwidth / 2))
+      )
+      - 1
   else
     popup_options.pos = 'center'
   end
   return vim.fn.popup_create(
-    vim.to_vimlist(lines), vim.to_vimdict(popup_options)
+    vim.to_vimlist(lines),
+    vim.to_vimdict(popup_options)
   )
 end
 

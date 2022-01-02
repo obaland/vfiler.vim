@@ -45,7 +45,7 @@ function M.getchar(prompt)
 end
 
 function M.input(prompt, ...)
-  local args = ... and {...} or {}
+  local args = ... and { ... } or {}
   local text = args[1] or ''
   local completion = args[2]
 
@@ -80,7 +80,8 @@ M.util = {}
 function M.util.confirm_overwrite(name)
   return M.confirm(
     ('"%s" already exists. Overwrite?'):format(name),
-    {M.choice.YES, M.choice.NO}, 1
+    { M.choice.YES, M.choice.NO },
+    1
   )
 end
 

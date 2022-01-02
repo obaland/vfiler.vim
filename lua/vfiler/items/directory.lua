@@ -145,10 +145,12 @@ end
 function Directory:_remove(item)
   local pos = nil
   for i, child in ipairs(self.children) do
-    if (child.name == item.name) and
-       (child.isdirectory == item.isdirectory) then
-       pos = i
-       break
+    if
+      (child.name == item.name)
+      and (child.isdirectory == item.isdirectory)
+    then
+      pos = i
+      break
     end
   end
   if pos then

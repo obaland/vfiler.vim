@@ -6,9 +6,7 @@ local Menu = {}
 
 function Menu.new(filer, name, options)
   local Extension = require('vfiler/extensions/extension')
-  return core.inherit(
-    Menu, Extension, filer, name, config.configs, options
-  )
+  return core.inherit(Menu, Extension, filer, name, config.configs, options)
 end
 
 function Menu:select()

@@ -9,7 +9,7 @@ M.configs = {
   },
 
   mappings = {
-    ['q']     = action.quit,
+    ['q'] = action.quit,
     ['<ESC>'] = action.quit,
   },
 

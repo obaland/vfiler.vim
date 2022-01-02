@@ -10,7 +10,10 @@ function M.register(group, bufnr, events, funcstr)
   vim.command('augroup ' .. group)
   for event, _ in pairs(events) do
     local au = ('autocmd %s <buffer> :lua %s(%d, "%s")'):format(
-      event, funcstr, bufnr, event
+      event,
+      funcstr,
+      bufnr,
+      event
     )
     vim.command(au)
   end

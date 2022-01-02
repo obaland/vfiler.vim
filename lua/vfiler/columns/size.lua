@@ -9,7 +9,7 @@ function SizeColumn.new()
   self._width = 9
 
   local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new {
+  self._syntax = Syntax.new({
     syntaxes = {
       size = {
         group = 'vfilerSize',
@@ -18,7 +18,7 @@ function SizeColumn.new()
     },
     end_mark = '\\s@',
     ignore_group = 'vfilerName_Ignore',
-  }
+  })
   return self
 end
 
@@ -32,7 +32,7 @@ function SizeColumn:get_text(item, width)
   local format = '%6d'
 
   if size >= 1024 then
-    local byte_units = {'KB', 'MB', 'GB', 'TB'}
+    local byte_units = { 'KB', 'MB', 'GB', 'TB' }
     size = size / 1024.0
     for _, unit in ipairs(byte_units) do
       if size < 1024.0 then
@@ -54,7 +54,8 @@ function SizeColumn:get_text(item, width)
     end
   end
   return self._syntax:surround_text(
-    'size', format:format(size) .. ' ' .. byte_unit
+    'size',
+    format:format(size) .. ' ' .. byte_unit
   )
 end
 

@@ -11,8 +11,12 @@ function M.choose_window_key(winwidth, key)
   local padding = (' '):rep(math.ceil(caption_width / 2))
   local margin = (' '):rep(math.ceil((winwidth - caption_width) / 2))
   local status = {
-    '%#vfilerStatusLine#', margin,
-    '%#vfilerStatusLineSection#', padding, key, padding,
+    '%#vfilerStatusLine#',
+    margin,
+    '%#vfilerStatusLineSection#',
+    padding,
+    key,
+    padding,
     '%#vfilerStatusLine#',
   }
   return table.concat(status, '')
@@ -38,7 +42,9 @@ function M.status(winwidth, context)
   end
 
   local num_items = ([[ %%%d{line('.')-%d}/%%{line('$')-%d} ]]):format(
-    digit, offset, offset
+    digit,
+    offset,
+    offset
   )
   table.insert(status, '%=%#vfilerStatusLineSection#')
   table.insert(status, num_items)

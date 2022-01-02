@@ -15,10 +15,10 @@ M.configs = {
   },
 
   mappings = {
-    ['k']     = action.loop_cursor_up,
-    ['j']     = action.loop_cursor_down,
-    ['q']     = action.quit,
-    ['<CR>']  = action.select,
+    ['k'] = action.loop_cursor_up,
+    ['j'] = action.loop_cursor_down,
+    ['q'] = action.quit,
+    ['<CR>'] = action.select,
     ['<ESC>'] = action.quit,
   },
 

@@ -61,9 +61,35 @@ local function detect_drives()
 end
 
 local choose_keys = {
-  'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
-  'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
-  '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+  'a',
+  's',
+  'd',
+  'f',
+  'g',
+  'h',
+  'j',
+  'k',
+  'l',
+  'q',
+  'w',
+  'e',
+  'r',
+  't',
+  'y',
+  'u',
+  'i',
+  'o',
+  'p',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  '0',
 }
 
 local function choose_window()
@@ -99,7 +125,9 @@ local function choose_window()
   vim.set_global_option('laststatus', 2)
   for key, nr in pairs(winkeys) do
     vim.set_win_option(
-      nr, 'statusline', statusline.choose_window_key(vim.fn.winwidth(nr), key)
+      nr,
+      'statusline',
+      statusline.choose_window_key(vim.fn.winwidth(nr), key)
     )
     vim.command('redraw')
   end
@@ -157,7 +185,7 @@ end
 
 local function rename_one_file(vfiler, context, view, target)
   local name = target.name
-  local rename = cmdline.input('New file name - ' .. name, name , 'file')
+  local rename = cmdline.input('New file name - ' .. name, name, 'file')
   if #rename == 0 then
     return -- Canceled
   end
@@ -363,7 +391,7 @@ function M.delete(vfiler, context, view)
     prompt = prompt .. selected[1].name
   end
 
-  local choices = {cmdline.choice.YES, cmdline.choice.NO}
+  local choices = { cmdline.choice.YES, cmdline.choice.NO }
   if cmdline.confirm(prompt, choices, 2) ~= cmdline.choice.YES then
     return
   end
@@ -549,22 +577,22 @@ function M.new_directory(vfiler, context, view)
       end
     elseif core.is_windows and core.path.filereadable(filepath) then
       core.message.warning(
-        'Not created. "%s" file with the same name already exists.', name
-        )
+        'Not created. "%s" file with the same name already exists.',
+        name
+      )
       return false
     end
     return dest:create_directory(name)
   end
 
-  cmdline.input_multiple('New directory names?',
-    function(contents)
-      local created = create_files(dir, contents, create_directory)
-      if created then
-        view:draw(context)
-        -- move the cursor to the created item path
-        view:move_cursor(created[1].path)
-      end
-    end)
+  cmdline.input_multiple('New directory names?', function(contents)
+    local created = create_files(dir, contents, create_directory)
+    if created then
+      view:draw(context)
+      -- move the cursor to the created item path
+      view:move_cursor(created[1].path)
+    end
+  end)
 end
 
 function M.new_file(vfiler, context, view)
@@ -578,22 +606,22 @@ function M.new_file(vfiler, context, view)
       end
     elseif core.is_windows and core.path.isdirectory(filepath) then
       core.message.warning(
-        'Not created. "%s" directory with the same name already exists.', name
+        'Not created. "%s" directory with the same name already exists.',
+        name
       )
       return false
     end
     return dest:create_file(name)
   end
 
-  cmdline.input_multiple('New file names?',
-    function(contents)
-      local created = create_files(dir, contents, create_file)
-      if created then
-        view:draw(context)
-        -- move the cursor to the created item path
-        view:move_cursor(created[1].path)
-      end
-    end)
+  cmdline.input_multiple('New file names?', function(contents)
+    local created = create_files(dir, contents, create_file)
+    if created then
+      view:draw(context)
+      -- move the cursor to the created item path
+      view:move_cursor(created[1].path)
+    end
+  end)
 end
 
 function M.open(vfiler, context, view)

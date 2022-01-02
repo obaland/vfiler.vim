@@ -84,9 +84,7 @@ end
 function Bookmark.add(item)
   local root = read_json()
   local completion = 'customlist,vfiler#extensions#bookmark#complete'
-  local category_name = cmdline.input(
-    'Category name?', 'defualt', completion
-  )
+  local category_name = cmdline.input('Category name?', 'defualt', completion)
   if not category_name or #category_name == 0 then
     return
   end
@@ -112,7 +110,10 @@ function Bookmark.add(item)
   category:add(bookmark_item)
   write_json(root:to_json())
   core.message.info(
-    'Add bookmark - %s/%s (%s)', category.name, item.name, item.path
+    'Add bookmark - %s/%s (%s)',
+    category.name,
+    item.name,
+    item.path
   )
 end
 
@@ -126,7 +127,12 @@ function Bookmark.new(filer, options)
 
   local Extension = require('vfiler/extensions/extension')
   return core.inherit(
-    Bookmark, Extension, filer, 'Bookmark', configs, options
+    Bookmark,
+    Extension,
+    filer,
+    'Bookmark',
+    configs,
+    options
   )
 end
 

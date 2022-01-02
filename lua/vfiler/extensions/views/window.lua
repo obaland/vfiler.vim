@@ -42,14 +42,15 @@ function Window:open(lines, options)
     swapfile = false,
   }
   vim.set_buf_options(
-    self.bufnr, core.table.merge(bufoptions, options.bufoptions)
+    self.bufnr,
+    core.table.merge(bufoptions, options.bufoptions)
   )
 
   -- set window options
   -- default window options
   local winoptions = {
     colorcolumn = '',
-    conceallevel =  2,
+    conceallevel = 2,
     concealcursor = 'nvc',
     foldcolumn = '0',
     foldenable = false,
@@ -59,7 +60,8 @@ function Window:open(lines, options)
     wrap = false,
   }
   vim.set_win_options(
-    self.winid, core.table.merge(winoptions, options.winoptions)
+    self.winid,
+    core.table.merge(winoptions, options.winoptions)
   )
   return self.winid
 end

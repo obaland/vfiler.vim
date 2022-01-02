@@ -43,30 +43,37 @@ end
 function Clipboard:paste(dest)
   local pasted = {}
   for _, item in ipairs(self._items) do
+    local skipped = false
     local destpath = core.path.join(dest.path, item.name)
     if core.path.exists(destpath) then
       if cmdline.util.confirm_overwrite(item.name) ~= cmdline.choice.YES then
-        goto continue
+        skipped = true
       end
     end
-
-    local new = self._function(item, destpath)
-    if new then
-      dest:add(new)
-      table.insert(pasted, new)
-    else
-      core.message.error('%s "%s"', self._fail_format, item.name)
+    if not skipped then
+      local new = self._function(item, destpath)
+      if new then
+        dest:add(new)
+        table.insert(pasted, new)
+      else
+        core.message.error('%s "%s"', self._fail_format, item.name)
+      end
     end
-    ::continue::
   end
 
   if #pasted == 1 then
     core.message.info(
-      '%s "%s" - %s', self._done_message_prefix, dest.path, pasted[1].name
+      '%s "%s" - %s',
+      self._done_message_prefix,
+      dest.path,
+      pasted[1].name
     )
   elseif #pasted > 1 then
     core.message.info(
-      '%s "%s" - %d files', self._done_message_prefix, dest.path, #pasted
+      '%s "%s" - %d files',
+      self._done_message_prefix,
+      dest.path,
+      #pasted
     )
   else
     return false

@@ -38,12 +38,18 @@ local function to_view_options(options, name, win_size, content_size)
     local minheight = floating.minheight or 1
 
     voptions.width = winvalue(
-      floating.width, win_size.width, content_size.width,
-      minwidth, win_size.width
+      floating.width,
+      win_size.width,
+      content_size.width,
+      minwidth,
+      win_size.width
     )
     voptions.height = winvalue(
-      floating.height, win_size.height, content_size.height,
-      minheight, win_size.height
+      floating.height,
+      win_size.height,
+      content_size.height,
+      minheight,
+      win_size.height
     )
     if floating.relative then
       voptions.relative = floating.relative
@@ -53,13 +59,21 @@ local function to_view_options(options, name, win_size, content_size)
     local value = options.top or options.bottom
     voptions.width = 0
     voptions.height = winvalue(
-      value, win_size.height, content_size.height, 1, win_size.height
+      value,
+      win_size.height,
+      content_size.height,
+      1,
+      win_size.height
     )
   elseif options.right or options.left then
     voptions.layout = options.right and 'right' or 'left'
     local value = options.right or options.left
     voptions.width = winvalue(
-      value, win_size.width, content_size.width, 1, win_size.width
+      value,
+      win_size.width,
+      content_size.width,
+      1,
+      win_size.width
     )
     voptions.height = 0
   end
@@ -221,7 +235,10 @@ function Extension:start()
     height = #lines,
   }
   local view_options = to_view_options(
-    self._configs.options, self.name, win_size, content_size
+    self._configs.options,
+    self.name,
+    win_size,
+    content_size
   )
   view_options.bufoptions = self:_on_buf_options(self._configs)
   view_options.winoptions = self:_on_win_options(self._configs)
@@ -229,9 +246,7 @@ function Extension:start()
 
   self.winid = self._view.winid
   local bufnr = self._view.bufnr
-  local lnum = self:_on_opened(
-    self.winid, bufnr, self._items, self._configs
-  )
+  local lnum = self:_on_opened(self.winid, bufnr, self._items, self._configs)
 
   -- define key mappings (overwrite)
   self._configs.mappings = self._view:define_mapping(
@@ -241,7 +256,9 @@ function Extension:start()
 
   -- register events
   event.register(
-    'vfiler_extension', bufnr, self._configs.events,
+    'vfiler_extension',
+    bufnr,
+    self._configs.events,
     [[require('vfiler/extensions/extension')._handle_event]]
   )
 

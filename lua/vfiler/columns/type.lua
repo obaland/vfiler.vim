@@ -7,7 +7,7 @@ function TypeColumn.new()
   local self = core.inherit(TypeColumn, Column, 'type')
 
   local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new {
+  self._syntax = Syntax.new({
     syntaxes = {
       directory = {
         group = 'vfilerType_Directory',
@@ -32,7 +32,7 @@ function TypeColumn.new()
     },
     end_mark = '\\T@',
     ignore_group = 'vfilerType_Ignore',
-  }
+  })
   return self
 end
 

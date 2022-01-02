@@ -8,7 +8,7 @@ function TimeColumn.new()
   self.format = '%Y/%m/%d %H:%M'
 
   local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new {
+  self._syntax = Syntax.new({
     syntaxes = {
       today = {
         group = 'vfilerTime_Today',
@@ -28,7 +28,7 @@ function TimeColumn.new()
     },
     end_mark = '\\t@',
     ignore_group = 'vfilerType_Ignore',
-  }
+  })
   return self
 end
 

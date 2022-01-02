@@ -25,7 +25,9 @@ function M.define(bufnr, mappings, funcstr)
   for key, func in pairs(mappings) do
     local escaped = escape_key(key)
     local rhs = ([[:lua %s(%d, '%s')<CR>]]):format(
-      funcstr, bufnr, vim.fn.escape(escaped, '\\')
+      funcstr,
+      bufnr,
+      vim.fn.escape(escaped, '\\')
     )
 
     keymaps[escaped] = func

@@ -127,17 +127,18 @@ function Context.new(configs)
   self._snapshot = Snapshot.new()
 
   -- set options
+  local ignores = {
+    new = true,
+  }
   for key, value in pairs(configs.options) do
     -- skip ignore option
-    if key == 'new' then
-      goto continue
+    local ignore = ignores[key]
+    if not ignore then
+      if self[key] then
+        core.message.warning('Duplicate "%s" option.', key)
+      end
+      self[key] = value
     end
-
-    if self[key] then
-      core.message.warning('Duplicate "%s" option.', key)
-    end
-    self[key] = value
-    ::continue::
   end
   return self
 end

@@ -9,7 +9,7 @@ function NameColumn.new()
   self.stretch = true
 
   local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new {
+  self._syntax = Syntax.new({
     syntaxes = {
       category = {
         group = 'vfilerBookmarkName_Category',
@@ -34,7 +34,7 @@ function NameColumn.new()
     },
     end_mark = '\\n@',
     ignore_group = 'vfilerBookmarkName_Ignore',
-  }
+  })
   return self
 end
 

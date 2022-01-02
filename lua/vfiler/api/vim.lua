@@ -47,7 +47,12 @@ local function set_keymap(mode, lhs, rhs, opts)
   -- special arguments
   local args = opts._buffer and '<buffer>' or ''
   local args_keys = {
-    'silent', 'nowait', 'special', 'script', 'expr', 'unique'
+    'silent',
+    'nowait',
+    'special',
+    'script',
+    'expr',
+    'unique',
   }
   for _, arg in ipairs(args_keys) do
     if opts[arg] then

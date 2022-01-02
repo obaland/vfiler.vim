@@ -7,11 +7,15 @@ local M = {}
 ------------------------------------------------------------------------------
 M.is_cygwin = vim.fn.has('win32unix') == 1
 M.is_windows = vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1
-M.is_mac = (not M.is_windows) and (not M.is_cygwin) and (
-  (vim.fn.has('mac') == 1) or (vim.fn.has('macunix') == 1) or
-  (vim.fn.has('gui_macvim') == 1) or
-  (vim.fn.isdirectory('/proc') ~= 1) and (vim.fn.executable('sw_vers') == 1)
-)
+M.is_mac = not M.is_windows
+  and not M.is_cygwin
+  and (
+    (vim.fn.has('mac') == 1)
+    or (vim.fn.has('macunix') == 1)
+    or (vim.fn.has('gui_macvim') == 1)
+    or (vim.fn.isdirectory('/proc') ~= 1)
+      and (vim.fn.executable('sw_vers') == 1)
+  )
 M.is_nvim = vim.fn.has('nvim') == 1
 
 function M.inherit(class, super, ...)
@@ -19,8 +23,8 @@ function M.inherit(class, super, ...)
   if not self then
     return nil
   end
-  setmetatable(self, {__index = class})
-  setmetatable(class, {__index = super})
+  setmetatable(self, { __index = class })
+  setmetatable(class, { __index = super })
   return self
 end
 
@@ -49,28 +53,32 @@ M.file = {}
 if M.is_windows then
   function M.dir.copy(src, dest)
     local command = ('robocopy /e %s %s'):format(
-      M.string.shellescape(src), M.string.shellescape(dest)
+      M.string.shellescape(src),
+      M.string.shellescape(dest)
     )
     vim.fn.system(command)
   end
 
   function M.file.copy(src, dest)
     local command = ('copy /y %s %s'):format(
-      M.string.shellescape(src), M.string.shellescape(dest)
+      M.string.shellescape(src),
+      M.string.shellescape(dest)
     )
     vim.fn.system(command)
   end
 else
   function M.dir.copy(src, dest)
     local command = ('cp -fR %s %s'):format(
-      M.string.shellescape(src), M.string.shellescape(dest)
+      M.string.shellescape(src),
+      M.string.shellescape(dest)
     )
     vim.fn.system(command)
   end
 
   function M.file.copy(src, dest)
     local command = ('cp -f %s %s'):format(
-      M.string.shellescape(src), M.string.shellescape(dest)
+      M.string.shellescape(src),
+      M.string.shellescape(dest)
     )
     vim.fn.system(command)
   end
@@ -91,7 +99,10 @@ function M.file.execute(path)
   elseif vim.fn.executable('xdg-open') == 1 then
     -- For Linux
     command = ('xdg-open %s &'):format(vim.fn.shellescape(path))
-  elseif os.getenv('KDE_FULL_SESSION') and os.getenv('KDE_FULL_SESSION') == 'true' then
+  elseif
+    os.getenv('KDE_FULL_SESSION')
+    and os.getenv('KDE_FULL_SESSION') == 'true'
+  then
     -- For KDE
     command = ('kioclient exec %s &'):format(vim.fn.shellescape(path))
   elseif os.getenv('GNOME_DESKTOP_SESSION_ID') then
@@ -259,21 +270,21 @@ function M.syntax.clear_command(names)
 end
 
 function M.syntax.match_command(name, pattern, ...)
-   local command = ('syntax match %s /%s/'):format(name, pattern)
-   if ... then
-     local options = {}
-     for key, value in pairs(...) do
-       local option
-       if type(value) ~= 'boolean' then
-         option = ('%s=%s'):format(key, value)
-       else
-         option = key
-       end
-       table.insert(options, option)
-     end
-     command = command .. ' ' .. table.concat(options, ' ')
-   end
-   return command
+  local command = ('syntax match %s /%s/'):format(name, pattern)
+  if ... then
+    local options = {}
+    for key, value in pairs(...) do
+      local option
+      if type(value) ~= 'boolean' then
+        option = ('%s=%s'):format(key, value)
+      else
+        option = key
+      end
+      table.insert(options, option)
+    end
+    command = command .. ' ' .. table.concat(options, ' ')
+  end
+  return command
 end
 
 ---Generate highlight command string
@@ -308,7 +319,7 @@ local function strwidthpart_reverse(str, strwidth, width)
 end
 
 local function truncate(str, width)
-  local bytes = {str:byte(1, #str)}
+  local bytes = { str:byte(1, #str) }
   for _, byte in ipairs(bytes) do
     if (0 > byte) or (byte > 127) then
       return strwidthpart(str, width)
@@ -324,9 +335,7 @@ end
 
 if M.is_windows then
   function M.string.shellescape(str)
-    return ('"%s"'):format(
-      trim_end(vim.fn.escape(str:gsub('/', [[\]])), '/')
-    )
+    return ('"%s"'):format(trim_end(vim.fn.escape(str:gsub('/', [[\]])), '/'))
   end
 else
   function M.string.shellescape(str)
@@ -346,8 +355,9 @@ function M.string.truncate(str, width, sep, ...)
   local footer_width = ... or 0
   local header_width = width - vim.fn.strwidth(sep) - footer_width
   local replaced = str:gsub('\t', '')
-  local result = strwidthpart(replaced, header_width) ..  sep ..
-                 strwidthpart_reverse(replaced, strwidth, footer_width)
+  local result = strwidthpart(replaced, header_width)
+    .. sep
+    .. strwidthpart_reverse(replaced, strwidth, footer_width)
   return truncate(result, width)
 end
 
@@ -373,13 +383,16 @@ end
 function M.list.unique(src)
   local unique = {}
   for _, v1 in ipairs(src) do
+    local exists = false
     for _, v2 in ipairs(unique) do
       if v1 == v2 then
-        goto continue
+        exists = true
+        break
       end
     end
-    table.insert(unique, v1)
-    ::continue::
+    if not exists then
+      table.insert(unique, v1)
+    end
   end
   return unique
 end
@@ -427,7 +440,18 @@ end
 ------------------------------------------------------------------------------
 M.icon = {}
 
-local frames = {'⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'}
+local frames = {
+  '⠋',
+  '⠙',
+  '⠹',
+  '⠸',
+  '⠼',
+  '⠴',
+  '⠦',
+  '⠧',
+  '⠇',
+  '⠏',
+}
 
 function M.icon.frame(sec)
   local index = (math.floor(sec * 10) % #frames) + 1

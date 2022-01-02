@@ -24,7 +24,7 @@ function IconColumn.new()
   end
 
   local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new {
+  self._syntax = Syntax.new({
     syntaxes = {
       selected = {
         group = 'vfilerIcon_Selected',
@@ -44,7 +44,7 @@ function IconColumn.new()
     },
     end_mark = '\\i@',
     ignore_group = 'vfilerIcon_Ignore',
-  }
+  })
   return self
 end
 

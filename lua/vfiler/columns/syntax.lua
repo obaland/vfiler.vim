@@ -14,7 +14,7 @@ end
 
 function Syntax:syntaxes()
   local end_mark = core.string.vesc(self._end_mark)
-  local ignores = {end_mark}
+  local ignores = { end_mark }
   local group_names = {}
   local commands = {}
 
@@ -24,7 +24,9 @@ function Syntax:syntaxes()
 
     local pattern = ('%s.\\+%s'):format(start_mark, end_mark)
     local command = core.syntax.match_command(
-      syntax.group, pattern, {contains = self._ignore_group}
+      syntax.group,
+      pattern,
+      { contains = self._ignore_group }
     )
     table.insert(commands, command)
     table.insert(group_names, syntax.group)
@@ -37,7 +39,7 @@ function Syntax:syntaxes()
   local ignore_syntax = core.syntax.match_command(
     self._ignore_group,
     table.concat(ignores, '\\|'),
-    {contained = true, conceal = true}
+    { contained = true, conceal = true }
   )
   table.insert(commands, ignore_syntax)
   return commands
@@ -48,21 +50,23 @@ function Syntax:highlights()
   for _, syntax in pairs(self._syntaxes) do
     if syntax.highlight then
       table.insert(
-        commands, core.highlight.link_command(syntax.group, syntax.highlight)
+        commands,
+        core.highlight.link_command(syntax.group, syntax.highlight)
       )
     end
   end
   if self._ignore_group then
     table.insert(
-      commands, core.highlight.link_command(self._ignore_group, 'Ignore')
+      commands,
+      core.highlight.link_command(self._ignore_group, 'Ignore')
     )
   end
   return commands
 end
 
 function Syntax:surround_text(name, str)
-  return self._syntaxes[name].start_mark .. str ..
-         self._end_mark, vim.fn.strwidth(str)
+  return self._syntaxes[name].start_mark .. str .. self._end_mark,
+    vim.fn.strwidth(str)
 end
 
 return Syntax

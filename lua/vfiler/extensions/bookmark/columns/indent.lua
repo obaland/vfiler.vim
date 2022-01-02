@@ -16,7 +16,7 @@ function IndentColumn.new()
   local self = core.inherit(IndentColumn, Column, 'indent')
 
   local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new {
+  self._syntax = Syntax.new({
     syntaxes = {
       indent = {
         group = 'vfilerBookmarkIndent',
@@ -26,7 +26,7 @@ function IndentColumn.new()
     },
     end_mark = '\\@I',
     ignore_group = 'vfilerBookmarkIndent_Ignore',
-  }
+  })
   return self
 end
 
@@ -34,7 +34,8 @@ function IndentColumn:get_text(item, width)
   local indent = item.level - 1
   if indent > 0 then
     return self._syntax:surround_text(
-      'indent', (' '):rep((indent * 2) - 1) .. self.configs.icon
+      'indent',
+      (' '):rep((indent * 2) - 1) .. self.configs.icon
     )
   end
   return '', 0

@@ -16,7 +16,9 @@ local function walk(root, sort_compare)
       end
     end
   end
-  return coroutine.wrap(function() _walk(root, sort_compare) end)
+  return coroutine.wrap(function()
+    _walk(root, sort_compare)
+  end)
 end
 
 local function create_buffer(bufname, options)
@@ -78,7 +80,7 @@ function View.new(bufname, context)
     },
   }, View)
   object:_initialize(context)
-  object.bufnr = create_buffer(bufname, {buflisted = context.listed})
+  object.bufnr = create_buffer(bufname, { buflisted = context.listed })
   object:_apply_syntaxes()
   object:_resize()
   return object
@@ -186,7 +188,7 @@ function View:redraw()
 
   local winwidth = vim.fn.winwidth(winnr) - 1 -- padding end
   local cache = self._cache
-  if cache.winwidth ~= winwidth or (not cache.column_props) then
+  if cache.winwidth ~= winwidth or not cache.column_props then
     cache.column_props = self:_create_column_props(winwidth)
     cache.winwidth = winwidth
   end
@@ -250,7 +252,7 @@ function View:selected_items()
   if #selected == 0 then
     local lnum = vim.fn.line('.')
     if lnum >= self:top_lnum() then
-      selected = {self:get_item(lnum)}
+      selected = { self:get_item(lnum) }
     end
   end
   return selected
@@ -279,13 +281,14 @@ end
 function View:_apply_syntaxes()
   local header_group = 'vfilerHeader'
   local syntaxes = {
-    core.syntax.clear_command({header_group})
+    core.syntax.clear_command({ header_group }),
   }
   local highlights = {}
 
   if self._header then
     table.insert(
-      syntaxes, core.syntax.match_command(header_group, [[\%1l.*]])
+      syntaxes,
+      core.syntax.match_command(header_group, [[\%1l.*]])
     )
   end
 
@@ -315,11 +318,11 @@ function View:_create_column_props(winwidth)
     local width = 0
     if column.variable then
       -- calculate later
-      table.insert(variable_columns, {index = i, object = column})
+      table.insert(variable_columns, { index = i, object = column })
     else
       width = column:get_width(self._items, rest_width)
     end
-    table.insert(props, {width = width})
+    table.insert(props, { width = width })
     rest_width = rest_width - width
   end
 
@@ -328,7 +331,8 @@ function View:_create_column_props(winwidth)
     local width_by_columns = math.floor(rest_width / #variable_columns)
     for _, column in ipairs(variable_columns) do
       props[column.index].width = column.object:get_width(
-        self._items, width_by_columns
+        self._items,
+        width_by_columns
       )
     end
   end
@@ -349,7 +353,7 @@ function View:_initialize(context)
   end
 
   self._auto_resize = context.auto_resize
-  self._cache = {winwidth = 0}
+  self._cache = { winwidth = 0 }
   self._header = context.header
 
   self._width = 0

@@ -20,7 +20,7 @@ function PathColumn.new()
   local self = core.inherit(PathColumn, Column, 'path')
 
   local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new {
+  self._syntax = Syntax.new({
     syntaxes = {
       path = {
         group = 'vfilerBookmarkItem_Path',
@@ -35,7 +35,7 @@ function PathColumn.new()
     },
     end_mark = '\\p@',
     ignore_group = 'vfilerBookmarkPath_Ignore',
-  }
+  })
   return self
 end
 

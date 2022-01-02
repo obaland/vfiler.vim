@@ -14,7 +14,7 @@ end
 function action.delete(extension)
   local item = extension:get_current()
   local prompt = 'Are you sure you want to delete? - ' .. item.name
-  local choices = {cmdline.choice.YES, cmdline.choice.NO}
+  local choices = { cmdline.choice.YES, cmdline.choice.NO }
   if cmdline.confirm(prompt, choices, 2) ~= cmdline.choice.YES then
     return
   end

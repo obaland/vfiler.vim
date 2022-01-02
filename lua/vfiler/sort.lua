@@ -42,7 +42,7 @@ function M.types()
       local vfirst = value:byte(1, 1)
       local vlower = (0x61 <= vfirst) and (vfirst <= 0x7A)
 
-      if (tlower and vlower) or (not (tlower or vlower)) then
+      if (tlower and vlower) or not (tlower or vlower) then
         if type < value then
           pos = i
           break

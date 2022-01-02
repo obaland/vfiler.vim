@@ -12,7 +12,7 @@ function NameColumn.new()
   self.max_width = 0
 
   local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new {
+  self._syntax = Syntax.new({
     syntaxes = {
       selected = {
         group = 'vfilerName_Selected',
@@ -42,7 +42,7 @@ function NameColumn.new()
     },
     end_mark = '\\n@',
     ignore_group = 'vfilerName_Ignore',
-  }
+  })
   return self
 end
 
@@ -69,7 +69,7 @@ function NameColumn:get_text(item, width)
   return self._syntax:surround_text(
     syntax_name,
     core.string.truncate(name, width, '..', math.floor(width / 2))
-    )
+  )
 end
 
 function NameColumn:get_width(items, width)

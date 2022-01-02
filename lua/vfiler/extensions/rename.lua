@@ -13,9 +13,7 @@ function Rename.new(filer, options)
   end
 
   local Extension = require('vfiler/extensions/extension')
-  return core.inherit(
-    Rename, Extension, filer, 'Rename', configs, options
-  )
+  return core.inherit(Rename, Extension, filer, 'Rename', configs, options)
 end
 
 function Rename:check()
@@ -107,14 +105,15 @@ function Rename:_on_opened(winid, bufnr, items, configs)
   local group_changed = 'vfilerRename_Changed'
 
   local syntaxes = {
-    core.syntax.clear_command({group_notchanged, group_changed}),
+    core.syntax.clear_command({ group_notchanged, group_changed }),
     core.syntax.match_command(group_changed, [[^.\+$]]),
   }
   -- Create "NotChanged" syntax for each line
   for i, item in ipairs(items) do
     local pattern = ([[^\%%%dl%s$]]):format(i, item.name)
     table.insert(
-      syntaxes, core.syntax.match_command(group_notchanged, pattern)
+      syntaxes,
+      core.syntax.match_command(group_notchanged, pattern)
     )
   end
   vim.win_executes(winid, syntaxes)

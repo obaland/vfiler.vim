@@ -15,7 +15,7 @@ function M.start_command(args)
   if not options then
     return false
   end
-  return M.start(dirpath, {options = options})
+  return M.start(dirpath, { options = options })
 end
 
 ---Start vfiler

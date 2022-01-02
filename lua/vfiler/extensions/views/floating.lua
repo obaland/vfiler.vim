@@ -81,7 +81,7 @@ function Floating:_open_tile(name, win_options)
   vim.api.nvim_win_set_option(winid, 'cursorline', false)
 
   -- set title name
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, {title})
+  vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, { title })
 
   self._title = {
     bufnr = bufnr,

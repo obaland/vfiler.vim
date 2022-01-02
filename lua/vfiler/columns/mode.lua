@@ -7,7 +7,7 @@ function ModeColumn.new()
   local self = core.inherit(ModeColumn, Column, 'mode')
 
   local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new {
+  self._syntax = Syntax.new({
     syntaxes = {
       executable = {
         group = 'vfilerMode_Executable',
@@ -37,7 +37,7 @@ function ModeColumn.new()
     },
     end_mark = '\\m@',
     ignore_group = 'vfilerMode_Ignore',
-  }
+  })
   return self
 end
 
