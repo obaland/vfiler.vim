@@ -83,7 +83,7 @@ end
 
 function Bookmark.add(item)
   local root = read_json()
-  local completion = 'customlist,vfiler#extensions#bookmark#complete'
+  local completion = 'customlist,vfiler#bookmark#complete'
   local category_name = cmdline.input('Category name?', 'defualt', completion)
   if not category_name or #category_name == 0 then
     return
