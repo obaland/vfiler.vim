@@ -40,7 +40,7 @@ end
 
 function NameColumn:get_text(item, width)
   local name = item.name
-  local syntax_name = ''
+  local syntax_name
   if item.iscategory then
     syntax_name = 'category'
   elseif item.islink then

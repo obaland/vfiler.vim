@@ -9,11 +9,15 @@ M.choice = {
   CANCEL = '&Cancel',
 }
 
+function M.clear_prompt()
+  vim.command('normal :esc<CR>')
+end
+
 function M.confirm(prompt, choices, default)
-  vim.command('echon')
+  M.clear_prompt()
   prompt = ('[vfiler] %s'):format(prompt)
   local choice = vim.fn.confirm(prompt, table.concat(choices, '\n'), default)
-  vim.command('redraw')
+  M.clear_prompt()
   if choice == 0 then
     return M.choice.Cancel
   end
@@ -29,7 +33,7 @@ function M.getchar(prompt)
   }
   vim.commands(commands)
   local code = vim.fn.getchar()
-  vim.command('echo ""')
+  M.clear_prompt()
 
   local char = nil
   if (32 <= code) and (code <= 126) then
@@ -47,13 +51,13 @@ function M.input(prompt, ...)
 
   prompt = ('[vfiler] %s: '):format(prompt)
 
-  local content = ''
+  local content
   if completion then
     content = vim.fn.input(prompt, text, completion)
   else
     content = vim.fn.input(prompt, text)
   end
-  vim.command('redraw')
+  M.clear_prompt()
   return content
 end
 

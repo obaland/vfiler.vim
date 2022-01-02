@@ -1,3 +1,4 @@
+local cmdline = require('vfiler/cmdline')
 local core = require('vfiler/core')
 local event = require('vfiler/event')
 local vim = require('vfiler/vim')
@@ -8,7 +9,7 @@ local Extension = {}
 Extension.__index = Extension
 
 local function winvalue(value, win_value, content_value, min, max)
-  local result = 0
+  local result
   if value == 'auto' then
     result = content_value
   else
@@ -71,7 +72,7 @@ local function to_view_options(options, name, win_size, content_size)
 end
 
 local function new_view(options)
-  local view = nil
+  local view
   if options.floating then
     if core.is_nvim then
       view = require('vfiler/extensions/views/floating')
@@ -180,7 +181,7 @@ function Extension:quit()
   end
   extensions[self._view.bufnr] = nil
 
-  vim.command('echo') -- Clear prompt message
+  cmdline.clear_prompt()
   self._view:close()
   if self.on_quit then
     self._filer:do_action(self.on_quit)
@@ -267,7 +268,7 @@ function Extension:_close()
   end
   extensions[self._view.bufnr] = nil
 
-  vim.command('echo') -- Clear prompt message
+  cmdline.clear_prompt()
   self._view:close()
   return true
 end

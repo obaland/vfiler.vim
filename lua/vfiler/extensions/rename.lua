@@ -1,3 +1,4 @@
+local cmdline = require('vfiler/cmdline')
 local config = require('vfiler/extensions/rename/config')
 local core = require('vfiler/core')
 local vim = require('vfiler/vim')
@@ -18,7 +19,7 @@ function Rename.new(filer, options)
 end
 
 function Rename:check()
-  vim.command('echo')
+  cmdline.clear_prompt()
 
   -- Check the difference in the number of target files
   local buflen = vim.fn.line('$')

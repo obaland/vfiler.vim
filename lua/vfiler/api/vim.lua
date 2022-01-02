@@ -31,7 +31,7 @@ end
 ------------------------------------------------------------------------------
 
 local function set_keymap(mode, lhs, rhs, opts)
-  local command = ''
+  local command
   if opts.noremap then
     if mode == '!' then
       command = 'noremap!'

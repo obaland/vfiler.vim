@@ -48,7 +48,7 @@ end
 
 function NameColumn:get_text(item, width)
   local name = item.name
-  local syntax_name = ''
+  local syntax_name
   if item.selected then
     syntax_name = 'selected'
   elseif item.name:sub(1, 1) == '.' then

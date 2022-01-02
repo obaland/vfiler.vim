@@ -77,7 +77,7 @@ else
 end
 
 function M.file.execute(path)
-  local command = ''
+  local command
   if M.is_windows then
     command = ('start rundll32 url.dll,FileProtocolHandler %s'):format(
       vim.fn.escape(path, '#%')
@@ -263,7 +263,7 @@ function M.syntax.match_command(name, pattern, ...)
    if ... then
      local options = {}
      for key, value in pairs(...) do
-       local option = ''
+       local option
        if type(value) ~= 'boolean' then
          option = ('%s=%s'):format(key, value)
        else

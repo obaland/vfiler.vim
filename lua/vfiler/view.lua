@@ -207,7 +207,6 @@ function View:redraw()
   vim.set_buf_option(self.bufnr, 'readonly', false)
   vim.fn.setbufline(self.bufnr, 1, lines)
   vim.fn.deletebufline(self.bufnr, #lines + 1, '$')
-  vim.command('echo ""')
   vim.set_buf_option(self.bufnr, 'modifiable', false)
   vim.set_buf_option(self.bufnr, 'readonly', true)
 
@@ -217,7 +216,7 @@ end
 --- Redraw the contents of the specified line number
 function View:redraw_line(lnum)
   local item = self:get_item(lnum)
-  local line = ''
+  local line
   if self._header and lnum == 1 then
     line = self:_toheader(item)
   else

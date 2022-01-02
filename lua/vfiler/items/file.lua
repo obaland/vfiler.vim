@@ -5,7 +5,7 @@ local File = {}
 
 function File.create(path)
   -- create file
-  local command = ''
+  local command
   if core.is_windows then
     command = ('type nul > "%s"'):format(path)
   else

@@ -3,8 +3,6 @@ local vim = require('vfiler/vim')
 
 local PathColumn = {}
 
-local NOT_EXIST_FORMAT = '[Not exist] - %s'
-
 local function to_text(item)
   if not item.path then
     return ''

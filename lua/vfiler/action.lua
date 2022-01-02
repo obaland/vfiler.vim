@@ -104,7 +104,7 @@ local function choose_window()
     vim.command('redraw')
   end
 
-  local key = nil
+  local key
   local prompt = ('choose (%s) ?'):format(table.concat(keys, '/'))
   repeat
     key = cmdline.getchar(prompt)
@@ -406,7 +406,6 @@ function M.jump_to_directory(vfiler, context, view)
     return
   end
   M.cd(vfiler, context, view, dirpath)
-  vim.command('echo') -- clear prompt message
 end
 
 function M.jump_to_home(vfiler, context, view)

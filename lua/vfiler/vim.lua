@@ -1,5 +1,4 @@
-local M = nil
-
+local M
 if vim.fn.has('nvim') == 1 then
   M = require('vfiler/api/nvim')
 else
@@ -24,7 +23,7 @@ function M.get_win_option_boolean(window, name)
 end
 
 local function set_option_command(command, name, value)
-  local option = ''
+  local option
   if type(value) == 'boolean' then
     option = value and name or 'no' .. name
   else
