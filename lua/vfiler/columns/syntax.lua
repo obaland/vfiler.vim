@@ -48,11 +48,21 @@ end
 function Syntax:highlights()
   local commands = {}
   for _, syntax in pairs(self._syntaxes) do
-    if syntax.highlight then
-      table.insert(
-        commands,
-        core.highlight.link_command(syntax.group, syntax.highlight)
-      )
+    local highlight = syntax.highlight
+    if highlight then
+      if type(highlight) == 'string' then
+        table.insert(
+          commands,
+          core.highlight.link_command(syntax.group, highlight)
+        )
+      elseif type(highlight) == 'table' then
+        table.insert(
+          commands,
+          core.highlight.command(syntax.group, highlight)
+        )
+      else
+        core.message.error('Illegal "highlight" type. (%s)', type(highlight))
+      end
     end
   end
   if self._ignore_group then

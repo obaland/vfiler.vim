@@ -288,6 +288,20 @@ function M.syntax.match_command(name, pattern, ...)
 end
 
 ---Generate highlight command string
+---@param name string
+---@param args table
+function M.highlight.command(name, args)
+  if not args then
+    return ''
+  end
+  local command = ('highlight! default %s'):format(name)
+  for key, value in pairs(args) do
+    command = command .. (' %s=%s'):format(key, value)
+  end
+  return command
+end
+
+---Generate highlight command string
 ---@param from string
 ---@param to string
 ---@return string
