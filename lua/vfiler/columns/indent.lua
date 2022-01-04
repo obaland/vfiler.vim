@@ -35,7 +35,7 @@ function IndentColumn:get_text(item, width)
   if indent > 0 then
     return self._syntax:surround_text(
       'indent',
-      (' '):rep((indent * 2) - 1) .. self.configs.icon
+      (' '):rep((indent * 2) - 1) .. IndentColumn.configs.icon
     )
   end
   return '', 0
@@ -51,7 +51,8 @@ function IndentColumn:get_width(items, width)
   if max_level == 0 then
     return 0
   end
-  return ((max_level * 2) - 1) + vim.fn.strwidth(self.configs.icon)
+  local icon_width = vim.fn.strwidth(IndentColumn.configs.icon)
+  return ((max_level * 2) - 1) + icon_width
 end
 
 return IndentColumn

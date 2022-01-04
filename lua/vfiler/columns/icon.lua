@@ -4,24 +4,32 @@ local vim = require('vfiler/vim')
 local IconColumn = {}
 
 IconColumn.configs = {
-  selected = '*',
-  file = ' ',
-  closed = '+',
-  opened = '-',
+  icons = {
+    selected = '*',
+    file = ' ',
+    closed = '+',
+    opened = '-',
+  },
 }
+
+local function get_icon_width(icons)
+  local width = 0
+  for _, icon in ipairs(icons) do
+    width = math.max(vim.fn.strwidth(icon), width)
+  end
+  return width
+end
+
+local icon_width = get_icon_width(IconColumn.configs.icons)
 
 function IconColumn.setup(configs)
   core.table.merge(IconColumn.configs, configs)
+  icon_width = get_icon_width(IconColumn.configs.icons)
 end
 
 function IconColumn.new()
   local Column = require('vfiler/columns/column')
   local self = core.inherit(IconColumn, Column, 'icon')
-
-  self.icon_width = 0
-  for _, icon in pairs(IconColumn.configs) do
-    self.icon_width = math.max(self.icon_width, vim.fn.strwidth(icon))
-  end
 
   local Syntax = require('vfiler/columns/syntax')
   self._syntax = Syntax.new({
@@ -60,13 +68,13 @@ function IconColumn:get_text(item, width)
     iname = 'file'
     sname = 'file'
   end
-  local icon = self.configs[iname]
-  icon = icon .. (' '):rep(self.icon_width - vim.fn.strwidth(icon))
+  local icon = IconColumn.configs.icons[iname]
+  icon = icon .. (' '):rep(icon_width - vim.fn.strwidth(icon))
   return self._syntax:surround_text(sname, icon)
 end
 
 function IconColumn:get_width(items, width)
-  return self.icon_width
+  return icon_width
 end
 
 return IconColumn
