@@ -113,12 +113,14 @@ function View:draw(context)
   self:redraw()
 
   -- update statusline
-  local winnr = self:winnr()
-  local statusline = require('vfiler/statusline')
-  local winwidth = vim.fn.winwidth(winnr)
-  local status = statusline.status(winwidth, context)
-  vim.set_win_option(self:winnr(), 'statusline', status)
-  self._winoptions.statusline = status
+  if context.statusline then
+    local winnr = self:winnr()
+    local statusline = require('vfiler/statusline')
+    local winwidth = vim.fn.winwidth(winnr)
+    local status = statusline.status(winwidth, context)
+    vim.set_win_option(self:winnr(), 'statusline', status)
+    self._winoptions.statusline = status
+  end
 end
 
 --- Get the item on the current cursor

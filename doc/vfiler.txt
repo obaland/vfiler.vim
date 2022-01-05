@@ -261,6 +261,10 @@ parameters for an option.  You need to escape spaces with "\".
     If enabled, Make hidden files visible by default.
     Default: false
 
+-stausline                                         *vfiler-options-statusline*
+    If enabled, Display the information on the statusline.
+    Default: true
+
 -layout={type}                                         *vfiler-options-layout*
     Specify the layout of the window.
 
