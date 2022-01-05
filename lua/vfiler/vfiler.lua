@@ -123,14 +123,14 @@ function VFiler.new(context)
   event.register(
     'vfiler',
     view.bufnr,
-    context._events,
+    context.events,
     [[require('vfiler/vfiler')._handle_event]]
   )
 
   local object = setmetatable({
     _context = context,
     _view = view,
-    _defined_mappings = define_mappings(view.bufnr, context._mappings),
+    _defined_mappings = define_mappings(view.bufnr, context.mappings),
   }, VFiler)
 
   -- add vfiler resource
@@ -153,7 +153,7 @@ end
 
 function VFiler._handle_event(bufnr, type)
   local vfiler = VFiler.get(bufnr)
-  local action = vfiler._context._events[type]
+  local action = vfiler._context.events[type]
   if not action then
     core.message.error('Event "%s" is not registered.', type)
     return
@@ -229,16 +229,10 @@ end
 --- Reset
 ---@param context table
 function VFiler:reset(context)
-  -- clear the data so far
   self:unlink()
-  mapping.undefine(self._context._mappings)
-
+  self:_remap(context.mappings)
   self._context:reset(context)
   self._view:reset(context)
-  self._defined_mappings = define_mappings(
-    self._view.bufnr,
-    context._mappings
-  )
 end
 
 --- Start the filer
@@ -262,6 +256,24 @@ function VFiler:unlink()
     vfiler._context.linked = nil
   end
   self._context.linked = nil
+end
+
+--- Update from context
+function VFiler:update(context)
+  -- Save the status quo
+  local current = self._view:get_current()
+  if current then
+    self._context:save(current.path)
+  end
+
+  self:_remap(context.mappings)
+  self._context:update(context)
+  self._view:reset(context)
+end
+
+function VFiler:_remap(mappings)
+  mapping.undefine(self._context.mappings)
+  self._defined_mappings = define_mappings(self._view.bufnr, mappings)
 end
 
 return VFiler

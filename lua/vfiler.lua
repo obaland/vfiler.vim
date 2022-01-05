@@ -34,9 +34,11 @@ function M.start(dirpath, configs)
   VFiler.cleanup()
 
   local options = merged_configs.options
+  local context = Context.new(merged_configs)
   local vfiler = VFiler.find_visible(options.name)
   if vfiler then
     vfiler:open()
+    vfiler:update(context)
     vfiler:do_action(action.cd, dirpath)
     return true
   end
@@ -48,10 +50,10 @@ function M.start(dirpath, configs)
 
   vfiler = VFiler.find_hidden(options.name)
   if options.new or not vfiler then
-    local context = Context.new(merged_configs)
     vfiler = VFiler.new(context)
   else
     vfiler:open()
+    vfiler:update(context)
   end
 
   vfiler:start(dirpath)

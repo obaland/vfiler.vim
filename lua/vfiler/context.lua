@@ -122,8 +122,8 @@ Context.__index = Context
 function Context.new(configs)
   local self = setmetatable({}, Context)
   self:_initialize()
-  self._events = core.table.copy(configs.events)
-  self._mappings = core.table.copy(configs.mappings)
+  self.events = core.table.copy(configs.events)
+  self.mappings = core.table.copy(configs.mappings)
   self._snapshot = Snapshot.new()
 
   -- set options
@@ -182,15 +182,7 @@ end
 ---@param context table
 function Context:reset(context)
   self:_initialize()
-  -- copy options
-  for key, value in pairs(context) do
-    local type = type(value)
-    if type == 'string' or type == 'boolean' or type == 'number' then
-      self[key] = value
-    end
-  end
-  self._mappings = core.table.copy(context._mappings)
-  self._events = core.table.copy(context._events)
+  self:update(context)
   self._snapshot = Snapshot.new()
 end
 
@@ -222,6 +214,20 @@ end
 function Context:sync(context)
   self._snapshot:save(context.root, context.root.path)
   self:switch(context.root.path)
+end
+
+--- Update from another context
+---@param context table
+function Context:update(context)
+  -- copy options
+  for key, value in pairs(context) do
+    local type = type(value)
+    if type == 'string' or type == 'boolean' or type == 'number' then
+      self[key] = value
+    end
+  end
+  self.mappings = core.table.copy(context.mappings)
+  self.events = core.table.copy(context.events)
 end
 
 return Context
