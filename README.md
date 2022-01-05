@@ -58,7 +58,7 @@ vfiler can also be started by calling a lua function.
 require('vfiler').start(path)
 ```
 
-## Demo
+## Screenshots
 ### Basic
 ![basic](https://github.com/obaland/contents/blob/main/vfiler.vim/image-basic.png?raw=true)
 
@@ -67,6 +67,9 @@ require('vfiler').start(path)
 
 ### Explorer style
 ![tree](https://github.com/obaland/contents/blob/main/vfiler.vim/image-tree.png?raw=true)
+
+### Extension by [devicons](https://github.com/obaland/vfiler-column-devicons)
+![devicons](https://github.com/obaland/contents/blob/main/vfiler.vim/image-devicons.png?raw=true)
 
 ## Configuration
 ### Explorer style
@@ -93,7 +96,8 @@ require('vfiler/config').setup {
 require('vfiler').start()
 ```
 
-## vfiler extensions
+## Extension plugins
+- [obaland/vfiler-column-devicons](https://github.com/obaland/vfiler-column-devicons)
 - [obaland/vfiler-fzf](https://github.com/obaland/vfiler-fzf)
 
 ## Lastly
