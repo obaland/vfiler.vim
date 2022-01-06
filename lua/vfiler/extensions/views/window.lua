@@ -86,7 +86,13 @@ function Window:_on_open(lines, options)
 
   -- set name to statusline
   if options.name then
-    vim.set_win_option(winid, 'statusline', options.name)
+    vim.set_win_option(
+      winid,
+      'statusline',
+      ('%%#vfilerStatusLineSection# %s %%#vfilerStatusLine#'):format(
+        options.name
+      )
+    )
   end
   return winid
 end
