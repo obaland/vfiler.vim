@@ -187,14 +187,6 @@ function VFiler:get_root_item()
   return self._context.root
 end
 
---- Get current status (for statusline)
-function VFiler:get_status()
-  if not self._context then
-    return ''
-  end
-  return self._context.status
-end
-
 --- Link with the specified filer
 function VFiler:link(vfiler)
   self._context.linked = vfiler
