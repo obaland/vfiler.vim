@@ -1,26 +1,21 @@
+local core = require('vfiler/core')
+
 local M = {}
 
-local columns = {
-  icon = require('vfiler/columns/icon').new(),
-  indent = require('vfiler/columns/indent').new(),
-  mode = require('vfiler/columns/mode').new(),
-  name = require('vfiler/columns/name').new(),
-  size = require('vfiler/columns/size').new(),
-  space = require('vfiler/columns/space').new(),
-  time = require('vfiler/columns/time').new(),
-  type = require('vfiler/columns/type').new(),
-}
+local loaded_columns = {}
 
-function M.get(name)
-  return columns[name]
-end
-
-function M.register(column)
-  columns[column.name] = column
-end
-
-function M.unregister(name)
-  columns[name] = nil
+function M.load(name)
+  local column = loaded_columns[name]
+  if column then
+    return column
+  end
+  local code, cmodule = pcall(require, 'vfiler/columns/' .. name)
+  if not code then
+    core.message.error('Unknown "%s" column module.', name)
+    return nil
+  end
+  loaded_columns[name] = cmodule.new()
+  return loaded_columns[name]
 end
 
 return M

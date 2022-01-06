@@ -45,7 +45,7 @@ local function create_columns(columns)
 
   local cnames = vim.from_vimlist(vim.fn.split(columns, ','))
   for _, cname in ipairs(cnames) do
-    local object = column.get(cname)
+    local object = column.load(cname)
     if column then
       table.insert(objects, object)
     else
@@ -81,6 +81,10 @@ function View.new(bufname, context)
   }, View)
   object:_initialize(context)
   object.bufnr = create_buffer(bufname, { buflisted = context.listed })
+  object._previus_statusline = vim.get_win_option(
+    object:winnr(),
+    'statusline'
+  )
   object:_apply_syntaxes()
   object:_resize()
   return object
@@ -120,6 +124,9 @@ function View:draw(context)
     local status = statusline.status(winwidth, context)
     vim.set_win_option(self:winnr(), 'statusline', status)
     self._winoptions.statusline = status
+  else
+    vim.set_win_option(self:winnr(), 'statusline', self._previus_statusline)
+    self._winoptions.statusline = self._previus_statusline
   end
 end
 
