@@ -78,14 +78,15 @@ M.configs = {
 
 -- Convert command option string for completion
 local command_option_names = {}
-local command_not_option_names = {}
 
 for name, value in pairs(M.configs.options) do
   local opname = name:gsub('_', '-')
   if type(value) == 'boolean' then
-    table.insert(command_not_option_names, '-no-' .. opname)
+    table.insert(command_option_names, '-no-' .. opname)
+    table.insert(command_option_names, '-' .. opname)
+  else
+    table.insert(command_option_names, '-' .. opname .. '=')
   end
-  table.insert(command_option_names, '-' .. opname)
 end
 
 local function error(message)
@@ -154,15 +155,12 @@ function M.complete_options(arglead)
     return vim.to_vimlist({})
   end
 
-  local target
-  if arglead:find('^-no') then
-    target = command_not_option_names
-  else
-    target = command_option_names
-  end
+  local pattern = '^' .. core.string.pesc(arglead)
   local list = {}
-  for _, name in ipairs(target) do
-    if name:find(arglead) then
+  for _, name in ipairs(command_option_names) do
+    print(name, pattern)
+    if name:match(pattern) then
+      print('match!')
       table.insert(list, name)
     end
   end
