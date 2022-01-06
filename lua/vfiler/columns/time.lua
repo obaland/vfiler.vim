@@ -4,7 +4,7 @@ local TimeColumn = {}
 
 function TimeColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(TimeColumn, Column, 'time')
+  local self = core.inherit(TimeColumn, Column)
   self.format = '%Y/%m/%d %H:%M'
 
   local Syntax = require('vfiler/columns/syntax')

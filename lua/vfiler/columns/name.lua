@@ -4,7 +4,7 @@ local NameColumn = {}
 
 function NameColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(NameColumn, Column, 'name')
+  local self = core.inherit(NameColumn, Column)
   self.variable = true
   self.stretch = true
 

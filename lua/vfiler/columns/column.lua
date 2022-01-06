@@ -1,9 +1,8 @@
 local Column = {}
 Column.__index = Column
 
-function Column.new(name)
+function Column.new()
   return setmetatable({
-    name = name,
     variable = false,
     stretch = false,
     _syntax = nil,

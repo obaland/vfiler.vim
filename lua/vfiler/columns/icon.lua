@@ -29,7 +29,7 @@ end
 
 function IconColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(IconColumn, Column, 'icon')
+  local self = core.inherit(IconColumn, Column)
 
   local Syntax = require('vfiler/columns/syntax')
   self._syntax = Syntax.new({

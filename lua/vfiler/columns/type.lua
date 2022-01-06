@@ -4,7 +4,7 @@ local TypeColumn = {}
 
 function TypeColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(TypeColumn, Column, 'type')
+  local self = core.inherit(TypeColumn, Column)
 
   local Syntax = require('vfiler/columns/syntax')
   self._syntax = Syntax.new({

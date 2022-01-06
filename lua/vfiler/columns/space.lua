@@ -4,7 +4,7 @@ local SpaceColumn = {}
 
 function SpaceColumn.new()
   local Column = require('vfiler/columns/column')
-  return core.inherit(SpaceColumn, Column, 'space')
+  return core.inherit(SpaceColumn, Column)
 end
 
 function SpaceColumn:get_text(item, width)
