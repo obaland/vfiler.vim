@@ -158,9 +158,7 @@ function M.complete_options(arglead)
   local pattern = '^' .. core.string.pesc(arglead)
   local list = {}
   for _, name in ipairs(command_option_names) do
-    print(name, pattern)
     if name:match(pattern) then
-      print('match!')
       table.insert(list, name)
     end
   end
