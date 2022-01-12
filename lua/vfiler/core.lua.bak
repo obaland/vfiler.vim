@@ -211,8 +211,7 @@ end
 M.path = {}
 
 function M.path.escape(path)
-  local replaced = path:gsub('\\', '/')
-  return replaced
+  return path:gsub('\\', '/')
 end
 
 function M.path.exists(path)
@@ -247,16 +246,6 @@ function M.path.normalize(path)
   return M.path.escape(vim.fn.fnamemodify(path, ':p'))
 end
 
-function M.path.parent(path)
-  local parent
-  if path:sub(-1) == '/' then
-    parent = vim.fn.fnamemodify(path, ':h:h')
-  else
-    parent = vim.fn.fnamemodify(path, ':h')
-  end
-  return M.path.normalize(parent)
-end
-
 function M.path.root(path)
   local root = ''
   if M.is_windows then
@@ -276,51 +265,24 @@ end
 M.syntax = {}
 M.highlight = {}
 
-local function get_syntax_option_string(options)
-  if not options then
-    return ''
-  end
-
-  local option_strings = {}
-  for key, value in pairs(options) do
-    local option
-    if type(value) ~= 'boolean' then
-      option = ('%s=%s'):format(key, value)
-    else
-      option = key
-    end
-    table.insert(option_strings, option)
-  end
-  return table.concat(option_strings, ' ')
-end
-
 function M.syntax.clear_command(names)
   return ('silent! syntax clear %s'):format(table.concat(names, ' '))
 end
 
-function M.syntax.match_command(name, pattern, options)
+function M.syntax.match_command(name, pattern, ...)
   local command = ('syntax match %s /%s/'):format(name, pattern)
-  local option = get_syntax_option_string(options or {})
-  if #option > 0 then
-    command = command .. ' ' .. option
-  end
-  return command
-end
-
-function M.syntax.region_command(
-  name, start_pattern, end_pattern, matchgroup, options
-)
-  local command = 'syntax region ' .. name
-  if matchgroup and #matchgroup > 0 then
-    command = command .. ' matchgroup=' .. matchgroup
-  end
-  command = command .. (' start=/%s/ end=/%s/'):format(
-    start_pattern,
-    end_pattern
-  )
-  local option = get_syntax_option_string(options or {})
-  if #option > 0 then
-    command = command .. ' ' .. option
+  if ... then
+    local options = {}
+    for key, value in pairs(...) do
+      local option
+      if type(value) ~= 'boolean' then
+        option = ('%s=%s'):format(key, value)
+      else
+        option = key
+      end
+      table.insert(options, option)
+    end
+    command = command .. ' ' .. table.concat(options, ' ')
   end
   return command
 end
@@ -382,8 +344,7 @@ end
 
 -- Lua pettern escape
 function M.string.pesc(s)
-  local replaced = s:gsub('([%^%(%)%[%]%*%+%-%?%.%%])', '%%%1')
-  return replaced
+  return s:gsub('([%^%(%)%[%]%*%+%-%?%.%%])', '%%%1')
 end
 
 if M.is_windows then
