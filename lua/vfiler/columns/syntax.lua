@@ -58,7 +58,7 @@ function Syntax:highlights()
       elseif type(highlight) == 'table' then
         table.insert(
           commands,
-          core.highlight.command(syntax.group, highlight)
+          core.highlight.command(highlight.name, highlight.args)
         )
       else
         core.message.error('Illegal "highlight" type. (%s)', type(highlight))
