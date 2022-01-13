@@ -17,7 +17,6 @@ function SizeColumn.new()
       },
     },
     end_mark = '\\s@',
-    ignore_group = 'vfilerName_Ignore',
   })
   return self
 end

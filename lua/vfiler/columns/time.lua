@@ -27,7 +27,6 @@ function TimeColumn.new()
       },
     },
     end_mark = '\\t@',
-    ignore_group = 'vfilerType_Ignore',
   })
   return self
 end

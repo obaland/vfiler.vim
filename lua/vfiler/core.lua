@@ -307,17 +307,12 @@ function M.syntax.match_command(name, pattern, options)
   return command
 end
 
-function M.syntax.region_command(
-  name, start_pattern, end_pattern, matchgroup, options
-)
+function M.syntax.region_command(name, startp, endp, matchgroup, options)
   local command = 'syntax region ' .. name
   if matchgroup and #matchgroup > 0 then
     command = command .. ' matchgroup=' .. matchgroup
   end
-  command = command .. (' start=/%s/ end=/%s/'):format(
-    start_pattern,
-    end_pattern
-  )
+  command = command .. (' start=/%s/ end=/%s/'):format(startp, endp)
   local option = get_syntax_option_string(options or {})
   if #option > 0 then
     command = command .. ' ' .. option

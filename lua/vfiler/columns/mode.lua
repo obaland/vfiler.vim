@@ -36,7 +36,6 @@ function ModeColumn.new()
       },
     },
     end_mark = '\\m@',
-    ignore_group = 'vfilerMode_Ignore',
   })
   return self
 end

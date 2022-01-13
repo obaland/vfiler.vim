@@ -14,62 +14,57 @@ end
 
 function Syntax:syntaxes()
   local end_mark = core.string.vesc(self._end_mark)
-  local ignores = { end_mark }
   local group_names = {}
   local commands = {}
 
   for _, syntax in pairs(self._syntaxes) do
-    local start_mark = core.string.vesc(syntax.start_mark)
-    table.insert(ignores, start_mark)
+    -- set options
+    local options = {}
+    if syntax.options then
+      core.table.merge(options, syntax.options)
+    end
 
-    local pattern = ('%s.\\+%s'):format(start_mark, end_mark)
-    local command = core.syntax.match_command(
-      syntax.group,
-      pattern,
-      { contains = self._ignore_group }
-    )
+    local command
+    if syntax.pattern then
+      command = core.syntax.match_command(
+        syntax.group,
+        syntax.pattern,
+        options
+      )
+    else
+      local start_mark = core.string.vesc(syntax.start_mark)
+      options.concealends = true
+      command = core.syntax.region_command(
+        syntax.group,
+        start_mark,
+        end_mark,
+        syntax.group .. 'Mark',
+        options
+      )
+    end
+
     table.insert(commands, command)
     table.insert(group_names, syntax.group)
   end
 
   -- clear syntax (insert at the first of command list)
   table.insert(commands, 1, core.syntax.clear_command(group_names))
-
-  -- ignore syntax
-  local ignore_syntax = core.syntax.match_command(
-    self._ignore_group,
-    table.concat(ignores, '\\|'),
-    { contained = true, conceal = true }
-  )
-  table.insert(commands, ignore_syntax)
   return commands
 end
 
 function Syntax:highlights()
   local commands = {}
   for _, syntax in pairs(self._syntaxes) do
-    local highlight = syntax.highlight
-    if highlight then
-      if type(highlight) == 'string' then
-        table.insert(
-          commands,
-          core.highlight.link_command(syntax.group, highlight)
-        )
-      elseif type(highlight) == 'table' then
-        table.insert(
-          commands,
-          core.highlight.command(highlight.name, highlight.args)
-        )
+    local hl = syntax.highlight
+    if hl then
+      if type(hl) == 'string' then
+        table.insert(commands, core.highlight.link_command(syntax.group, hl))
+      elseif type(hl) == 'table' then
+        table.insert(commands, core.highlight.command(syntax.group, hl))
       else
-        core.message.error('Illegal "highlight" type. (%s)', type(highlight))
+        core.message.error('Illegal "highlight" type. (%s)', type(hl))
       end
     end
-  end
-  if self._ignore_group then
-    table.insert(
-      commands,
-      core.highlight.link_command(self._ignore_group, 'Ignore')
-    )
   end
   return commands
 end

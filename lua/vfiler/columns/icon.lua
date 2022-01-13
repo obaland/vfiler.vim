@@ -51,7 +51,6 @@ function IconColumn.new()
       },
     },
     end_mark = '\\i@',
-    ignore_group = 'vfilerIcon_Ignore',
   })
   return self
 end

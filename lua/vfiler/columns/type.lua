@@ -31,7 +31,6 @@ function TypeColumn.new()
       },
     },
     end_mark = '\\T@',
-    ignore_group = 'vfilerType_Ignore',
   })
   return self
 end

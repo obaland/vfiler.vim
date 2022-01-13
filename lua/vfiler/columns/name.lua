@@ -41,7 +41,6 @@ function NameColumn.new()
       },
     },
     end_mark = '\\n@',
-    ignore_group = 'vfilerName_Ignore',
   })
   return self
 end
