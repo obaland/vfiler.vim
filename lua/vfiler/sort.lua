@@ -26,8 +26,8 @@ function M.set(type, compare)
   M.compares[type] = compare
   -- set descending order at the same time
   local desc_name = to_desc_name(type)
-  M.compares[desc_name] = function(item2, item1)
-    return compare(item1, item2)
+  M.compares[desc_name] = function(item1, item2)
+    return compare(item2, item1)
   end
 end
 
@@ -57,19 +57,19 @@ function M.types()
   return types
 end
 
-function M.compare_string(str2, str1)
+function M.compare_string(str1, str2)
   local length = math.min(#str1, #str2)
   for i = 1, length do
     local word1 = (str1:sub(i, i)):lower()
     local word2 = (str2:sub(i, i)):lower()
 
-    if word2 < word1 then
+    if word1 < word2 then
       return true
-    elseif word2 > word1 then
+    elseif word1 > word2 then
       return false
     end
   end
-  return (#str2 - #str1) < 0
+  return (#str1 - #str2) < 0
 end
 
 ------------------------------------------------------------------------------
@@ -77,47 +77,47 @@ end
 ------------------------------------------------------------------------------
 
 -- extension ascending
-M.set('extension', function(item2, item1)
-  if item2.isdirectory and not item1.isdirectory then
+M.set('extension', function(item1, item2)
+  if item1.isdirectory and not item2.isdirectory then
     return true
-  elseif not item2.isdirectory and item1.isdirectory then
+  elseif not item1.isdirectory and item2.isdirectory then
     return false
-  elseif item2.isdirectory and item1.isdirectory then
-    return M.compare_string(item2.name, item1.name)
+  elseif item1.isdirectory and item2.isdirectory then
+    return M.compare_string(item1.name, item2.name)
   end
 
   local ext1 = vim.fn.fnamemodify(item1.name, ':e')
   local ext2 = vim.fn.fnamemodify(item2.name, ':e')
   if #ext1 == 0 and #ext2 == 0 then
-    return M.compare_string(item2.name, item1.name)
+    return M.compare_string(item1.name, item2.name)
   end
-  return M.compare_string(ext2, ext1)
+  return M.compare_string(ext1, ext2)
 end)
 
 -- name ascending
-M.set('name', function(item2, item1)
-  if item2.isdirectory and not item1.isdirectory then
+M.set('name', function(item1, item2)
+  if item1.isdirectory and not item2.isdirectory then
     return true
-  elseif not item2.isdirectory and item1.isdirectory then
+  elseif not item1.isdirectory and item2.isdirectory then
     return false
   end
-  return M.compare_string(item2.name, item1.name)
+  return M.compare_string(item1.name, item2.name)
 end)
 
 -- size ascending
-M.set('size', function(item2, item1)
-  if item2.size == item1.size then
-    return M.compares.name(item2, item1)
+M.set('size', function(item1, item2)
+  if item1.size == item2.size then
+    return M.compares.name(item1, item2)
   end
-  return item2.size < item1.size
+  return item1.size < item2.size
 end)
 
 -- time ascending
-M.set('time', function(item2, item1)
-  if item2.time == item1.time then
-    return M.compares.name(item2, item1)
+M.set('time', function(item1, item2)
+  if item1.time == item2.time then
+    return M.compares.name(item1, item2)
   end
-  return item2.time < item1.time
+  return item1.time < item2.time
 end)
 
 return M
