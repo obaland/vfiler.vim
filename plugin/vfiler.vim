@@ -33,6 +33,22 @@ highlight default link vfilerTime              None
 highlight default link vfilerTimeToday         PreProc
 highlight default link vfilerTimeWeek          Type
 
+highlight default link vfilerGitStatusDelimiter Comment
+highlight default vfilerGitStatusDeleted
+      \ ctermfg=167 guifg=#fb4934
+highlight default vfilerGitStatusIndex
+      \ ctermfg=142 guifg=#b8bb26
+highlight default vfilerGitStatusModified
+      \ ctermfg=214 guifg=#fabd2f
+highlight default vfilerGitStatusUnmerged
+      \ ctermfg=167 guifg=#fb4934
+highlight default link vfilerGitStatusUntracked Comment
+highlight default link vfilerGitStatusIgnored   Comment
+highlight default vfilerGitStatusRenamed
+      \ ctermfg=214 guifg=#fabd2f
+highlight default vfilerGitStatusWorktree
+      \ ctermfg=1 guifg=#dc233f
+
 highlight default link vfilerStatusLine        StatusLine
 highlight default vfilerStatusLineSection
       \ ctermfg=230 ctermbg=57 guifg=#ffffd7 guibg=#44788E

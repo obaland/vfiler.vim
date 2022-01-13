@@ -5,19 +5,22 @@ local vim = require('vfiler/vim')
 local View = {}
 View.__index = View
 
-local function walk(root, sort_compare)
-  local function _walk(item, compare)
+local function walk(root, sort_compare, gitstatus)
+  local function _walk(item)
+    -- Override gitstatus of items
+    item.gitstatus = gitstatus[item.path]
+
     local children = item.children
     if children then
-      table.sort(children, compare)
+      table.sort(children, sort_compare)
       for _, child in ipairs(children) do
         coroutine.yield(child)
-        _walk(child, compare)
+        _walk(child)
       end
     end
   end
   return coroutine.wrap(function()
-    _walk(root, sort_compare)
+    _walk(root)
   end)
 end
 
@@ -107,7 +110,7 @@ function View:draw(context)
     table.insert(self._items, context.root)
   end
   local compare = sort.get(context.sort)
-  for item in walk(context.root, compare) do
+  for item in walk(context.root, compare, context.gitstatus) do
     local hidden = item.name:sub(1, 1) == '.'
     if context.show_hidden_files or not hidden then
       table.insert(self._items, item)

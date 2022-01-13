@@ -230,15 +230,16 @@ end
 --- Start the filer
 ---@param dirpath string
 function VFiler:start(dirpath)
-  self._context:switch(dirpath)
-  self:draw()
-  core.cursor.move(self._view:top_lnum())
+  self._context:switch(dirpath, function()
+    self:draw()
+    core.cursor.move(self._view:top_lnum())
+  end)
 end
 
 --- Synchronize to the vfiler
 ---@param context table
-function VFiler:sync(context)
-  self._context:sync(context)
+function VFiler:sync(context, on_completed)
+  self._context:sync(context, on_completed)
 end
 
 --- Unlink filer

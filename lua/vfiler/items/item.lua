@@ -9,6 +9,7 @@ function Item.new(filepath, islink)
   local time = vim.fn.getftime(filepath)
 
   return setmetatable({
+    gitstatus = nil,
     isdirectory = core.path.isdirectory(filepath),
     islink = islink,
     level = 0,

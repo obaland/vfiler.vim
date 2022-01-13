@@ -1,4 +1,5 @@
 local core = require('vfiler/core')
+local git = require('vfiler/git')
 local vim = require('vfiler/vim')
 
 local Directory = require('vfiler/items/directory')
@@ -61,21 +62,21 @@ function ItemAttribute.new(name)
 end
 
 ------------------------------------------------------------------------------
--- Snapshot class
+-- Session class
 ------------------------------------------------------------------------------
 
-local Snapshot = {}
-Snapshot.__index = Snapshot
+local Session = {}
+Session.__index = Session
 
-function Snapshot.new()
+function Session.new()
   return setmetatable({
     _drives = {},
     _attributes = {},
-  }, Snapshot)
+  }, Session)
 end
 
-function Snapshot:copy(snapshot)
-  self._drives = core.table.copy(snapshot._drives)
+function Session:copy(session)
+  self._drives = core.table.copy(session._drives)
   for path, attribute in pairs(self._attributes) do
     self._attributes[path] = {
       previus_path = attribute.previus_path,
@@ -84,7 +85,15 @@ function Snapshot:copy(snapshot)
   end
 end
 
-function Snapshot:save(root, path)
+function Session:get_previous_path(rootpath)
+  local attribute = self._attributes[rootpath]
+  if not attribute then
+    return nil
+  end
+  return attribute.previus_path
+end
+
+function Session:save(root, path)
   local drive = core.path.root(root.path)
   self._drives[drive] = root.path
   self._attributes[root.path] = {
@@ -93,7 +102,7 @@ function Snapshot:save(root, path)
   }
 end
 
-function Snapshot:load(root)
+function Session:load(root)
   local attribute = self._attributes[root.path]
   if not attribute then
     return nil
@@ -102,7 +111,7 @@ function Snapshot:load(root)
   return attribute.previus_path
 end
 
-function Snapshot:load_dirpath(drive)
+function Session:load_dirpath(drive)
   local dirpath = self._drives[drive]
   if not dirpath then
     return nil
@@ -124,7 +133,9 @@ function Context.new(configs)
   self:_initialize()
   self.events = core.table.copy(configs.events)
   self.mappings = core.table.copy(configs.mappings)
-  self._snapshot = Snapshot.new()
+  self.gitroot = nil
+  self.gitstatus = {}
+  self._session = Session.new()
 
   -- set options
   local ignores = {
@@ -140,14 +151,8 @@ function Context.new(configs)
       self[key] = value
     end
   end
+  self._git_enabled = self:_check_git_enabled()
   return self
-end
-
-function Context:_initialize()
-  self.clipboard = nil
-  self.extension = nil
-  self.linked = nil
-  self.root = nil
 end
 
 --- Save the path in the current context
@@ -156,7 +161,7 @@ function Context:save(path)
   if not self.root then
     return
   end
-  self._snapshot:save(self.root, path)
+  self._session:save(self.root, path)
 end
 
 --- Duplicate context
@@ -164,7 +169,7 @@ function Context:duplicate()
   local new = setmetatable({}, Context)
   new:_initialize()
   new:reset(self)
-  new._snapshot:copy(self._snapshot)
+  new._session:copy(self._session)
   return new
 end
 
@@ -173,9 +178,20 @@ function Context:parent_path()
   if self.root.parent then
     return self.root.parent.path
   end
-  local path = self.root.path
-  local mods = path:sub(#path, #path) == '/' and ':h:h' or ':h'
-  return vim.fn.fnamemodify(path, mods)
+  return core.path.parent(self.root.path)
+end
+
+--- Reload Git status
+---@param on_completed function
+function Context:reload_gitstatus(on_completed)
+  if not self.gitroot then
+    return
+  end
+
+  self:_reload_gitstatus(function(gitstatus)
+    self.gitstatus = gitstatus
+    on_completed(self)
+  end)
 end
 
 --- Reset from another context
@@ -183,37 +199,64 @@ end
 function Context:reset(context)
   self:_initialize()
   self:update(context)
-  self._snapshot = Snapshot.new()
+  self._session = Session.new()
 end
 
 --- Switch the context to the specified directory path
 ---@param dirpath string
-function Context:switch(dirpath)
+function Context:switch(dirpath, on_completed)
+  dirpath = core.path.normalize(dirpath)
   -- perform auto cd
   if self.auto_cd then
     vim.command('silent lcd ' .. dirpath)
   end
 
+  local previus_path = self._session:get_previous_path(dirpath)
+  local num_processes = 1
+  local completed = 0
+
+  -- reload git status
+  if self._git_enabled then
+    if not (self.gitroot and dirpath:match(self.gitroot)) then
+      self.gitroot = git.get_toplevel(dirpath)
+    end
+    if self.gitroot then
+      num_processes = num_processes + 1
+      self:_reload_gitstatus(function(gitstatus)
+        self.gitstatus = gitstatus
+        completed = completed + 1
+        if completed >= num_processes then
+          on_completed(self, previus_path)
+        end
+      end)
+    end
+  end
+
   self.root = Directory.new(dirpath, false)
   self.root:open()
-  return self._snapshot:load(self.root)
+  self._session:load(self.root)
+
+  completed = completed + 1
+  if completed >= num_processes then
+    on_completed(self, previus_path)
+  end
 end
 
 --- Switch the context to the specified drive path
 ---@param drive string
-function Context:switch_drive(drive)
-  local dirpath = self._snapshot:load_dirpath(drive)
+function Context:switch_drive(drive, on_completed)
+  local dirpath = self._session:load_dirpath(drive)
   if not dirpath then
     dirpath = drive
   end
-  return self:switch(dirpath)
+  self:switch(dirpath, on_completed)
 end
 
 --- Synchronize with other context
 ---@param context table
-function Context:sync(context)
-  self._snapshot:save(context.root, context.root.path)
-  self:switch(context.root.path)
+function Context:sync(context, on_completed)
+  self._session:save(context.root, context.root.path)
+  self:switch(context.root.path, on_completed)
 end
 
 --- Update from another context
@@ -228,6 +271,28 @@ function Context:update(context)
   end
   self.mappings = core.table.copy(context.mappings)
   self.events = core.table.copy(context.events)
+end
+
+function Context:_check_git_enabled()
+  if not self.git or vim.fn.executable('git') ~= 1 then
+    return false
+  end
+  return self.columns:match('git%w*') ~= nil
+end
+
+function Context:_initialize()
+  self.clipboard = nil
+  self.extension = nil
+  self.linked = nil
+  self.root = nil
+end
+
+function Context:_reload_gitstatus(on_completed)
+  local options = {
+    untracked = self.git_untracked,
+    ignored = self.git_ignored,
+  }
+  git.reload_status(self.gitroot, options, on_completed)
 end
 
 return Context

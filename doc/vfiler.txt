@@ -236,6 +236,18 @@ parameters for an option.  You need to escape spaces with "\".
     see |vfiler-columns|.
     Default: "indent,icon,name,mode,size,time"
 
+-git                                                      *vfiler-options-git*
+    Handles Git information.
+    Defualt: true
+
+-git-ignored                                      *vfiler-options-git-ignored*
+    Include Git ignored files.
+    Defualt: true
+
+-git-untracked                                  *vfiler-options-git-untracked*
+    Include Git untracked files.
+    Defualt: true
+
 -header                                                *vfiler-options-header*
     Display the header line
     Defualt: true
@@ -312,6 +324,9 @@ time                                                     *vfiler-columns-time*
 
 type                                                     *vfiler-columns-type*
     File type.
+
+git                                                       *vfiler-columns-git*
+    Git status.
 
 space                                                   *vfiler-columns-space*
     Space column for padding.

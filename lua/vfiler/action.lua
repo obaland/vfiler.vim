@@ -210,7 +210,7 @@ end
 -- Interfaces
 ------------------------------------------------------------------------------
 
-function M.cd(vfiler, context, view, dirpath)
+function M.cd(vfiler, context, view, dirpath, on_completed)
   if context.root and context.root.path == dirpath then
     -- Same directory path
     return
@@ -220,9 +220,13 @@ function M.cd(vfiler, context, view, dirpath)
   if current then
     context:save(current.path)
   end
-  local path = context:switch(dirpath)
-  view:draw(context)
-  view:move_cursor(path)
+  context:switch(dirpath, function(ctx, path)
+    view:draw(ctx)
+    view:move_cursor(path)
+    if on_completed then
+      on_completed()
+    end
+  end)
 end
 
 function M.open_file(vfiler, context, view, path, open)
@@ -296,8 +300,9 @@ function M.close_tree_or_cd(vfiler, context, view)
   local level = item and item.level or 0
   if level == 0 or (level <= 1 and not item.opened) then
     local path = context.root.path
-    M.cd(vfiler, context, view, context:parent_path())
-    view:move_cursor(path)
+    M.cd(vfiler, context, view, context:parent_path(), function()
+      view:move_cursor(path)
+    end)
   else
     M.close_tree(vfiler, context, view)
   end
@@ -453,9 +458,8 @@ function M.latest_update(vfiler, context, view)
     return
   end
 
-  for i = view:top_lnum(), view:num_lines() do
-    local item = view:get_item(i)
-    if item.isdirectory and item.opened then
+  for item in view:walk_items() do
+    if item.isdirectory then
       if vim.fn.getftime(item.path) > item.time then
         M.reload(vfiler, context, view)
         return
@@ -700,13 +704,16 @@ function M.quit(vfiler, context, view)
 end
 
 function M.redraw(vfiler, context, view)
-  view:draw(context)
+  context:reload_gitstatus(function()
+    view:draw(context)
+  end)
 end
 
 function M.reload(vfiler, context, view)
   context:save(view:get_current().path)
-  context:switch(context.root.path)
-  view:draw(context)
+  context:switch(context.root.path, function(ctx)
+    view:draw(ctx)
+  end)
 end
 
 function M.rename(vfiler, context, view)
@@ -733,7 +740,7 @@ function M.switch_to_drive(vfiler, context, view)
     initial_items = drives,
     default = root,
 
-    on_selected = function(filer, c, v, drive)
+    on_selected = function(filer, ctx, v, drive)
       if core.is_windows then
         if root == drive then
           return
@@ -743,10 +750,11 @@ function M.switch_to_drive(vfiler, context, view)
       end
 
       local path = v:get_current().path
-      c:save(path)
-      path = c:switch_drive(drive)
-      v:draw(c)
-      v:move_cursor(path)
+      ctx:save(path)
+      ctx:switch_drive(drive, function(c, p)
+        v:draw(c)
+        v:move_cursor(p)
+      end)
     end,
   })
   menu:start()
@@ -788,9 +796,10 @@ function M.sync_with_current_filer(vfiler, context, view)
   end
 
   linked:open()
-  linked:sync(context)
-  linked:draw()
-  vfiler:open() -- return current window
+  linked:sync(context, function()
+    linked:draw()
+    vfiler:open() -- return current window
+  end)
 end
 
 function M.toggle_show_hidden(vfiler, context, view)
