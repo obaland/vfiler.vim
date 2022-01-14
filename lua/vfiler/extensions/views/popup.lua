@@ -46,7 +46,7 @@ function Popup:_on_open(lines, options)
     mapping = false,
     minheight = options.minheight,
     minwidth = options.minwidth,
-    title = options.name,
+    title = ' ' .. options.name .. ' ',
     wrap = false,
     zindex = 200,
     width = options.width,
@@ -71,10 +71,16 @@ function Popup:_on_open(lines, options)
   else
     popup_options.pos = 'center'
   end
-  return vim.fn.popup_create(
+
+  local winid = vim.fn.popup_create(
     vim.to_vimlist(lines),
     vim.to_vimdict(popup_options)
   )
+
+  -- set wincolor option
+  vim.set_win_option(winid, 'wincolor', 'Normal')
+
+  return winid
 end
 
 return Popup
