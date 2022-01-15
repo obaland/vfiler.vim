@@ -133,8 +133,6 @@ function Context.new(configs)
   self:_initialize()
   self.events = core.table.copy(configs.events)
   self.mappings = core.table.copy(configs.mappings)
-  self.gitroot = nil
-  self.gitstatus = {}
   self._session = Session.new()
 
   -- set options
@@ -285,6 +283,8 @@ function Context:_initialize()
   self.extension = nil
   self.linked = nil
   self.root = nil
+  self.gitroot = nil
+  self.gitstatus = {}
 end
 
 function Context:_reload_gitstatus(on_completed)
