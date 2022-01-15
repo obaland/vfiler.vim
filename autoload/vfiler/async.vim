@@ -31,17 +31,17 @@ function! vfiler#async#job_stop(id) abort
 endfunction
 
 function! vfiler#async#job_out_cb(id, channel, message) abort
-  call luaeval('require("vfiler/async/job")._out_cb(_A.id, _A.message)',
+  call luaeval('require("vfiler/libs/async/job")._out_cb(_A.id, _A.message)',
         \ {'id': a:id, 'message': a:message}
         \ )
 endfunction
 
 function! vfiler#async#job_err_cb(id, channel, message) abort
-  call luaeval('require("vfiler/async/job")._err_cb(_A.id, _A.message)',
+  call luaeval('require("vfiler/libs/async/job")._err_cb(_A.id, _A.message)',
         \ {'id': a:id, 'message': a:message}
         \ )
 endfunction
 
 function! vfiler#async#job_close_cb(id, channel) abort
-  call luaeval('require("vfiler/async/job")._close_cb(_A)', a:id)
+  call luaeval('require("vfiler/libs/async/job")._close_cb(_A)', a:id)
 endfunction

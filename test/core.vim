@@ -7,7 +7,7 @@ let s:assert = themis#helper('assert')
 
 function! s:truncate(str, width, sep, footer_width) abort
   return luaeval(
-        \ 'require("vfiler/core").string.truncate(_A.str, _A.width, _A.sep, _A.fwidth)',
+        \ 'require("vfiler/libs/core").string.truncate(_A.str, _A.width, _A.sep, _A.fwidth)',
         \ {'str': a:str, 'width': a:width, 'sep': a:sep, 'fwidth': a:footer_width}
         \ )
 endfunction
@@ -64,7 +64,7 @@ endfunction
 
 function! s:path_join(path, name)
   return luaeval(
-        \ 'require("vfiler/core").path.join(_A.path, _A.name)',
+        \ 'require("vfiler/libs/core").path.join(_A.path, _A.name)',
         \ {'path': a:path, 'name': a:name }
         \ )
 endfunction
@@ -90,7 +90,7 @@ endfunction
 
 function! s:math_within(v, min, max)
   return luaeval(
-        \ 'require("vfiler/core").math.within(_A.v, _A.min, _A.max)',
+        \ 'require("vfiler/libs/core").math.within(_A.v, _A.min, _A.max)',
         \ {'v': a:v, 'min': a:min, 'max': a:max }
         \ )
 endfunction

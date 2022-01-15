@@ -1,7 +1,7 @@
-local cmdline = require('vfiler/cmdline')
-local core = require('vfiler/core')
+local cmdline = require('vfiler/libs/cmdline')
+local core = require('vfiler/libs/core')
 local event = require('vfiler/event')
-local vim = require('vfiler/vim')
+local vim = require('vfiler/libs/vim')
 
 local extensions = {}
 
@@ -89,12 +89,12 @@ local function new_view(options)
   local view
   if options.floating then
     if core.is_nvim then
-      view = require('vfiler/extensions/views/floating')
+      view = require('vfiler/views/floating')
     else
-      view = require('vfiler/extensions/views/popup')
+      view = require('vfiler/views/popup')
     end
   else
-    view = require('vfiler/extensions/views/window')
+    view = require('vfiler/views/window')
   end
   return view.new()
 end

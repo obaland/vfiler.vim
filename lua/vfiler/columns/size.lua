@@ -1,4 +1,4 @@
-local core = require('vfiler/core')
+local core = require('vfiler/libs/core')
 
 local SizeColumn = {}
 

@@ -1,7 +1,7 @@
 local action = require('vfiler/action')
 local config = require('vfiler/config')
-local core = require('vfiler/core')
-local vim = require('vfiler/vim')
+local core = require('vfiler/libs/core')
+local vim = require('vfiler/libs/vim')
 
 local Context = require('vfiler/context')
 local VFiler = require('vfiler/vfiler')

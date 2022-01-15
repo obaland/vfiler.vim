@@ -1,5 +1,5 @@
 local action = require('vfiler/extensions/menu/action')
-local core = require('vfiler/core')
+local core = require('vfiler/libs/core')
 
 local M = {}
 

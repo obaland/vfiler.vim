@@ -1,7 +1,7 @@
-local core = require('vfiler/core')
-local vim = require('vfiler/vim')
+local core = require('vfiler/libs/core')
+local vim = require('vfiler/libs/vim')
 
-local Job = require('vfiler/async/job')
+local Job = require('vfiler/libs/async/job')
 
 local M = {}
 

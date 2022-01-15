@@ -1,6 +1,6 @@
 local action = require('vfiler/action')
-local core = require('vfiler/core')
-local vim = require('vfiler/vim')
+local core = require('vfiler/libs/core')
+local vim = require('vfiler/libs/vim')
 
 local M = {}
 

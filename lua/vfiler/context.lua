@@ -1,6 +1,6 @@
-local core = require('vfiler/core')
-local git = require('vfiler/git')
-local vim = require('vfiler/vim')
+local core = require('vfiler/libs/core')
+local git = require('vfiler/libs/git')
+local vim = require('vfiler/libs/vim')
 
 local Directory = require('vfiler/items/directory')
 

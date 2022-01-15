@@ -1,4 +1,4 @@
-local vim = require('vfiler/vim')
+local vim = require('vfiler/libs/vim')
 
 local Timer = {}
 Timer.__index = Timer

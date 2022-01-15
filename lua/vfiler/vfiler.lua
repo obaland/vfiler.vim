@@ -1,7 +1,7 @@
-local core = require('vfiler/core')
+local core = require('vfiler/libs/core')
 local event = require('vfiler/event')
 local mapping = require('vfiler/mapping')
-local vim = require('vfiler/vim')
+local vim = require('vfiler/libs/vim')
 
 local View = require('vfiler/view')
 

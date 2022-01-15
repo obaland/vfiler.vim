@@ -1,4 +1,4 @@
-local Timer = require('vfiler/async/timer')
+local Timer = require('vfiler/libs/async/timer')
 
 local M = {}
 

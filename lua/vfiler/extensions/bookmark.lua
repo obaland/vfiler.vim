@@ -1,7 +1,7 @@
-local cmdline = require('vfiler/cmdline')
+local cmdline = require('vfiler/libs/cmdline')
 local config = require('vfiler/extensions/bookmark/config')
-local core = require('vfiler/core')
-local vim = require('vfiler/vim')
+local core = require('vfiler/libs/core')
+local vim = require('vfiler/libs/vim')
 
 local Category = require('vfiler/extensions/bookmark/items/category')
 local Item = require('vfiler/extensions/bookmark/items/item')

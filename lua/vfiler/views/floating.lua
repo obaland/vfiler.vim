@@ -1,10 +1,10 @@
-local core = require('vfiler/core')
-local vim = require('vfiler/vim')
+local core = require('vfiler/libs/core')
+local vim = require('vfiler/libs/vim')
 
 local Floating = {}
 
 function Floating.new()
-  local Window = require('vfiler/extensions/views/window')
+  local Window = require('vfiler/views/window')
   return core.inherit(Floating, Window)
 end
 

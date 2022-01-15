@@ -1,6 +1,6 @@
-local core = require('vfiler/core')
+local core = require('vfiler/libs/core')
 local sort = require('vfiler/sort')
-local vim = require('vfiler/vim')
+local vim = require('vfiler/libs/vim')
 
 local View = {}
 View.__index = View

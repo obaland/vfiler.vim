@@ -1,4 +1,4 @@
-local core = require('vfiler/core')
+local core = require('vfiler/libs/core')
 
 -- Vim functions
 local job_start = vim.fn['vfiler#async#job_start']
@@ -35,7 +35,7 @@ function Job._close_cb(id)
 end
 
 function Job.new(options)
-  local Base = require('vfiler/async/job/base')
+  local Base = require('vfiler/libs/async/job/base')
   return core.inherit(Job, Base, options)
 end
 

@@ -1,8 +1,8 @@
 local M
 if vim.fn.has('nvim') == 1 then
-  M = require('vfiler/api/nvim')
+  M = require('vfiler/libs/api/nvim')
 else
-  M = require('vfiler/api/vim')
+  M = require('vfiler/libs/api/vim')
 end
 
 ------------------------------------------------------------------------------

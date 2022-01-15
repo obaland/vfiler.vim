@@ -1,7 +1,7 @@
-local core = require('vfiler/core')
-local cmdline = require('vfiler/cmdline')
+local core = require('vfiler/libs/core')
+local cmdline = require('vfiler/libs/cmdline')
 local sort = require('vfiler/sort')
-local vim = require('vfiler/vim')
+local vim = require('vfiler/libs/vim')
 
 local Bookmark = require('vfiler/extensions/bookmark')
 local Clipboard = require('vfiler/clipboard')
