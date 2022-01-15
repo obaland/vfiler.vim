@@ -255,10 +255,12 @@ function M.open_file(vfiler, context, view, path, open)
   end
 
   -- redraw the caller filer
-  local dest_winnr = vim.fn.winnr()
-  vfiler:open()
-  view:redraw()
-  core.window.move(dest_winnr)
+  if open ~= 'tab' then
+    local dest_winnr = vim.fn.winnr()
+    vfiler:open()
+    view:redraw()
+    core.window.move(dest_winnr)
+  end
 
   if isdirectory then
     local newfiler = VFiler.find_hidden(context.name)
