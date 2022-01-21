@@ -34,7 +34,6 @@ function PathColumn.new()
       },
     },
     end_mark = '\\p@',
-    ignore_group = 'vfilerBookmarkPath_Ignore',
   })
   return self
 end

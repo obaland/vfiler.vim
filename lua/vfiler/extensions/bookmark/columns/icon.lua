@@ -43,7 +43,6 @@ function IconColumn.new()
       },
     },
     end_mark = '\\i@',
-    ignore_group = 'vfilerBookmarkIcon_Ignore',
   })
   return self
 end

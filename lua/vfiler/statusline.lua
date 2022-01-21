@@ -32,7 +32,7 @@ local M = {}
 --  itemnum = function(context)
 --    local offset = 0
 --    local num = vim.fn.line('$')
---    if context.header then
+--    if context.options.header then
 --      num = num - 1
 --      offset = 1
 --    end

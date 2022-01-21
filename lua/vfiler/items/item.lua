@@ -13,7 +13,7 @@ function Item.new(filepath, islink)
     isdirectory = core.path.isdirectory(filepath),
     islink = islink,
     level = 0,
-    name = vim.fn.fnamemodify(filepath, ':t'),
+    name = core.path.name(filepath),
     parent = nil,
     path = core.path.normalize(filepath),
     selected = false,

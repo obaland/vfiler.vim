@@ -10,9 +10,6 @@ M.configs = {
     auto_cd = false,
     auto_resize = false,
     columns = 'indent,icon,name,mode,size,time',
-    git = true,
-    git_ignored = true,
-    git_untracked = true,
     header = true,
     keep = false,
     listed = true,
@@ -25,13 +22,24 @@ M.configs = {
     height = 30,
     new = false,
     quit = true,
+    git = {
+      enabled = true,
+      ignored = true,
+      untracked = true,
+    },
+    preview = {
+      layout = 'floating',
+      width = 0,
+      height = 0,
+    },
   },
 
   mappings = {
     ['.'] = action.toggle_show_hidden,
     ['<BS>'] = action.change_to_parent,
     ['<C-l>'] = action.reload,
-    ['<C-p>'] = action.sync_with_current_filer,
+    ['<C-p>'] = action.toggle_auto_preview,
+    ['<C-r>'] = action.sync_with_current_filer,
     ['<C-s>'] = action.toggle_sort,
     ['<CR>'] = action.open,
     ['<S-Space>'] = action.toggle_select_up,
@@ -49,6 +57,7 @@ M.configs = {
     ['k'] = action.loop_cursor_up,
     ['l'] = action.open_tree,
     ['mm'] = action.move_to_filer,
+    ['p'] = action.toggle_preview,
     ['q'] = action.quit,
     ['r'] = action.rename,
     ['s'] = action.open_by_split,
@@ -72,23 +81,41 @@ M.configs = {
   },
 
   events = {
-    BufEnter = action.redraw,
-    CursorHold = action.latest_update,
-    FocusGained = action.latest_update,
-    VimResized = action.redraw,
+    vfiler = {
+      BufEnter = action.redraw,
+      CursorHold = action.latest_update,
+      FocusGained = action.latest_update,
+      VimResized = action.redraw,
+    },
+
+    vfiler_preview = {
+      BufLeave = action.close_preview,
+      CursorMoved = action.preview_cursor_moved,
+    },
   },
 }
 
 -- Convert command option string for completion
 local command_option_names = {}
 
-for name, value in pairs(M.configs.options) do
-  local opname = name:gsub('_', '-')
+local function insert_option_name(names, key, value)
+  local opname = key:gsub('_', '-')
   if type(value) == 'boolean' then
-    table.insert(command_option_names, '-no-' .. opname)
-    table.insert(command_option_names, '-' .. opname)
+    table.insert(names, '-no-' .. opname)
+    table.insert(names, '-' .. opname)
   else
-    table.insert(command_option_names, '-' .. opname .. '=')
+    table.insert(names, '-' .. opname .. '=')
+  end
+end
+
+for name, value in pairs(M.configs.options) do
+  if type(value) == 'table' then
+    for k, v in pairs(value) do
+      local opname = name .. '_' .. k
+      insert_option_name(command_option_names, opname, v)
+    end
+  else
+    insert_option_name(command_option_names, name, value)
   end
 end
 
@@ -112,7 +139,7 @@ local function normalize(value)
   return vim.fn.trim(value, ' "')
 end
 
-local function split(str_args)
+local function split_args(str_args)
   local args = {}
   local pos = 1
   local escaped, in_dquote = false, false
@@ -149,6 +176,30 @@ local function parse_option(arg)
   return key:gsub('%-', '_'), value, key
 end
 
+local function set_option(options, name, value, key)
+  local defalut = options[name]
+  if defalut ~= nil then
+    if type(value) ~= type(defalut) then
+      error(string.format('Illegal option value. (%s)', value))
+      return false
+    end
+    options[name] = value
+    return true
+  end
+
+  -- nest option
+  local splitted = vim.fn.split(name, '_')
+  local top_name = splitted[1]
+  local nest_name = splitted[2]
+  local top = options[top_name]
+  if not (top and nest_name and top[nest_name]) then
+    error(string.format('Unknown "%s" option.', key))
+    return false
+  end
+  top[nest_name] = value
+  return true
+end
+
 function M.clear_mappings()
   M.configs.mappings = {}
 end
@@ -179,20 +230,15 @@ function M.parse_options(str_args)
     return options, nil
   end
 
-  local args = split(str_args)
+  local args = split_args(str_args)
   local path = ''
 
   for _, arg in ipairs(args) do
     if arg:sub(1, 1) == '-' then
       local name, value, key = parse_option(arg)
-      if options[name] == nil then
-        error(string.format('Unknown "%s" option.', key))
-        return nil
-      elseif type(value) ~= type(options[name]) then
-        error(string.format('Illegal option value. (%s)', value))
+      if not set_option(options, name, value, key) then
         return nil
       end
-      options[name] = value
     else
       if #path > 0 then
         error('The path specification is duplicated.')

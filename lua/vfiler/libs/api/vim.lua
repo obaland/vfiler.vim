@@ -79,25 +79,35 @@ function M.set_keymap(mode, lhs, rhs, opts)
   opts._buffer = false
   vim.command(set_keymap(mode, lhs, rhs, opts))
 end
-function M.set_buf_keymap(mode, lhs, rhs, opts)
+function M.set_buf_keymap(buffer, mode, lhs, rhs, opts)
+  local winid = vim.fn.bufwinid(buffer)
+  assert(winid >= 0)
   opts._buffer = true
-  vim.command(set_keymap(mode, lhs, rhs, opts))
+  vim.fn.win_execute(winid, set_keymap(mode, lhs, rhs, opts))
 end
 
 function M.del_keymap(mode, lhs)
   vim.command(del_keymap(mode, lhs))
 end
-function M.del_buf_keymap(mode, lhs)
-  vim.command(del_keymap(mode, lhs, true))
+function M.del_buf_keymap(buffer, mode, lhs)
+  local winid = vim.fn.bufwinid(buffer)
+  assert(winid >= 0)
+  vim.fn.win_execute(winid, del_keymap(mode, lhs, true))
 end
 
 ------------------------------------------------------------------------------
 -- Lua data to Vim data
 ------------------------------------------------------------------------------
 function M.to_vimlist(data)
+  if vim.type(data) == 'list' then
+    return data
+  end
   return vim.list(data)
 end
 function M.to_vimdict(data)
+  if vim.type(data) == 'dict' then
+    return data
+  end
   return vim.dict(data)
 end
 

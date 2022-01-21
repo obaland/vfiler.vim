@@ -22,13 +22,17 @@ M.get_option_boolean = M.get_option -- Alias
 -- Key mapping
 ------------------------------------------------------------------------------
 M.set_keymap = vim.api.nvim_set_keymap
-function M.set_buf_keymap(mode, lhs, rhs, opts)
-  vim.api.nvim_buf_set_keymap(0, mode, lhs, rhs, opts)
+function M.set_buf_keymap(buffer, mode, lhs, rhs, opts)
+  -- match behavior with vim
+  assert(vim.fn.bufwinid(buffer) >= 0)
+  vim.api.nvim_buf_set_keymap(buffer, mode, lhs, rhs, opts)
 end
 
 M.del_keymap = vim.api.nvim_del_keymap
-function M.del_buf_keymap(mode, lhs)
-  vim.api.nvim_buf_del_keymap(0, mode, lhs)
+function M.del_buf_keymap(buffer, mode, lhs)
+  -- match behavior with vim
+  assert(vim.fn.bufwinid(buffer) >= 0)
+  vim.api.nvim_buf_del_keymap(buffer, mode, lhs)
 end
 
 ------------------------------------------------------------------------------

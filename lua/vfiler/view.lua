@@ -2,6 +2,8 @@ local core = require('vfiler/libs/core')
 local sort = require('vfiler/sort')
 local vim = require('vfiler/libs/vim')
 
+local Buffer = require('vfiler/buffer')
+
 local View = {}
 View.__index = View
 
@@ -24,14 +26,11 @@ local function walk(root, sort_compare, gitstatus)
   end)
 end
 
-local function create_buffer(bufname, options)
-  vim.command('silent edit ' .. bufname)
-
-  -- Set buffer local options
-  local bufnr = vim.fn.bufnr()
-  vim.set_buf_options(bufnr, {
+local function new_buffer(bufname, context)
+  local buffer = Buffer.new(bufname)
+  buffer:set_options({
     bufhidden = 'hide',
-    buflisted = options.buflisted,
+    buflisted = context.options.buflisted,
     buftype = 'nofile',
     filetype = 'vfiler',
     modifiable = false,
@@ -39,7 +38,7 @@ local function create_buffer(bufname, options)
     readonly = false,
     swapfile = false,
   })
-  return bufnr
+  return buffer
 end
 
 local function create_columns(columns)
@@ -67,8 +66,6 @@ end
 ---@param context table
 function View.new(bufname, context)
   local object = setmetatable({
-    bufnr = -1,
-    _bufname = bufname,
     _winoptions = {
       colorcolumn = '',
       concealcursor = 'nvc',
@@ -82,8 +79,11 @@ function View.new(bufname, context)
       wrap = false,
     },
   }, View)
+
   object:_initialize(context)
-  object.bufnr = create_buffer(bufname, { buflisted = context.listed })
+  object._buffer = new_buffer(bufname, context)
+  object:open()
+
   object._previus_statusline = vim.get_win_option(
     object:winnr(),
     'statusline'
@@ -93,12 +93,22 @@ function View.new(bufname, context)
   return object
 end
 
+--- Get buffer number
+function View:bufnr()
+  return self._buffer.number
+end
+
+--- Define key mappings
+function View:define_mappings(mappings, funcstr)
+  return self._buffer:define_mappings(mappings, funcstr)
+end
+
 --- Delete view object
 function View:delete()
-  if self.bufnr >= 0 then
-    vim.command('silent bwipeout ' .. self.bufnr)
+  if self._buffer then
+    self._buffer:delete()
   end
-  self.bufnr = -1
+  self._buffer = nil
 end
 
 --- Draw along the context
@@ -109,10 +119,12 @@ function View:draw(context)
   if self._header then
     table.insert(self._items, context.root)
   end
-  local compare = sort.get(context.sort)
+
+  local options = context.options
+  local compare = sort.get(options.sort)
   for item in walk(context.root, compare, context.gitstatus) do
     local hidden = item.name:sub(1, 1) == '.'
-    if context.show_hidden_files or not hidden then
+    if options.show_hidden_files or not hidden then
       table.insert(self._items, item)
     end
   end
@@ -120,7 +132,7 @@ function View:draw(context)
   self:redraw()
 
   -- update statusline
-  if context.statusline then
+  if options.statusline then
     local winnr = self:winnr()
     local statusline = require('vfiler/statusline')
     local winwidth = vim.fn.winwidth(winnr)
@@ -167,18 +179,26 @@ end
 
 --- Get the number of line in the view buffer
 function View:num_lines()
+  if not self._items then
+    return 0
+  end
   return #self._items
 end
 
 --- Open the view buffer for the current window
 function View:open()
-  vim.command('silent buffer ' .. self.bufnr)
+  vim.command('silent buffer! ' .. self._buffer.number)
 end
 
 --- Redraw the current contents
 function View:redraw()
-  if self.bufnr ~= vim.fn.bufnr() then
-    core.message.warning('Cannot draw because the buffer is different.')
+  local buffer = self._buffer
+  if buffer.number ~= vim.fn.bufnr() then
+    core.message.warning(
+      'Cannot draw because the buffer is different. (%d != %d)',
+      buffer.number,
+      vim.fn.bufnr()
+    )
     return
   end
 
@@ -217,12 +237,11 @@ function View:redraw()
   -- set buffer lines
   local saved_view = vim.fn.winsaveview()
 
-  vim.set_buf_option(self.bufnr, 'modifiable', true)
-  vim.set_buf_option(self.bufnr, 'readonly', false)
-  vim.fn.setbufline(self.bufnr, 1, lines)
-  vim.fn.deletebufline(self.bufnr, #lines + 1, '$')
-  vim.set_buf_option(self.bufnr, 'modifiable', false)
-  vim.set_buf_option(self.bufnr, 'readonly', true)
+  buffer:set_option('modifiable', true)
+  buffer:set_option('readonly', false)
+  buffer:set_lines(lines)
+  buffer:set_option('modifiable', false)
+  buffer:set_option('readonly', true)
 
   vim.fn.winrestview(saved_view)
 end
@@ -237,20 +256,26 @@ function View:redraw_line(lnum)
     line = self:_toline(item)
   end
 
-  vim.set_buf_option(self.bufnr, 'modifiable', true)
-  vim.set_buf_option(self.bufnr, 'readonly', false)
-  vim.fn.setbufline(self.bufnr, lnum, line)
-  vim.set_buf_option(self.bufnr, 'modifiable', false)
-  vim.set_buf_option(self.bufnr, 'readonly', true)
+  local buffer = self._buffer
+  buffer:set_option('modifiable', true)
+  buffer:set_option('readonly', false)
+  buffer:set_line(lnum, line)
+  buffer:set_option('modifiable', false)
+  buffer:set_option('readonly', true)
 end
 
 --- Reset from another view
 ---@param context table
 function View:reset(context)
   self:_initialize(context)
-  vim.set_buf_option(self.bufnr, 'buflisted', context.listed)
+  self._buffer:set_option('buflisted', context.options.listed)
   self:_apply_syntaxes()
   self:_resize()
+end
+
+--- Register events
+function View:register_events(group, events, funcstr)
+  self._buffer:register_events(group, events, funcstr)
 end
 
 --- Get the currently selected items
@@ -275,6 +300,16 @@ function View:top_lnum()
   return self._header and 2 or 1
 end
 
+--- Undefine key mappings
+function View:undefine_mappings(mappings)
+  return self._buffer:undefine_mappings(mappings)
+end
+
+--- Register events
+function View:unregister_events(group)
+  self._buffer:unregister_events(group)
+end
+
 --- Walk view items
 function View:walk_items()
   local function _walk_items()
@@ -287,7 +322,7 @@ end
 
 --- Get the window number of the view
 function View:winnr()
-  return vim.fn.bufwinnr(self.bufnr)
+  return vim.fn.bufwinnr(self._buffer.number)
 end
 
 function View:_apply_syntaxes()
@@ -359,23 +394,24 @@ function View:_create_column_props(winwidth)
 end
 
 function View:_initialize(context)
-  self._columns = create_columns(context.columns)
+  local options = context.options
+  self._columns = create_columns(options.columns)
   if not self._columns then
     return nil
   end
 
-  self._auto_resize = context.auto_resize
+  self._auto_resize = options.auto_resize
   self._cache = { winwidth = 0 }
-  self._header = context.header
+  self._header = options.header
 
   self._width = 0
   self._height = 0
 
-  local layout = context.layout
+  local layout = options.layout
   if layout == 'left' or layout == 'right' then
-    self._width = context.width
+    self._width = options.width
   elseif layout == 'top' or layout == 'bottom' then
-    self._height = context.height
+    self._height = options.height
   end
 end
 

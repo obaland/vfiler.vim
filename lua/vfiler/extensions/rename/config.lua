@@ -14,9 +14,12 @@ M.configs = {
   },
 
   events = {
-    BufWriteCmd = action.execute,
-    InsertLeave = action.check,
-    CursorMoved = action.check,
+    vfiler_rename = {
+      WinLeave = action.quit,
+      BufWriteCmd = action.execute,
+      InsertLeave = action.check,
+      CursorMoved = action.check,
+    },
   },
 }
 

@@ -240,6 +240,11 @@ function M.path.join(path, name)
   return path .. name
 end
 
+function M.path.name(path)
+  local mods = path:sub(-1) == '/' and ':h:t' or ':t'
+  return vim.fn.fnamemodify(path, mods)
+end
+
 function M.path.normalize(path)
   if path == '/' then
     return '/'
@@ -248,12 +253,8 @@ function M.path.normalize(path)
 end
 
 function M.path.parent(path)
-  local parent
-  if path:sub(-1) == '/' then
-    parent = vim.fn.fnamemodify(path, ':h:h')
-  else
-    parent = vim.fn.fnamemodify(path, ':h')
-  end
+  local mods = path:sub(-1) == '/' and ':h:h' or ':h'
+  local parent = vim.fn.fnamemodify(path, mods)
   return M.path.normalize(parent)
 end
 
@@ -395,12 +396,12 @@ function M.string.split(str, pattern)
   return vim.from_vimlist(vim.fn.split(str, pattern))
 end
 
-function M.string.truncate(str, width, sep, ...)
+function M.string.truncate(str, width, sep, footer_width)
   local strwidth = vim.fn.strwidth(str)
   if strwidth <= width then
     return str
   end
-  local footer_width = ... or 0
+  footer_width = footer_width or 0
   local header_width = width - vim.fn.strwidth(sep) - footer_width
   local replaced = str:gsub('\t', '')
   local result = strwidthpart(replaced, header_width)
@@ -457,6 +458,17 @@ function M.table.copy(src)
     copied = src
   end
   return copied
+end
+
+function M.table.inspect(t, level, indent)
+  indent = indent or 0
+  for key, value in pairs(t) do
+    local info = ('%s %s : %s'):format(('-'):rep(indent), key, value)
+    print(info)
+    if type(value) == 'table' and level > 0 then
+      M.table.inspect(value, level - 1, indent + 1)
+    end
+  end
 end
 
 function M.table.merge(dest, src)

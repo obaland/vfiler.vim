@@ -131,24 +131,10 @@ Context.__index = Context
 function Context.new(configs)
   local self = setmetatable({}, Context)
   self:_initialize()
+  self.options = core.table.copy(configs.options)
   self.events = core.table.copy(configs.events)
   self.mappings = core.table.copy(configs.mappings)
   self._session = Session.new()
-
-  -- set options
-  local ignores = {
-    new = true,
-  }
-  for key, value in pairs(configs.options) do
-    -- skip ignore option
-    local ignore = ignores[key]
-    if not ignore then
-      if self[key] then
-        core.message.warning('Duplicate "%s" option.', key)
-      end
-      self[key] = value
-    end
-  end
   self._git_enabled = self:_check_git_enabled()
   return self
 end
@@ -205,7 +191,7 @@ end
 function Context:switch(dirpath, on_completed)
   dirpath = core.path.normalize(dirpath)
   -- perform auto cd
-  if self.auto_cd then
+  if self.options.auto_cd then
     vim.command('silent lcd ' .. dirpath)
   end
 
@@ -260,22 +246,17 @@ end
 --- Update from another context
 ---@param context table
 function Context:update(context)
-  -- copy options
-  for key, value in pairs(context) do
-    local type = type(value)
-    if type == 'string' or type == 'boolean' or type == 'number' then
-      self[key] = value
-    end
-  end
+  self.options = core.table.copy(context.options)
   self.mappings = core.table.copy(context.mappings)
   self.events = core.table.copy(context.events)
+  self._git_enabled = self:_check_git_enabled()
 end
 
 function Context:_check_git_enabled()
-  if not self.git or vim.fn.executable('git') ~= 1 then
+  if not self.options.git.enabled or vim.fn.executable('git') ~= 1 then
     return false
   end
-  return self.columns:match('git%w*') ~= nil
+  return self.options.columns:match('git%w*') ~= nil
 end
 
 function Context:_initialize()
@@ -285,12 +266,17 @@ function Context:_initialize()
   self.root = nil
   self.gitroot = nil
   self.gitstatus = {}
+  self.in_preview = {
+    preview = nil,
+    once = false,
+  }
 end
 
 function Context:_reload_gitstatus(on_completed)
+  local git_options = self.options.git
   local options = {
-    untracked = self.git_untracked,
-    ignored = self.git_ignored,
+    untracked = git_options.untracked,
+    ignored = git_options.ignored,
   }
   git.reload_status(self.gitroot, options, on_completed)
 end

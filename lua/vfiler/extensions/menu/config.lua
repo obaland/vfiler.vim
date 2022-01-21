@@ -23,7 +23,10 @@ M.configs = {
   },
 
   events = {
-    BufWinLeave = action.quit,
+    vfiler_menu = {
+      WinLeave = action.quit,
+      QuitPre = action.quit,
+    },
   },
 }
 

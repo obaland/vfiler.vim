@@ -1,80 +1,34 @@
 local core = require('vfiler/libs/core')
-local mapping = require('vfiler/mapping')
 local vim = require('vfiler/libs/vim')
 
 local Window = {}
 Window.__index = Window
 
-function Window.new()
-  return setmetatable({
-    source_winid = vim.fn.win_getid(),
-    winid = 0,
-    bufnr = 0,
-  }, Window)
+function Window.new(name)
+  local Base = require('vfiler/views/base')
+  return core.inherit(Window, Base, name)
 end
 
-function Window:close()
-  local winnr = vim.fn.bufwinnr(self.bufnr)
+function Window:_on_close(winid, buffer)
+  local winnr = vim.fn.bufwinnr(buffer.number)
   if winnr >= 0 then
-    vim.command(('silent %dquit!'):format(winnr))
+    vim.command(('silent %dhide!'):format(winnr))
   end
 end
 
-function Window:define_mapping(mappings, funcstr)
-  return mapping.define(self.bufnr, mappings, funcstr)
-end
-
-function Window:draw(lines)
-  vim.command('silent %delete _')
-  vim.fn.setbufline(self.bufnr, 1, vim.to_vimlist(lines))
-end
-
-function Window:open(lines, options)
-  self.winid = self:_on_open(lines, options)
-  self.bufnr = vim.fn.winbufnr(self.winid)
-
-  -- set buffer options
-  -- default buffer options
-  local bufoptions = {
-    bufhidden = 'delete',
-    buflisted = false,
-    buftype = 'nofile',
-    swapfile = false,
-  }
-  vim.set_buf_options(
-    self.bufnr,
-    core.table.merge(bufoptions, options.bufoptions)
-  )
-
-  -- set window options
-  -- default window options
-  local winoptions = {
-    colorcolumn = '',
-    conceallevel = 2,
-    concealcursor = 'nvc',
-    foldcolumn = '0',
-    foldenable = false,
-    list = false,
-    number = true,
-    spell = false,
-    wrap = false,
-  }
-  vim.set_win_options(
-    self.winid,
-    core.table.merge(winoptions, options.winoptions)
-  )
-  return self.winid
-end
-
-function Window:winnr()
-  return vim.fn.bufwinnr(self.bufnr)
-end
-
-function Window:_on_open(lines, options)
+function Window:_on_open(buffer, options)
   -- open window
   core.window.open(options.layout)
-  vim.command('silent edit ' .. 'vfiler/' .. options.name)
   local winid = vim.fn.win_getid()
+  self:_on_update(winid, buffer, options)
+  return winid
+end
+
+function Window:_on_update(winid, buffer, options)
+  if buffer.number ~= vim.fn.winbufnr(winid) then
+    vim.fn.win_gotoid(winid)
+    vim.fn.win_execute(winid, 'silent noautocmd buffer! ' .. buffer.number)
+  end
 
   -- resize window
   if options.width > 0 then
@@ -85,12 +39,12 @@ function Window:_on_open(lines, options)
   end
 
   -- set name to statusline
-  if options.name then
+  if self.name then
     vim.set_win_option(
       winid,
       'statusline',
       ('%%#vfilerStatusLineSection# %s %%#vfilerStatusLine#'):format(
-        options.name
+        self.name
       )
     )
   end

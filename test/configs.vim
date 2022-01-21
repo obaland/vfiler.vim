@@ -17,8 +17,21 @@ function! s:parse_options(args)
   let args = a:args
 lua<<EOF
   options, dirpath = require('vfiler/config').parse_options(vim.eval('args'))
+  vimdict = vim.dict({})
+  if options then
+    for key, value in pairs(options) do
+      if type(value) == 'table' then
+        vimdict[key] = vim.dict({})
+        for k, v in pairs(value) do
+          vimdict[key][k] = v
+        end
+      else
+        vimdict[key] = value
+      end
+    end
+  end
 EOF
-  return luaeval('vim.dict(options)')
+  return luaeval('vimdict')
 endfunction
 
 function! s:parse_path(args)
@@ -111,4 +124,15 @@ function s:suite.parse_command_args_illegal_flag_option()
 
   let l:options = s:parse_options(l:args)
   call s:assert.equals(l:options, {}, l:message)
+endfunction
+
+function s:suite.parse_command_args_nest_option()
+  let l:args = '-name="Test Name" -auto-cd -git-enabled -no-git-untracked'
+  let l:message = 'args:' . l:args
+
+  let l:options = s:parse_options(l:args)
+  call s:assert.equals(l:options.name, 'Test Name', l:message)
+  call s:assert.true(l:options.auto_cd, l:message)
+  call s:assert.true(l:options.git.enabled, l:message)
+  call s:assert.false(l:options.git.untracked, l:message)
 endfunction

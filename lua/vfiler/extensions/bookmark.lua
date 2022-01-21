@@ -173,22 +173,7 @@ function Bookmark:_on_update(configs)
   return items
 end
 
-function Bookmark:_on_buf_options(configs)
-  return {
-    filetype = 'vfiler_bookmark',
-    modifiable = false,
-    modified = false,
-    readonly = true,
-  }
-end
-
-function Bookmark:_on_win_options(configs)
-  return {
-    number = false,
-  }
-end
-
-function Bookmark:_on_opened(winid, bufnr, items, configs)
+function Bookmark:_on_opened(winid, buffer, items, configs)
   -- syntaxes and highlights
   local syntaxes = {}
   local highlights = {}
@@ -210,7 +195,7 @@ end
 
 function Bookmark:_on_get_lines(items)
   local width = 0
-  local lines = {}
+  local lines = vim.to_vimlist({})
   for _, item in ipairs(items) do
     if item.iscategory then
       local category = item
@@ -232,15 +217,6 @@ function Bookmark:_on_get_lines(items)
     end
   end
   return lines, width
-end
-
-function Bookmark:_on_draw(view, lines)
-  local bufnr = view.bufnr
-  vim.set_buf_option(bufnr, 'modifiable', true)
-  vim.set_buf_option(bufnr, 'readonly', false)
-  view:draw(lines)
-  vim.set_buf_option(bufnr, 'modifiable', false)
-  vim.set_buf_option(bufnr, 'readonly', true)
 end
 
 return Bookmark

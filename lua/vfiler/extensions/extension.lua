@@ -1,7 +1,8 @@
 local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
-local event = require('vfiler/event')
 local vim = require('vfiler/libs/vim')
+
+local Buffer = require('vfiler/buffer')
 
 local extensions = {}
 
@@ -29,7 +30,9 @@ local function winvalue(value, win_value, content_value, min, max)
 end
 
 local function to_view_options(options, name, win_size, content_size)
-  local voptions = {}
+  local voptions = {
+    title = name,
+  }
   if options.floating then
     voptions.layout = 'floating'
 
@@ -51,9 +54,6 @@ local function to_view_options(options, name, win_size, content_size)
       minheight,
       win_size.height
     )
-    if floating.relative then
-      voptions.relative = floating.relative
-    end
   elseif options.top or options.bottom then
     voptions.layout = options.top and 'top' or 'bottom'
     local value = options.top or options.bottom
@@ -78,10 +78,25 @@ local function to_view_options(options, name, win_size, content_size)
     voptions.height = 0
   end
 
-  voptions.name = name
   -- '2' is space width
   voptions.width = math.max(vim.fn.strwidth(name) + 2, voptions.width)
 
+  -- set window position
+  if options.floating then
+    if options.floating.relative then
+      local offset_row = math.floor((win_size.height - voptions.height) / 2)
+      local offset_col = math.floor((win_size.width - voptions.width) / 2)
+      voptions.col = win_size.col + offset_col - 1
+      voptions.row = win_size.row + offset_row - 1
+    else
+      local columns = vim.get_global_option('columns')
+      local lines = vim.get_global_option('lines')
+      local offset_row = math.floor((lines - voptions.height) / 2)
+      local offset_col = math.floor((columns - voptions.width) / 2)
+      voptions.col = offset_col - 1
+      voptions.row = offset_row - 1
+    end
+  end
   return voptions
 end
 
@@ -100,15 +115,29 @@ local function new_view(options)
 end
 
 function Extension.new(filer, name, configs, options)
+  local buffer = Buffer.new(name)
+
+  -- set default buffer options
+  buffer:set_options({
+    bufhidden = 'wipe',
+    buflisted = false,
+    buftype = 'nofile',
+    modifiable = false,
+    modified = false,
+    readonly = true,
+  })
+
   local self = setmetatable({
     name = name,
-    _source_bufnr = vim.fn.bufnr(),
+    _buffer = buffer,
+    _src_bufnr = vim.fn.bufnr(),
     _configs = core.table.copy(configs),
     _filer = filer,
     _items = nil,
     _view = nil,
   }, Extension)
   -- set options
+
   for key, value in pairs(options) do
     self[key] = value
   end
@@ -143,16 +172,22 @@ function Extension._do_action(bufnr, key)
   ext:do_action(action)
 end
 
-function Extension._handle_event(bufnr, type)
+function Extension._handle_event(bufnr, group, type)
   local ext = Extension.get(bufnr)
-  if ext then
-    local action = ext._configs.events[type]
-    if not action then
-      core.message.error('Event "%s" is not registered.', type)
-      return
-    end
-    ext:do_action(action)
+  if not ext then
+    return
   end
+  local events = ext._configs.events[group]
+  if not events then
+    core.message.error('Event group "%s" is not registered.', group)
+    return
+  end
+  local action = events[type]
+  if not action then
+    core.message.error('Event "%s" is not registered.', type)
+    return
+  end
+  ext:do_action(action)
 end
 
 --- Do action
@@ -189,11 +224,12 @@ function Extension:num_lines()
 end
 
 function Extension:quit()
+  local bufnr = self._buffer.number
   -- guard duplicate calls
-  if not (self._view and extensions[self._view.bufnr]) then
+  if not extensions[bufnr] then
     return
   end
-  extensions[self._view.bufnr] = nil
+  extensions[bufnr] = nil
 
   cmdline.clear_prompt()
   self._view:close()
@@ -201,9 +237,9 @@ function Extension:quit()
     self._filer:do_action(self.on_quit)
   end
 
-  local source_winnr = vim.fn.bufwinnr(self._source_bufnr)
-  if source_winnr >= 0 then
-    core.window.move(source_winnr)
+  local src_winnr = vim.fn.bufwinnr(self._src_bufnr)
+  if src_winnr >= 0 then
+    core.window.move(src_winnr)
   end
 
   -- unlink
@@ -225,10 +261,13 @@ function Extension:start()
 
   -- to view options
   self._view = new_view(self._configs.options)
-  local source_winid = self._view.source_winid
+  local src_winid = self._view.src_winid
+  local screen_pos = vim.fn.win_screenpos(src_winid)
   local win_size = {
-    width = vim.fn.winwidth(source_winid),
-    height = vim.fn.winheight(source_winid),
+    width = vim.fn.winwidth(src_winid),
+    height = vim.fn.winheight(src_winid),
+    row = screen_pos[1],
+    col = screen_pos[2],
   }
   local content_size = {
     width = width,
@@ -240,34 +279,36 @@ function Extension:start()
     win_size,
     content_size
   )
-  view_options.bufoptions = self:_on_buf_options(self._configs)
   view_options.winoptions = self:_on_win_options(self._configs)
-  self._view:open(lines, view_options)
-
-  self.winid = self._view.winid
-  local bufnr = self._view.bufnr
-  local lnum = self:_on_opened(self.winid, bufnr, self._items, self._configs)
+  self.winid = self._view:open(self._buffer, view_options)
+  local lnum = self:_on_opened(
+    self.winid,
+    self._buffer,
+    self._items,
+    self._configs
+  )
 
   -- define key mappings (overwrite)
-  self._configs.mappings = self._view:define_mapping(
+  self._configs.mappings = self._view:define_mappings(
     self._configs.mappings,
     [[require('vfiler/extensions/extension')._do_action]]
   )
 
   -- register events
-  event.register(
-    'vfiler_extension',
-    bufnr,
-    self._configs.events,
-    [[require('vfiler/extensions/extension')._handle_event]]
-  )
+  for group, eventlist in pairs(self._configs.events) do
+    self._buffer:register_events(
+      group,
+      eventlist,
+      [[require('vfiler/extensions/extension')._handle_event]]
+    )
+  end
 
   -- draw line texts and syntax
   self:_on_draw(self._view, lines)
   core.cursor.winmove(self.winid, lnum)
 
   -- add extension table
-  extensions[bufnr] = self
+  extensions[self._buffer.number] = self
 
   -- link to filer
   self._filer._context.extension = self
@@ -279,11 +320,12 @@ function Extension:restart()
 end
 
 function Extension:_close()
+  local bufnr = self._buffer.number
   -- guard duplicate calls
-  if not (self._view and extensions[self._view.bufnr]) then
+  if not (self._view and extensions[bufnr]) then
     return false
   end
-  extensions[self._view.bufnr] = nil
+  extensions[bufnr] = nil
 
   cmdline.clear_prompt()
   self._view:close()
@@ -300,27 +342,23 @@ function Extension:_on_update(configs)
   return {} -- return items
 end
 
-function Extension:_on_buf_options(configs)
-  -- Not implemented
-  return {} -- return buffer options
+function Extension:_on_draw(view, lines)
+  view:draw(lines)
 end
 
 function Extension:_on_win_options(configs)
-  -- Not implemented
-  return {} -- return window options
+  return {
+    number = false,
+  }
 end
 
-function Extension:_on_opened(winid, bufnr, items, configs)
+function Extension:_on_opened(winid, buffer, items, configs)
   -- Not implemented
   return 1 -- return initial cursor lnum
 end
 
 function Extension:_on_get_lines(items, winwidth)
   return nil
-end
-
-function Extension:_on_draw(view, lines)
-  -- Not implemented
 end
 
 return Extension

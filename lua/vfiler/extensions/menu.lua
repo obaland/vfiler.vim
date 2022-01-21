@@ -23,24 +23,9 @@ function Menu:_on_initialize(configs)
   return self.initial_items
 end
 
-function Menu:_on_buf_options(configs)
-  return {
-    filetype = 'vfiler_menu',
-    modifiable = false,
-    modified = false,
-    readonly = true,
-  }
-end
-
-function Menu:_on_win_options(configs)
-  return {
-    number = false,
-  }
-end
-
 function Menu:_on_get_lines(items)
   local width = 0
-  local lines = {}
+  local lines = vim.to_vimlist({})
   for _, item in ipairs(items) do
     -- add padding
     local line = ' ' .. item
@@ -50,16 +35,7 @@ function Menu:_on_get_lines(items)
   return lines, width
 end
 
-function Menu:_on_draw(view, lines)
-  local bufnr = view.bufnr
-  vim.set_buf_option(bufnr, 'modifiable', true)
-  vim.set_buf_option(bufnr, 'readonly', false)
-  view:draw(lines)
-  vim.set_buf_option(bufnr, 'modifiable', false)
-  vim.set_buf_option(bufnr, 'readonly', true)
-end
-
-function Menu:_on_opened(winid, bufnr, items, configs)
+function Menu:_on_opened(winid, buffer, items, configs)
   if not self.default then
     return 1
   end

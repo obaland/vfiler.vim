@@ -20,6 +20,13 @@ M.configs = {
     ['<CR>'] = action.open,
     ['<ESC>'] = action.quit,
   },
+
+  events = {
+    vfiler_bookmark = {
+      WinLeave = action.quit,
+      QuitPre = action.quit,
+    },
+  },
 }
 
 if core.is_nvim then

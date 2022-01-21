@@ -143,6 +143,12 @@ jump_to_home                                     *vfiler-actions-jump_to_home*
 jump_to_root                                     *vfiler-actions-jump_to_root*
     Jump to root directory.
 
+toggle_auto_preview                       *vfiler-actions-toggle_auto_preview*
+    Toggle the automatic preview window.
+
+toggle_preview                                 *vfiler-actions-toggle_preview*
+    Toggle the preview window for the item in the current cursor. 
+
 toggle_show_hidden                         *vfiler-actions-toggle_show_hidden*
     Toggles visible hidden files.
 
@@ -236,7 +242,7 @@ parameters for an option.  You need to escape spaces with "\".
     see |vfiler-columns|.
     Default: "indent,icon,name,mode,size,time"
 
--git                                                      *vfiler-options-git*
+-git-enabled                                      *vfiler-options-git-enabled*
     Handles Git information.
     Defualt: true
 
@@ -268,6 +274,29 @@ parameters for an option.  You need to escape spaces with "\".
 -new                                                      *vfiler-options-new*
     Create new vfiler buffer.
     Default: false
+
+-preview-height                                *vfiler-options-preview-height*
+    The window height of the buffer whose layout is "top", "bottom",
+    "floating".
+    If you specify "0", the height will be calculated automatically.
+    Default: 0
+
+-preview-layout                               *vfiler-options-preview-laytout*
+    Specify the layout of the preview window.
+
+    "left":     Split to the left.
+    "right":    Split to the right.
+    "top":      Split to the top.
+    "bottom":   Split to the bottom.
+    "floating": Floating window.
+
+    Default: "floating"
+
+-preview-width                                  *vfiler-options-preview-width*
+    The window width of the buffer whose layout is "left", "right",
+    "floating".
+    If you specify "0", the width will be calculated automatically.
+    Default: 0
 
 -show-hidden-files                          *vfiler-options-show-hidden-files*
     If enabled, Make hidden files visible by default.
@@ -362,7 +391,7 @@ Example: >
         ['.']         = action.toggle_show_hidden,
         ['<BS>']      = action.change_to_parent,
         ['<C-l>']     = action.reload,
-        ['<C-p>']     = action.sync_with_current_filer,
+        ['<C-p>']     = action.toggle_auto_preview,
         ['<CR>']      = action.open,
         -- ...
         ['S']         = action.change_sort,
@@ -389,6 +418,7 @@ G               move_cursor_bottom
 ~               jump_to_home
 \               jump_to_root
 o               open_tree_recursive
+p               toggle_preview
 t               open_by_tabpage
 s               open_by_split
 v               open_by_vsplit
@@ -407,7 +437,8 @@ U               clear_selected_all
 <Tab>           switch_to_filer
 <BS>            change_to_parent
 <C-l>           reload
-<C-p>           sync_with_current_filer
+<C-p>           toggle_auto_preview
+<C-r>           sync_with_current_filer
 <C-s>           toggle_sort
 J               jump_to_directory
 N               new_file

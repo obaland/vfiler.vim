@@ -25,7 +25,6 @@ function IndentColumn.new()
       },
     },
     end_mark = '\\@I',
-    ignore_group = 'vfilerBookmarkIndent_Ignore',
   })
   return self
 end

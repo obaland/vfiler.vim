@@ -13,7 +13,23 @@ function Rename.new(filer, options)
   end
 
   local Extension = require('vfiler/extensions/extension')
-  return core.inherit(Rename, Extension, filer, 'Rename', configs, options)
+  local self = core.inherit(
+    Rename,
+    Extension,
+    filer,
+    'Rename',
+    configs,
+    options
+  )
+
+  -- overwrite buffer options
+  self._buffer:set_options({
+    buftype = 'acwrite',
+    modifiable = true,
+    modified = false,
+    readonly = false,
+  })
+  return self
 end
 
 function Rename:check()
@@ -70,7 +86,7 @@ function Rename:execute()
   end
 
   local renames = vim.from_vimlist(vim.fn.getline(1, #self._items))
-  vim.set_buf_option(self._view.bufnr, 'modified', false)
+  self._buffer:set_option('modified', false)
 
   self:quit()
   if self.on_execute then
@@ -81,16 +97,6 @@ end
 function Rename:get_lines()
   local lines = vim.fn.getline(1, self:num_lines())
   return vim.from_vimlist(lines)
-end
-
-function Rename:_on_buf_options(configs)
-  return {
-    buftype = 'acwrite',
-    filetype = 'vfiler_rename',
-    modifiable = true,
-    modified = false,
-    readonly = false,
-  }
 end
 
 function Rename:_on_win_options(configs)
@@ -132,7 +138,7 @@ end
 
 function Rename:_on_get_lines(items)
   local width = 0
-  local lines = {}
+  local lines = vim.to_vimlist({})
   for _, item in ipairs(items) do
     width = math.max(width, vim.fn.strwidth(item.name))
     table.insert(lines, item.name)
@@ -143,7 +149,7 @@ end
 function Rename:_on_draw(view, lines)
   view:draw(lines)
   vim.fn['vfiler#core#clear_undo']()
-  vim.set_buf_option(view.bufnr, 'modified', false)
+  view._buffer:set_option('modified', false)
 end
 
 return Rename

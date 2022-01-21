@@ -33,7 +33,6 @@ function NameColumn.new()
       },
     },
     end_mark = '\\n@',
-    ignore_group = 'vfilerBookmarkName_Ignore',
   })
   return self
 end

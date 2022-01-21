@@ -6,6 +6,7 @@ local vim = require('vfiler/libs/vim')
 local Bookmark = require('vfiler/extensions/bookmark')
 local Clipboard = require('vfiler/clipboard')
 local Menu = require('vfiler/extensions/menu')
+local Preview = require('vfiler/preview')
 local Rename = require('vfiler/extensions/rename')
 local VFiler = require('vfiler/vfiler')
 
@@ -95,7 +96,8 @@ local choose_keys = {
 local function choose_window()
   local winnrs = {}
   for nr = 1, vim.fn.winnr('$') do
-    if vim.get_win_option(nr, 'filetype') ~= 'vfiler' then
+    local bufnr = vim.fn.winbufnr(nr)
+    if bufnr > 0 and vim.fn.getbufvar(bufnr, 'vfiler') ~= 'vfiler' then
       table.insert(winnrs, nr)
     end
   end
@@ -153,11 +155,7 @@ local function choose_window()
 end
 
 local function rename_files(vfiler, context, view, targets)
-  if context.extension then
-    return
-  end
-
-  local ext = Rename.new(vfiler, {
+  local rename = Rename.new(vfiler, {
     initial_items = targets,
     on_execute = function(filer, c, v, items, renames)
       local renamed = {}
@@ -180,7 +178,7 @@ local function rename_files(vfiler, context, view, targets)
       end
     end,
   })
-  ext:start()
+  M.start_extension(vfiler, context, view, rename)
 end
 
 local function rename_one_file(vfiler, context, view, target)
@@ -204,6 +202,36 @@ local function rename_one_file(vfiler, context, view, target)
 
   core.message.info('Renamed - "%s" -> "%s"', name, rename)
   view:draw(context)
+end
+
+local function close_preview(vfiler, context, view)
+  local preview = context.in_preview.preview
+  if not (preview and preview.opened) then
+    return false
+  end
+  preview:close()
+  if not preview.isfloating then
+    view:redraw()
+  end
+  return true
+end
+
+local function open_preview(vfiler, context, view)
+  local preview = context.in_preview.preview
+  if not preview then
+    return
+  end
+
+  preview.line = vim.fn.line('.')
+  local item = view:get_item(preview.line)
+  if item.isdirectory then
+    preview:close()
+  else
+    preview:open(item.path)
+  end
+  if not preview.isfloating then
+    view:redraw()
+  end
 end
 
 ------------------------------------------------------------------------------
@@ -235,7 +263,7 @@ function M.open_file(vfiler, context, view, path, open)
     if isdirectory then
       M.cd(vfiler, context, view, path)
       return
-    elseif context.keep then
+    elseif context.options.keep then
       -- change the action if the "keep" option is enabled
       open = 'choose'
     end
@@ -254,16 +282,8 @@ function M.open_file(vfiler, context, view, path, open)
     core.window.open(open)
   end
 
-  -- redraw the caller filer
-  if open ~= 'tab' then
-    local dest_winnr = vim.fn.winnr()
-    vfiler:open()
-    view:redraw()
-    core.window.move(dest_winnr)
-  end
-
   if isdirectory then
-    local newfiler = VFiler.find_hidden(context.name)
+    local newfiler = VFiler.find_hidden(context.options.name)
     if newfiler then
       newfiler:open()
       newfiler:reset(context)
@@ -277,6 +297,15 @@ function M.open_file(vfiler, context, view, path, open)
   end
 end
 
+function M.start_extension(vfiler, context, view, extension)
+  if context.extension then
+    return
+  end
+  -- close the preview window before starting
+  M.close_preview(vfiler, context, view)
+  extension:start()
+end
+
 ------------------------------------------------------------------------------
 -- actions
 ------------------------------------------------------------------------------
@@ -286,6 +315,16 @@ function M.clear_selected_all(vfiler, context, view)
     item.selected = false
   end
   view:redraw()
+end
+
+function M.close_preview(vfiler, context, view)
+  if not close_preview(vfiler, context, view) then
+    return
+  end
+  local in_preview = context.in_preview
+  if in_preview.once then
+    in_preview.preview = nil
+  end
 end
 
 function M.close_tree(vfiler, context, view)
@@ -311,13 +350,9 @@ function M.close_tree_or_cd(vfiler, context, view)
 end
 
 function M.change_sort(vfiler, context, view)
-  if context.extension then
-    return
-  end
-
   local menu = Menu.new(vfiler, 'Select Sort', {
     initial_items = sort.types(),
-    default = context.sort,
+    default = context.options.sort,
 
     on_selected = function(filer, c, v, sort_type)
       if c.sort == sort_type then
@@ -330,7 +365,7 @@ function M.change_sort(vfiler, context, view)
       v:move_cursor(item.path)
     end,
   })
-  menu:start()
+  M.start_extension(vfiler, context, view, menu)
 end
 
 function M.change_to_parent(vfiler, context, view)
@@ -476,16 +511,12 @@ function M.add_bookmark(vfiler, context, view)
 end
 
 function M.list_bookmark(vfiler, context, view)
-  if context.extension then
-    return
-  end
-
   local bookmark = Bookmark.new(vfiler, {
     on_selected = function(filer, c, v, path, open_type)
       M.open_file(filer, c, v, path, open_type)
     end,
   })
-  bookmark:start()
+  M.start_extension(vfiler, context, view, bookmark)
 end
 
 function M.loop_cursor_down(vfiler, context, view)
@@ -701,6 +732,56 @@ function M.paste(vfiler, context, view)
   view:draw(context)
 end
 
+function M.preview_cursor_moved(vfiler, context, view)
+  local in_preview = context.in_preview
+  local preview = in_preview.preview
+  if not preview then
+    return
+  end
+
+  local line = vim.fn.line('.')
+  if preview.line ~= line then
+    if in_preview.once then
+      M.close_preview(vfiler, context, view)
+    else
+      open_preview(vfiler, context, view)
+    end
+  end
+  preview.line = line
+end
+
+function M.toggle_auto_preview(vfiler, context, view)
+  local in_preview = context.in_preview
+  local preview = in_preview.preview
+  if preview and not in_preview.once then
+    preview:close()
+    view:redraw()
+    in_preview.preview = nil
+    return
+  end
+
+  if not preview then
+    in_preview.preview = Preview.new(context.options.preview)
+  end
+  in_preview.once = false
+  open_preview(vfiler, context, view)
+end
+
+function M.toggle_preview(vfiler, context, view)
+  local in_preview = context.in_preview
+  if close_preview(vfiler, context, view) then
+    if in_preview.once then
+      in_preview.preview = nil
+    end
+    return
+  end
+  if not in_preview.preview then
+    in_preview.preview = Preview.new(context.options.preview)
+    in_preview.once = true
+  end
+  open_preview(vfiler, context, view)
+end
+
 function M.quit(vfiler, context, view)
   vfiler:quit()
 end
@@ -709,6 +790,7 @@ function M.redraw(vfiler, context, view)
   context:reload_gitstatus(function()
     view:draw(context)
   end)
+  open_preview(vfiler, context, view)
 end
 
 function M.reload(vfiler, context, view)
@@ -716,6 +798,7 @@ function M.reload(vfiler, context, view)
   context:switch(context.root.path, function(ctx)
     view:draw(ctx)
   end)
+  open_preview(vfiler, context, view)
 end
 
 function M.rename(vfiler, context, view)
@@ -728,10 +811,6 @@ function M.rename(vfiler, context, view)
 end
 
 function M.switch_to_drive(vfiler, context, view)
-  if context.extension then
-    return
-  end
-
   local drives = detect_drives()
   if #drives == 0 then
     return
@@ -759,20 +838,24 @@ function M.switch_to_drive(vfiler, context, view)
       end)
     end,
   })
-  menu:start()
+  M.start_extension(vfiler, context, view, menu)
 end
 
 function M.switch_to_filer(vfiler, context, view)
+  -- close preview window
+  M.close_preview(vfiler, context, view)
+
   local linked = context.linked
   -- already linked
   if linked then
     linked:open('right')
+    linked:do_action(open_preview)
     return
   end
 
   -- create link to filer
   local lnum = vim.fn.line('.')
-  local newfiler = VFiler.find_hidden(context.name)
+  local newfiler = VFiler.find_hidden(context.options.name)
   if newfiler then
     newfiler:open('right')
     newfiler:reset(context)
@@ -789,6 +872,7 @@ function M.switch_to_filer(vfiler, context, view)
   view:draw(context)
 
   newfiler:open() -- return other filer
+  newfiler:do_action(open_preview)
 end
 
 function M.sync_with_current_filer(vfiler, context, view)
@@ -805,7 +889,8 @@ function M.sync_with_current_filer(vfiler, context, view)
 end
 
 function M.toggle_show_hidden(vfiler, context, view)
-  context.show_hidden_files = not context.show_hidden_files
+  local options = context.options
+  options.show_hidden_files = not options.show_hidden_files
   view:draw(context)
 end
 
