@@ -146,10 +146,10 @@ function Rename:_on_get_lines(items)
   return lines, width
 end
 
-function Rename:_on_draw(view, lines)
-  view:draw(lines)
+function Rename:_on_draw(buffer, lines)
+  buffer:set_lines(lines)
   vim.fn['vfiler#core#clear_undo']()
-  view._buffer:set_option('modified', false)
+  buffer:set_option('modified', false)
 end
 
 return Rename

@@ -23,7 +23,7 @@ end
 
 function Buffer:delete()
   if self.number > 0 then
-    vim.command('silent bwipeout ' .. self.number)
+    vim.command(('silent %dbwipeout!'):format(self.number))
   end
   self.number = -1
 end

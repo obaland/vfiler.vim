@@ -22,28 +22,13 @@ function Base:define_mappings(mappings, funcstr)
   return self._buffer:define_mappings(mappings, funcstr)
 end
 
-function Base:draw(lines)
-  local buffer = self._buffer
-  local modifiable = buffer:get_option('modifiable') == 1
-  if not modifiable then
-    buffer:set_option('modifiable', true)
-    buffer:set_option('readonly', false)
-  end
-  buffer:set_lines(lines)
-  if not modifiable then
-    buffer:set_option('modifiable', false)
-    buffer:set_option('readonly', true)
-    buffer:set_option('modified', false)
-  end
-end
-
 function Base:open(buffer, options)
+  self._buffer = buffer
   if self.winid > 0 then
     self.winid = self:_on_update(self.winid, buffer, options)
   else
     self.winid = self:_on_open(buffer, options)
   end
-  self._buffer = buffer
 
   -- set window options
   -- default window options
@@ -55,6 +40,7 @@ function Base:open(buffer, options)
     foldenable = false,
     list = false,
     number = true,
+    relativenumber = false,
     spell = false,
     wrap = false,
   }

@@ -143,9 +143,6 @@ jump_to_home                                     *vfiler-actions-jump_to_home*
 jump_to_root                                     *vfiler-actions-jump_to_root*
     Jump to root directory.
 
-toggle_auto_preview                       *vfiler-actions-toggle_auto_preview*
-    Toggle the automatic preview window.
-
 toggle_preview                                 *vfiler-actions-toggle_preview*
     Toggle the preview window for the item in the current cursor. 
 
@@ -437,7 +434,6 @@ U               clear_selected_all
 <Tab>           switch_to_filer
 <BS>            change_to_parent
 <C-l>           reload
-<C-p>           toggle_auto_preview
 <C-r>           sync_with_current_filer
 <C-s>           toggle_sort
 J               jump_to_directory

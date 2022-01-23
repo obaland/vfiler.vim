@@ -195,9 +195,9 @@ end
 
 --- Open filer
 function VFiler:open(...)
-  local winnr = self._view:winnr()
-  if winnr >= 0 then
-    core.window.move(winnr)
+  local winid = self._view:winid()
+  if winid >= 0 then
+    core.window.move(winid)
     return
   end
 

@@ -28,6 +28,21 @@ function M.inherit(class, super, ...)
   return self
 end
 
+function M.try(block)
+  local try = block[1]
+  assert(try)
+  local catch = block.catch
+  local finally = block.finally
+
+  local ok, errors = pcall(try)
+  if not ok and catch then
+    catch(errors)
+  end
+  if finally then
+    finally()
+  end
+end
+
 ------------------------------------------------------------------------------
 -- File and Directory
 ------------------------------------------------------------------------------
@@ -136,13 +151,10 @@ local open_layout = {
   top = 'aboveleft split',
 }
 
----@param winnr number
-function M.window.move(winnr)
-  local command = 'wincmd w'
-  if winnr > 0 then
-    command = winnr .. command
-  end
-  vim.command(([[noautocmd execute '%s']]):format(command))
+---@param winid number
+function M.window.move(winid)
+  assert(winid >= 0)
+  vim.command(([[noautocmd call win_gotoid(%d)]]):format(winid))
 end
 
 ---@param layout string
@@ -162,13 +174,15 @@ function M.window.open(layout, ...)
 end
 
 ---@param height number
-function M.window.resize_height(height)
-  vim.command('silent! resize ' .. height)
+function M.window.resize_height(winnr, height)
+  assert(winnr >= 0)
+  vim.command(('silent! %dresize %d'):format(winnr, height))
 end
 
 ---@param width number
-function M.window.resize_width(width)
-  vim.command('silent! vertical resize ' .. width)
+function M.window.resize_width(winnr, width)
+  assert(winnr >= 0)
+  vim.command(('silent! vertical %dresize %d'):format(winnr, width))
 end
 
 ------------------------------------------------------------------------------

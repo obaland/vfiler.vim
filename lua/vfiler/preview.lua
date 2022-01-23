@@ -29,6 +29,7 @@ local function new_view(options)
     winoptions = {
       number = true,
       cursorline = false,
+      relativenumber = false,
     },
   }
   local view
@@ -100,24 +101,7 @@ function Preview.new(options)
 end
 
 function Preview:open(path)
-  -- create buffer
-  local bufname = 'vfiler-preview:' .. path
-  local buffer = Buffer.new(bufname)
-
-  -- NOTE:
-  -- In the case of vim, avoid the problem that the top row of the window
-  -- is changed arbitrarily.
-  local saved_view = vim.fn.winsaveview()
-  buffer:set_options({
-    bufhidden = 'wipe',
-    modifiable = false,
-    modified = false,
-    readonly = true,
-    undofile = false,
-    undolevels = 0,
-  })
-  vim.fn.winrestview(saved_view)
-
+  self.opened = false
   local options
   if self._options.layout == 'floating' then
     options = get_floating_options(self._winid, self._options)
@@ -142,33 +126,65 @@ function Preview:open(path)
   end
   options.title = prefix .. title
 
-  local winid = self._view:open(buffer, options)
-  vim.fn.win_execute(winid, 'filetype detect')
-
   local warning_syntax = 'vfilerPreviewWarning'
-  vim.fn.win_execute(winid, core.syntax.clear_command({ warning_syntax }))
+  local win_commands = {
+    'filetype detect',
+    core.syntax.clear_command({ warning_syntax }),
+  }
 
   -- read file
+  local lines = vim.to_vimlist({})
   local file = io.open(path, 'r')
   if file then
-    local lines = vim.to_vimlist({})
     for line in file:lines() do
       table.insert(lines, line)
     end
     file:close()
-    self._view:draw(lines)
   else
-    -- draw warning message
-    vim.win_executes(winid, {
-      core.syntax.match_command(warning_syntax, [[\%1l.*]]),
-      core.highlight.link_command(warning_syntax, 'WarningMsg'),
-    })
+    -- warning message & syntax
+    table.insert(
+      win_commands,
+      core.syntax.match_command(warning_syntax, [[\%1l.*]])
+    )
+    table.insert(
+      win_commands,
+      core.highlight.link_command(warning_syntax, 'WarningMsg')
+    )
     local message = ('"%s" could not be opened.'):format(filename)
-    self._view:draw(vim.to_vimlist({ message }))
+    table.insert(lines, message)
   end
 
+  local bufname = 'vfiler-preview:' .. path
+  local buffer = Buffer.new(bufname)
+
+  -- NOTE:
+  -- In the case of vim, avoid the problem that the top row of the window
+  -- is changed arbitrarily.
+  local saved_view = vim.fn.winsaveview()
+  local winid = self._view:open(buffer, options)
+  vim.win_executes(winid, win_commands)
+
+  core.try({
+    function()
+      buffer:set_options({
+        modifiable = true,
+        bufhidden = 'wipe',
+        swapfile = false,
+        undofile = false,
+        undolevels = 0,
+      })
+      buffer:set_lines(lines)
+    end,
+    finally = function()
+      buffer:set_options({
+        modified = false,
+      })
+      vim.fn.winrestview(saved_view)
+    end,
+  })
+
   -- return the current window
-  vim.fn.win_gotoid(self._winid)
+  core.window.move(self._winid)
   self.opened = true
 end
 

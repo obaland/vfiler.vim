@@ -93,43 +93,43 @@ local choose_keys = {
   '0',
 }
 
-local function choose_window()
-  local winnrs = {}
-  for nr = 1, vim.fn.winnr('$') do
-    local bufnr = vim.fn.winbufnr(nr)
-    if bufnr > 0 and vim.fn.getbufvar(bufnr, 'vfiler') ~= 'vfiler' then
-      table.insert(winnrs, nr)
+local function choose_window(winid)
+  local winids = {}
+  local bufnrs = vim.from_vimlist(vim.fn.tabpagebuflist())
+  for _, bufnr in ipairs(bufnrs) do
+    if vim.fn.getbufvar(bufnr, 'vfiler') ~= 'vfiler' then
+      table.insert(winids, vim.fn.bufwinid(bufnr))
     end
   end
-  if #winnrs == 0 then
+  if #winids == 0 then
     return -1
-  elseif #winnrs == 1 then
-    return winnrs[1]
+  elseif #winids == 1 then
+    return winids[1]
   end
 
   -- Map window keys, and save statuslines
   local keys = {}
   local winkeys = {}
   local prev_statuslines = {}
-  for _, winnr in ipairs(winnrs) do
+  for _, id in ipairs(winids) do
+    local winnr = vim.fn.win_id2win(id)
     local key = choose_keys[winnr]
     table.insert(keys, key)
-    winkeys[key] = winnr
-    prev_statuslines[winnr] = vim.get_win_option(winnr, 'statusline')
+    winkeys[key] = id
+    prev_statuslines[id] = vim.get_win_option(id, 'statusline')
   end
 
   -- Save status
   local laststatus = vim.get_global_option('laststatus')
-  local save_winnr = vim.fn.winnr()
 
   -- Choose window
   local statusline = require('vfiler/statusline')
   vim.set_global_option('laststatus', 2)
-  for key, nr in pairs(winkeys) do
+  for key, id in pairs(winkeys) do
     vim.set_win_option(
-      nr,
+      id,
       'statusline',
-      statusline.choose_window_key(vim.fn.winwidth(nr), key)
+      statusline.choose_window_key(vim.fn.winwidth(id), key)
     )
     vim.command('redraw')
   end
@@ -145,11 +145,11 @@ local function choose_window()
 
   -- Restore
   vim.set_global_option('laststatus', laststatus)
-  for nr, prev_statusline in pairs(prev_statuslines) do
-    vim.set_win_option(nr, 'statusline', prev_statusline)
+  for id, prev_statusline in pairs(prev_statuslines) do
+    vim.set_win_option(id, 'statusline', prev_statusline)
     vim.command('redraw')
   end
-  core.window.move(save_winnr)
+  core.window.move(winid)
 
   return key == '<ESC>' and nil or winkeys[key]
 end
@@ -270,13 +270,13 @@ function M.open_file(vfiler, context, view, path, open)
   end
 
   if open == 'choose' then
-    local winnr = choose_window()
-    if not winnr then
+    local winid = choose_window(view:winid())
+    if not winid then
       return
-    elseif winnr < 0 then
+    elseif winid < 0 then
       core.window.open('right')
     else
-      core.window.move(winnr)
+      core.window.move(winid)
     end
   elseif open ~= 'edit' then
     core.window.open(open)
@@ -321,10 +321,7 @@ function M.close_preview(vfiler, context, view)
   if not close_preview(vfiler, context, view) then
     return
   end
-  local in_preview = context.in_preview
-  if in_preview.once then
-    in_preview.preview = nil
-  end
+  context.in_preview.preview = nil
 end
 
 function M.close_tree(vfiler, context, view)
@@ -741,43 +738,37 @@ function M.preview_cursor_moved(vfiler, context, view)
 
   local line = vim.fn.line('.')
   if preview.line ~= line then
-    if in_preview.once then
-      M.close_preview(vfiler, context, view)
-    else
-      open_preview(vfiler, context, view)
-    end
+    M.close_preview(vfiler, context, view)
   end
   preview.line = line
 end
 
-function M.toggle_auto_preview(vfiler, context, view)
-  local in_preview = context.in_preview
-  local preview = in_preview.preview
-  if preview and not in_preview.once then
-    preview:close()
-    view:redraw()
-    in_preview.preview = nil
-    return
-  end
-
-  if not preview then
-    in_preview.preview = Preview.new(context.options.preview)
-  end
-  in_preview.once = false
-  open_preview(vfiler, context, view)
-end
+-- TODO:
+--function M.toggle_auto_preview(vfiler, context, view)
+--  local in_preview = context.in_preview
+--  local preview = in_preview.preview
+--  if preview and not in_preview.once then
+--    preview:close()
+--    view:redraw()
+--    in_preview.preview = nil
+--    return
+--  end
+--
+--  if not preview then
+--    in_preview.preview = Preview.new(context.options.preview)
+--  end
+--  in_preview.once = false
+--  open_preview(vfiler, context, view)
+--end
 
 function M.toggle_preview(vfiler, context, view)
   local in_preview = context.in_preview
   if close_preview(vfiler, context, view) then
-    if in_preview.once then
-      in_preview.preview = nil
-    end
+    in_preview.preview = nil
     return
   end
   if not in_preview.preview then
     in_preview.preview = Preview.new(context.options.preview)
-    in_preview.once = true
   end
   open_preview(vfiler, context, view)
 end

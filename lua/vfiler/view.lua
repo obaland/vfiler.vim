@@ -75,6 +75,7 @@ function View.new(bufname, context)
       list = false,
       number = false,
       relativenumber = false,
+      signcolumn = 'no',
       spell = false,
       wrap = false,
     },
@@ -187,7 +188,7 @@ end
 
 --- Open the view buffer for the current window
 function View:open()
-  vim.command('silent buffer! ' .. self._buffer.number)
+  vim.command(('silent noautocmd %dbuffer!'):format(self._buffer.number))
 end
 
 --- Redraw the current contents
@@ -202,12 +203,17 @@ function View:redraw()
     return
   end
 
-  local winnr = self:winnr()
-  if winnr < 0 then
+  local cache = self._cache
+  local winid = self:winid()
+  if winid < 0 then
     core.message.warning(
       'Cannot draw because the buffer is not displayed in the window.'
     )
     return
+  elseif cache.winid ~= winid then
+    -- set window options
+    vim.set_win_options(winid, self._winoptions)
+    cache.winid = winid
   end
 
   -- auto resize window
@@ -215,11 +221,7 @@ function View:redraw()
     self:_resize()
   end
 
-  -- set window options
-  vim.set_win_options(winnr, self._winoptions)
-
-  local winwidth = vim.fn.winwidth(winnr) - 1 -- padding end
-  local cache = self._cache
+  local winwidth = vim.fn.winwidth(winid) - 1 -- padding end
   if cache.winwidth ~= winwidth or not cache.column_props then
     cache.column_props = self:_create_column_props(winwidth)
     cache.winwidth = winwidth
@@ -312,6 +314,9 @@ end
 
 --- Walk view items
 function View:walk_items()
+  if not self._items then
+    return nil
+  end
   local function _walk_items()
     for _, item in ipairs(self._items) do
       coroutine.yield(item)
@@ -323,6 +328,11 @@ end
 --- Get the window number of the view
 function View:winnr()
   return vim.fn.bufwinnr(self._buffer.number)
+end
+
+--- Get the window ID of the view
+function View:winid()
+  return vim.fn.bufwinid(self._buffer.number)
 end
 
 function View:_apply_syntaxes()
@@ -420,14 +430,14 @@ function View:_resize()
 
   local winfixwidth = false
   if self._width > 0 then
-    core.window.resize_width(self._width)
+    core.window.resize_width(winnr, self._width)
     winfixwidth = true
   end
   vim.set_win_option(winnr, 'winfixwidth', winfixwidth)
 
   local winfixheight = false
   if self._height > 0 then
-    core.window.resize_height(self._height)
+    core.window.resize_height(winnr, self._height)
     winfixheight = true
   end
   vim.set_win_option(winnr, 'winfixheight', winfixheight)

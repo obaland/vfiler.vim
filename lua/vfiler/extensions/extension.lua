@@ -236,11 +236,7 @@ function Extension:quit()
   if self.on_quit then
     self._filer:do_action(self.on_quit)
   end
-
-  local src_winnr = vim.fn.bufwinnr(self._src_bufnr)
-  if src_winnr >= 0 then
-    core.window.move(src_winnr)
-  end
+  core.window.move(self._view.src_winid)
 
   -- unlink
   self._filer._context.extension = nil
@@ -249,7 +245,7 @@ end
 function Extension:redraw()
   self._items = self:_on_update(self._configs)
   local lines = self:_on_get_lines(self._items)
-  self:_on_draw(self._view, lines)
+  self:_on_draw(self._buffer, lines)
 end
 
 function Extension:start()
@@ -304,7 +300,7 @@ function Extension:start()
   end
 
   -- draw line texts and syntax
-  self:_on_draw(self._view, lines)
+  self:_on_draw(self._buffer, lines)
   core.cursor.winmove(self.winid, lnum)
 
   -- add extension table
@@ -342,8 +338,18 @@ function Extension:_on_update(configs)
   return {} -- return items
 end
 
-function Extension:_on_draw(view, lines)
-  view:draw(lines)
+function Extension:_on_draw(buffer, lines)
+  local modifiable = buffer:get_option('modifiable') == 1
+  if not modifiable then
+    buffer:set_option('modifiable', true)
+    buffer:set_option('readonly', false)
+  end
+  buffer:set_lines(lines)
+  if not modifiable then
+    buffer:set_option('modifiable', false)
+    buffer:set_option('readonly', true)
+    buffer:set_option('modified', false)
+  end
 end
 
 function Extension:_on_win_options(configs)

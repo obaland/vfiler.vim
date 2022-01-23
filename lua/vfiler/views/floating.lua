@@ -1,5 +1,5 @@
+local api = vim.api
 local core = require('vfiler/libs/core')
-local vim = require('vfiler/libs/vim')
 
 local Floating = {}
 
@@ -16,19 +16,22 @@ end
 
 function Floating:_create_title(title, win_options)
   local options, title_name = self:_get_title_options(title, win_options)
-  local bufnr = vim.api.nvim_create_buf(false, true)
-  local winid = vim.api.nvim_open_win(bufnr, false, options)
+  local bufnr = api.nvim_create_buf(false, true)
+  local winid = api.nvim_open_win(bufnr, false, options)
 
   -- set options
-  vim.api.nvim_win_set_option(
+  api.nvim_win_set_option(
     winid,
     'winhighlight',
     'Normal:vfilerFloatingWindowTitle'
   )
-  vim.api.nvim_win_set_option(winid, 'cursorline', false)
+  api.nvim_win_set_option(winid, 'cursorline', false)
+  api.nvim_win_set_option(winid, 'number', false)
+  api.nvim_win_set_option(winid, 'relativenumber', false)
+  api.nvim_win_set_option(winid, 'signcolumn', 'no')
 
   -- set title name
-  vim.api.nvim_buf_set_lines(bufnr, 0, -1, true, { title_name })
+  api.nvim_buf_set_lines(bufnr, 0, -1, true, { title_name })
 
   self._title = {
     bufnr = bufnr,
@@ -42,7 +45,7 @@ function Floating:_get_title_options(title, win_options)
     col = win_options.col + 1,
     focusable = false,
     height = 1,
-    noautocmd = false,
+    noautocmd = true,
     relative = win_options.relative,
     row = win_options.row,
     zindex = win_options.zindex + 1,
@@ -60,7 +63,7 @@ function Floating:_get_win_options(options)
     col = options.col,
     focusable = true,
     height = options.height,
-    noautocmd = false,
+    noautocmd = true,
     relative = 'editor',
     row = options.row,
     width = options.width,
@@ -74,21 +77,21 @@ end
 
 function Floating:_on_close(winid, buffer)
   if winid > 0 then
-    vim.api.nvim_win_close(winid, true)
+    api.nvim_win_close(winid, true)
   end
   if self._title then
-    vim.api.nvim_win_close(self._title.winid, true)
+    api.nvim_win_close(self._title.winid, true)
     self._title = nil
   end
 end
 
 function Floating:_on_open(buffer, options)
   local win_options = self:_get_win_options(options)
-  local winid = vim.api.nvim_open_win(buffer.number, true, win_options)
+  local winid = api.nvim_open_win(buffer.number, true, win_options)
 
   -- set options
-  vim.api.nvim_win_set_option(winid, 'winhighlight', 'Normal:Normal')
-  vim.api.nvim_win_set_option(winid, 'number', false)
+  api.nvim_win_set_option(winid, 'winhighlight', 'Normal:Normal')
+  api.nvim_win_set_option(winid, 'signcolumn', 'no')
 
   -- open title window
   if options.title then
@@ -98,12 +101,12 @@ function Floating:_on_open(buffer, options)
 end
 
 function Floating:_on_update(winid, buffer, options)
-  if buffer.number ~= vim.api.nvim_win_get_buf(winid) then
-    vim.api.nvim_win_set_buf(winid, buffer.number)
+  if buffer.number ~= api.nvim_win_get_buf(winid) then
+    api.nvim_win_set_buf(winid, buffer.number)
   end
   local win_options = self:_get_win_options(options)
   win_options.noautocmd = nil
-  vim.api.nvim_win_set_config(winid, win_options)
+  api.nvim_win_set_config(winid, win_options)
   self:_update_title(options.title, win_options)
   return winid
 end
@@ -111,8 +114,8 @@ end
 function Floating:_update_title(title, win_options)
   local options, title_name = self:_get_title_options(title, win_options)
   options.noautocmd = nil
-  vim.api.nvim_win_set_config(self._title.winid, options)
-  vim.api.nvim_buf_set_lines(self._title.bufnr, 0, -1, true, { title_name })
+  api.nvim_win_set_config(self._title.winid, options)
+  api.nvim_buf_set_lines(self._title.bufnr, 0, -1, true, { title_name })
 end
 
 return Floating
