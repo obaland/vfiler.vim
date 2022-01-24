@@ -87,7 +87,11 @@ end
 
 function Floating:_on_open(buffer, options)
   local win_options = self:_get_win_options(options)
-  local winid = api.nvim_open_win(buffer.number, true, win_options)
+  local enter = true
+  if self._configs.focusable == false then
+    enter = false
+  end
+  local winid = api.nvim_open_win(buffer.number, enter, win_options)
 
   -- set options
   api.nvim_win_set_option(winid, 'winhighlight', 'Normal:Normal')

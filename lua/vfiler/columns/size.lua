@@ -5,7 +5,7 @@ local SizeColumn = {}
 function SizeColumn.new()
   local Column = require('vfiler/columns/column')
   local self = core.inherit(SizeColumn, Column)
-  -- Note: value(6) + space(1) + unit(2)
+  -- NOTE: value(6) + space(1) + unit(2)
   self._width = 9
 
   local Syntax = require('vfiler/columns/syntax')

@@ -321,7 +321,10 @@ function M.close_preview(vfiler, context, view)
   if not close_preview(vfiler, context, view) then
     return
   end
-  context.in_preview.preview = nil
+  local in_preview = context.in_preview
+  if in_preview.once then
+    context.in_preview.preview = nil
+  end
 end
 
 function M.close_tree(vfiler, context, view)
@@ -738,28 +741,31 @@ function M.preview_cursor_moved(vfiler, context, view)
 
   local line = vim.fn.line('.')
   if preview.line ~= line then
-    M.close_preview(vfiler, context, view)
+    if in_preview.once then
+      M.close_preview(vfiler, context, view)
+    else
+      open_preview(vfiler, context, view)
+    end
+    preview.line = line
   end
-  preview.line = line
 end
 
--- TODO:
---function M.toggle_auto_preview(vfiler, context, view)
---  local in_preview = context.in_preview
---  local preview = in_preview.preview
---  if preview and not in_preview.once then
---    preview:close()
---    view:redraw()
---    in_preview.preview = nil
---    return
---  end
---
---  if not preview then
---    in_preview.preview = Preview.new(context.options.preview)
---  end
---  in_preview.once = false
---  open_preview(vfiler, context, view)
---end
+function M.toggle_auto_preview(vfiler, context, view)
+  local in_preview = context.in_preview
+  local preview = in_preview.preview
+  if preview and not in_preview.once then
+    preview:close()
+    view:redraw()
+    in_preview.preview = nil
+    return
+  end
+
+  if not preview then
+    in_preview.preview = Preview.new(context.options.preview)
+  end
+  in_preview.once = false
+  open_preview(vfiler, context, view)
+end
 
 function M.toggle_preview(vfiler, context, view)
   local in_preview = context.in_preview
@@ -769,6 +775,7 @@ function M.toggle_preview(vfiler, context, view)
   end
   if not in_preview.preview then
     in_preview.preview = Preview.new(context.options.preview)
+    in_preview.once = true
   end
   open_preview(vfiler, context, view)
 end

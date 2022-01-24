@@ -195,11 +195,12 @@ end
 function View:redraw()
   local buffer = self._buffer
   if buffer.number ~= vim.fn.bufnr() then
-    core.message.warning(
-      'Cannot draw because the buffer is different. (%d != %d)',
-      buffer.number,
-      vim.fn.bufnr()
-    )
+    -- for debug
+    --core.message.warning(
+    --  'Cannot draw because the buffer is different. (%d != %d)',
+    --  buffer.number,
+    --  vim.fn.bufnr()
+    --)
     return
   end
 

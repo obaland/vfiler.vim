@@ -13,16 +13,21 @@ Buffer.__index = Buffer
 
 function Buffer.new(name)
   local number = vim.fn.bufadd(name)
+  if vim.fn.bufloaded(number) ~= 1 then
+    -- NOTE: In the case of vim, an extra message is displayed, so execute
+    -- it with "silent".
+    vim.command(('silent noautocmd call bufload(%d)'):format(number))
+  end
+
   -- Set a flag in the buffer variable to identify the vfiler.
   vim.fn.setbufvar(number, 'vfiler', 'vfiler')
-
   return setmetatable({
     number = number,
   }, Buffer)
 end
 
 function Buffer:delete()
-  if self.number > 0 then
+  if vim.fn.bufexists(self.number) == 1 then
     vim.command(('silent %dbwipeout!'):format(self.number))
   end
   self.number = -1

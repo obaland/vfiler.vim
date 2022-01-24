@@ -4,9 +4,9 @@ local vim = require('vfiler/libs/vim')
 local Window = {}
 Window.__index = Window
 
-function Window.new(name)
+function Window.new()
   local Base = require('vfiler/views/base')
-  return core.inherit(Window, Base, name)
+  return core.inherit(Window, Base)
 end
 
 function Window:_on_close(winid, buffer)
@@ -47,13 +47,13 @@ function Window:_on_update(winid, buffer, options)
     core.window.resize_height(winnr, options.height)
   end
 
-  -- set name to statusline
-  if self.name then
+  -- set title to statusline
+  if options.title then
     vim.set_win_option(
       winid,
       'statusline',
       ('%%#vfilerStatusLineSection# %s %%#vfilerStatusLine#'):format(
-        self.name
+        options.title
       )
     )
   end

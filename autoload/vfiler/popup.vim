@@ -3,11 +3,6 @@
 " AUTHOR: OBARA Taihei
 " License: MIT license
 "=============================================================================
-"
-function! vfiler#popup#create(bufnr, options) abort
-  silent let winid = popup_create(a:bufnr, a:options)
-  return winid
-endfunction
 
 function! vfiler#popup#map(winid, bufnr, keys, funcstr) abort
   let l:mappings = {}

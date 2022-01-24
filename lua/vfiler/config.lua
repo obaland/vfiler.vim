@@ -38,6 +38,7 @@ M.configs = {
     ['.'] = action.toggle_show_hidden,
     ['<BS>'] = action.change_to_parent,
     ['<C-l>'] = action.reload,
+    ['<C-p>'] = action.toggle_auto_preview,
     ['<C-r>'] = action.sync_with_current_filer,
     ['<C-s>'] = action.toggle_sort,
     ['<CR>'] = action.open,

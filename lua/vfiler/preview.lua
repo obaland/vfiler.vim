@@ -76,8 +76,7 @@ local function get_floating_options(winid, default)
   end
   options.row = math.floor((height - options.height) / 2) - 1
 
-  -- Note:
-  -- Border correction is required between Neovim's floating window and
+  -- NOTE: Border correction is required between Neovim's floating window and
   -- Vim's pop-up window.
 
   if core.is_nvim then
@@ -154,21 +153,19 @@ function Preview:open(path)
     table.insert(lines, message)
   end
 
+  -- NOTE: In the case of vim, avoid the problem that the top row of
+  -- the window is changed arbitrarily.
+  local saved_view = vim.fn.winsaveview()
   local bufname = 'vfiler-preview:' .. path
   local buffer = Buffer.new(bufname)
-
-  -- NOTE:
-  -- In the case of vim, avoid the problem that the top row of the window
-  -- is changed arbitrarily.
-  local saved_view = vim.fn.winsaveview()
-  local winid = self._view:open(buffer, options)
-  vim.win_executes(winid, win_commands)
+  vim.fn.winrestview(saved_view)
 
   core.try({
     function()
       buffer:set_options({
-        modifiable = true,
         bufhidden = 'wipe',
+        buflisted = false,
+        buftype = 'nofile',
         swapfile = false,
         undofile = false,
         undolevels = 0,
@@ -177,11 +174,15 @@ function Preview:open(path)
     end,
     finally = function()
       buffer:set_options({
+        modifiable = false,
         modified = false,
+        readonly = true,
       })
-      vim.fn.winrestview(saved_view)
     end,
   })
+
+  local winid = self._view:open(buffer, options)
+  vim.win_executes(winid, win_commands)
 
   -- return the current window
   core.window.move(self._winid)

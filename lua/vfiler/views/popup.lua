@@ -31,12 +31,12 @@ function Popup:define_mappings(mappings, funcstr)
     vim.to_vimdict({ filter = 'vfiler#popup#filter' })
   )
 
-  -- Note: same mapping datas
+  -- NOTE: same mapping datas
   return mappings
 end
 
 function Popup:_get_popup_options(options)
-  -- Note: 'filer' option are set during specific mapping
+  -- NOTE: 'filer' option are set during specific mapping
   local popup_options = vim.to_vimdict({
     border = vim.to_vimlist({ 1, 1, 1, 1 }),
     col = options.col,
@@ -63,13 +63,13 @@ function Popup:_on_close(winid, buffer)
   if winid <= 0 then
     return
   end
-  -- Note: If you do not run it from the calling window, you will get an error
+  -- NOTE: If you do not run it from the calling window, you will get an error
   vim.fn.win_execute(self.src_winid, ('call popup_close(%d)'):format(winid))
 end
 
 function Popup:_on_open(buffer, options)
   local popup_options = self:_get_popup_options(options)
-  local winid = vim.fn['vfiler#popup#create'](buffer.number, popup_options)
+  local winid = vim.fn.popup_create(buffer.number, popup_options)
 
   -- set colors
   vim.set_win_option(winid, 'wincolor', 'Normal')
