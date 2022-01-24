@@ -313,6 +313,15 @@ function M.syntax.clear_command(names)
   return ('silent! syntax clear %s'):format(table.concat(names, ' '))
 end
 
+function M.syntax.keyword_command(name, keyword, options)
+  local command = ('syntax keyword %s %s'):format(name, keyword)
+  local option = get_syntax_option_string(options or {})
+  if #option > 0 then
+    command = command .. ' ' .. option
+  end
+  return command
+end
+
 function M.syntax.match_command(name, pattern, options)
   local command = ('syntax match %s /%s/'):format(name, pattern)
   local option = get_syntax_option_string(options or {})

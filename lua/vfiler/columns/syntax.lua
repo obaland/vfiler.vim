@@ -25,7 +25,13 @@ local function create_syntax_commands(syntaxes, end_mark)
     end
 
     local command
-    if syntax.pattern then
+    if syntax.keyword then
+      command = core.syntax.keyword_command(
+        syntax.group,
+        syntax.keyword,
+        options
+      )
+    elseif syntax.pattern then
       command = core.syntax.match_command(
         syntax.group,
         syntax.pattern,
