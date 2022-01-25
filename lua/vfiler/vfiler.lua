@@ -136,10 +136,7 @@ end
 function VFiler._do_action(bufnr, key)
   local vfiler = VFiler.get(bufnr)
   local action = vfiler._defined_mappings[key]
-  if not action then
-    core.message.error('Not defined in the key')
-    return
-  end
+  assert(action, 'Not defined in the key')
   vfiler:do_action(action)
 end
 
