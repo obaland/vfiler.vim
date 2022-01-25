@@ -295,6 +295,13 @@ function M.open_file(vfiler, context, view, path, open)
   else
     core.window.open('edit', path)
   end
+
+  local dest_winid = vim.fn.win_getid()
+  if open ~= 'tab' and dest_winid ~= view:winid() then
+    vfiler:open()
+    view:redraw()
+    core.window.move(dest_winid)
+  end
 end
 
 function M.start_extension(vfiler, context, view, extension)
@@ -781,6 +788,7 @@ function M.toggle_preview(vfiler, context, view)
 end
 
 function M.quit(vfiler, context, view)
+  close_preview(vfiler, context, view)
   vfiler:quit()
 end
 

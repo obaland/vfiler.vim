@@ -107,7 +107,7 @@ end
 --- Delete view object
 function View:delete()
   if self._buffer then
-    self._buffer:delete()
+    self._buffer:wipeout()
   end
   self._buffer = nil
 end

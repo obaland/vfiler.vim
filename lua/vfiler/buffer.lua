@@ -28,6 +28,13 @@ end
 
 function Buffer:delete()
   if vim.fn.bufexists(self.number) == 1 then
+    vim.command(('silent %dbdelete!'):format(self.number))
+  end
+  self.number = -1
+end
+
+function Buffer:wipeout()
+  if vim.fn.bufexists(self.number) == 1 then
     vim.command(('silent %dbwipeout!'):format(self.number))
   end
   self.number = -1
