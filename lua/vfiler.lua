@@ -1,4 +1,4 @@
-local action = require('vfiler/action')
+local api = require('vfiler/actions/api')
 local config = require('vfiler/config')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
@@ -39,7 +39,7 @@ function M.start(dirpath, configs)
   if vfiler then
     vfiler:focus()
     vfiler:update(context)
-    vfiler:do_action(action.cd, dirpath)
+    vfiler:do_action(api.cd, dirpath)
     return true
   end
 
