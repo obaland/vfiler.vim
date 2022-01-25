@@ -4,6 +4,7 @@ local sort = require('vfiler/sort')
 local vim = require('vfiler/libs/vim')
 
 local Bookmark = require('vfiler/extensions/bookmark')
+local Buffer = require('vfiler/buffer')
 local Clipboard = require('vfiler/clipboard')
 local Menu = require('vfiler/extensions/menu')
 local Preview = require('vfiler/preview')
@@ -97,7 +98,7 @@ local function choose_window(winid)
   local winids = {}
   local bufnrs = vim.from_vimlist(vim.fn.tabpagebuflist())
   for _, bufnr in ipairs(bufnrs) do
-    if vim.fn.getbufvar(bufnr, 'vfiler') ~= 'vfiler' then
+    if not Buffer.is_vfiler_buffer(bufnr) then
       table.insert(winids, vim.fn.bufwinid(bufnr))
     end
   end
@@ -298,7 +299,7 @@ function M.open_file(vfiler, context, view, path, open)
 
   local dest_winid = vim.fn.win_getid()
   if open ~= 'tab' and dest_winid ~= view:winid() then
-    vfiler:open()
+    vfiler:focus()
     view:redraw()
     core.window.move(dest_winid)
   end
@@ -414,11 +415,11 @@ function M.copy_to_filer(vfiler, context, view)
   -- Copy to linked filer
   local cb = Clipboard.copy(selected)
   cb:paste(linked:get_root_item())
-  linked:open()
+  linked:focus()
   linked:draw()
 
   -- Return to current
-  vfiler:open()
+  vfiler:focus()
 
   -- clear selected mark
   for _, item in ipairs(selected) do
@@ -603,10 +604,10 @@ function M.move_to_filer(vfiler, context, view)
   -- Move to linked filer
   local cb = Clipboard.move(selected)
   cb:paste(linked:get_root_item())
-  linked:open()
+  linked:focus()
   linked:draw()
 
-  vfiler:open()
+  vfiler:focus()
   view:draw(context)
 end
 
@@ -854,7 +855,11 @@ function M.switch_to_filer(vfiler, context, view)
   local linked = context.linked
   -- already linked
   if linked then
-    linked:open('right')
+    if linked:displayed() then
+      linked:focus()
+    else
+      linked:open('right')
+    end
     linked:do_action(open_preview)
     return
   end
@@ -874,10 +879,10 @@ function M.switch_to_filer(vfiler, context, view)
   core.cursor.move(lnum)
 
   -- redraw current
-  vfiler:open()
+  vfiler:focus()
   view:draw(context)
 
-  newfiler:open() -- return other filer
+  newfiler:focus() -- return other filer
   newfiler:do_action(open_preview)
 end
 
@@ -890,7 +895,7 @@ function M.sync_with_current_filer(vfiler, context, view)
   linked:open()
   linked:sync(context, function()
     linked:draw()
-    vfiler:open() -- return current window
+    vfiler:focus() -- return current window
   end)
 end
 

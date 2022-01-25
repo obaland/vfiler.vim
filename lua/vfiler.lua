@@ -37,7 +37,7 @@ function M.start(dirpath, configs)
   local context = Context.new(merged_configs)
   local vfiler = VFiler.find_visible(options.name)
   if vfiler then
-    vfiler:open()
+    vfiler:focus()
     vfiler:update(context)
     vfiler:do_action(action.cd, dirpath)
     return true

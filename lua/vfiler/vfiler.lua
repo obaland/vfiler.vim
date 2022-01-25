@@ -182,6 +182,14 @@ function VFiler:duplicate()
   return VFiler.new(newcontext)
 end
 
+--- Focus filer
+function VFiler:focus()
+  local winid = self._view:winid()
+  if vim.fn.win_id2win(winid) ~= 0 then
+    core.window.move(winid)
+  end
+end
+
 --- Get root item
 function VFiler:get_root_item()
   return self._context.root
@@ -194,15 +202,9 @@ function VFiler:link(vfiler)
 end
 
 --- Open filer
-function VFiler:open(...)
-  local winid = self._view:winid()
-  if winid >= 0 then
-    core.window.move(winid)
-    return
-  end
-
-  local layout = ...
-  if layout and layout ~= 'edit' then
+function VFiler:open(layout)
+  layout = layout or 'edit'
+  if layout ~= 'edit' then
     core.window.open(layout)
   end
   self._view:open()
