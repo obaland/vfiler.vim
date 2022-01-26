@@ -11,7 +11,7 @@ function M.load(name)
   end
   local code, cmodule = pcall(require, 'vfiler/columns/' .. name)
   if not code then
-    core.message.error('Unknown "%s" column module.', name)
+    core.message.warning('Unknown "%s" column module.', name)
     return nil
   end
   loaded_columns[name] = cmodule.new()

@@ -200,6 +200,7 @@ local function set_option(options, name, value, key)
   return true
 end
 
+--- Clear all key mappings
 function M.clear_mappings()
   M.configs.mappings = {}
 end
@@ -255,6 +256,12 @@ end
 function M.setup(configs)
   core.table.merge(M.configs, configs)
   return M.configs
+end
+
+--- Unmap the specified key
+---@param key string
+function M.unmap(key)
+  M.configs.mappings[key] = nil
 end
 
 return M

@@ -229,12 +229,12 @@ parameters for an option.  You need to escape spaces with "\".
     vfiler buffer, it is undefined.
 
 -auto-cd                                              *vfiler-options-auto-cd*
-    Enable auto cd behavior.
+    Change the working directory while navigating with vfiler.
     Default: false
 
 -auto-resize                                      *vfiler-options-auto-resize*
-    Enabled, it will automatically resize to the size specified by "width"
-    and "height" options.
+    Enabled, it will automatically resize to the size specified by `width`
+    and `height` options.
     Default: false
 
 -columns={column1,column2,...}                        *vfiler-options-columns*
@@ -255,7 +255,7 @@ parameters for an option.  You need to escape spaces with "\".
     Defualt: true
 
 -header                                                *vfiler-options-header*
-    Display the header line
+    Display the header line.
     Defualt: true
 
 -keep                                                    *vfiler-options-keep*
@@ -275,13 +275,13 @@ parameters for an option.  You need to escape spaces with "\".
     Create new vfiler buffer.
     Default: false
 
--preview-height                                *vfiler-options-preview-height*
+-preview-height={window-height}                *vfiler-options-preview-height*
     The window height of the buffer whose layout is "top", "bottom",
     "floating".
     If you specify "0", the height will be calculated automatically.
     Default: 0
 
--preview-layout                               *vfiler-options-preview-laytout*
+-preview-layout={type}                        *vfiler-options-preview-laytout*
     Specify the layout of the preview window.
 
     "left":     Split to the left.
@@ -292,7 +292,7 @@ parameters for an option.  You need to escape spaces with "\".
 
     Default: "floating"
 
--preview-width                                  *vfiler-options-preview-width*
+-preview-width={window-width}                   *vfiler-options-preview-width*
     The window width of the buffer whose layout is "left", "right",
     "floating".
     If you specify "0", the width will be calculated automatically.

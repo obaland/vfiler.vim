@@ -48,7 +48,7 @@ local function create_columns(columns)
   local cnames = vim.from_vimlist(vim.fn.split(columns, ','))
   for _, cname in ipairs(cnames) do
     local object = column.load(cname)
-    if column then
+    if object then
       table.insert(objects, object)
     else
       core.message.warning('"%s" is not a valid column.', cname)
