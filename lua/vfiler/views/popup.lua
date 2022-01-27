@@ -15,7 +15,7 @@ end
 
 function Popup:define_mappings(mappings, funcstr)
   local keypairs = {}
-  for key, func in pairs(mappings) do
+  for key, _ in pairs(mappings) do
     local code = key
     if core.string.is_keycode(key) then
       code = core.string.replace_keycode(key)
@@ -27,7 +27,9 @@ function Popup:define_mappings(mappings, funcstr)
     filter = function(winid, key)
       if keypairs[key] then
         local command = (':lua %s(%d, "%s")'):format(
-          funcstr, self._buffer.number, keypairs[key]
+          funcstr,
+          self._buffer.number,
+          keypairs[key]
         )
         vim.fn.win_execute(winid, command)
       end
