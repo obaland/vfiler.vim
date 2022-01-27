@@ -2,6 +2,7 @@ local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
+local Buffer = require('vfiler/buffer')
 local VFiler = require('vfiler/vfiler')
 
 local M = {}
@@ -40,10 +41,10 @@ local choose_keys = {
 
 local function choose_window(winid)
   local winids = {}
-  local bufnrs = vim.from_vimlist(vim.fn.tabpagebuflist())
-  for _, bufnr in ipairs(bufnrs) do
-    if vim.fn.getbufvar(bufnr, 'vfiler') ~= 'vfiler' then
-      table.insert(winids, vim.fn.bufwinid(bufnr))
+  for winnr = 1, vim.fn.winnr('$') do
+    local bufnr = vim.fn.winbufnr(winnr)
+    if not Buffer.is_vfiler_buffer(bufnr) then
+      table.insert(winids, vim.fn.win_getid(winnr))
     end
   end
   if #winids == 0 then
