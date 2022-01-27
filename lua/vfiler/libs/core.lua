@@ -399,11 +399,19 @@ local function truncate(str, width)
   return str:sub(1, width)
 end
 
+function M.string.is_keycode(s)
+  return s:match('^<.+>$') ~= nil
+end
+
 -- Lua pettern escape
 function M.string.pesc(s)
   local replaced = s:gsub('([%^%(%)%[%]%*%+%-%?%.%%])', '%%%1')
   return replaced
 end
+
+--- Replace keycode (<CR>, <Esc>, ...)
+---@param s string
+M.string.replace_keycode = vim.fn['vfiler#core#replace_keycode']
 
 if M.is_windows then
   function M.string.shellescape(str)

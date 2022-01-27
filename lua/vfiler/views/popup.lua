@@ -1,5 +1,4 @@
 local core = require('vfiler/libs/core')
-local vim = require('vfiler/libs/vim')
 
 local Popup = {}
 
@@ -15,21 +14,27 @@ function Popup:set_popup_option(key, value)
 end
 
 function Popup:define_mappings(mappings, funcstr)
-  local keys = {}
-  for key, _ in pairs(mappings) do
-    table.insert(keys, key)
+  local keypairs = {}
+  for key, func in pairs(mappings) do
+    local code = key
+    if core.string.is_keycode(key) then
+      code = core.string.replace_keycode(key)
+    end
+    keypairs[code] = key
   end
-  vim.fn['vfiler#popup#map'](
-    self.winid,
-    self._buffer.number,
-    vim.to_vimlist(keys),
-    funcstr
-  )
-  -- set a filer function to work with popup window
-  vim.fn.popup_setoptions(
-    self.winid,
-    vim.to_vimdict({ filter = 'vfiler#popup#filter' })
-  )
+
+  local options = vim.dict({
+    filter = function(winid, key)
+      if keypairs[key] then
+        local command = (':lua %s(%d, "%s")'):format(
+          funcstr, self._buffer.number, keypairs[key]
+        )
+        vim.fn.win_execute(winid, command)
+      end
+      return true
+    end,
+  })
+  vim.fn.popup_setoptions(self.winid, options)
 
   -- NOTE: same mapping datas
   return mappings
@@ -37,8 +42,8 @@ end
 
 function Popup:_get_popup_options(options)
   -- NOTE: 'filer' option are set during specific mapping
-  local popup_options = vim.to_vimdict({
-    border = vim.to_vimlist({ 1, 1, 1, 1 }),
+  local popup_options = vim.dict({
+    border = vim.list({ 1, 1, 1, 1 }),
     col = options.col,
     cursorline = true,
     drag = false,
@@ -72,7 +77,7 @@ function Popup:_on_open(buffer, options)
   local winid = vim.fn.popup_create(buffer.number, popup_options)
 
   -- set colors
-  vim.set_win_option(winid, 'wincolor', 'Normal')
+  vim.fn.setwinvar(winid, '&wincolor', 'Normal')
   return winid
 end
 
