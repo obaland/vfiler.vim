@@ -2,8 +2,6 @@ local core = require('vfiler/libs/core')
 local sort = require('vfiler/sort')
 local vim = require('vfiler/libs/vim')
 
-local Buffer = require('vfiler/buffer')
-
 local View = {}
 View.__index = View
 
@@ -24,21 +22,6 @@ local function walk(root, sort_compare, gitstatus)
   return coroutine.wrap(function()
     _walk(root)
   end)
-end
-
-local function new_buffer(bufname, context)
-  local buffer = Buffer.new(bufname)
-  buffer:set_options({
-    bufhidden = 'hide',
-    buflisted = context.options.buflisted,
-    buftype = 'nofile',
-    filetype = 'vfiler',
-    modifiable = false,
-    modified = false,
-    readonly = false,
-    swapfile = false,
-  })
-  return buffer
 end
 
 local function create_columns(columns)
@@ -62,10 +45,11 @@ local function create_columns(columns)
 end
 
 --- Create a view object
----@param bufname string
+---@param buffer table
 ---@param context table
-function View.new(bufname, context)
+function View.new(buffer, context)
   local object = setmetatable({
+    _buffer = buffer,
     _winoptions = {
       colorcolumn = '',
       concealcursor = 'nvc',
@@ -82,7 +66,6 @@ function View.new(bufname, context)
   }, View)
 
   object:_initialize(context)
-  object._buffer = new_buffer(bufname, context)
   object:open()
 
   object._previus_statusline = vim.get_win_option(
@@ -276,11 +259,6 @@ function View:reset(context)
   self:_resize()
 end
 
---- Register events
-function View:register_events(group, events, funcstr)
-  self._buffer:register_events(group, events, funcstr)
-end
-
 --- Get the currently selected items
 function View:selected_items()
   local selected = {}
@@ -306,11 +284,6 @@ end
 --- Undefine key mappings
 function View:undefine_mappings(mappings)
   return self._buffer:undefine_mappings(mappings)
-end
-
---- Register events
-function View:unregister_events(group)
-  self._buffer:unregister_events(group)
 end
 
 --- Walk view items

@@ -1,3 +1,4 @@
+local action_basic = require('vfiler/actions/basic')
 local api = require('vfiler/actions/api')
 local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
@@ -50,7 +51,7 @@ local function rename_files(vfiler, context, view, targets)
 
       if #renamed > 0 then
         core.message.info('Renamed - %d files', #renamed)
-        M.reload(filer, c, v)
+        filer:do_action(action_basic.reload)
         v:move_cursor(renamed[1].path)
       end
     end,
@@ -109,7 +110,7 @@ function M.copy_to_filer(vfiler, context, view)
   local linked = context.linked
   if not (linked and linked:displayed()) then
     -- Copy to clipboard
-    M.copy(vfiler, context, view)
+    vfiler:do_action(M.copy)
     return
   end
 
@@ -202,7 +203,7 @@ function M.move_to_filer(vfiler, context, view)
   local linked = context.linked
   if not (linked and linked:displayed()) then
     -- Move to clipboard
-    M.move(vfiler, context, view)
+    vfiler:do_action(M.move)
     return
   end
 

@@ -1,12 +1,28 @@
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
+local Buffer = require('vfiler/buffer')
 local View = require('vfiler/view')
 
 local vfilers = {}
 
 local VFiler = {}
 VFiler.__index = VFiler
+
+local function new_buffer(bufname, context)
+  local buffer = Buffer.new(bufname)
+  buffer:set_options({
+    bufhidden = 'hide',
+    buflisted = context.options.buflisted,
+    buftype = 'nofile',
+    filetype = 'vfiler',
+    modifiable = false,
+    modified = false,
+    readonly = false,
+    swapfile = false,
+  })
+  return buffer
+end
 
 local function generate_bufname(name)
   local bufname = 'vfiler'
@@ -109,9 +125,11 @@ end
 ---@param context table
 function VFiler.new(context)
   local bufname, number = generate_bufname(context.options.name)
-  local view = View.new(bufname, context)
+  local buffer = new_buffer(bufname, context)
+  local view = View.new(buffer, context)
 
   local self = setmetatable({
+    _buffer = buffer,
     _context = context,
     _view = view,
     _defined_mappings = nil,
@@ -224,7 +242,7 @@ function VFiler:register_events(group)
     return
   end
   local events = self._context.events[group]
-  self._view:register_events(
+  self._buffer:register_events(
     group,
     events,
     [[require('vfiler/vfiler')._handle_event]]
@@ -266,7 +284,7 @@ end
 
 --- Unregister autocmd event
 function VFiler:unregister_events(group)
-  self._view:unregister_events(group)
+  self._buffer:unregister_events(group)
 end
 
 --- Update from context
