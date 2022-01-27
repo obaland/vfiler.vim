@@ -6,13 +6,8 @@
 
 let s:jobs = {}
 
-function! vfiler#async#job_start(id, command) abort
-  let options = {
-        \ 'out_cb': function('vfiler#async#job_out_cb', [a:id]),
-        \ 'err_cb': function('vfiler#async#job_err_cb', [a:id]),
-        \ 'close_cb': function('vfiler#async#job_close_cb', [a:id]),
-        \ }
-  let s:jobs[a:id] = job_start(a:command, options)
+function! vfiler#async#job_start(id, command, options) abort
+  let s:jobs[a:id] = job_start(a:command, a:options)
 endfunction
 
 function! vfiler#async#job_status(id) abort
@@ -28,20 +23,4 @@ function! vfiler#async#job_stop(id) abort
   endif
   call job_stop(s:jobs[a:id])
   call remove(s:jobs, a:id)
-endfunction
-
-function! vfiler#async#job_out_cb(id, channel, message) abort
-  call luaeval('require("vfiler/libs/async/job")._out_cb(_A.id, _A.message)',
-        \ {'id': a:id, 'message': a:message}
-        \ )
-endfunction
-
-function! vfiler#async#job_err_cb(id, channel, message) abort
-  call luaeval('require("vfiler/libs/async/job")._err_cb(_A.id, _A.message)',
-        \ {'id': a:id, 'message': a:message}
-        \ )
-endfunction
-
-function! vfiler#async#job_close_cb(id, channel) abort
-  call luaeval('require("vfiler/libs/async/job")._close_cb(_A)', a:id)
 endfunction
