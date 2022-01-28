@@ -245,7 +245,8 @@ function M.parse_options(str_args)
         error('The path specification is duplicated.')
         return nil
       end
-      path = normalize(arg)
+      -- escaped space
+      path = normalize(arg:gsub([[\ ]], ' '))
     end
   end
   return options, path
