@@ -7,36 +7,11 @@ local VFiler = require('vfiler/vfiler')
 
 local M = {}
 
+-- stylua: ignore
 local choose_keys = {
-  'a',
-  's',
-  'd',
-  'f',
-  'g',
-  'h',
-  'j',
-  'k',
-  'l',
-  'q',
-  'w',
-  'e',
-  'r',
-  't',
-  'y',
-  'u',
-  'i',
-  'o',
-  'p',
-  '1',
-  '2',
-  '3',
-  '4',
-  '5',
-  '6',
-  '7',
-  '8',
-  '9',
-  '0',
+  'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'q',
+  'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '1',
+  '2', '3', '4', '5', '6', '7', '8', '9', '0',
 }
 
 local function choose_window(winid)

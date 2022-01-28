@@ -1,7 +1,6 @@
 local core = require('vfiler/libs/core')
+local job = require('vfiler/libs/async/job')
 local vim = require('vfiler/libs/vim')
-
-local Job = require('vfiler/libs/async/job')
 
 local M = {}
 
@@ -42,10 +41,9 @@ function M.reload_status(rootpath, options, on_completed)
   end
 
   local gitstatus = {}
-  local job = Job.new({
-    command = ('git -C %s %s'):format(rootpath, table.concat(args, ' ')),
-
-    on_received = function(_, data)
+  local command = ('git -C %s %s'):format(rootpath, table.concat(args, ' '))
+  job.start(command, {
+    on_received = function(data)
       local status = data:sub(1, 2)
       local rpath = data:sub(4, -1)
       -- for renamed
@@ -93,7 +91,6 @@ function M.reload_status(rootpath, options, on_completed)
       on_completed(gitstatus)
     end,
   })
-  job:start()
 end
 
 return M
