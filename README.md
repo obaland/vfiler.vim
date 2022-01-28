@@ -63,7 +63,7 @@ Checkout wiki for more details:
 - [Usage details](https://github.com/obaland/vfiler.vim/wiki/usage-details).
 
 
-## Configuration
+## Customization
 vfiler can be customized to your liking.<br>
 The following is an example.
 
@@ -93,7 +93,7 @@ require('vfiler').start()
 ### More details
 vfiler has various other customization mechanisms.<br>
 Checkout wiki for more details:
-- [Configurations](https://github.com/obaland/vfiler.vim/wiki/Configurations).
+- [Customization](https://github.com/obaland/vfiler.vim/wiki/Customization).
 
 ## Extension plugins
 There are also some extension plugins for vfiler.<br>
