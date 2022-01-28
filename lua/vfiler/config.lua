@@ -180,7 +180,9 @@ local function set_option(options, name, value, key)
   local defalut = options[name]
   if defalut ~= nil then
     if type(value) ~= type(defalut) then
-      error(string.format('Illegal option value. (%s)', value))
+      error(
+        ('The "%s" value of the "%s" option is invalid.'):format(value, name)
+      )
       return false
     end
     options[name] = value
@@ -193,7 +195,7 @@ local function set_option(options, name, value, key)
   local nest_name = splitted[2]
   local top = options[top_name]
   if not (top and nest_name and top[nest_name]) then
-    error(string.format('Unknown "%s" option.', key))
+    error(('Unknown "%s" option.'):format(key))
     return false
   end
   top[nest_name] = value
