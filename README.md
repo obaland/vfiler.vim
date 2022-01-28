@@ -60,7 +60,7 @@ require('vfiler').start(path)
 
 ### More details
 Checkout wiki for more details:
-- [Usage details](https://github.com/obaland/vfiler.vim/wiki/usage-details).
+- [Usage details](https://github.com/obaland/vfiler.vim/wiki/usage-details)
 
 
 ## Customization
@@ -93,7 +93,7 @@ require('vfiler').start()
 ### More details
 vfiler has various other customization mechanisms.<br>
 Checkout wiki for more details:
-- [Customization](https://github.com/obaland/vfiler.vim/wiki/Customization).
+- [Customization](https://github.com/obaland/vfiler.vim/wiki/Customization)
 
 ## Extension plugins
 There are also some extension plugins for vfiler.<br>
