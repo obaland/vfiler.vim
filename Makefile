@@ -1,5 +1,5 @@
 test:
-	nvim --headless --noplugin -u tests/minimal_init.vim -c "PlenaryBustedDirectory tests"
+	nvim --headless --noplugin -u tests/init.vim -c "BustedDirectory tests/vfiler"
 
 lint:
 	luacheck lua
