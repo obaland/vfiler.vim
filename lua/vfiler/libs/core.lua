@@ -65,38 +65,29 @@ end
 M.dir = {}
 M.file = {}
 
+local copy_file_format, copy_directory_format
 if M.is_windows then
-  function M.dir.copy(src, dest)
-    local command = ('robocopy /e %s %s'):format(
-      M.string.shellescape(src),
-      M.string.shellescape(dest)
-    )
-    vim.fn.system(command)
-  end
-
-  function M.file.copy(src, dest)
-    local command = ('copy /y %s %s'):format(
-      M.string.shellescape(src),
-      M.string.shellescape(dest)
-    )
-    vim.fn.system(command)
-  end
+  copy_file_format = 'copy /y %s %s'
+  copy_directory_format = 'robocopy /e %s %s'
 else
-  function M.dir.copy(src, dest)
-    local command = ('cp -fR %s %s'):format(
-      M.string.shellescape(src),
-      M.string.shellescape(dest)
-    )
-    vim.fn.system(command)
-  end
+  copy_file_format = 'cp -f %s %s'
+  copy_directory_format = 'cp -fR %s %s'
+end
 
-  function M.file.copy(src, dest)
-    local command = ('cp -f %s %s'):format(
-      M.string.shellescape(src),
-      M.string.shellescape(dest)
-    )
-    vim.fn.system(command)
-  end
+function M.dir.copy(src, dest)
+  local command = copy_directory_format:format(
+    M.string.shellescape(src),
+    M.string.shellescape(dest)
+  )
+  vim.fn.system(command)
+end
+
+function M.file.copy(src, dest)
+  local command = copy_file_format:format(
+    M.string.shellescape(src),
+    M.string.shellescape(dest)
+  )
+  vim.fn.system(command)
 end
 
 function M.file.execute(path)

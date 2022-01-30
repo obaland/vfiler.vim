@@ -5,5 +5,8 @@
 "=============================================================================
 
 function! vfiler#bookmark#complete(arglead, cmdline, cursorpos)
-  return luaeval('require("vfiler/extensions/bookmark").complete(_A)', a:arglead)
+  return luaeval(
+        \ 'require("vfiler/extensions/bookmark").complete(_A)',
+        \ a:arglead
+        \ )
 endfunction

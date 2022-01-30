@@ -207,7 +207,7 @@ function M.clear_mappings()
   M.configs.mappings = {}
 end
 
-function M.complete_options(arglead)
+function M.complete(arglead)
   if #arglead == 0 or arglead:sub(1, 1) ~= '-' then
     return vim.to_vimlist({})
   end

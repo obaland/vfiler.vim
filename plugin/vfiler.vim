@@ -64,7 +64,7 @@ highlight default link vfilerBookmarkPath      Comment
 " Commands
 function! s:complete(arglead, cmdline, cursorpos) abort
   let list = luaeval(
-        \ 'require("vfiler/config").complete_options(_A)', a:arglead
+        \ 'require("vfiler/config").complete(_A)', a:arglead
         \ )
   if len(list) > 0
     return list
