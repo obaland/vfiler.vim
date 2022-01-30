@@ -18,15 +18,14 @@ jobs:
           - v0.5.0
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/checkout@v2
-        with:
-          repository: nvim-lua/plenary.nvim
-          path: ../plenary.nvim
       - uses: rhysd/action-setup-vim@v1
         id: vim
         with:
           neovim: true
           version: ${{ matrix.version }}
+      - name: Prepare
+        run: |
+          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ../plenary.nvim
       - name: Run tests
         run: |
           nvim --version
