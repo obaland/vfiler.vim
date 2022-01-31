@@ -77,7 +77,7 @@ function VFiler.find_hidden(name)
   for bufnr, vfiler in pairs(vfilers) do
     local object = vfiler.object
     local options = object._context.options
-    local infos = vim.from_vimlist(vim.fn.getbufinfo(bufnr))
+    local infos = vim.list.from(vim.fn.getbufinfo(bufnr))
     if (options.name == name) and (infos[1].hidden == 1) then
       return object
     end

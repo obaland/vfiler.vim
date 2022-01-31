@@ -85,7 +85,7 @@ function Rename:execute()
     return
   end
 
-  local renames = vim.from_vimlist(vim.fn.getline(1, #self._items))
+  local renames = vim.list.from(vim.fn.getline(1, #self._items))
   self._buffer:set_option('modified', false)
 
   self:quit()
@@ -96,7 +96,7 @@ end
 
 function Rename:get_lines()
   local lines = vim.fn.getline(1, self:num_lines())
-  return vim.from_vimlist(lines)
+  return vim.list.from(lines)
 end
 
 function Rename:_on_win_options(configs)
@@ -138,7 +138,7 @@ end
 
 function Rename:_on_get_lines(items)
   local width = 0
-  local lines = vim.to_vimlist({})
+  local lines = vim.list({})
   for _, item in ipairs(items) do
     width = math.max(width, vim.fn.strwidth(item.name))
     table.insert(lines, item.name)

@@ -47,7 +47,7 @@ function M.reload_status(rootpath, options, on_completed)
       local status = data:sub(1, 2)
       local rpath = data:sub(4, -1)
       -- for renamed
-      local splitted = vim.from_vimlist(vim.fn.split(rpath, ' -> '))
+      local splitted = vim.list.from(vim.fn.split(rpath, ' -> '))
       rpath = splitted[#splitted]
       -- Removing: extra characters
       rpath = rpath:gsub('^"', ''):gsub('^"', '')

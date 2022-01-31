@@ -4,10 +4,7 @@ local ModeColumn = {}
 
 function ModeColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(ModeColumn, Column)
-
-  local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new({
+  return core.inherit(ModeColumn, Column, {
     syntaxes = {
       executable = {
         group = 'vfilerMode_Executable',
@@ -37,33 +34,36 @@ function ModeColumn.new()
     },
     end_mark = '\\m@',
   })
-  return self
 end
 
-function ModeColumn:get_text(item, width)
+function ModeColumn:get_width(items, width)
+  return 4
+end
+
+function ModeColumn:_get_text(item, width)
   local mode = '-'
   if item.islink then
     mode = 'l'
   elseif item.isdirectory then
     mode = 'd'
   end
-  mode = mode .. item.mode:sub(1, 3)
+  return mode .. item.mode:sub(1, 3)
+end
 
-  local key = 'file'
+function ModeColumn:_get_syntax_name(item, width)
+  local key
   if item.name:sub(1, 1) == '.' then
     key = 'hidden'
-  elseif mode:sub(#mode, #mode) == 'x' then
+  elseif item.mode:sub(3, 3) == 'x' then
     key = 'executable'
   elseif item.islink then
     key = 'link'
   elseif item.isdirectory then
     key = 'directory'
+  else
+    key = 'file'
   end
-  return self._syntax:surround_text(key, mode)
-end
-
-function ModeColumn:get_width(items, width)
-  return 4
+  return key
 end
 
 return ModeColumn

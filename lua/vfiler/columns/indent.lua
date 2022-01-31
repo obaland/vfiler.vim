@@ -13,10 +13,7 @@ end
 
 function IndentColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(IndentColumn, Column)
-
-  local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new({
+  return core.inherit(IndentColumn, Column, {
     syntaxes = {
       indent = {
         group = 'vfilerIndent',
@@ -26,18 +23,6 @@ function IndentColumn.new()
     },
     end_mark = '\\@I',
   })
-  return self
-end
-
-function IndentColumn:get_text(item, width)
-  local indent = item.level - 1
-  if indent > 0 then
-    return self._syntax:surround_text(
-      'indent',
-      (' '):rep((indent * 2) - 1) .. IndentColumn.configs.icon
-    )
-  end
-  return '', 0
 end
 
 function IndentColumn:get_width(items, width)
@@ -52,6 +37,18 @@ function IndentColumn:get_width(items, width)
   end
   local icon_width = vim.fn.strwidth(IndentColumn.configs.icon)
   return ((max_level * 2) - 1) + icon_width
+end
+
+function IndentColumn:_get_text(item, width)
+  local indent = item.level - 1
+  if indent <= 0 then
+    return ''
+  end
+  return (' '):rep((indent * 2) - 1) .. IndentColumn.configs.icon
+end
+
+function IndentColumn:_get_syntax_name(item, width)
+  return 'indent'
 end
 
 return IndentColumn

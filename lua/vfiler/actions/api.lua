@@ -41,11 +41,11 @@ local function choose_window(winid)
   end
 
   -- Save status
-  local laststatus = vim.get_global_option('laststatus')
+  local laststatus = vim.get_option('laststatus')
 
   -- Choose window
   local statusline = require('vfiler/statusline')
-  vim.set_global_option('laststatus', 2)
+  vim.set_option('laststatus', 2)
   for key, id in pairs(winkeys) do
     vim.set_win_option(
       id,
@@ -65,7 +65,7 @@ local function choose_window(winid)
   until winkeys[key]
 
   -- Restore
-  vim.set_global_option('laststatus', laststatus)
+  vim.set_option('laststatus', laststatus)
   for id, prev_statusline in pairs(prev_statuslines) do
     vim.set_win_option(id, 'statusline', prev_statusline)
     vim.command('redraw')
@@ -165,7 +165,14 @@ function M.open_file(vfiler, context, view, path, open)
     end
     newfiler:start(path)
   else
-    core.window.open('edit', path)
+    local result = core.window.open('edit', path)
+    if not result and open ~= 'edit' then
+      -- NOTE: correspondence of "ATTENTION E325"
+      local bufname = vim.fn.bufname()
+      if Buffer.is_vfiler_buffer(vim.fn.bufnr()) or #bufname == 0 then
+        vim.command('quit!')
+      end
+    end
   end
 
   local dest_winid = vim.fn.win_getid()

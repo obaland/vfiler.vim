@@ -116,12 +116,12 @@ function Directory:_add(item)
 end
 
 function Directory:_ls()
-  local paths = vim.from_vimlist(
+  local paths = vim.list.from(
     vim.fn.glob(core.path.join(self.path, '/*'), 1, 1)
   )
 
   -- extend hidden paths
-  local dotpaths = vim.from_vimlist(
+  local dotpaths = vim.list.from(
     vim.fn.glob(core.path.join(self.path, '/.*'), 1, 1)
   )
   for _, dotpath in ipairs(dotpaths) do

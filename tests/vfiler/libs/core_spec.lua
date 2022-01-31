@@ -79,6 +79,19 @@ describe('core.string', function()
 end)
 
 describe('core.path', function()
+  describe('escape', function()
+    local escape = core.path.escape
+    local dataset = {
+      { input = 'C:/usr/bin', expected = 'C:/usr/bin' },
+      { input = 'C:/usr\\bin', expected = 'C:/usr/bin' },
+    }
+    for _, data in ipairs(dataset) do
+      it(('escape "%s"'):format(data.input), function()
+        eq(data.expected, escape(data.input))
+      end)
+    end
+  end)
+
   describe('join', function()
     local join = core.path.join
     local dataset = {

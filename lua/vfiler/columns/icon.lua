@@ -29,10 +29,7 @@ end
 
 function IconColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(IconColumn, Column)
-
-  local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new({
+  return core.inherit(IconColumn, Column, {
     syntaxes = {
       selected = {
         group = 'vfilerIcon_Selected',
@@ -52,28 +49,36 @@ function IconColumn.new()
     },
     end_mark = '\\i@',
   })
-  return self
-end
-
-function IconColumn:get_text(item, width)
-  local iname, sname
-  if item.selected then
-    iname = 'selected'
-    sname = 'selected'
-  elseif item.isdirectory then
-    iname = item.opened and 'opened' or 'closed'
-    sname = 'directory'
-  else
-    iname = 'file'
-    sname = 'file'
-  end
-  local icon = IconColumn.configs.icons[iname]
-  icon = icon .. (' '):rep(icon_width - vim.fn.strwidth(icon))
-  return self._syntax:surround_text(sname, icon)
 end
 
 function IconColumn:get_width(items, width)
   return icon_width
+end
+
+function IconColumn:_get_text(item, width)
+  local iname
+  if item.selected then
+    iname = 'selected'
+  elseif item.isdirectory then
+    iname = item.opened and 'opened' or 'closed'
+  else
+    iname = 'file'
+  end
+  local icon = IconColumn.configs.icons[iname]
+  -- padding spaces
+  return icon .. (' '):rep(icon_width - vim.fn.strwidth(icon))
+end
+
+function IconColumn:_get_syntax_name(item, width)
+  local syntax
+  if item.selected then
+    syntax = 'selected'
+  elseif item.isdirectory then
+    syntax = 'directory'
+  else
+    syntax = 'file'
+  end
+  return syntax
 end
 
 return IconColumn

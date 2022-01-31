@@ -73,15 +73,11 @@ end
 
 function M.toggle_sort(vfiler, context, view)
   local sort_type = context.options.sort
-  local initial = sort_type:sub(1, 1)
-  local backward = sort_type:sub(2)
-
-  if initial:find('^[A-Z]') then
-    initial = initial:lower()
+  if sort_type:match('^%l') ~= nil then
+    context.options.sort = sort_type:sub(1, 1):upper() .. sort_type:sub(2)
   else
-    initial = initial:upper()
+    context.options.sort = sort_type:sub(1, 1):lower() .. sort_type:sub(2)
   end
-  context.options.sort = initial .. backward
   view:draw(context)
 end
 

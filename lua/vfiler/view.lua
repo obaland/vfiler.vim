@@ -28,7 +28,7 @@ local function create_columns(columns)
   local column = require('vfiler/column')
   local objects = {}
 
-  local cnames = vim.from_vimlist(vim.fn.split(columns, ','))
+  local cnames = vim.list.from(vim.fn.split(columns, ','))
   for _, cname in ipairs(cnames) do
     local object = column.load(cname)
     if object then
@@ -212,7 +212,7 @@ function View:redraw()
   end
 
   -- create text lines
-  local lines = vim.to_vimlist({})
+  local lines = vim.list({})
   if self._header then
     table.insert(lines, self:_toheader(self._items[1]))
   end

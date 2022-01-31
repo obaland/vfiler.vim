@@ -82,16 +82,16 @@ function Category:close()
 end
 
 function Category:to_json(path)
-  local document = vim.to_vimdict({
-    bookmarks = vim.to_vimlist(),
+  local document = vim.dict({
+    bookmarks = vim.list(),
   })
   for _, category in ipairs(self.children) do
-    local category_dict = vim.to_vimdict({
+    local category_dict = vim.dict({
       name = category.name,
     })
-    local items = vim.to_vimlist()
+    local items = vim.list()
     for _, item in ipairs(category.children) do
-      local item_dict = vim.to_vimdict({
+      local item_dict = vim.dict({
         name = item.name,
         path = item.path,
       })

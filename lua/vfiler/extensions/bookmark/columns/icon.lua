@@ -16,15 +16,7 @@ end
 
 function IconColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(IconColumn, Column, 'icon')
-
-  self.icon_width = 0
-  for _, icon in pairs(IconColumn.configs) do
-    self.icon_width = math.max(self.icon_width, vim.fn.strwidth(icon))
-  end
-
-  local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new({
+  local self = core.inherit(IconColumn, Column, {
     syntaxes = {
       file = {
         group = 'vfilerBookmarkIcon_File',
@@ -44,28 +36,41 @@ function IconColumn.new()
     },
     end_mark = '\\i@',
   })
-  return self
-end
 
-function IconColumn:get_text(item, width)
-  local iname, sname
-  if item.iscategory then
-    iname = item.opened and 'opened' or 'closed'
-    sname = 'category'
-  elseif item.isdirectory then
-    iname = 'directory'
-    sname = 'directory'
-  else
-    iname = 'file'
-    sname = 'file'
+  self.icon_width = 0
+  for _, icon in pairs(IconColumn.configs) do
+    self.icon_width = math.max(self.icon_width, vim.fn.strwidth(icon))
   end
-  local icon = self.configs[iname]
-  icon = icon .. (' '):rep(self.icon_width - vim.fn.strwidth(icon))
-  return self._syntax:surround_text(sname, icon)
+  return self
 end
 
 function IconColumn:get_width(items)
   return self.icon_width
+end
+
+function IconColumn:_get_text(item, width)
+  local iname
+  if item.iscategory then
+    iname = item.opened and 'opened' or 'closed'
+  elseif item.isdirectory then
+    iname = 'directory'
+  else
+    iname = 'file'
+  end
+  local icon = self.configs[iname]
+  return icon .. (' '):rep(self.icon_width - vim.fn.strwidth(icon))
+end
+
+function IconColumn:_get_syntax_name(item, width)
+  local syntax
+  if item.iscategory then
+    syntax = 'category'
+  elseif item.isdirectory then
+    syntax = 'directory'
+  else
+    syntax = 'file'
+  end
+  return syntax
 end
 
 return IconColumn

@@ -133,7 +133,7 @@ end
 ------------------------------------------------------------------------------
 M.window = {}
 
-local open_layout = {
+local open_layout_commands = {
   edit = 'edit',
   bottom = 'belowright split',
   left = 'aboveleft vertical split',
@@ -149,19 +149,19 @@ function M.window.move(winid)
 end
 
 ---@param layout string
----@vararg string
-function M.window.open(layout, ...)
-  local dir = open_layout[layout]
-  if not dir then
+---@param file string
+function M.window.open(layout, file)
+  local command = open_layout_commands[layout]
+  if not command then
     M.message.error('Illegal "%s" open layout.', layout)
-    return
+    return false
   end
 
-  local command = 'silent! ' .. dir
-  if ... then
-    command = ('%s %s'):format(command, ...)
+  if file then
+    command = command .. ' ' .. file
   end
-  vim.command(command)
+  local ok = pcall(vim.command, command)
+  return ok
 end
 
 ---@param height number
@@ -415,7 +415,7 @@ else
 end
 
 function M.string.split(str, pattern)
-  return vim.from_vimlist(vim.fn.split(str, pattern))
+  return vim.list.from(vim.fn.split(str, pattern))
 end
 
 function M.string.truncate(str, width, sep, footer_width)
@@ -522,18 +522,8 @@ end
 ------------------------------------------------------------------------------
 M.icon = {}
 
-local frames = {
-  '⠋',
-  '⠙',
-  '⠹',
-  '⠸',
-  '⠼',
-  '⠴',
-  '⠦',
-  '⠧',
-  '⠇',
-  '⠏',
-}
+-- stylua: ignore
+local frames = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏', }
 
 function M.icon.frame(sec)
   local index = (math.floor(sec * 10) % #frames) + 1

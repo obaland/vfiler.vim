@@ -52,8 +52,8 @@ end
 
 local function get_floating_options(winid, default)
   local options = core.table.copy(default)
-  local width = vim.get_global_option('columns')
-  local height = vim.get_global_option('lines')
+  local width = vim.get_option('columns')
+  local height = vim.get_option('lines')
   local center = math.floor(width / 2)
 
   local screen_pos = vim.fn.win_screenpos(winid)
@@ -132,7 +132,7 @@ function Preview:open(path)
   }
 
   -- read file
-  local lines = vim.to_vimlist({})
+  local lines = vim.list({})
   local file = io.open(path, 'r')
   if file then
     for line in file:lines() do

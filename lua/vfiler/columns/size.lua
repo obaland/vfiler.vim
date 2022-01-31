@@ -4,12 +4,7 @@ local SizeColumn = {}
 
 function SizeColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(SizeColumn, Column)
-  -- NOTE: value(6) + space(1) + unit(2)
-  self._width = 9
-
-  local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new({
+  local self = core.inherit(SizeColumn, Column, {
     syntaxes = {
       size = {
         group = 'vfilerSize',
@@ -18,10 +13,16 @@ function SizeColumn.new()
     },
     end_mark = '\\s@',
   })
+  -- NOTE: value(6) + space(1) + unit(2)
+  self._width = 9
   return self
 end
 
-function SizeColumn:get_text(item, width)
+function SizeColumn:get_width(items, width)
+  return self._width
+end
+
+function SizeColumn:_get_text(item, width)
   if item.isdirectory then
     return (' '):rep(self._width), self._width
   end
@@ -52,14 +53,11 @@ function SizeColumn:get_text(item, width)
       format = '%1.4f'
     end
   end
-  return self._syntax:surround_text(
-    'size',
-    format:format(size) .. ' ' .. byte_unit
-  )
+  return format:format(size) .. ' ' .. byte_unit
 end
 
-function SizeColumn:get_width(items, width)
-  return self._width
+function SizeColumn:_get_syntax_name(item, width)
+  return 'size'
 end
 
 return SizeColumn

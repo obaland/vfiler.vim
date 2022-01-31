@@ -5,11 +5,7 @@ local NameColumn = {}
 
 function NameColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(NameColumn, Column, 'name')
-  self.stretch = true
-
-  local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new({
+  return core.inherit(NameColumn, Column, {
     syntaxes = {
       category = {
         group = 'vfilerBookmarkName_Category',
@@ -34,23 +30,6 @@ function NameColumn.new()
     },
     end_mark = '\\n@',
   })
-  return self
-end
-
-function NameColumn:get_text(item, width)
-  local name = item.name
-  local syntax_name
-  if item.iscategory then
-    syntax_name = 'category'
-  elseif item.islink then
-    syntax_name = 'link'
-  elseif item.isdirectory then
-    syntax_name = 'directory'
-  else
-    syntax_name = 'file'
-  end
-
-  return self._syntax:surround_text(syntax_name, name)
 end
 
 function NameColumn:get_width(items)
@@ -59,6 +38,24 @@ function NameColumn:get_width(items)
     max_width = math.max(max_width, vim.fn.strwidth(item.name))
   end
   return max_width
+end
+
+function NameColumn:_get_text(item, width)
+  return item.name
+end
+
+function NameColumn:_get_syntax_name(item, width)
+  local syntax
+  if item.iscategory then
+    syntax = 'category'
+  elseif item.islink then
+    syntax = 'link'
+  elseif item.isdirectory then
+    syntax = 'directory'
+  else
+    syntax = 'file'
+  end
+  return syntax
 end
 
 return NameColumn

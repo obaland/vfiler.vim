@@ -6,10 +6,7 @@ local GitColumn = {}
 
 function GitColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(GitColumn, Column)
-
-  local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new({
+  return core.inherit(GitColumn, Column, {
     syntaxes = {
       status = {
         group = 'vfilerGitStatus',
@@ -105,26 +102,28 @@ function GitColumn.new()
     },
     end_mark = '\\g@',
   })
-  return self
 end
 
-function GitColumn:get_text(item, width)
+function GitColumn:get_width(items, width)
+  return COLUMN_WIDTH
+end
+
+function GitColumn:_get_text(item, width)
   local gitstatus = item.gitstatus
   local status = ''
   if gitstatus and (gitstatus.us ~= ' ' or gitstatus.them ~= ' ') then
     status = gitstatus.us .. gitstatus.them
   end
-
   if #status > 0 then
     status = '[' .. status .. ']'
   else
     status = (' '):rep(COLUMN_WIDTH)
   end
-  return self._syntax:surround_text('status', status)
+  return status
 end
 
-function GitColumn:get_width(items, width)
-  return COLUMN_WIDTH
+function GitColumn:_get_syntax_name(item, width)
+  return 'status'
 end
 
 return GitColumn

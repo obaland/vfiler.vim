@@ -89,8 +89,8 @@ local function to_view_options(options, name, win_size, content_size)
       voptions.col = win_size.col + offset_col - 1
       voptions.row = win_size.row + offset_row - 1
     else
-      local columns = vim.get_global_option('columns')
-      local lines = vim.get_global_option('lines')
+      local columns = vim.get_option('columns')
+      local lines = vim.get_option('lines')
       local offset_row = math.floor((lines - voptions.height) / 2)
       local offset_col = math.floor((columns - voptions.width) / 2)
       voptions.col = offset_col - 1

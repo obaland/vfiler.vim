@@ -1,5 +1,3 @@
-local M = {}
-
 local action_modules = {
   'basic',
   'bookmark',
@@ -9,26 +7,19 @@ local action_modules = {
   'utility',
 }
 
-local function merge_actions(dest, src)
-  for name, value in pairs(src) do
-    if type(value) == 'table' then
-      if not dest[name] then
-        dest[name] = {}
+local M = setmetatable({}, {
+  __index = function(t, key)
+    for _, name in ipairs(action_modules) do
+      local module = require('vfiler/actions/' .. name)
+      local func = module[key]
+      if func then
+        t[key] = func
+        return func
       end
-      merge_actions(dest[name], value)
-    else
-      assert(not dest[name], 'Duplicate "' .. name .. '" action.')
-      dest[name] = value
     end
-  end
-  return dest
-end
-
--- merge actions
-for _, name in ipairs(action_modules) do
-  local module = require('vfiler/actions/' .. name)
-  assert(module, 'Not exists "' .. name .. '" module.')
-  merge_actions(M, module)
-end
+    error(('"%s" action is undefined.'):format(key))
+    return nil
+  end,
+})
 
 return M

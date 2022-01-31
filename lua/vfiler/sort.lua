@@ -34,14 +34,10 @@ end
 function M.types()
   local types = {}
   for type, _ in pairs(M.compares) do
-    local tfirst = type:byte(1, 1)
-    local tlower = (0x61 <= tfirst) and (tfirst <= 0x7A)
-
+    local tlower = type:match('^%l') ~= nil
     local pos = #types + 1
     for i, value in ipairs(types) do
-      local vfirst = value:byte(1, 1)
-      local vlower = (0x61 <= vfirst) and (vfirst <= 0x7A)
-
+      local vlower = value:match('^%l') ~= nil
       if (tlower and vlower) or not (tlower or vlower) then
         if type < value then
           pos = i

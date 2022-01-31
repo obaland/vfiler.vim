@@ -4,10 +4,7 @@ local TypeColumn = {}
 
 function TypeColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(TypeColumn, Column)
-
-  local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new({
+  return core.inherit(TypeColumn, Column, {
     syntaxes = {
       directory = {
         group = 'vfilerType_Directory',
@@ -32,10 +29,25 @@ function TypeColumn.new()
     },
     end_mark = '\\T@',
   })
-  return self
 end
 
-function TypeColumn:get_text(item, width)
+function TypeColumn:get_width(items, width)
+  return 3
+end
+
+function TypeColumn:_get_text(item, width)
+  local type
+  if item.islink then
+    type = '[L]'
+  elseif item.isdirectory then
+    type = '[D]'
+  else
+    type = '[F]'
+  end
+  return type
+end
+
+function TypeColumn:_get_syntax_name(item, width)
   local key
   if item.name:sub(1, 1) == '.' then
     key = 'hidden'
@@ -46,20 +58,7 @@ function TypeColumn:get_text(item, width)
   else
     key = 'file'
   end
-
-  local type
-  if item.islink then
-    type = '[L]'
-  elseif item.isdirectory then
-    type = '[D]'
-  else
-    type = '[F]'
-  end
-  return self._syntax:surround_text(key, type)
-end
-
-function TypeColumn:get_width(items, width)
-  return 3
+  return key
 end
 
 return TypeColumn

@@ -209,7 +209,7 @@ end
 
 function M.complete(arglead)
   if #arglead == 0 or arglead:sub(1, 1) ~= '-' then
-    return vim.to_vimlist({})
+    return vim.list({})
   end
 
   local pattern = '^' .. core.string.pesc(arglead)
@@ -222,7 +222,7 @@ function M.complete(arglead)
   if #list > 1 then
     table.sort(list)
   end
-  return vim.to_vimlist(list)
+  return vim.list(list)
 end
 
 --- Parse command line arguments strings

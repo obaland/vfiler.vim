@@ -17,10 +17,7 @@ end
 
 function PathColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(PathColumn, Column, 'path')
-
-  local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new({
+  return core.inherit(PathColumn, Column, {
     syntaxes = {
       path = {
         group = 'vfilerBookmarkItem_Path',
@@ -35,20 +32,6 @@ function PathColumn.new()
     },
     end_mark = '\\p@',
   })
-  return self
-end
-
-function PathColumn:get_text(item)
-  if not item.path then
-    return '', 0
-  end
-  local syntax
-  if core.path.exists(item.path) then
-    syntax = 'path'
-  else
-    syntax = 'notexist'
-  end
-  return self._syntax:surround_text(syntax, to_text(item))
 end
 
 function PathColumn:get_width(items)
@@ -57,6 +40,14 @@ function PathColumn:get_width(items)
     max = math.max(max, vim.fn.strwidth(to_text(item)))
   end
   return max
+end
+
+function PathColumn:_get_text(item)
+  return item.path and to_text(item) or ''
+end
+
+function PathColumn:_get_syntax_name(item)
+  return core.path.exists(item.path) and 'path' or 'notexist'
 end
 
 return PathColumn

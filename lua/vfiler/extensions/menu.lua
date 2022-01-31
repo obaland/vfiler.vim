@@ -25,7 +25,7 @@ end
 
 function Menu:_on_get_lines(items)
   local width = 0
-  local lines = vim.to_vimlist({})
+  local lines = vim.list({})
   for _, item in ipairs(items) do
     -- add padding
     local line = ' ' .. item

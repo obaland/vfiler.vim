@@ -4,15 +4,7 @@ local NameColumn = {}
 
 function NameColumn.new()
   local Column = require('vfiler/columns/column')
-  local self = core.inherit(NameColumn, Column)
-  self.variable = true
-  self.stretch = true
-
-  self.min_width = 8
-  self.max_width = 0
-
-  local Syntax = require('vfiler/columns/syntax')
-  self._syntax = Syntax.new({
+  local self = core.inherit(NameColumn, Column, {
     syntaxes = {
       selected = {
         group = 'vfilerName_Selected',
@@ -42,33 +34,12 @@ function NameColumn.new()
     },
     end_mark = '\\n@',
   })
+  self.variable = true
+  self.stretch = true
+
+  self.min_width = 8
+  self.max_width = 0
   return self
-end
-
-function NameColumn:get_text(item, width)
-  local name = item.name
-  local syntax_name
-  if item.selected then
-    syntax_name = 'selected'
-  elseif item.name:sub(1, 1) == '.' then
-    syntax_name = 'hidden'
-  elseif item.islink then
-    syntax_name = 'link'
-  elseif item.isdirectory then
-    syntax_name = 'directory'
-  else
-    syntax_name = 'file'
-  end
-
-  -- append directory mark
-  if item.isdirectory then
-    name = name .. '/'
-  end
-
-  return self._syntax:surround_text(
-    syntax_name,
-    core.string.truncate(name, width, '..', math.floor(width / 2))
-  )
 end
 
 function NameColumn:get_width(items, width)
@@ -76,6 +47,31 @@ function NameColumn:get_width(items, width)
     return math.max(width, self.min_width)
   end
   return core.math.within(width, self.min_width, self.max_width)
+end
+
+function NameColumn:_get_text(item, width)
+  local name = item.name
+  -- append directory mark
+  if item.isdirectory then
+    name = name .. '/'
+  end
+  return core.string.truncate(name, width, '..', math.floor(width / 2))
+end
+
+function NameColumn:_get_syntax_name(item, width)
+  local syntax
+  if item.selected then
+    syntax = 'selected'
+  elseif item.name:sub(1, 1) == '.' then
+    syntax = 'hidden'
+  elseif item.islink then
+    syntax = 'link'
+  elseif item.isdirectory then
+    syntax = 'directory'
+  else
+    syntax = 'file'
+  end
+  return syntax
 end
 
 return NameColumn
