@@ -1,4 +1,4 @@
 set rtp+=.
-set rtp+=../busted.vim/
+set rtp+=../plenary.nvim/
 
-runtime! plugin/busted.vim
+runtime! plugin/plenary.vim
