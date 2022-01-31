@@ -13,19 +13,19 @@ else
   }
 end
 
-local eq = function(excepted, actual)
+local function eq(excepted, actual)
   assert.is_equal(excepted, actual)
 end
-local is_nil = function(actual)
+local function is_nil(actual)
   assert.is_nil(actual)
 end
-local not_nil = function(actual)
+local function is_not_nil(actual)
   assert.is_not_nil(actual)
 end
-local is_false = function(actual)
+local function is_false(actual)
   assert.is_false(actual)
 end
-local is_true = function(actual)
+local function is_true(actual)
   assert.is_true(actual)
 end
 
@@ -43,7 +43,7 @@ describe('parse command args', function()
 
   it('empty', function()
     local options = parse_options('')
-    not_nil(options)
+    is_not_nil(options)
   end)
 
   it('dplicated paths', function()
@@ -52,7 +52,7 @@ describe('parse command args', function()
       is_nil(parse_options(args))
     end
     local options = parse_options('')
-    not_nil(options)
+    is_not_nil(options)
   end)
 
   it('key-value option', function()
