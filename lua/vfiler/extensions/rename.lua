@@ -66,8 +66,8 @@ function Rename:check()
     local path = core.path.join(dirpath, line)
     local exists = false
     if line ~= item.name then
-      if item.isdirectory then
-        exists = core.path.isdirectory(path)
+      if item.is_directory then
+        exists = core.path.is_directory(path)
       else
         exists = core.path.filereadable(path)
       end

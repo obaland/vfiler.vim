@@ -19,13 +19,13 @@ function File.create(path)
   return File.new(path, false)
 end
 
-function File.new(path, islink)
+function File.new(path, link)
   local Item = require('vfiler/items/item')
-  local self = core.inherit(File, Item, path, islink)
+  local self = core.inherit(File, Item, path, link)
   if not self then
     return nil
   end
-  self.type = self.islink and 'L' or 'F'
+  self.type = self.is_link and 'L' or 'F'
   return self
 end
 
@@ -34,12 +34,12 @@ function File:copy(destpath)
   if not core.path.exists(destpath) then
     return nil
   end
-  return File.new(destpath, self.islink)
+  return File.new(destpath, self.is_link)
 end
 
 function File:move(destpath)
   if self:_move(destpath) then
-    return File.new(destpath, self.islink)
+    return File.new(destpath, self.is_link)
   end
   return nil
 end

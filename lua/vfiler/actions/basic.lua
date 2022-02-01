@@ -16,14 +16,14 @@ local function detect_drives()
   if core.is_windows then
     for byte = ('A'):byte(), ('Z'):byte() do
       local drive = string.char(byte) .. ':/'
-      if core.path.isdirectory(drive) then
+      if core.path.is_directory(drive) then
         table.insert(drives, drive)
       end
     end
   else
     local mount = core.path.join(get_mount_path(), '*')
     for _, path in ipairs(vim.fn.glob(mount, 1, 1)) do
-      if core.path.isdirectory(path) then
+      if core.path.is_directory(path) then
         table.insert(drives, vim.fn.fnamemodify(path, ':t'))
       end
     end
@@ -41,7 +41,7 @@ end
 
 function M.close_tree(vfiler, context, view)
   local item = view:get_current()
-  local target = (item.isdirectory and item.opened) and item or item.parent
+  local target = (item.is_directory and item.opened) and item or item.parent
 
   target:close()
   view:draw(context)
@@ -115,7 +115,7 @@ end
 
 function M.open_by_choose_or_cd(vfiler, context, view)
   local item = view:get_current()
-  if item.isdirectory then
+  if item.is_directory then
     api.cd(vfiler, context, view, item.path)
   else
     api.open_file(vfiler, context, view, item.path, 'choose')
@@ -140,7 +140,7 @@ end
 function M.open_tree(vfiler, context, view)
   local lnum = vim.fn.line('.')
   local item = view:get_item(lnum)
-  if not item.isdirectory or item.opened then
+  if not item.is_directory or item.opened then
     return
   end
   item:open()
@@ -151,7 +151,7 @@ end
 function M.open_tree_recursive(vfiler, context, view)
   local lnum = vim.fn.line('.')
   local item = view:get_item(lnum)
-  if not item.isdirectory or item.opened then
+  if not item.is_directory or item.opened then
     return
   end
   item:open(true)

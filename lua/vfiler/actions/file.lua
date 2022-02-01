@@ -219,10 +219,10 @@ end
 
 function M.new_directory(vfiler, context, view)
   local item = view:get_current()
-  local dir = (item.isdirectory and item.opened) and item or item.parent
+  local dir = (item.is_directory and item.opened) and item or item.parent
 
   local function create_directory(dest, name, filepath)
-    if core.path.isdirectory(filepath) then
+    if core.path.is_directory(filepath) then
       if cmdline.util.confirm_overwrite(name) ~= cmdline.choice.YES then
         return false
       end
@@ -248,14 +248,14 @@ end
 
 function M.new_file(vfiler, context, view)
   local item = view:get_current()
-  local dir = (item.isdirectory and item.opened) and item or item.parent
+  local dir = (item.is_directory and item.opened) and item or item.parent
 
   local function create_file(dest, name, filepath)
     if core.path.filereadable(filepath) then
       if cmdline.util.confirm_overwrite(name) ~= cmdline.choice.YES then
         return false
       end
-    elseif core.is_windows and core.path.isdirectory(filepath) then
+    elseif core.is_windows and core.path.is_directory(filepath) then
       core.message.warning(
         'Not created. "%s" directory with the same name already exists.',
         name
@@ -283,7 +283,7 @@ function M.paste(vfiler, context, view)
   end
 
   local item = view:get_current()
-  local dest = (item.isdirectory and item.opened) and item or item.parent
+  local dest = (item.is_directory and item.opened) and item or item.parent
   if cb:paste(dest) and cb.keep then
     context.clipboard = nil
   end

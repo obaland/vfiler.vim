@@ -19,7 +19,7 @@ local columns = {
 local current_category_names = {}
 
 local function write_json(json)
-  if not core.path.isdirectory(DIRPATH) then
+  if not core.path.is_directory(DIRPATH) then
     vim.fn.mkdir(DIRPATH, 'p')
   end
   local path = core.path.join(DIRPATH, FILENAME)
@@ -197,7 +197,7 @@ function Bookmark:_on_get_lines(items)
   local width = 0
   local lines = vim.list({})
   for _, item in ipairs(items) do
-    if item.iscategory then
+    if item.is_category then
       local category = item
       local column_widths = {}
       for _, column in ipairs(columns) do

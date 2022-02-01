@@ -41,7 +41,7 @@ function M.jump_to_directory(vfiler, context, view)
     return
   end
   dirpath = core.path.normalize(dirpath)
-  if not core.path.isdirectory(dirpath) then
+  if not core.path.is_directory(dirpath) then
     core.message.error('Not exists the "%s" path.', dirpath)
     return
   end

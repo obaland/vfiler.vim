@@ -118,7 +118,7 @@ function M.open_preview(vfiler, context, view)
 
   preview.line = vim.fn.line('.')
   local item = view:get_item(preview.line)
-  if item.isdirectory then
+  if item.is_directory then
     preview:close()
   else
     preview:open(item.path)
@@ -130,9 +130,9 @@ function M.open_preview(vfiler, context, view)
 end
 
 function M.open_file(vfiler, context, view, path, open)
-  local isdirectory = core.path.isdirectory(path)
+  local is_directory = core.path.is_directory(path)
   if open == 'edit' then
-    if isdirectory then
+    if is_directory then
       M.cd(vfiler, context, view, path)
       return
     elseif context.options.keep then
@@ -154,7 +154,7 @@ function M.open_file(vfiler, context, view, path, open)
     core.window.open(open)
   end
 
-  if isdirectory then
+  if is_directory then
     local newfiler = VFiler.find_hidden(context.options.name)
     if newfiler then
       newfiler:open()

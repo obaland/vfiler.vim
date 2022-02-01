@@ -17,7 +17,7 @@ local function create_item(path)
   elseif ftype == 'file' then
     item = File.new(path, false)
   elseif ftype == 'link' then
-    if core.path.isdirectory(path) then
+    if core.path.is_directory(path) then
       item = Directory.new(path, true)
     else
       item = File.new(path, true)
@@ -35,13 +35,13 @@ function Directory.create(dirpath)
   return Directory.new(dirpath, false)
 end
 
-function Directory.new(dirpath, islink)
+function Directory.new(dirpath, link)
   local Item = require('vfiler/items/item')
 
-  local self = core.inherit(Directory, Item, dirpath, islink)
+  local self = core.inherit(Directory, Item, dirpath, link)
   self.children = nil
   self.opened = false
-  self.type = self.islink and 'L' or 'D'
+  self.type = self.is_link and 'L' or 'D'
   return self
 end
 
@@ -59,7 +59,7 @@ function Directory:close()
 end
 
 function Directory:copy(destpath)
-  if self.islink then
+  if self.is_link then
     core.file.copy(self.path, destpath)
   else
     core.dir.copy(self.path, destpath)
@@ -68,13 +68,13 @@ function Directory:copy(destpath)
   if not core.path.exists(destpath) then
     return nil
   end
-  return Directory.new(destpath, self.islink)
+  return Directory.new(destpath, self.is_link)
 end
 
 function Directory:create_directory(name)
   local dirpath = core.path.join(self.path, name)
   local directory = Directory.create(dirpath)
-  if not core.path.isdirectory(dirpath) then
+  if not core.path.is_directory(dirpath) then
     return nil
   end
   self:add(directory)
@@ -93,7 +93,7 @@ end
 
 function Directory:move(destpath)
   if self:_move(destpath) then
-    return Directory.new(destpath, self.islink)
+    return Directory.new(destpath, self.is_link)
   end
   return nil
 end
@@ -102,7 +102,7 @@ function Directory:open(recursive)
   self.children = {}
   for item in self:_ls() do
     self:_add(item)
-    if recursive and item.isdirectory then
+    if recursive and item.is_directory then
       item:open(recursive)
     end
   end
@@ -147,7 +147,7 @@ function Directory:_remove(item)
   for i, child in ipairs(self.children) do
     if
       (child.name == item.name)
-      and (child.isdirectory == item.isdirectory)
+      and (child.is_directory == item.is_directory)
     then
       pos = i
       break

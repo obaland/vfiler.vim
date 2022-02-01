@@ -42,9 +42,9 @@ end
 
 function ModeColumn:_get_text(item, width)
   local mode = '-'
-  if item.islink then
+  if item.is_link then
     mode = 'l'
-  elseif item.isdirectory then
+  elseif item.is_directory then
     mode = 'd'
   end
   return mode .. item.mode:sub(1, 3)
@@ -56,9 +56,9 @@ function ModeColumn:_get_syntax_name(item, width)
     key = 'hidden'
   elseif item.mode:sub(3, 3) == 'x' then
     key = 'executable'
-  elseif item.islink then
+  elseif item.is_link then
     key = 'link'
-  elseif item.isdirectory then
+  elseif item.is_directory then
     key = 'directory'
   else
     key = 'file'

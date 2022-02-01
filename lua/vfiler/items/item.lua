@@ -4,14 +4,14 @@ local vim = require('vfiler/libs/vim')
 local Item = {}
 Item.__index = Item
 
-function Item.new(filepath, islink)
+function Item.new(filepath, link)
   local size = vim.fn.getfsize(filepath)
   local time = vim.fn.getftime(filepath)
 
   return setmetatable({
     gitstatus = nil,
-    isdirectory = core.path.isdirectory(filepath),
-    islink = islink,
+    is_directory = core.path.is_directory(filepath),
+    is_link = link,
     level = 0,
     name = core.path.name(filepath),
     parent = nil,

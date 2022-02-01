@@ -74,11 +74,11 @@ end
 
 -- extension ascending
 M.set('extension', function(item1, item2)
-  if item1.isdirectory and not item2.isdirectory then
+  if item1.is_directory and not item2.is_directory then
     return true
-  elseif not item1.isdirectory and item2.isdirectory then
+  elseif not item1.is_directory and item2.is_directory then
     return false
-  elseif item1.isdirectory and item2.isdirectory then
+  elseif item1.is_directory and item2.is_directory then
     return M.compare_string(item1.name, item2.name)
   end
 
@@ -92,9 +92,9 @@ end)
 
 -- name ascending
 M.set('name', function(item1, item2)
-  if item1.isdirectory and not item2.isdirectory then
+  if item1.is_directory and not item2.is_directory then
     return true
-  elseif not item1.isdirectory and item2.isdirectory then
+  elseif not item1.is_directory and item2.is_directory then
     return false
   end
   return M.compare_string(item1.name, item2.name)

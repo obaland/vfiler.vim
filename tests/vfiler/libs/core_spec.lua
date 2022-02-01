@@ -86,8 +86,52 @@ describe('core.path', function()
       { input = 'C:/usr\\bin', expected = 'C:/usr/bin' },
     }
     for _, data in ipairs(dataset) do
-      it(('escape "%s"'):format(data.input), function()
+      it(data.input, function()
         eq(data.expected, escape(data.input))
+      end)
+    end
+  end)
+
+  describe('exists', function()
+    local exists = core.path.exists
+    local dataset = {
+      { input = 'lua', expected = true },
+      { input = 'lua/vfiler', expected = true },
+      { input = 'README.md', expected = true },
+      { input = 'main.cpp', expected = false },
+      { input = 'foo/bar', expected = false },
+    }
+    for _, data in ipairs(dataset) do
+      it(data.input, function()
+        eq(data.expected, exists(data.input))
+      end)
+    end
+  end)
+
+  describe('filereadable', function()
+    local filereadable = core.path.filereadable
+    local dataset = {
+      { input = 'lua', expected = false },
+      { input = 'lua/vfiler', expected = false },
+      { input = 'README.md', expected = true },
+    }
+    for _, data in ipairs(dataset) do
+      it(data.input, function()
+        eq(data.expected, filereadable(data.input))
+      end)
+    end
+  end)
+
+  describe('is_directory', function()
+    local is_directory = core.path.is_directory
+    local dataset = {
+      { input = 'lua', expected = true },
+      { input = 'lua/vfiler', expected = true },
+      { input = 'README.md', expected = false },
+    }
+    for _, data in ipairs(dataset) do
+      it(data.input, function()
+        eq(data.expected, is_directory(data.input))
       end)
     end
   end)
@@ -104,6 +148,75 @@ describe('core.path', function()
     for _, data in ipairs(dataset) do
       it(('join "%s" and "%s"'):format(data.path, data.name), function()
         eq(data.expected, join(data.path, data.name))
+      end)
+    end
+  end)
+
+  describe('name', function()
+    local name = core.path.name
+    local dataset
+    if core.is_windows then
+      dataset = {
+        { input = 'C:/usr/bin/foo', expected = 'foo' },
+        { input = 'C:/usr/bin/foo/', expected = 'foo' },
+        { input = 'C:/', expected = '' },
+      }
+    else
+      dataset = {
+        { input = '/home/foo/bar', expected = 'bar' },
+        { input = '/home/foo/bar/', expected = 'bar' },
+        { input = '/', expected = '' },
+      }
+    end
+    for _, data in ipairs(dataset) do
+      it(data.input, function()
+        eq(data.expected, name(data.input))
+      end)
+    end
+  end)
+
+  describe('parent', function()
+    local parent = core.path.parent
+    local dataset
+    if core.is_windows then
+      dataset = {
+        { input = 'C:/usr/bin/foo', expected = 'C:/usr/bin' },
+        { input = 'C:/usr/bin/foo/', expected = 'C:/usr/bin' },
+        { input = 'C:/', expected = 'C:/' },
+      }
+    else
+      dataset = {
+        { input = '/home/foo/bar', expected = '/home/foo' },
+        { input = '/home/foo/bar/', expected = '/home/foo' },
+        { input = '/', expected = '/' },
+      }
+    end
+    for _, data in ipairs(dataset) do
+      it(data.input, function()
+        eq(data.expected, parent(data.input))
+      end)
+    end
+  end)
+
+  describe('root', function()
+    local root = core.path.root
+    local dataset
+    if core.is_windows then
+      dataset = {
+        { input = 'C:/usr/bin/foo', expected = 'C:/' },
+        { input = 'D:/usr/bin/foo/', expected = 'D:/' },
+        { input = 'C:/', expected = 'C:/' },
+      }
+    else
+      dataset = {
+        { input = '/home/foo/bar', expected = '/' },
+        { input = '/home/foo/bar/', expected = '/' },
+        { input = '/', expected = '/' },
+      }
+    end
+    for _, data in ipairs(dataset) do
+      it(data.input, function()
+        eq(data.expected, root(data.input))
       end)
     end
   end)

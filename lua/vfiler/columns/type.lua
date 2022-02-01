@@ -37,9 +37,9 @@ end
 
 function TypeColumn:_get_text(item, width)
   local type
-  if item.islink then
+  if item.is_link then
     type = '[L]'
-  elseif item.isdirectory then
+  elseif item.is_directory then
     type = '[D]'
   else
     type = '[F]'
@@ -51,9 +51,9 @@ function TypeColumn:_get_syntax_name(item, width)
   local key
   if item.name:sub(1, 1) == '.' then
     key = 'hidden'
-  elseif item.islink then
+  elseif item.is_link then
     key = 'link'
-  elseif item.isdirectory then
+  elseif item.is_directory then
     key = 'directory'
   else
     key = 'file'

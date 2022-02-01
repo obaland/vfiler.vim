@@ -50,9 +50,9 @@ end
 
 function IconColumn:_get_text(item, width)
   local iname
-  if item.iscategory then
+  if item.is_category then
     iname = item.opened and 'opened' or 'closed'
-  elseif item.isdirectory then
+  elseif item.is_directory then
     iname = 'directory'
   else
     iname = 'file'
@@ -63,9 +63,9 @@ end
 
 function IconColumn:_get_syntax_name(item, width)
   local syntax
-  if item.iscategory then
+  if item.is_category then
     syntax = 'category'
-  elseif item.isdirectory then
+  elseif item.is_directory then
     syntax = 'directory'
   else
     syntax = 'file'

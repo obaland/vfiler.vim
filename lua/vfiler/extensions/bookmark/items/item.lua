@@ -7,8 +7,8 @@ Item.__index = Item
 function Item.new(name, path)
   return setmetatable({
     name = name,
-    isdirectory = core.path.isdirectory(path),
-    islink = vim.fn.getftype(path) == 'link',
+    is_directory = core.path.is_directory(path),
+    is_link = vim.fn.getftype(path) == 'link',
     level = 2,
     parent = nil,
     path = path,

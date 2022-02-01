@@ -24,7 +24,7 @@ function M.start(dirpath, configs)
     dirpath = vim.fn.getcwd()
   end
   dirpath = vim.fn.fnamemodify(dirpath, ':p')
-  if vim.fn.isdirectory(dirpath) ~= 1 then
+  if not core.path.is_directory(dirpath) then
     core.message.error('Does not exist "%s".', dirpath)
     return false
   end

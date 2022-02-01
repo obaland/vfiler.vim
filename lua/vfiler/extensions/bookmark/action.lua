@@ -5,7 +5,7 @@ local vim = require('vfiler/libs/vim')
 
 local function select(extension, open)
   local item = extension:get_current()
-  if item.iscategory or not core.path.exists(item.path) then
+  if item.is_category or not core.path.exists(item.path) then
     return
   end
   extension:select(item.path, open)
@@ -38,7 +38,7 @@ end
 
 function action.open(extension)
   local item = extension:get_current()
-  if item.iscategory then
+  if item.is_category then
     action.open_tree(extension)
   else
     select(extension, 'edit')
@@ -60,7 +60,7 @@ end
 function action.open_tree(extension)
   local lnum = vim.fn.line('.')
   local item = extension:get_item(lnum)
-  if not item.iscategory or item.opened then
+  if not item.is_category or item.opened then
     return
   end
   item:open()
@@ -71,7 +71,7 @@ end
 function action.close_tree(extension)
   local item = extension:get_current()
   local category
-  if item.iscategory then
+  if item.is_category then
     category = item
   else
     category = item.parent

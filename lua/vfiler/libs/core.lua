@@ -221,14 +221,14 @@ function M.path.escape(path)
 end
 
 function M.path.exists(path)
-  return M.path.filereadable(path) or M.path.isdirectory(path)
+  return M.path.filereadable(path) or M.path.is_directory(path)
 end
 
 function M.path.filereadable(path)
   return vim.fn.filereadable(path) == 1
 end
 
-function M.path.isdirectory(path)
+function M.path.is_directory(path)
   return vim.fn.isdirectory(path) == 1
 end
 

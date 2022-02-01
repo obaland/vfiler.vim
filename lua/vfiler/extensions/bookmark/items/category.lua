@@ -9,7 +9,7 @@ function Category.new(name)
   return setmetatable({
     children = {},
     name = name,
-    iscategory = true,
+    is_category = true,
     level = 1,
     opened = true,
     parent = nil,
@@ -48,7 +48,7 @@ function Category:delete()
     return
   end
   for i, child in ipairs(parent.children) do
-    if child.iscategory and child.name == self.name then
+    if child.is_category and child.name == self.name then
       table.remove(parent.children, i)
       return
     end
@@ -57,7 +57,7 @@ end
 
 function Category:find_item(name)
   for _, child in ipairs(self.children) do
-    if not child.iscategory and child.name == name then
+    if not child.is_category and child.name == name then
       return child
     end
   end
@@ -66,7 +66,7 @@ end
 
 function Category:find_category(name)
   for _, child in ipairs(self.children) do
-    if child.iscategory and child.name == name then
+    if child.is_category and child.name == name then
       return child
     end
   end
