@@ -2,12 +2,24 @@ local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
-local Buffer = require('vfiler/buffer')
-
 local extensions = {}
 
 local Extension = {}
 Extension.__index = Extension
+
+local function new_buffer(name)
+  local buffer = require('vfiler/buffer').new(name)
+  -- set default buffer options
+  buffer:set_options({
+    bufhidden = 'wipe',
+    buflisted = false,
+    buftype = 'nofile',
+    modifiable = false,
+    modified = false,
+    readonly = true,
+  })
+  return buffer
+end
 
 local function winvalue(value, win_value, content_value, min, max)
   local result
@@ -115,26 +127,15 @@ local function new_view(options)
 end
 
 function Extension.new(filer, name, configs, options)
-  local buffer = Buffer.new(name)
-
-  -- set default buffer options
-  buffer:set_options({
-    bufhidden = 'wipe',
-    buflisted = false,
-    buftype = 'nofile',
-    modifiable = false,
-    modified = false,
-    readonly = true,
-  })
-
   local self = setmetatable({
     name = name,
-    _buffer = buffer,
+    _buffer = nil,
     _src_bufnr = vim.fn.bufnr(),
     _configs = core.table.copy(configs),
     _filer = filer,
     _items = nil,
     _view = nil,
+    _mappings = nil,
   }, Extension)
   -- set options
 
@@ -164,7 +165,7 @@ function Extension._do_action(bufnr, key)
     core.message.error('Extension does not exist.')
     return
   end
-  local action = ext._configs.mappings[key]
+  local action = ext._mappings[key]
   if not action then
     core.message.error('Not defined in the key')
     return
@@ -244,19 +245,24 @@ end
 
 function Extension:redraw()
   self._items = self:_on_update(self._configs)
-  local lines = self:_on_get_lines(self._items)
+  local lines = self:_get_lines(self._items)
   self:_on_draw(self._buffer, lines)
 end
 
 function Extension:start()
-  self._items = self:_on_initialize(self._configs)
+  local configs = self._configs
+  self._items = self:_on_initialize(configs)
   if not self._items then
     return
   end
-  local lines, width = self:_on_get_lines(self._items)
+  local lines, width = self:_get_lines(self._items)
+
+  -- create buffer
+  self._buffer = new_buffer(self.name)
+  self._buffer:set_options(self:_get_buf_options(configs))
 
   -- to view options
-  self._view = new_view(self._configs.options)
+  self._view = new_view(configs.options)
   local src_winid = self._view.src_winid
   local screen_pos = vim.fn.win_screenpos(src_winid)
   local win_size = {
@@ -270,28 +276,23 @@ function Extension:start()
     height = #lines,
   }
   local view_options = to_view_options(
-    self._configs.options,
+    configs.options,
     self.name,
     win_size,
     content_size
   )
-  view_options.winoptions = self:_on_win_options(self._configs)
+  view_options.winoptions = self:_get_win_options(configs)
   self.winid = self._view:open(self._buffer, view_options)
-  local lnum = self:_on_opened(
-    self.winid,
-    self._buffer,
-    self._items,
-    self._configs
-  )
+  local lnum = self:_on_opened(self.winid, self._buffer, self._items, configs)
 
   -- define key mappings (overwrite)
-  self._configs.mappings = self._view:define_mappings(
-    self._configs.mappings,
+  self._mappings = self._view:define_mappings(
+    configs.mappings,
     [[require('vfiler/extensions/extension')._do_action]]
   )
 
   -- register events
-  for group, eventlist in pairs(self._configs.events) do
+  for group, eventlist in pairs(configs.events) do
     self._buffer:register_events(
       group,
       eventlist,
@@ -352,19 +353,23 @@ function Extension:_on_draw(buffer, lines)
   end
 end
 
-function Extension:_on_win_options(configs)
-  return {
-    number = false,
-  }
-end
-
 function Extension:_on_opened(winid, buffer, items, configs)
   -- Not implemented
   return 1 -- return initial cursor lnum
 end
 
-function Extension:_on_get_lines(items, winwidth)
+function Extension:_get_lines(items, winwidth)
   return nil
+end
+
+function Extension:_get_buf_options(configs)
+  return {}
+end
+
+function Extension:_get_win_options(configs)
+  return {
+    number = false,
+  }
 end
 
 return Extension

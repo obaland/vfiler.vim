@@ -23,18 +23,6 @@ function Menu:_on_initialize(configs)
   return self.initial_items
 end
 
-function Menu:_on_get_lines(items)
-  local width = 0
-  local lines = vim.list({})
-  for _, item in ipairs(items) do
-    -- add padding
-    local line = ' ' .. item
-    width = math.max(width, vim.fn.strwidth(line))
-    table.insert(lines, line)
-  end
-  return lines, width
-end
-
 function Menu:_on_opened(winid, buffer, items, configs)
   if not self.default then
     return 1
@@ -45,6 +33,18 @@ function Menu:_on_opened(winid, buffer, items, configs)
     end
   end
   return 1
+end
+
+function Menu:_get_lines(items)
+  local width = 0
+  local lines = vim.list({})
+  for _, item in ipairs(items) do
+    -- add padding
+    local line = ' ' .. item
+    width = math.max(width, vim.fn.strwidth(line))
+    table.insert(lines, line)
+  end
+  return lines, width
 end
 
 return Menu

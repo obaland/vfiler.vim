@@ -63,7 +63,8 @@ local function rename_one_file(vfiler, context, view, target)
   local name = target.name
   local rename = cmdline.input('New file name - ' .. name, name, 'file')
   if #rename == 0 then
-    return -- Canceled
+    -- canceled
+    return
   end
 
   -- Check overwrite

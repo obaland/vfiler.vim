@@ -21,14 +21,6 @@ function Rename.new(filer, options)
     configs,
     options
   )
-
-  -- overwrite buffer options
-  self._buffer:set_options({
-    buftype = 'acwrite',
-    modifiable = true,
-    modified = false,
-    readonly = false,
-  })
   return self
 end
 
@@ -99,12 +91,6 @@ function Rename:get_lines()
   return vim.list.from(lines)
 end
 
-function Rename:_on_win_options(configs)
-  return {
-    number = true,
-  }
-end
-
 function Rename:_on_opened(winid, bufnr, items, configs)
   -- syntaxes
   local group_notchanged = 'vfilerRename_NotChanged'
@@ -136,7 +122,13 @@ function Rename:_on_initialize(configs)
   return self.initial_items
 end
 
-function Rename:_on_get_lines(items)
+function Rename:_on_draw(buffer, lines)
+  buffer:set_lines(lines)
+  vim.fn['vfiler#core#clear_undo']()
+  buffer:set_option('modified', false)
+end
+
+function Rename:_get_lines(items)
   local width = 0
   local lines = vim.list({})
   for _, item in ipairs(items) do
@@ -146,10 +138,19 @@ function Rename:_on_get_lines(items)
   return lines, width
 end
 
-function Rename:_on_draw(buffer, lines)
-  buffer:set_lines(lines)
-  vim.fn['vfiler#core#clear_undo']()
-  buffer:set_option('modified', false)
+function Rename:_get_buf_options(configs)
+  return {
+    buftype = 'acwrite',
+    modifiable = true,
+    modified = false,
+    readonly = false,
+  }
+end
+
+function Rename:_get_win_options(configs)
+  return {
+    number = true,
+  }
 end
 
 return Rename

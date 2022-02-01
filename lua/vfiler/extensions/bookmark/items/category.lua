@@ -5,6 +5,10 @@ local Item = require('vfiler/extensions/bookmark/items/item')
 local Category = {}
 Category.__index = Category
 
+function Category.new_root()
+  return Category.new('root')
+end
+
 function Category.new(name)
   return setmetatable({
     children = {},

@@ -7,6 +7,7 @@ M.configs = {
   options = {},
   mappings = {
     ['D'] = action.delete,
+    ['c'] = action.change_category,
     ['dd'] = action.delete,
     ['h'] = action.close_tree,
     ['j'] = action.loop_cursor_down,

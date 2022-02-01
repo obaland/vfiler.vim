@@ -11,6 +11,17 @@ local function select(extension, open)
   extension:select(item.path, open)
 end
 
+function action.change_category(extension)
+  local item = extension:get_current()
+  if item.is_category then
+    return
+  end
+  extension:change_category(item)
+  extension:save()
+  core.message.info('The category has changed.')
+  extension:restart()
+end
+
 function action.delete(extension)
   local item = extension:get_current()
   local prompt = 'Are you sure you want to delete? - ' .. item.name
@@ -20,17 +31,23 @@ function action.delete(extension)
   end
 
   item:delete()
+  extension:update()
   extension:save()
   core.message.info('Deleted - %s', item.name)
-  extension:redraw()
+  extension:restart()
 end
 
 function action.rename(extension)
   local item = extension:get_current()
   local name = item.name
-  local rename = cmdline.input('New file name - ' .. name, name)
+  local rename = cmdline.input('New name? - ' .. name, name)
+  if #rename == 0 then
+    -- canceled
+    return
+  end
 
   item.name = rename
+  extension:update()
   extension:save()
   core.message.info('Renamed - "%s" -> "%s"', name, rename)
   extension:restart()

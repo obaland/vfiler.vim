@@ -32,7 +32,7 @@ local function read_json()
   local path = core.path.join(DIRPATH, FILENAME)
   if not core.path.filereadable(path) then
     -- not existing bookmark file
-    return Category.new('root')
+    return Category.new_root()
   end
   local file = io.open(path, 'r')
   local json = file:read('a')
@@ -136,6 +136,43 @@ function Bookmark.new(filer, options)
   )
 end
 
+function Bookmark:change_category(item)
+  local parent = item.parent
+  local category_name = cmdline.input(
+    'Category name?',
+    parent.name,
+    'customlist,vfiler#bookmark#complete'
+  )
+  if category_name == parent.name then
+    return
+  end
+
+  local category = self._root:find_category(category_name)
+  if not category then
+    category = Category.new(category_name)
+    self._root:add(category)
+  end
+  item:delete()
+  category:add(item)
+end
+
+function Bookmark:update()
+  local root = Category.new_root()
+  for _, category in ipairs(self._root.children) do
+    if #category.children > 0 then
+      local found = root:find_category(category.name)
+      if found then
+        for _, item in ipairs(category.children) do
+          found:add(item)
+        end
+      else
+        root:add(category)
+      end
+    end
+  end
+  self._root = root
+end
+
 function Bookmark:save()
   write_json(self._root:to_json())
 end
@@ -193,7 +230,7 @@ function Bookmark:_on_opened(winid, buffer, items, configs)
   return 2 -- initial lnum
 end
 
-function Bookmark:_on_get_lines(items)
+function Bookmark:_get_lines(items)
   local width = 0
   local lines = vim.list({})
   for _, item in ipairs(items) do
