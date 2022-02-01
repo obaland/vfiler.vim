@@ -12,6 +12,7 @@ jobs:
         os:
           - macos-latest
           - ubuntu-latest
+          - windows-latest
         version:
           - nightly
           - v0.5.0
@@ -24,7 +25,7 @@ jobs:
           version: ${{ matrix.version }}
       - name: Prepare
         run: |
-          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ../plenary.nvim
+          git clone --depth 1 https://github.com/obaland/plenary.nvim ../plenary.nvim
       - name: Run tests
         run: |
           nvim --version
