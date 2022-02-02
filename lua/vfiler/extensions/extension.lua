@@ -21,6 +21,16 @@ local function new_buffer(name)
   return buffer
 end
 
+local function get_win_size(winid)
+  local screen_pos = vim.fn.win_screenpos(winid)
+  return {
+    width = vim.fn.winwidth(winid),
+    height = vim.fn.winheight(winid),
+    row = screen_pos[1],
+    col = screen_pos[2],
+  }
+end
+
 local function winvalue(value, win_value, content_value, min, max)
   local result
   if value == 'auto' then
@@ -127,9 +137,20 @@ local function new_view(options)
 end
 
 function Extension.new(filer, name, configs, options)
+  local buffer = require('vfiler/buffer').new(name)
+  -- set default buffer options
+  buffer:set_options({
+    bufhidden = 'wipe',
+    buflisted = false,
+    buftype = 'nofile',
+    modifiable = false,
+    modified = false,
+    readonly = true,
+  })
+
   local self = setmetatable({
     name = name,
-    _buffer = nil,
+    _buffer = buffer,
     _src_bufnr = vim.fn.bufnr(),
     _configs = core.table.copy(configs),
     _filer = filer,
@@ -257,20 +278,9 @@ function Extension:start()
   end
   local lines, width = self:_get_lines(self._items)
 
-  -- create buffer
-  self._buffer = new_buffer(self.name)
-  self._buffer:set_options(self:_get_buf_options(configs))
-
   -- to view options
   self._view = new_view(configs.options)
-  local src_winid = self._view.src_winid
-  local screen_pos = vim.fn.win_screenpos(src_winid)
-  local win_size = {
-    width = vim.fn.winwidth(src_winid),
-    height = vim.fn.winheight(src_winid),
-    row = screen_pos[1],
-    col = screen_pos[2],
-  }
+  local win_size = get_win_size(self._view.src_winid)
   local content_size = {
     width = width,
     height = #lines,
@@ -311,9 +321,30 @@ function Extension:start()
   self._filer._context.extension = self
 end
 
-function Extension:restart()
-  self:_close()
-  self:start()
+function Extension:reload()
+  local configs = self._configs
+  self._items = self:_on_update(configs)
+  if not self._items then
+    return
+  end
+  local lines, width = self:_get_lines(self._items)
+
+  -- to view options
+  local win_size = get_win_size(self._view.src_winid)
+  local content_size = {
+    width = width,
+    height = #lines,
+  }
+  local view_options = to_view_options(
+    configs.options,
+    self.name,
+    win_size,
+    content_size
+  )
+  view_options.winoptions = self:_get_win_options(configs)
+  self.winid = self._view:open(self._buffer, view_options)
+  self:_on_draw(self._buffer, lines)
+  vim.command('normal zb')
 end
 
 function Extension:_close()
@@ -360,10 +391,6 @@ end
 
 function Extension:_get_lines(items, winwidth)
   return nil
-end
-
-function Extension:_get_buf_options(configs)
-  return {}
 end
 
 function Extension:_get_win_options(configs)

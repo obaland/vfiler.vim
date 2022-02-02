@@ -19,7 +19,8 @@ function action.change_category(extension)
   extension:change_category(item)
   extension:save()
   core.message.info('The category has changed.')
-  extension:restart()
+  extension:reload()
+  core.cursor.winmove(extension.winid, extension:indexof(item))
 end
 
 function action.delete(extension)
@@ -34,7 +35,7 @@ function action.delete(extension)
   extension:update()
   extension:save()
   core.message.info('Deleted - %s', item.name)
-  extension:restart()
+  extension:reload()
 end
 
 function action.rename(extension)
@@ -50,7 +51,8 @@ function action.rename(extension)
   extension:update()
   extension:save()
   core.message.info('Renamed - "%s" -> "%s"', name, rename)
-  extension:restart()
+  extension:reload()
+  core.cursor.winmove(extension.winid, extension:indexof(item))
 end
 
 function action.open(extension)

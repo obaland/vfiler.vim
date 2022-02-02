@@ -154,6 +154,7 @@ function Bookmark:change_category(item)
   end
   item:delete()
   category:add(item)
+  self:update()
 end
 
 function Bookmark:update()

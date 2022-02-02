@@ -21,6 +21,13 @@ function Rename.new(filer, options)
     configs,
     options
   )
+  -- overwrite buffer options
+  self._buffer:set_options({
+    buftype = 'acwrite',
+    modifiable = true,
+    modified = false,
+    readonly = false,
+  })
   return self
 end
 
@@ -136,15 +143,6 @@ function Rename:_get_lines(items)
     table.insert(lines, item.name)
   end
   return lines, width
-end
-
-function Rename:_get_buf_options(configs)
-  return {
-    buftype = 'acwrite',
-    modifiable = true,
-    modified = false,
-    readonly = false,
-  }
 end
 
 function Rename:_get_win_options(configs)

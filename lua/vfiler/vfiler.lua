@@ -226,12 +226,16 @@ function VFiler:open(layout)
 end
 
 --- Quit filer
-function VFiler:quit()
+---@param force boolean
+function VFiler:quit(force)
+  force = force or false
   local bufnr = self._view:bufnr()
-  if self._context.options.quit and bufnr >= 0 then
-    self._view:delete()
-    self:unlink()
-    vfilers[bufnr] = nil
+  if bufnr >= 0 then
+    if force or self._context.options.quit then
+      self._view:delete()
+      self:unlink()
+      vfilers[bufnr] = nil
+    end
   end
 end
 
