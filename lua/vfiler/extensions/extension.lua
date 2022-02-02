@@ -7,20 +7,6 @@ local extensions = {}
 local Extension = {}
 Extension.__index = Extension
 
-local function new_buffer(name)
-  local buffer = require('vfiler/buffer').new(name)
-  -- set default buffer options
-  buffer:set_options({
-    bufhidden = 'wipe',
-    buflisted = false,
-    buftype = 'nofile',
-    modifiable = false,
-    modified = false,
-    readonly = true,
-  })
-  return buffer
-end
-
 local function get_win_size(winid)
   local screen_pos = vim.fn.win_screenpos(winid)
   return {
