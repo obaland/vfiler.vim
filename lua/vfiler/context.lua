@@ -172,9 +172,11 @@ function Context:reload_gitstatus(on_completed)
     return
   end
 
+  self.in_progress = true
   self:_reload_gitstatus(function(gitstatus)
     self.gitstatus = gitstatus
     on_completed(self)
+    self.in_progress = false
   end)
 end
 
@@ -195,6 +197,11 @@ function Context:switch(dirpath, on_completed)
     vim.command('silent lcd ' .. dirpath)
   end
 
+  local function wrap_on_completed(ctx, path)
+    on_completed(ctx, path)
+    ctx.in_progress = false
+  end
+
   local previus_path = self._session:get_previous_path(dirpath)
   local num_processes = 1
   local completed = 0
@@ -205,12 +212,13 @@ function Context:switch(dirpath, on_completed)
       self.gitroot = git.get_toplevel(dirpath)
     end
     if self.gitroot then
+      self.in_progress = true
       num_processes = num_processes + 1
       self:_reload_gitstatus(function(gitstatus)
         self.gitstatus = gitstatus
         completed = completed + 1
         if completed >= num_processes then
-          on_completed(self, previus_path)
+          wrap_on_completed(self, previus_path)
         end
       end)
     end
@@ -222,7 +230,7 @@ function Context:switch(dirpath, on_completed)
 
   completed = completed + 1
   if completed >= num_processes then
-    on_completed(self, previus_path)
+    wrap_on_completed(self, previus_path)
   end
 end
 
@@ -266,6 +274,7 @@ function Context:_initialize()
   self.root = nil
   self.gitroot = nil
   self.gitstatus = {}
+  self.in_progress = false
   self.in_preview = {
     preview = nil,
     once = false,

@@ -93,7 +93,19 @@ function M.generate_values(params)
   return options
 end
 
-function M.generate_vfiler_options()
+function M.randomseed()
+  math.randomseed(math.floor(os.clock() * 1000))
+end
+
+M.int = {}
+
+function M.int.random(min, max)
+  return round(math.random(min, max) + 0.5)
+end
+
+M.vfiler = {}
+
+function M.vfiler.generate_options()
   local option_params = {
     auto_cd = 'boolean',
     auto_resize = 'boolean',
@@ -107,7 +119,7 @@ function M.generate_vfiler_options()
     header = 'boolean',
     keep = 'boolean',
     listed = 'boolean',
-    name = { values = { '', 'foo', 'b-a-r' } },
+    name = { values = { '', 'f-o-o', 'b-a-r' } },
     show_hidden_files = 'boolean',
     sort = { values = { 'name', 'extension', 'time', 'size' }, },
     statusline = 'boolean',
@@ -132,6 +144,39 @@ function M.generate_vfiler_options()
     },
   }
   return M.generate_values(option_params)
+end
+
+function M.vfiler.start(configs)
+  require'vfiler'.start('', configs)
+  local filer = require'vfiler/vfiler'.get_current()
+  assert(filer ~= nil)
+  -- wait for debug
+  while filer._context.in_progress do
+    print('start waiting ...')
+    vim.loop.sleep(10)
+  end
+  return filer
+end
+
+function M.vfiler.start_command(args)
+  require'vfiler'.start_command(args)
+  local filer = require'vfiler/vfiler'.get_current()
+  assert(filer ~= nil)
+  -- wait for debug
+  while filer._context.in_progress do
+    print('start command waiting ...')
+    vim.loop.sleep(10)
+  end
+  return filer
+end
+
+function M.vfiler.do_action(filer, action, ...)
+  filer:do_action(action, ...)
+  -- wait for debug
+  while filer._context.in_progress do
+    print('do action waiting ...')
+    vim.loop.sleep(10)
+  end
 end
 
 return M

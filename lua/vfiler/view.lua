@@ -137,6 +137,9 @@ end
 --- Get the item in the specified line number
 ---@param lnum number
 function View:get_item(lnum)
+  if not self._items then
+    return nil
+  end
   return self._items[lnum]
 end
 

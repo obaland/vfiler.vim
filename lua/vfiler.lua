@@ -36,7 +36,7 @@ function M.start(dirpath, configs)
   local options = merged_configs.options
   local context = Context.new(merged_configs)
   local vfiler = VFiler.find_visible(options.name)
-  if vfiler then
+  if not options.new and vfiler then
     vfiler:focus()
     vfiler:update(context)
     vfiler:do_action(api.cd, dirpath)

@@ -32,34 +32,9 @@ local function detect_drives()
   return drives
 end
 
-function M.clear_selected_all(vfiler, context, view)
-  for _, item in ipairs(view:selected_items()) do
-    item.selected = false
-  end
-  view:redraw()
-end
-
-function M.close_tree(vfiler, context, view)
-  local item = view:get_current()
-  local target = (item.is_directory and item.opened) and item or item.parent
-
-  target:close()
-  view:draw(context)
-  view:move_cursor(target.path)
-end
-
-function M.close_tree_or_cd(vfiler, context, view)
-  local item = view:get_current()
-  local level = item and item.level or 0
-  if level == 0 or (level <= 1 and not item.opened) then
-    local path = context.root.path
-    api.cd(vfiler, context, view, context:parent_path(), function()
-      view:move_cursor(path)
-    end)
-  else
-    M.close_tree(vfiler, context, view)
-  end
-end
+------------------------------------------------------------------------------
+-- Cursor
+------------------------------------------------------------------------------
 
 function M.loop_cursor_down(vfiler, context, view)
   local lnum = vim.fn.line('.') + 1
@@ -101,6 +76,79 @@ end
 function M.move_cursor_up(vfiler, context, view)
   local lnum = math.max(view:top_lnum(), vim.fn.line('.') - 1)
   core.cursor.move(lnum)
+end
+
+------------------------------------------------------------------------------
+-- Show hidden files
+------------------------------------------------------------------------------
+
+function M.toggle_show_hidden(vfiler, context, view)
+  local options = context.options
+  options.show_hidden_files = not options.show_hidden_files
+  view:draw(context)
+end
+
+------------------------------------------------------------------------------
+-- Select
+------------------------------------------------------------------------------
+
+function M.clear_selected_all(vfiler, context, view)
+  for _, item in ipairs(view:selected_items()) do
+    item.selected = false
+  end
+  view:redraw()
+end
+
+function M.toggle_select(vfiler, context, view)
+  local lnum = vim.fn.line('.')
+  local item = view:get_item(lnum)
+  if item then
+    item.selected = not item.selected
+    view:redraw_line(lnum)
+  end
+end
+
+function M.toggle_select_all(vfiler, context, view)
+  for item in view:walk_items() do
+    item.selected = not item.selected
+  end
+  view:redraw()
+end
+
+function M.toggle_select_down(vfiler, context, view)
+  M.toggle_select(vfiler, context, view)
+  M.move_cursor_down(vfiler, context, view)
+end
+
+function M.toggle_select_up(vfiler, context, view)
+  M.toggle_select(vfiler, context, view)
+  M.move_cursor_up(vfiler, context, view)
+end
+
+------------------------------------------------------------------------------
+-- Control file
+------------------------------------------------------------------------------
+
+function M.close_tree(vfiler, context, view)
+  local item = view:get_current()
+  local target = (item.is_directory and item.opened) and item or item.parent
+
+  target:close()
+  view:draw(context)
+  view:move_cursor(target.path)
+end
+
+function M.close_tree_or_cd(vfiler, context, view)
+  local item = view:get_current()
+  local level = item and item.level or 0
+  if level == 0 or (level <= 1 and not item.opened) then
+    local path = context.root.path
+    api.cd(vfiler, context, view, context:parent_path(), function()
+      view:move_cursor(path)
+    end)
+  else
+    M.close_tree(vfiler, context, view)
+  end
 end
 
 function M.open(vfiler, context, view)
@@ -159,26 +207,6 @@ function M.open_tree_recursive(vfiler, context, view)
   core.cursor.move(lnum + 1)
 end
 
-function M.quit(vfiler, context, view)
-  api.close_preview(vfiler, context, view)
-  vfiler:quit()
-end
-
-function M.redraw(vfiler, context, view)
-  context:reload_gitstatus(function()
-    view:draw(context)
-  end)
-  api.open_preview(vfiler, context, view)
-end
-
-function M.reload(vfiler, context, view)
-  context:save(view:get_current().path)
-  context:switch(context.root.path, function(ctx)
-    view:draw(ctx)
-  end)
-  api.open_preview(vfiler, context, view)
-end
-
 function M.switch_to_drive(vfiler, context, view)
   local drives = detect_drives()
   if #drives == 0 then
@@ -208,6 +236,30 @@ function M.switch_to_drive(vfiler, context, view)
     end,
   })
   api.start_extension(vfiler, context, view, menu)
+end
+
+------------------------------------------------------------------------------
+-- Control buffer
+------------------------------------------------------------------------------
+
+function M.quit(vfiler, context, view)
+  api.close_preview(vfiler, context, view)
+  vfiler:quit()
+end
+
+function M.redraw(vfiler, context, view)
+  context:reload_gitstatus(function()
+    view:draw(context)
+  end)
+  api.open_preview(vfiler, context, view)
+end
+
+function M.reload(vfiler, context, view)
+  context:save(view:get_current().path)
+  context:switch(context.root.path, function(ctx)
+    view:draw(ctx)
+  end)
+  api.open_preview(vfiler, context, view)
 end
 
 function M.switch_to_filer(vfiler, context, view)
@@ -246,36 +298,6 @@ function M.switch_to_filer(vfiler, context, view)
 
   newfiler:focus() -- return other filer
   newfiler:do_action(api.open_preview)
-end
-
-function M.toggle_show_hidden(vfiler, context, view)
-  local options = context.options
-  options.show_hidden_files = not options.show_hidden_files
-  view:draw(context)
-end
-
-function M.toggle_select(vfiler, context, view)
-  local lnum = vim.fn.line('.')
-  local item = view:get_item(lnum)
-  item.selected = not item.selected
-  view:redraw_line(lnum)
-end
-
-function M.toggle_select_all(vfiler, context, view)
-  for item in view:walk_items() do
-    item.selected = not item.selected
-  end
-  view:redraw()
-end
-
-function M.toggle_select_down(vfiler, context, view)
-  M.toggle_select(vfiler, context, view)
-  M.move_cursor_down(vfiler, context, view)
-end
-
-function M.toggle_select_up(vfiler, context, view)
-  M.toggle_select(vfiler, context, view)
-  M.move_cursor_up(vfiler, context, view)
 end
 
 return M

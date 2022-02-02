@@ -60,6 +60,11 @@ function VFiler.cleanup()
   vfilers = valid_filers
 end
 
+--- Exists vfiler buffer
+function VFiler.exists(bufnr)
+  return vfilers[bufnr] ~= nil
+end
+
 --- Find the currently valid filer by name
 ---@param name string
 function VFiler.find(name)
@@ -136,8 +141,8 @@ function VFiler.new(context)
   }, VFiler)
 
   -- register events
-  for group, events in pairs(context.events) do
-    self:register_events(group, events)
+  for group, _ in pairs(context.events) do
+    self:register_events(group)
   end
 
   -- define key mappings

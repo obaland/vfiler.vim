@@ -1,0 +1,16 @@
+local basic = require('vfiler/actions/basic')
+local u = require('tests/utility')
+
+describe('basic actions', function()
+  u.randomseed()
+  describe('Show hidden files', function()
+    local vfiler = u.vfiler.start(u.vfiler.generate_options())
+
+    it('show_hidden: ON', function()
+      u.vfiler.do_action(vfiler, basic.toggle_show_hidden)
+    end)
+    it('show_hidden: OFF', function()
+      u.vfiler.do_action(vfiler, basic.toggle_show_hidden)
+    end)
+  end)
+end)
