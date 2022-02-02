@@ -11,8 +11,6 @@ local function desc(action_name, vfiler)
 end
 
 describe('basic actions', function()
-  -- TODO:
-  --[[
   u.randomseed()
   describe('Control buffer', function()
     local vfiler = u.vfiler.start(configs)
@@ -31,5 +29,4 @@ describe('basic actions', function()
       newfiler:quit(true)
     end)
   end)
-  -]]
 end)
