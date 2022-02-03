@@ -2,10 +2,8 @@ local basic = require('vfiler/actions/basic')
 local u = require('tests/utility')
 
 describe('basic actions', function()
-  u.randomseed()
   describe('Cursor', function()
     local vfiler = u.vfiler.start(u.vfiler.generate_options())
-
     local action_sequence = {
       'move_cursor_down',
       'move_cursor_up',

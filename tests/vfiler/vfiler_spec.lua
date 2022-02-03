@@ -8,25 +8,28 @@ describe('vfiler', function()
       local bufnr = vfiler._buffer.number
       assert.equal(bufnr, vim.fn.bufnr())
       assert.is_true(Buffer.is_vfiler_buffer(bufnr))
+      vfiler:quit(true)
     end)
 
-    --local configs = {
-    --  options = u.vfiler.generate_options(),
-    --}
-    --it('with options: ' .. vim.inspect(configs), function()
-    --  local vfiler = u.vfiler.start(configs)
-    --  local bufnr = vfiler._buffer.number
-    --  assert.equal(bufnr, vim.fn.bufnr())
-    --  assert.is_true(Buffer.is_vfiler_buffer(bufnr))
-    --end)
+    local configs = {
+      options = u.vfiler.generate_options(),
+    }
+    it('with options: ' .. vim.inspect(configs), function()
+      local vfiler = u.vfiler.start(configs)
+      local bufnr = vfiler._buffer.number
+      assert.equal(bufnr, vim.fn.bufnr())
+      assert.is_true(Buffer.is_vfiler_buffer(bufnr))
+      vfiler:quit(true)
+    end)
 
-    --local args = u.convert_command_options(configs.options)
-    --it('from command args: ' .. args, function()
-    --  local vfiler = u.vfiler.start_command(args)
-    --  local bufnr = vfiler._buffer.number
-    --  assert.equal(bufnr, vim.fn.bufnr())
-    --  assert.is_true(Buffer.is_vfiler_buffer(bufnr))
-    --end)
+    local args = u.convert_command_options(configs.options)
+    it('from command args: ' .. args, function()
+      local vfiler = u.vfiler.start_command(args)
+      local bufnr = vfiler._buffer.number
+      assert.equal(bufnr, vim.fn.bufnr())
+      assert.is_true(Buffer.is_vfiler_buffer(bufnr))
+      vfiler:quit(true)
+    end)
   end)
 
   describe('Start with "new" option', function()
@@ -34,28 +37,34 @@ describe('vfiler', function()
       local configs = {
         options = {
           name = 'foo',
-          new = true
+          new = true,
         },
       }
-      u.vfiler.start(configs)
+      local vfiler1 = u.vfiler.start(configs)
       assert.equal('vfiler:foo', vim.fn.bufname())
 
-      u.vfiler.start(configs)
+      local vfiler2 = u.vfiler.start(configs)
       assert.equal('vfiler:foo-1', vim.fn.bufname())
+
+      vfiler2:quit(true)
+      vfiler1:quit(true)
     end)
 
     it('name option "vfiler"', function()
       local configs = {
         options = {
           name = 'vfiler',
-          new = true
+          new = true,
         },
       }
-      u.vfiler.start(configs)
+      local vfiler1 = u.vfiler.start(configs)
       assert.equal('vfiler:vfiler', vim.fn.bufname())
 
-      u.vfiler.start(configs)
+      local vfiler2 = u.vfiler.start(configs)
       assert.equal('vfiler:vfiler-1', vim.fn.bufname())
+
+      vfiler2:quit(true)
+      vfiler1:quit(true)
     end)
   end)
 end)

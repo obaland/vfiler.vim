@@ -9,7 +9,7 @@ if vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1 then
 else
   pathpairs = {
     { input = '/test/a/b', output = '/test/a/b' },
-    { input = [[/test/a\ b/c]], output = '/test/a b/c'},
+    { input = [[/test/a\ b/c]], output = '/test/a b/c' },
   }
 end
 

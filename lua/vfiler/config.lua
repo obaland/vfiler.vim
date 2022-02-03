@@ -194,7 +194,7 @@ local function set_option(options, name, value, key)
   local top_name = splitted[1]
   local nest_name = splitted[2]
   local top = options[top_name]
-  if not (top and nest_name and top[nest_name]) then
+  if not (top and nest_name and top[nest_name] ~= nil) then
     error(('Unknown "%s" option.'):format(key))
     return false
   end

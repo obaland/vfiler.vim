@@ -8,7 +8,8 @@ describe('core.string', function()
   describe('truncate (end)', function()
     local truncate = core.string.truncate
     local string = 'abcdefghijklmnopqrstuvwxyz'
-    local wstring = 'あいうえおかきくけこさしすせそたちつてと'
+    local wstring =
+      'あいうえおかきくけこさしすせそたちつてと'
 
     it('sigle string strwdith = width', function()
       local actual = truncate(string, #string, '..', 0)
@@ -27,12 +28,18 @@ describe('core.string', function()
 
     it('wide string strwdith = width', function()
       local actual = truncate(wstring, 40, '..', 0)
-      eq('あいうえおかきくけこさしすせそたちつてと', actual)
+      eq(
+        'あいうえおかきくけこさしすせそたちつてと',
+        actual
+      )
     end)
 
     it('wide string strwdith < width', function()
       local actual = truncate(wstring, 41, '..', 0)
-      eq('あいうえおかきくけこさしすせそたちつてと', actual)
+      eq(
+        'あいうえおかきくけこさしすせそたちつてと',
+        actual
+      )
     end)
 
     it('wide string strwdith > width', function()
@@ -44,7 +51,8 @@ describe('core.string', function()
   describe('truncate (middle)', function()
     local truncate = core.string.truncate
     local string = 'abcdefghijklmnopqrstuvwxyz'
-    local wstring = 'あいうえおかきくけこさしすせそたちつてと'
+    local wstring =
+      'あいうえおかきくけこさしすせそたちつてと'
 
     it('sigle string strwdith = width', function()
       local actual = truncate(string, 26, '..', 13)
@@ -63,12 +71,18 @@ describe('core.string', function()
 
     it('wide string strwdith = width', function()
       local actual = truncate(wstring, 40, '..', 20)
-      eq('あいうえおかきくけこさしすせそたちつてと', actual)
+      eq(
+        'あいうえおかきくけこさしすせそたちつてと',
+        actual
+      )
     end)
 
     it('wide string strwdith < width', function()
       local actual = truncate(wstring, 41, '..', 20)
-      eq('あいうえおかきくけこさしすせそたちつてと', actual)
+      eq(
+        'あいうえおかきくけこさしすせそたちつてと',
+        actual
+      )
     end)
 
     it('wide string strwdith > width', function()
@@ -141,9 +155,21 @@ describe('core.path', function()
     local dataset = {
       { path = '/', name = 'home/test', expected = '/home/test' },
       { path = [[C:\]], name = 'home/test', expected = 'C:/home/test' },
-      { path = 'C:', name = [[/test\foo/bar]], expected = 'C:/test/foo/bar' },
-      { path = '/home', name = 'test/foo/bar', expected = '/home/test/foo/bar' },
-      { path = '/home', name = 'test/foo/bar/', expected = '/home/test/foo/bar/' },
+      {
+        path = 'C:',
+        name = [[/test\foo/bar]],
+        expected = 'C:/test/foo/bar',
+      },
+      {
+        path = '/home',
+        name = 'test/foo/bar',
+        expected = '/home/test/foo/bar',
+      },
+      {
+        path = '/home',
+        name = 'test/foo/bar/',
+        expected = '/home/test/foo/bar/',
+      },
     }
     for _, data in ipairs(dataset) do
       it(('join "%s" and "%s"'):format(data.path, data.name), function()
@@ -226,18 +252,20 @@ describe('core.math', function()
   describe('within', function()
     local within = core.math.within
     local dataset = {
-      { v = 10, min =  5, max = 20, expected = 10},
-      { v =  4, min =  5, max = 20, expected =  5},
-      { v = 21, min =  5, max = 20, expected = 20},
-      { v = -4, min = -5, max = 20, expected = -4},
-      { v = -6, min = -5, max = 20, expected = -5},
-      { v = -6, min = -8, max = -5, expected = -6},
-      { v = -9, min = -8, max = -5, expected = -8},
-      { v = -4, min = -8, max = -5, expected = -5},
+      { v = 10, min = 5, max = 20, expected = 10 },
+      { v = 4, min = 5, max = 20, expected = 5 },
+      { v = 21, min = 5, max = 20, expected = 20 },
+      { v = -4, min = -5, max = 20, expected = -4 },
+      { v = -6, min = -5, max = 20, expected = -5 },
+      { v = -6, min = -8, max = -5, expected = -6 },
+      { v = -9, min = -8, max = -5, expected = -8 },
+      { v = -4, min = -8, max = -5, expected = -5 },
     }
     for _, data in ipairs(dataset) do
       local desc = ('within v:%d, min:%d, max:%d'):format(
-        data.v, data.min, data.max
+        data.v,
+        data.min,
+        data.max
       )
       it(desc, function()
         eq(data.expected, within(data.v, data.min, data.max))

@@ -111,7 +111,18 @@ function M.vfiler.generate_options()
     auto_resize = 'boolean',
     columns = {
       string = {
-        words = { 'indent', 'icon', 'name', 'mode', 'size', 'time', 'space', 'git', 'type' },
+        -- stylua: ignore
+        words = {
+          'indent',
+          'icon',
+          'name',
+          'mode',
+          'size',
+          'time',
+          'space',
+          'git',
+          'type',
+        },
         min = 1,
         sep = ',',
       },
@@ -121,11 +132,13 @@ function M.vfiler.generate_options()
     listed = 'boolean',
     name = { values = { '', 'f-o-o', 'b-a-r' } },
     show_hidden_files = 'boolean',
-    sort = { values = { 'name', 'extension', 'time', 'size' }, },
+    sort = { values = { 'name', 'extension', 'time', 'size' } },
     statusline = 'boolean',
-    layout = { values = { 'none', 'right', 'left', 'top', 'bottom', 'tab' }, },
-    width = { int = { min = 10, max = 80 }, },
-    height = { int = { min = 10, max = 80 }, },
+    layout = {
+      values = { 'none', 'right', 'left', 'top', 'bottom', 'tab' },
+    },
+    width = { int = { min = 10, max = 80 } },
+    height = { int = { min = 10, max = 80 } },
     new = 'boolean',
     quit = 'boolean',
     git = {
@@ -137,46 +150,45 @@ function M.vfiler.generate_options()
     },
     preview = {
       nest = {
-        layout = { values = { 'floating', 'right', 'left', 'top', 'bottom' }, },
+        layout = {
+          values = { 'floating', 'right', 'left', 'top', 'bottom' },
+        },
         width = { int = { min = 10, max = 80 } },
         height = { int = { min = 10, max = 80 } },
       },
     },
   }
+  M.randomseed()
   return M.generate_values(option_params)
 end
 
-function M.vfiler.start(configs)
-  require'vfiler'.start('', configs)
-  local filer = require'vfiler/vfiler'.get_current()
-  assert(filer ~= nil)
+local function wait(filer)
   -- wait for debug
   while filer._context.in_progress do
     print('start waiting ...')
-    vim.loop.sleep(10)
+    vim.cmd('sleep 100m')
   end
+end
+
+function M.vfiler.start(configs)
+  require('vfiler').start('', configs)
+  local filer = require('vfiler/vfiler').get_current()
+  assert(filer ~= nil)
+  wait(filer)
   return filer
 end
 
 function M.vfiler.start_command(args)
-  require'vfiler'.start_command(args)
-  local filer = require'vfiler/vfiler'.get_current()
+  require('vfiler').start_command(args)
+  local filer = require('vfiler/vfiler').get_current()
   assert(filer ~= nil)
-  -- wait for debug
-  while filer._context.in_progress do
-    print('start command waiting ...')
-    vim.loop.sleep(10)
-  end
+  wait(filer)
   return filer
 end
 
 function M.vfiler.do_action(filer, action, ...)
   filer:do_action(action, ...)
-  -- wait for debug
-  while filer._context.in_progress do
-    print('do action waiting ...')
-    vim.loop.sleep(10)
-  end
+  wait(filer)
 end
 
 return M

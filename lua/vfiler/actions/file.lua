@@ -249,7 +249,15 @@ end
 
 function M.new_file(vfiler, context, view)
   local item = view:get_current()
-  local dir = (item.is_directory and item.opened) and item or item.parent
+  local dir
+  if not item then
+    -- If there is no header line and the current root directory is empty.
+    dir = context.root
+  elseif item.is_directory and item.opened then
+    dir = item
+  else
+    dir = item.parent
+  end
 
   local function create_file(dest, name, filepath)
     if core.path.filereadable(filepath) then

@@ -1,6 +1,7 @@
 local core = require('vfiler/libs/core')
-local job = require('vfiler/libs/async/job')
 local vim = require('vfiler/libs/vim')
+
+local Job = require('vfiler/libs/async/job')
 
 local M = {}
 
@@ -42,8 +43,10 @@ function M.reload_status(rootpath, options, on_completed)
 
   local gitstatus = {}
   local command = ('git -C %s %s'):format(rootpath, table.concat(args, ' '))
-  job.start(command, {
-    on_received = function(data)
+
+  local job = Job.new()
+  job:start(command, {
+    on_received = function(jself, data)
       local status = data:sub(1, 2)
       local rpath = data:sub(4, -1)
       -- for renamed
@@ -58,7 +61,7 @@ function M.reload_status(rootpath, options, on_completed)
       }
     end,
 
-    on_completed = function()
+    on_completed = function(jself, code)
       -- update directories
       local dirs = {}
       for path, status in pairs(gitstatus) do
