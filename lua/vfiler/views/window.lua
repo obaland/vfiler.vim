@@ -52,7 +52,7 @@ function Window:_on_update(winid, buffer, options)
     vim.set_win_option(
       winid,
       'statusline',
-      ('%%#vfilerStatusLineSection# %s %%#vfilerStatusLine#'):format(
+      ('%%#vfilerStatusLineSection1# %s %%#vfilerStatusLine#'):format(
         options.title
       )
     )

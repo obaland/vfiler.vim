@@ -1,3 +1,6 @@
+[![CI](https://github.com/obaland/vfiler.vim/workflows/ci-neovim/badge.svg)](https://github.com/obaland/vfiler.vim/actions?query=workflow%3Aci-neovim)
+[![Lint](https://github.com/obaland/vfiler.vim/workflows/lint/badge.svg)](https://github.com/obaland/vfiler.vim/actions?query=workflow%3Alint)
+
 <p align="center">
   <img src="https://github.com/obaland/contents/blob/main/vfiler.vim/logo.png?raw=true" alt="vfiler-logo" width=75% height=auto>
 </p>

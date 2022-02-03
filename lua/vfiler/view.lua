@@ -67,11 +67,6 @@ function View.new(buffer, context)
 
   object:_initialize(context)
   object:open()
-
-  object._previus_statusline = vim.get_win_option(
-    object:winnr(),
-    'statusline'
-  )
   object:_apply_syntaxes()
   object:_resize()
   return object
@@ -114,19 +109,6 @@ function View:draw(context)
   end
 
   self:redraw()
-
-  -- update statusline
-  if options.statusline then
-    local winnr = self:winnr()
-    local statusline = require('vfiler/statusline')
-    local winwidth = vim.fn.winwidth(winnr)
-    local status = statusline.status(winwidth, context)
-    vim.set_win_option(self:winnr(), 'statusline', status)
-    self._winoptions.statusline = status
-  else
-    vim.set_win_option(self:winnr(), 'statusline', self._previus_statusline)
-    self._winoptions.statusline = self._previus_statusline
-  end
 end
 
 --- Get the item on the current cursor
@@ -174,7 +156,7 @@ end
 
 --- Open the view buffer for the current window
 function View:open()
-  vim.command(('silent noautocmd %dbuffer!'):format(self._buffer.number))
+  vim.command(('silent %dbuffer!'):format(self._buffer.number))
 end
 
 --- Redraw the current contents

@@ -61,17 +61,6 @@ highlight default link vfilerBookmarkFile      None
 highlight default link vfilerBookmarkLink      Constant
 highlight default link vfilerBookmarkPath      Comment
 
-" Commands
-function! s:complete(arglead, cmdline, cursorpos) abort
-  let list = luaeval(
-        \ 'require("vfiler/config").complete(_A)', a:arglead
-        \ )
-  if len(list) > 0
-    return list
-  endif
-  return map(getcompletion(a:arglead, 'dir'), {-> escape(v:val, ' ')})
-endfunction
-
 " Define commands
-command! -nargs=? -complete=customlist,s:complete VFiler
-      \ call luaeval('require("vfiler").start_command(_A)', <q-args>)
+command! -nargs=? -complete=customlist,vfiler#complete VFiler
+      \ call vfiler#start_command(<q-args>)

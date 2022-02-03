@@ -1,4 +1,5 @@
 local core = require('vfiler/libs/core')
+local status = require('vfiler/status')
 local vim = require('vfiler/libs/vim')
 
 local Buffer = require('vfiler/buffer')
@@ -107,6 +108,9 @@ end
 --- Get the filer from the buffer number
 ---@param bufnr number Buffer number
 function VFiler.get(bufnr)
+  if not vfilers[bufnr] then
+    return nil
+  end
   return vfilers[bufnr].object
 end
 
@@ -274,6 +278,11 @@ function VFiler:start(dirpath)
     self:draw()
     core.cursor.move(self._view:top_lnum())
   end)
+end
+
+--- Get current status for statusline
+function VFiler:status()
+  return status.status(self._context, self._view)
 end
 
 --- Synchronize to the vfiler

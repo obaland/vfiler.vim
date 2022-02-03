@@ -8,7 +8,7 @@ local VFiler = require('vfiler/vfiler')
 
 local M = {}
 
----Start vfiler from command line arguments
+--- Start vfiler from command line arguments
 ---@param args string: command line argumets
 function M.start_command(args)
   local options, dirpath = config.parse_options(args)
@@ -18,7 +18,7 @@ function M.start_command(args)
   return M.start(dirpath, { options = options })
 end
 
----Start vfiler
+--- Start vfiler
 function M.start(dirpath, configs)
   if not dirpath or #dirpath <= 0 then
     dirpath = vim.fn.getcwd()
@@ -58,6 +58,15 @@ function M.start(dirpath, configs)
 
   vfiler:start(dirpath)
   return true
+end
+
+--- Get current status
+function M.status()
+  local current = VFiler.get_current()
+  if not current then
+    return ''
+  end
+  return current:status()
 end
 
 return M

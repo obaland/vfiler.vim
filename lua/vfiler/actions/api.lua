@@ -44,13 +44,13 @@ local function choose_window(winid)
   local laststatus = vim.get_option('laststatus')
 
   -- Choose window
-  local statusline = require('vfiler/statusline')
+  local status = require('vfiler/status')
   vim.set_option('laststatus', 2)
   for key, id in pairs(winkeys) do
     vim.set_win_option(
       id,
       'statusline',
-      statusline.choose_window_key(vim.fn.winwidth(id), key)
+      status.choose_window_key(vim.fn.winwidth(id), key)
     )
     vim.command('redraw')
   end

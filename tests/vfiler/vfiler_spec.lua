@@ -14,7 +14,7 @@ describe('vfiler', function()
     local configs = {
       options = u.vfiler.generate_options(),
     }
-    it('with options: ' .. vim.inspect(configs), function()
+    it('with options', function()
       local vfiler = u.vfiler.start(configs)
       local bufnr = vfiler._buffer.number
       assert.equal(bufnr, vim.fn.bufnr())
@@ -23,7 +23,7 @@ describe('vfiler', function()
     end)
 
     local args = u.convert_command_options(configs.options)
-    it('from command args: ' .. args, function()
+    it('from command args ', function()
       local vfiler = u.vfiler.start_command(args)
       local bufnr = vfiler._buffer.number
       assert.equal(bufnr, vim.fn.bufnr())

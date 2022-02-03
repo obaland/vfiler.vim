@@ -133,7 +133,6 @@ function M.vfiler.generate_options()
     name = { values = { '', 'f-o-o', 'b-a-r' } },
     show_hidden_files = 'boolean',
     sort = { values = { 'name', 'extension', 'time', 'size' } },
-    statusline = 'boolean',
     layout = {
       values = { 'none', 'right', 'left', 'top', 'bottom', 'tab' },
     },
