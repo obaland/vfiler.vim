@@ -1,4 +1,4 @@
-name: Tests for neovim
+name: CI
 
 on: [push, pull_request]
 
