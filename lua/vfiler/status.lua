@@ -8,8 +8,8 @@ local status_configs = {
     { 'root' },
     { 'numitems', 'itemname' },
   },
-  separator = '|',
-  subseparator = '>',
+  separator = ' | ',
+  subseparator = ' > ',
 
   component_functions = {
     name = function(context, view)
@@ -43,7 +43,33 @@ local status_configs = {
       return item.name .. (item.is_directory and '/' or '')
     end,
   },
+
+  component_highlights = {
+    'vfilerStatusLineComponent1',
+    'vfilerStatusLineComponent2',
+  },
 }
+
+local function build_status_blocks(context, view)
+  local components = status_configs.components
+  local functions = status_configs.component_functions
+
+  local status_blocks = {}
+  for _, component in ipairs(components) do
+    local blocks = {}
+    for _, subcomponent in ipairs(component) do
+      local func = functions[subcomponent]
+      if func then
+        local block = func(context, view)
+        if #block > 0 then
+          table.insert(blocks, block)
+        end
+      end
+    end
+    table.insert(status_blocks, blocks)
+  end
+  return status_blocks
+end
 
 --- Status line for choose window key display
 ---@param winwidth number
@@ -55,7 +81,7 @@ function M.choose_window_key(winwidth, key)
   local status = {
     '%#vfilerStatusLine#',
     margin,
-    '%#vfilerStatusLineSection1#',
+    '%#vfilerStatusLineSection#',
     padding,
     key,
     padding,
@@ -64,48 +90,47 @@ function M.choose_window_key(winwidth, key)
   return table.concat(status, '')
 end
 
---- Status for statusline
+--- Status string
 ---@param context table
 ---@param view table
 function M.status(context, view)
-  local status_parts = {}
-  local components = status_configs.components
-  local functions = status_configs.component_functions
-
-  local separator
-  if #status_configs.separator > 0 then
-    separator = ' ' .. status_configs.separator .. ' '
-  else
-    separator = ' '
+  local status = {}
+  for _, blocks in ipairs(build_status_blocks(context, view)) do
+    table.insert(status, table.concat(blocks, status_configs.subseparator))
   end
+  return table.concat(status, status_configs.separator)
+end
 
-  local subseparator
-  if #status_configs.subseparator > 0 then
-    subseparator = ' ' .. status_configs.subseparator .. ' '
-  else
-    subseparator = ' '
-  end
-
-  for _, component in ipairs(components) do
-    local parts = {}
-    for _, subcomponent in ipairs(component) do
-      local func = functions[subcomponent]
-      if func then
-        local part = func(context, view)
-        if #part > 0 then
-          table.insert(parts, part)
-        end
-      end
+--- Status string for statusline
+---@param context table
+---@param view table
+function M.statusline(context, view)
+  local status = {}
+  local status_blocks = build_status_blocks(context, view)
+  for i = 1, #status_blocks do
+    local hl = status_configs.component_highlights[i]
+    if not hl then
+      hl = 'vfilerStatusLine'
     end
-    table.insert(status_parts, table.concat(parts, subseparator))
+    local block = ('%%#%s#%s'):format(
+      hl,
+      table.concat(status_blocks[i], status_configs.subseparator)
+    )
+    table.insert(status, block)
   end
-  return table.concat(status_parts, separator)
+  return table.concat(status, status_configs.separator)
 end
 
 --- Setup status configs
 ---@param configs table
 function M.setup(configs)
   core.table.merge(status_configs, configs)
+  if #status_configs.separator > 0 then
+    status_configs.separator = ' ' .. status_configs.separator .. ' '
+  end
+  if #status_configs.subseparator > 0 then
+    status_configs.subseparator = ' ' .. status_configs.subseparator .. ' '
+  end
   return status_configs
 end
 

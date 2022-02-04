@@ -8,6 +8,7 @@ local M = {}
 M.fn = vim.fn
 if is_nvim then
   M.command = vim.api.nvim_command
+  M.nvim = vim
 else
   M.command = vim.command
 end

@@ -60,13 +60,22 @@ function M.start(dirpath, configs)
   return true
 end
 
---- Get current status
+--- Get current status string
 function M.status()
   local current = VFiler.get_current()
   if not current then
     return ''
   end
   return current:status()
+end
+
+--- Get current status string for statusline
+function M.statusline()
+  local current = VFiler.get_current()
+  if not current then
+    return ''
+  end
+  return current:statusline()
 end
 
 return M

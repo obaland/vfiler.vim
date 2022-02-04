@@ -280,9 +280,14 @@ function VFiler:start(dirpath)
   end)
 end
 
---- Get current status for statusline
+--- Get current status string
 function VFiler:status()
   return status.status(self._context, self._view)
+end
+
+--- Get current status string for statusline
+function VFiler:statusline()
+  return status.statusline(self._context, self._view)
 end
 
 --- Synchronize to the vfiler

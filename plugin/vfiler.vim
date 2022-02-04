@@ -53,6 +53,11 @@ highlight default link vfilerStatusLine        StatusLine
 highlight default vfilerStatusLineSection
       \ ctermfg=230 ctermbg=57 guifg=#ffffd7 guibg=#44788E
 
+highlight default vfilerStatusLineComponent1
+      \ ctermfg=230 ctermbg=24 guifg=#ffffd7 guibg=#005f87
+highlight default vfilerStatusLineComponent2
+      \ ctermfg=230 ctermbg=57 guifg=#ffffd7 guibg=#44788E
+
 highlight default link vfilerFloatingWindowTitle Constant
 
 highlight default link vfilerBookmarkCategory  Title
