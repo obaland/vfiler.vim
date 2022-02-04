@@ -4,7 +4,7 @@
 
 # File explorer plugin for Vim/Neovim
 
-[![CI](https://github.com/obaland/vfiler.vim/actions/workflows/ci-neovim.yml/badge.svg)](https://github.com/obaland/vfiler.vim/actions/workflows/ci-neovim.yml)
+[![CI](https://github.com/obaland/vfiler.vim/actions/workflows/ci.yml/badge.svg)](https://github.com/obaland/vfiler.vim/actions/workflows/ci.yml)
 [![Lint](https://github.com/obaland/vfiler.vim/actions/workflows/lint.yml/badge.svg)](https://github.com/obaland/vfiler.vim/actions/workflows/lint.yml)
 
 ## Description
