@@ -1,3 +1,4 @@
+local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
 local function escape_key(key)
@@ -37,6 +38,13 @@ function Buffer:delete()
   self.number = -1
 end
 
+function Buffer:name()
+  if self.number <= 0 then
+    return ''
+  end
+  return vim.fn.bufname(self.number)
+end
+
 function Buffer:wipeout()
   if vim.fn.bufexists(self.number) == 1 then
     vim.command(('silent %dbwipeout!'):format(self.number))
@@ -63,7 +71,6 @@ function Buffer:define_mappings(mappings, funcstr)
       self.number,
       vim.fn.escape(escaped, '\\')
     )
-
     keymaps[escaped] = func
     vim.set_buf_keymap(self.number, 'n', key, rhs, options)
   end
@@ -78,18 +85,40 @@ function Buffer:register_events(group, events, funcstr)
   if not events then
     return
   end
+  local registerd = {}
   vim.command('augroup ' .. group)
-  for event, _ in pairs(events) do
-    local au = ('autocmd %s <buffer> :lua %s(%d, "%s", "%s")'):format(
-      event,
-      funcstr,
-      self.number,
-      group,
-      event
+  for event, prop in pairs(events) do
+    local commands = {
+      ('autocmd! %s <buffer>'):format(event),
+    }
+    local type = type(prop)
+    local func
+    if type == 'function' then
+      func = prop
+    elseif type == 'table' then
+      func = prop.action
+      local options = prop.options
+      if options then
+        if options.nested then
+          table.insert(commands, '++nested')
+        end
+        if options.once then
+          table.insert(commands, '++once')
+        end
+      end
+    else
+      core.message.error('"%s %s" is not supported event type.', group, event)
+      return
+    end
+    table.insert(
+      commands,
+      (':lua %s(%d, "%s", "%s")'):format(funcstr, self.number, group, event)
     )
-    vim.command(au)
+    vim.command(table.concat(commands, ' '))
+    registerd[event] = func
   end
   vim.command('augroup END')
+  return registerd
 end
 
 function Buffer:set_line(lnum, line)

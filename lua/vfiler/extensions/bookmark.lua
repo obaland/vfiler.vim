@@ -232,16 +232,21 @@ function Bookmark:_on_opened(winid, buffer, items, configs)
 end
 
 function Bookmark:_get_lines(items)
+  -- calculate the width of each column.
+  local column_widths = {}
+  for _, column in ipairs(columns) do
+    local cwidth = 0
+    for _, category in ipairs(self._root.children) do
+      cwidth = math.max(cwidth, column:get_width(category.children))
+    end
+    table.insert(column_widths, cwidth)
+  end
+
   local width = 0
   local lines = vim.list({})
   for _, item in ipairs(items) do
     if item.is_category then
       local category = item
-      local column_widths = {}
-      for _, column in ipairs(columns) do
-        local cwidth = column:get_width(category.children)
-        table.insert(column_widths, cwidth)
-      end
       local line, text_width = get_line(category, column_widths)
       table.insert(lines, line)
       width = math.max(width, text_width)

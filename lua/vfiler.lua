@@ -1,4 +1,4 @@
-local api = require('vfiler/actions/api')
+local u = require('vfiler/actions/utility')
 local config = require('vfiler/config')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
@@ -39,23 +39,17 @@ function M.start(dirpath, configs)
   if not options.new and vfiler then
     vfiler:focus()
     vfiler:update(context)
-    vfiler:do_action(api.cd, dirpath)
+    vfiler:do_action(u.cd, dirpath)
     return true
-  end
-
-  local layout = options.layout
-  if layout ~= 'none' then
-    core.window.open(layout)
   end
 
   vfiler = VFiler.find_hidden(options.name)
   if options.new or not vfiler then
     vfiler = VFiler.new(context)
   else
-    vfiler:open()
     vfiler:update(context)
   end
-
+  vfiler:open(options.layout)
   vfiler:start(dirpath)
   return true
 end

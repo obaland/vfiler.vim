@@ -31,7 +31,7 @@ function M.loop_cursor_down(extension)
   if pos > extension:num_lines() then
     pos = 1
   end
-  core.cursor.winmove(extension.winid, pos)
+  core.cursor.winmove(extension:winid(), pos)
 end
 
 function M.loop_cursor_up(extension)
@@ -39,15 +39,15 @@ function M.loop_cursor_up(extension)
   if pos < 1 then
     pos = extension:num_lines()
   end
-  core.cursor.winmove(extension.winid, pos)
+  core.cursor.winmove(extension:winid(), pos)
 end
 
 function M.move_cursor_down(extension)
-  core.cursor.winmove(extension.winid, vim.fn.line('.') + 1)
+  core.cursor.winmove(extension:winid(), vim.fn.line('.') + 1)
 end
 
 function M.move_cursor_up(extension)
-  core.cursor.winmove(extension.winid, vim.fn.line('.') - 1)
+  core.cursor.winmove(extension:winid(), vim.fn.line('.') - 1)
 end
 
 function M.quit(extension)

@@ -1,4 +1,4 @@
-local api = require('vfiler/actions/api')
+local util = require('vfiler/actions/utility')
 
 local Bookmark = require('vfiler/extensions/bookmark')
 
@@ -12,10 +12,10 @@ end
 function M.list_bookmark(vfiler, context, view)
   local bookmark = Bookmark.new(vfiler, {
     on_selected = function(filer, c, v, path, open_type)
-      api.open_file(filer, c, v, path, open_type)
+      util.open_file(filer, c, v, path, open_type)
     end,
   })
-  api.start_extension(vfiler, context, view, bookmark)
+  util.start_extension(vfiler, context, view, bookmark)
 end
 
 return M

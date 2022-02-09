@@ -1,10 +1,12 @@
 local action_modules = {
-  'basic',
   'bookmark',
+  'buffer',
+  'cursor',
   'event',
   'file',
+  'item',
   'preview',
-  'utility',
+  'view',
 }
 
 local M = setmetatable({}, {

@@ -140,6 +140,13 @@ function M.vfiler.generate_options()
     height = { int = { min = 10, max = 80 } },
     new = 'boolean',
     quit = 'boolean',
+    border = {
+      values = { 'none', 'single', 'double', 'rounded', 'shadow' },
+    },
+    col = { int = { min = 1, max = 30 } },
+    row = { int = { min = 1, max = 30 } },
+    blend = { int = { min = 10, max = 100 } },
+    zindex = { int = { min = 100, max = 300 } },
     git = {
       nest = {
         enabled = 'boolean',

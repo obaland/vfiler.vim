@@ -146,9 +146,15 @@ function Rename:_get_lines(items)
 end
 
 function Rename:_get_win_options(configs)
-  return {
+  local options = {
     number = true,
   }
+  -- NOTE: For vim, don't explicitly set the "signcolumn" option as the
+  -- screen may flicker.
+  if core.is_nvim then
+    options.signcolumn = 'no'
+  end
+  return options
 end
 
 return Rename

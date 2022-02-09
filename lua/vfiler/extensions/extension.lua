@@ -28,8 +28,7 @@ local function winvalue(value, win_value, content_value, min, max)
       return
     end
 
-    if tostring(value):match('%d+%.%d+') then
-      -- float
+    if core.math.type(v) == 'float' then
       v = math.floor(win_value * v)
     end
     result = v
@@ -37,25 +36,25 @@ local function winvalue(value, win_value, content_value, min, max)
   return math.floor(core.math.within(result, min, max))
 end
 
-local function to_view_options(options, name, win_size, content_size)
-  local voptions = {
+local function to_window_options(options, name, win_size, content_size)
+  local layout
+  local woptions = {
     title = name,
   }
   if options.floating then
-    voptions.layout = 'floating'
-
+    layout = 'floating'
     local floating = options.floating
     local minwidth = floating.minwidth or 1
     local minheight = floating.minheight or 1
 
-    voptions.width = winvalue(
+    woptions.width = winvalue(
       floating.width,
       win_size.width,
       content_size.width,
       minwidth,
       win_size.width
     )
-    voptions.height = winvalue(
+    woptions.height = winvalue(
       floating.height,
       win_size.height,
       content_size.height,
@@ -63,10 +62,10 @@ local function to_view_options(options, name, win_size, content_size)
       win_size.height
     )
   elseif options.top or options.bottom then
-    voptions.layout = options.top and 'top' or 'bottom'
+    layout = options.top and 'top' or 'bottom'
     local value = options.top or options.bottom
-    voptions.width = 0
-    voptions.height = winvalue(
+    woptions.width = 0
+    woptions.height = winvalue(
       value,
       win_size.height,
       content_size.height,
@@ -74,52 +73,52 @@ local function to_view_options(options, name, win_size, content_size)
       win_size.height
     )
   elseif options.right or options.left then
-    voptions.layout = options.right and 'right' or 'left'
+    layout = options.right and 'right' or 'left'
     local value = options.right or options.left
-    voptions.width = winvalue(
+    woptions.width = winvalue(
       value,
       win_size.width,
       content_size.width,
       1,
       win_size.width
     )
-    voptions.height = 0
+    woptions.height = 0
   end
 
   -- '2' is space width
-  voptions.width = math.max(vim.fn.strwidth(name) + 2, voptions.width)
+  woptions.width = math.max(vim.fn.strwidth(name) + 2, woptions.width)
 
   -- set window position
   if options.floating then
     if options.floating.relative then
-      local offset_row = math.floor((win_size.height - voptions.height) / 2)
-      local offset_col = math.floor((win_size.width - voptions.width) / 2)
-      voptions.col = win_size.col + offset_col - 1
-      voptions.row = win_size.row + offset_row - 1
+      local offset_row = math.floor((win_size.height - woptions.height) / 2)
+      local offset_col = math.floor((win_size.width - woptions.width) / 2)
+      woptions.col = win_size.col + offset_col - 1
+      woptions.row = win_size.row + offset_row - 1
     else
       local columns = vim.get_option('columns')
       local lines = vim.get_option('lines')
-      local offset_row = math.floor((lines - voptions.height) / 2)
-      local offset_col = math.floor((columns - voptions.width) / 2)
-      voptions.col = offset_col - 1
-      voptions.row = offset_row - 1
+      local offset_row = math.floor((lines - woptions.height) / 2)
+      local offset_col = math.floor((columns - woptions.width) / 2)
+      woptions.col = offset_col - 1
+      woptions.row = offset_row - 1
     end
   end
-  return voptions
+  return woptions, layout
 end
 
-local function new_view(options)
-  local view
+local function new_window(options)
+  local window
   if options.floating then
     if core.is_nvim then
-      view = require('vfiler/views/floating')
+      window = require('vfiler/windows/floating')
     else
-      view = require('vfiler/views/popup')
+      window = require('vfiler/windows/popup')
     end
   else
-    view = require('vfiler/views/window')
+    window = require('vfiler/windows/window')
   end
-  return view.new()
+  return window.new()
 end
 
 function Extension.new(filer, name, configs, options)
@@ -138,11 +137,13 @@ function Extension.new(filer, name, configs, options)
     name = name,
     _buffer = buffer,
     _src_bufnr = vim.fn.bufnr(),
+    _src_winid = vim.fn.win_getid(),
     _configs = core.table.copy(configs),
     _filer = filer,
     _items = nil,
-    _view = nil,
+    _window = nil,
     _mappings = nil,
+    _events = nil,
   }, Extension)
   -- set options
 
@@ -185,7 +186,7 @@ function Extension._handle_event(bufnr, group, type)
   if not ext then
     return
   end
-  local events = ext._configs.events[group]
+  local events = ext._events[group]
   if not events then
     core.message.error('Event group "%s" is not registered.', group)
     return
@@ -240,11 +241,11 @@ function Extension:quit()
   extensions[bufnr] = nil
 
   cmdline.clear_prompt()
-  self._view:close()
+  self._window:close()
   if self.on_quit then
     self._filer:do_action(self.on_quit)
   end
-  core.window.move(self._view.src_winid)
+  core.window.move(self._src_winid)
 
   -- unlink
   self._filer._context.extension = nil
@@ -265,40 +266,50 @@ function Extension:start()
   local lines, width = self:_get_lines(self._items)
 
   -- to view options
-  self._view = new_view(configs.options)
-  local win_size = get_win_size(self._view.src_winid)
+  local window = new_window(configs.options)
+  local win_size = get_win_size(self._src_winid)
   local content_size = {
     width = width,
     height = #lines,
   }
-  local view_options = to_view_options(
+  local woptions, layout = to_window_options(
     configs.options,
     self.name,
     win_size,
     content_size
   )
-  view_options.winoptions = self:_get_win_options(configs)
-  self.winid = self._view:open(self._buffer, view_options)
-  local lnum = self:_on_opened(self.winid, self._buffer, self._items, configs)
+  if layout ~= 'floating' then
+    core.window.open(layout)
+  end
+  local winid = window:open(self._buffer, woptions)
+  window:set_options(self:_get_win_options(configs))
+  window:set_title(self.name)
+  local lnum = self:_on_opened(winid, self._buffer, self._items, configs)
+  self._window = window
 
   -- define key mappings (overwrite)
-  self._mappings = self._view:define_mappings(
-    configs.mappings,
-    [[require('vfiler/extensions/extension')._do_action]]
-  )
+  local define = function(mappings)
+    local funcstr = [[require('vfiler/extensions/extension')._do_action]]
+    if window:type() == 'popup' then
+      return window:define_mappings(mappings, funcstr)
+    end
+    return self._buffer:define_mappings(mappings, funcstr)
+  end
+  self._mappings = define(configs.mappings)
 
   -- register events
-  for group, eventlist in pairs(configs.events) do
-    self._buffer:register_events(
+  self._events = {}
+  for group, events in pairs(configs.events) do
+    self._events[group] = self._buffer:register_events(
       group,
-      eventlist,
+      events,
       [[require('vfiler/extensions/extension')._handle_event]]
     )
   end
 
   -- draw line texts and syntax
   self:_on_draw(self._buffer, lines)
-  core.cursor.winmove(self.winid, lnum)
+  core.cursor.winmove(winid, lnum)
 
   -- add extension table
   extensions[self._buffer.number] = self
@@ -316,33 +327,41 @@ function Extension:reload()
   local lines, width = self:_get_lines(self._items)
 
   -- to view options
-  local win_size = get_win_size(self._view.src_winid)
+  local win_size = get_win_size(self._window.src_winid)
   local content_size = {
     width = width,
     height = #lines,
   }
-  local view_options = to_view_options(
+  local woptions = to_window_options(
     configs.options,
     self.name,
     win_size,
     content_size
   )
-  view_options.winoptions = self:_get_win_options(configs)
-  self.winid = self._view:open(self._buffer, view_options)
+  self._window:open(self._buffer, woptions)
+  self._window:set_options(self:_get_win_options(configs))
+  self._window:set_title(self.name)
   self:_on_draw(self._buffer, lines)
   vim.command('normal zb')
+end
+
+function Extension:winid()
+  if not self._window then
+    return 0
+  end
+  return self._window:id()
 end
 
 function Extension:_close()
   local bufnr = self._buffer.number
   -- guard duplicate calls
-  if not (self._view and extensions[bufnr]) then
+  if not (self._window and extensions[bufnr]) then
     return false
   end
   extensions[bufnr] = nil
 
   cmdline.clear_prompt()
-  self._view:close()
+  self._window:close()
   return true
 end
 
@@ -380,9 +399,15 @@ function Extension:_get_lines(items, winwidth)
 end
 
 function Extension:_get_win_options(configs)
-  return {
+  local options = {
     number = false,
   }
+  -- NOTE: For vim, don't explicitly set the "signcolumn" option as the
+  -- screen may flicker.
+  if core.is_nvim then
+    options.signcolumn = 'no'
+  end
+  return options
 end
 
 return Extension

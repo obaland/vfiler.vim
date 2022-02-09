@@ -24,6 +24,21 @@ local function walk(root, sort_compare, gitstatus)
   end)
 end
 
+local function new_window(layout)
+  local window
+  if layout == 'floating' then
+    if core.is_nvim then
+      window = require('vfiler/windows/floating')
+    else
+      core.message.warning('Vim does not support floating windows.')
+      window = require('vfiler/windows/window')
+    end
+  else
+    window = require('vfiler/windows/window')
+  end
+  return window.new()
+end
+
 local function create_columns(columns)
   local column = require('vfiler/column')
   local objects = {}
@@ -44,12 +59,65 @@ local function create_columns(columns)
   return objects
 end
 
+local function get_window_size(layout, wvalue, hvalue)
+  local width, height
+  if layout == 'floating' or layout == 'right' or layout == 'left' then
+    if core.math.type(wvalue) == 'float' then
+      width = vim.get_option('columns') * wvalue
+    else
+      width = wvalue
+    end
+  else
+    width = 0
+  end
+  if layout == 'floating' or layout == 'top' or layout == 'bottom' then
+    if core.math.type(hvalue) == 'float' then
+      height = vim.get_option('lines') * hvalue
+    else
+      height = hvalue
+    end
+  else
+    height = 0
+  end
+  return width, height
+end
+
+local function to_win_config(options)
+  local width, height = get_window_size(
+    options.layout,
+    options.width,
+    options.height
+  )
+  local col = options.col
+  if col == 0 then
+    -- Calculate so that the window is in the middle.
+    col = math.floor((vim.get_option('columns') - width) / 2) - 1
+  end
+
+  local row = options.row
+  if row == 0 then
+    -- Calculate so that the window is in the middle.
+    row = math.floor((vim.get_option('lines') - height) / 2) - 1
+  end
+
+  return {
+    border = options.border,
+    col = col,
+    row = row,
+    height = height,
+    width = width,
+    zindex = options.zindex,
+    winblend = options.blend,
+  }
+end
+
 --- Create a view object
----@param buffer table
 ---@param context table
-function View.new(buffer, context)
-  local object = setmetatable({
-    _buffer = buffer,
+function View.new(context)
+  local self = setmetatable({
+    _buffer = nil,
+    _window = nil,
+    _winconfig = {},
     _winoptions = {
       colorcolumn = '',
       concealcursor = 'nvc',
@@ -64,30 +132,22 @@ function View.new(buffer, context)
       wrap = false,
     },
   }, View)
-
-  object:_initialize(context)
-  object:open()
-  object:_apply_syntaxes()
-  object:_resize()
-  return object
+  self:_initialize(context)
+  return self
 end
 
 --- Get buffer number
 function View:bufnr()
+  if not self._buffer then
+    return 0
+  end
   return self._buffer.number
 end
 
---- Define key mappings
-function View:define_mappings(mappings, funcstr)
-  return self._buffer:define_mappings(mappings, funcstr)
-end
-
---- Delete view object
-function View:delete()
-  if self._buffer then
-    self._buffer:wipeout()
+function View:close()
+  if self._window and vim.fn.winnr('$') > 1 then
+    self._window:close()
   end
-  self._buffer = nil
 end
 
 --- Draw along the context
@@ -155,8 +215,23 @@ function View:num_lines()
 end
 
 --- Open the view buffer for the current window
-function View:open()
-  vim.command(('silent %dbuffer!'):format(self._buffer.number))
+---@param buffer table
+function View:open(buffer, layout)
+  layout = layout or 'none'
+  self._window = new_window(layout)
+  if not (layout == 'none' or layout == 'floating') then
+    core.window.open(layout)
+  end
+  self._window:open(buffer, self._win_config)
+
+  -- set winblend (only floating)
+  if self._window:type() == 'floating' then
+    self._window:set_option('winblend', self._win_config.winblend)
+  end
+
+  self._buffer = buffer
+  self:_apply_syntaxes()
+  self:_resize()
 end
 
 --- Redraw the current contents
@@ -215,6 +290,11 @@ function View:redraw()
   buffer:set_option('readonly', true)
 
   vim.fn.winrestview(saved_view)
+
+  -- set title (only floating)
+  if self._window:type() == 'floating' then
+    self._window:set_title(self._buffer:name())
+  end
 end
 
 --- Redraw the contents of the specified line number
@@ -235,13 +315,18 @@ function View:redraw_line(lnum)
   buffer:set_option('readonly', true)
 end
 
---- Reset from another view
+--- Reset from another context
 ---@param context table
 function View:reset(context)
   self:_initialize(context)
-  self._buffer:set_option('buflisted', context.options.listed)
-  self:_apply_syntaxes()
-  self:_resize()
+end
+
+--- Set size
+---@param width number
+---@param height number
+function View:set_size(width, height)
+  self._win_config.width = width
+  self._win_config.height = height
 end
 
 --- Get the currently selected items
@@ -266,9 +351,9 @@ function View:top_lnum()
   return self._header and 2 or 1
 end
 
---- Undefine key mappings
-function View:undefine_mappings(mappings)
-  return self._buffer:undefine_mappings(mappings)
+--- Get the top line number where the item is displayed
+function View:type()
+  return self._window:type()
 end
 
 --- Walk view items
@@ -291,7 +376,7 @@ end
 
 --- Get the window ID of the view
 function View:winid()
-  return vim.fn.bufwinid(self._buffer.number)
+  return self._window:id()
 end
 
 function View:_apply_syntaxes()
@@ -372,34 +457,12 @@ function View:_initialize(context)
   self._auto_resize = options.auto_resize
   self._cache = { winwidth = 0 }
   self._header = options.header
-
-  self._width = 0
-  self._height = 0
-
-  local layout = options.layout
-  if layout == 'left' or layout == 'right' then
-    self._width = options.width
-  elseif layout == 'top' or layout == 'bottom' then
-    self._height = options.height
-  end
+  self._win_config = to_win_config(options)
 end
 
 function View:_resize()
-  local winnr = self:winnr()
-
-  local winfixwidth = false
-  if self._width > 0 then
-    core.window.resize_width(winnr, self._width)
-    winfixwidth = true
-  end
-  vim.set_win_option(winnr, 'winfixwidth', winfixwidth)
-
-  local winfixheight = false
-  if self._height > 0 then
-    core.window.resize_height(winnr, self._height)
-    winfixheight = true
-  end
-  vim.set_win_option(winnr, 'winfixheight', winfixheight)
+  local config = self._win_config
+  self._window:resize(config.width, config.height)
 end
 
 ---@param item table

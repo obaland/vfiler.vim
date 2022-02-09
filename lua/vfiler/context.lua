@@ -75,14 +75,16 @@ function Session.new()
   }, Session)
 end
 
-function Session:copy(session)
-  self._drives = core.table.copy(session._drives)
+function Session:copy()
+  local new = Session.new()
+  new._drives = core.table.copy(self._drives)
   for path, attribute in pairs(self._attributes) do
-    self._attributes[path] = {
+    new._attributes[path] = {
       previus_path = attribute.previus_path,
       object = ItemAttribute.copy(attribute.object),
     }
   end
+  return new
 end
 
 function Session:get_previous_path(rootpath)
@@ -139,6 +141,18 @@ function Context.new(configs)
   return self
 end
 
+--- Copy to context
+function Context:copy()
+  local configs = {
+    options = self.options,
+    events = self.events,
+    mappings = self.mappings,
+  }
+  local new = Context.new(configs)
+  new._session = self._session:copy()
+  return new
+end
+
 --- Save the path in the current context
 ---@param path string
 function Context:save(path)
@@ -148,12 +162,11 @@ function Context:save(path)
   self._session:save(self.root, path)
 end
 
---- Duplicate context
 function Context:duplicate()
   local new = setmetatable({}, Context)
   new:_initialize()
   new:reset(self)
-  new._session:copy(self._session)
+  new._session = self._session:copy()
   return new
 end
 
@@ -178,14 +191,6 @@ function Context:reload_gitstatus(on_completed)
     on_completed(self)
     self.in_progress = false
   end)
-end
-
---- Reset from another context
----@param context table
-function Context:reset(context)
-  self:_initialize()
-  self:update(context)
-  self._session = Session.new()
 end
 
 --- Switch the context to the specified directory path

@@ -3,12 +3,13 @@ local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
-local function select(extension, open)
+local function select(extension, layout)
+  layout = layout or 'none'
   local item = extension:get_current()
   if item.is_category or not core.path.exists(item.path) then
     return
   end
-  extension:select(item.path, open)
+  extension:select(item.path, layout)
 end
 
 function action.change_category(extension)
@@ -60,7 +61,7 @@ function action.open(extension)
   if item.is_category then
     action.open_tree(extension)
   else
-    select(extension, 'edit')
+    select(extension)
   end
 end
 
@@ -84,7 +85,7 @@ function action.open_tree(extension)
   end
   item:open()
   extension:redraw()
-  core.cursor.winmove(extension.winid, lnum + 1)
+  core.cursor.winmove(extension:winid(), lnum + 1)
 end
 
 function action.close_tree(extension)
@@ -97,7 +98,7 @@ function action.close_tree(extension)
   end
   category:close()
   extension:redraw()
-  core.cursor.winmove(extension.winid, extension:indexof(category))
+  core.cursor.winmove(extension:winid(), extension:indexof(category))
 end
 
 return action

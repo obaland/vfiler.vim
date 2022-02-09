@@ -22,6 +22,11 @@ M.configs = {
     height = 30,
     new = false,
     quit = true,
+    row = 0,
+    col = 0,
+    blend = 0,
+    border = 'rounded',
+    zindex = 200,
     git = {
       enabled = true,
       ignored = true,
@@ -42,8 +47,14 @@ M.configs = {
     ['<C-r>'] = action.sync_with_current_filer,
     ['<C-s>'] = action.toggle_sort,
     ['<CR>'] = action.open,
-    ['<S-Space>'] = action.toggle_select_up,
-    ['<Space>'] = action.toggle_select_down,
+    ['<S-Space>'] = function(vfiler, context, view)
+      action.toggle_select(vfiler, context, view)
+      action.move_cursor_up(vfiler, context, view)
+    end,
+    ['<Space>'] = function(vfiler, context, view)
+      action.toggle_select(vfiler, context, view)
+      action.move_cursor_down(vfiler, context, view)
+    end,
     ['<Tab>'] = action.switch_to_filer,
     ['~'] = action.jump_to_home,
     ['*'] = action.toggle_select_all,
@@ -83,9 +94,12 @@ M.configs = {
   events = {
     vfiler = {
       BufEnter = action.redraw,
+      BufLeave = action.close_floating,
       CursorHold = action.latest_update,
       FocusGained = action.latest_update,
+      TabLeave = action.close_floating,
       VimResized = action.redraw,
+      QuitPre = action.quit_force,
     },
 
     vfiler_preview = {
@@ -190,9 +204,13 @@ local function set_option(options, name, value, key)
   end
 
   -- nest option
-  local splitted = vim.fn.split(name, '_')
-  local top_name = splitted[1]
-  local nest_name = splitted[2]
+  local index = name:find('_')
+  if not index then
+    error(('Unknown "%s" option.'):format(key))
+    return false
+  end
+  local top_name = name:sub(1, index - 1)
+  local nest_name = name:sub(index + 1)
   local top = options[top_name]
   if not (top and nest_name and top[nest_name] ~= nil) then
     error(('Unknown "%s" option.'):format(key))

@@ -133,27 +133,21 @@ end
 --- Create a filer obuject
 ---@param context table
 function VFiler.new(context)
+  -- create buffer
   local bufname, number = generate_bufname(context.options.name)
   local buffer = new_buffer(bufname, context)
-  local view = View.new(buffer, context)
+  buffer:set_option('buflisted', context.options.listed)
 
   local self = setmetatable({
     _buffer = buffer,
     _context = context,
-    _view = view,
-    _defined_mappings = nil,
+    _view = View.new(context),
+    _mappings = nil,
+    _events = nil,
   }, VFiler)
 
-  -- register events
-  for group, _ in pairs(context.events) do
-    self:register_events(group)
-  end
-
-  -- define key mappings
-  self:_map_keys(context.mappings)
-
   -- add vfiler resource
-  vfilers[view:bufnr()] = {
+  vfilers[buffer.number] = {
     object = self,
     number = number,
   }
@@ -162,7 +156,7 @@ end
 
 function VFiler._do_action(bufnr, key)
   local vfiler = VFiler.get(bufnr)
-  local action = vfiler._defined_mappings[key]
+  local action = vfiler._mappings[key]
   assert(action, 'Not defined in the key')
   vfiler:do_action(action)
 end
@@ -172,7 +166,7 @@ function VFiler._handle_event(bufnr, group, type)
   if not vfiler then
     return
   end
-  local events = vfiler._context.events[group]
+  local events = vfiler._events[group]
   if not events then
     core.message.error('Event group "%s" is not registered.', group)
     return
@@ -200,10 +194,18 @@ function VFiler:draw()
   self._view:draw(self._context)
 end
 
---- Duplicate the vfiler
-function VFiler:duplicate()
-  local newcontext = self._context:duplicate()
-  return VFiler.new(newcontext)
+--- Copy the vfiler
+function VFiler:copy()
+  local options = self._context.options
+  local newcontext = self._context:copy()
+  local new = VFiler.find_hidden(options.name)
+  if new then
+    new:unlink()
+    new:update(newcontext)
+  else
+    new = VFiler.new(newcontext)
+  end
+  return new
 end
 
 --- Focus filer
@@ -227,48 +229,33 @@ end
 
 --- Open filer
 function VFiler:open(layout)
-  layout = layout or 'edit'
-  if layout ~= 'edit' then
-    core.window.open(layout)
-  end
-  self._view:open()
+  self._view:open(self._buffer, layout)
+  self:_define_mappings()
+  self:_register_events()
 end
 
 --- Quit filer
 ---@param force boolean
 function VFiler:quit(force)
   force = force or false
-  local bufnr = self._view:bufnr()
-  if bufnr >= 0 then
-    if force or self._context.options.quit then
-      self._view:delete()
-      self:unlink()
-      vfilers[bufnr] = nil
-    end
-  end
-end
-
---- Register autocmd events
-function VFiler:register_events(group)
-  if not self._context.events[group] then
-    core.message.error('Dose not exist "%s" group.', group)
+  local bufnr = self._buffer.number
+  if bufnr <= 0 then
     return
   end
-  local events = self._context.events[group]
-  self._buffer:register_events(
-    group,
-    events,
-    [[require('vfiler/vfiler')._handle_event]]
-  )
+  if force or self._context.options.quit then
+    self._view:close()
+    self._buffer:wipeout()
+    self:unlink()
+    vfilers[bufnr] = nil
+  end
 end
 
---- Reset
----@param context table
-function VFiler:reset(context)
-  self:unlink()
-  self:_remap_keys(context.mappings)
-  self._context:reset(context)
-  self._view:reset(context)
+--- Set size
+function VFiler:set_size(width, height)
+  local options = self._context.options
+  options.width = width
+  options.height = height
+  self._view:set_size(width, height)
 end
 
 --- Start the filer
@@ -305,34 +292,36 @@ function VFiler:unlink()
   self._context.linked = nil
 end
 
---- Unregister autocmd event
-function VFiler:unregister_events(group)
-  self._buffer:unregister_events(group)
-end
-
 --- Update from context
 function VFiler:update(context)
+  self._context = context
   -- Save the status quo
   local current = self._view:get_current()
   if current then
     self._context:save(current.path)
   end
 
-  self:_remap_keys(context.mappings)
-  self._context:update(context)
+  -- set buffer options
+  self._buffer:set_option('buflisted', context.options.listed)
   self._view:reset(context)
 end
 
-function VFiler:_map_keys(mappings)
-  self._defined_mappings = self._view:define_mappings(
-    mappings,
+function VFiler:_define_mappings()
+  self._mappings = self._buffer:define_mappings(
+    self._context.mappings,
     [[require('vfiler/vfiler')._do_action]]
   )
 end
 
-function VFiler:_remap_keys(mappings)
-  self._view:undefine_mappings(self._context.mappings)
-  self:_map_keys(mappings)
+function VFiler:_register_events()
+  self._events = {}
+  for group, events in pairs(self._context.events) do
+    self._events[group] = self._buffer:register_events(
+      group,
+      events,
+      [[require('vfiler/vfiler')._handle_event]]
+    )
+  end
 end
 
 return VFiler

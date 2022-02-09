@@ -135,6 +135,7 @@ M.window = {}
 
 local open_layout_commands = {
   edit = 'edit',
+  none = 'edit',
   bottom = 'belowright split',
   left = 'aboveleft vertical split',
   right = 'belowright vertical split',
@@ -143,9 +144,13 @@ local open_layout_commands = {
 }
 
 ---@param winid number
-function M.window.move(winid)
+function M.window.move(winid, autocmd)
   assert(winid >= 0)
-  vim.command(([[noautocmd call win_gotoid(%d)]]):format(winid))
+  local command = ('call win_gotoid(%d)'):format(winid)
+  if not autocmd then
+    command = 'noautocmd ' .. command
+  end
+  vim.command(command)
 end
 
 ---@param layout string
@@ -515,6 +520,16 @@ M.math = {}
 -- Within the max and min between
 function M.math.within(v, min, max)
   return math.min(math.max(v, min), max)
+end
+
+--- Returns "integer" if the argument is an integer,
+--- "float" if it is a floating point number,
+--- and nil if the argument is not a number.
+function M.math.type(x)
+  if type(x) ~= 'number' then
+    return nil
+  end
+  return tostring(x):match('%d+%.%d+') and 'float' or 'integer'
 end
 
 ------------------------------------------------------------------------------

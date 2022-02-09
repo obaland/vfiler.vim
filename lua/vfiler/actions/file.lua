@@ -1,7 +1,7 @@
-local action_basic = require('vfiler/actions/basic')
-local api = require('vfiler/actions/api')
+local buffer = require('vfiler/actions/buffer')
 local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
+local util = require('vfiler/actions/utility')
 
 local Clipboard = require('vfiler/clipboard')
 local Rename = require('vfiler/extensions/rename')
@@ -51,12 +51,12 @@ local function rename_files(vfiler, context, view, targets)
 
       if #renamed > 0 then
         core.message.info('Renamed - %d files', #renamed)
-        filer:do_action(action_basic.reload)
+        filer:do_action(buffer.reload)
         v:move_cursor(renamed[1].path)
       end
     end,
   })
-  api.start_extension(vfiler, context, view, rename)
+  util.start_extension(vfiler, context, view, rename)
 end
 
 local function rename_one_file(vfiler, context, view, target)
@@ -304,7 +304,13 @@ function M.rename(vfiler, context, view)
   if #selected == 1 then
     rename_one_file(vfiler, context, view, selected[1])
   elseif #selected > 1 then
-    rename_files(vfiler, context, view, selected)
+    if view:type() == 'floating' then
+      core.message.warning(
+        'The floating window does not support multiple renaming.'
+      )
+    else
+      rename_files(vfiler, context, view, selected)
+    end
   end
 end
 

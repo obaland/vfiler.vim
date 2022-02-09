@@ -1,7 +1,7 @@
 local core = require('vfiler/libs/core')
 
 local eq = function(excepted, actual)
-  assert.are.same(excepted, actual)
+  assert.equal(excepted, actual)
 end
 
 describe('core.string', function()
@@ -249,6 +249,23 @@ describe('core.path', function()
 end)
 
 describe('core.math', function()
+  describe('type', function()
+    local type = core.math.type
+    local dataset = {
+      { v = 10, expected = 'integer' },
+      { v = 10.0, expected = 'integer' },
+      { v = '10.0', expected = nil },
+      { v = 3.141592, expected = 'float' },
+      { v = 0.001592, expected = 'float' },
+      { v = 314, expected = 'integer' },
+    }
+    for _, data in ipairs(dataset) do
+      it('type v: ' .. data.v, function()
+        eq(data.expected, type(data.v))
+      end)
+    end
+  end)
+
   describe('within', function()
     local within = core.math.within
     local dataset = {

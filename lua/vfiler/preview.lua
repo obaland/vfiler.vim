@@ -6,7 +6,7 @@ local Buffer = require('vfiler/buffer')
 local Preview = {}
 Preview.__index = Preview
 
-local function new_view(options)
+local function new_window(options)
   local supported_layouts = {
     left = true,
     right = true,
@@ -22,35 +22,30 @@ local function new_view(options)
     return nil
   end
 
-  local voptions = {
+  local woptions = {
     layout = options.layout,
     width = options.width,
     height = options.height,
-    winoptions = {
-      number = true,
-      cursorline = false,
-      relativenumber = false,
-    },
   }
-  local view
+  local window
   if options.layout == 'floating' then
     if core.is_nvim then
-      view = require('vfiler/views/floating').new()
-      view:set_config('focusable', false)
-      view:set_config('zindex', 100)
+      window = require('vfiler/windows/floating').new()
+      woptions.focusable = false
+      woptions.zindex = 300
     else
-      view = require('vfiler/views/popup').new()
-      view:set_popup_option('cursorline', false)
-      view:set_popup_option('scrollbar', false)
-      view:set_popup_option('zindex', 100)
+      window = require('vfiler/windows/popup').new()
+      woptions.cursorline = false
+      woptions.scrollbar = false
+      woptions.zindex = 300
     end
   else
-    view = require('vfiler/views/window').new()
+    window = require('vfiler/windows/window').new()
   end
-  return view, voptions
+  return window, woptions
 end
 
-local function get_floating_options(winid, default)
+local function set_floating_size(winid, default)
   local options = core.table.copy(default)
   local width = vim.get_option('columns')
   local height = vim.get_option('lines')
@@ -83,47 +78,28 @@ local function get_floating_options(winid, default)
     options.col = options.col - 1
     options.row = options.row - 1
   end
-
   return options
 end
 
 function Preview.new(options)
-  local view, voptions = new_view(options)
+  local window, woptions = new_window(options)
   return setmetatable({
-    _view = view,
-    _options = voptions,
+    _window = window,
+    _options = woptions,
     _winid = vim.fn.win_getid(),
     opened = false,
     line = 0,
-    isfloating = voptions.layout == 'floating',
   }, Preview)
 end
 
 function Preview:open(path)
-  self.opened = false
+  local window = self._window
   local options
-  if self._options.layout == 'floating' then
-    options = get_floating_options(self._winid, self._options)
-  else
+  if window:type() == 'window' then
     options = self._options
-  end
-
-  -- set title string
-  local prefix = 'Preview - '
-  local filename = core.path.name(path)
-  local title
-  if options.layout == 'floating' then
-    local title_width = options.width - #prefix
-    title = core.string.truncate(
-      filename,
-      title_width,
-      '..',
-      math.floor(title_width / 2)
-    )
   else
-    title = filename
+    options = set_floating_size(self._winid, self._options)
   end
-  options.title = prefix .. title
 
   local warning_syntax = 'vfilerPreviewWarning'
   local win_commands = {
@@ -132,6 +108,7 @@ function Preview:open(path)
   }
 
   -- read file
+  local filename = core.path.name(path)
   local lines = vim.list({})
   local file = io.open(path, 'r')
   if file then
@@ -181,8 +158,37 @@ function Preview:open(path)
     end,
   })
 
-  local winid = self._view:open(buffer, options)
+  if options.layout ~= 'floating' then
+    if self.opened then
+      core.window.move(window:id())
+    else
+      core.window.open(options.layout)
+    end
+  end
+  local winid = window:open(buffer, options)
+  -- NOTE: For vim, don't explicitly set the "signcolumn" option as the
+  -- screen may flicker.
+  if core.is_nvim then
+    window:set_option('signcolumn', 'no')
+  end
+  window:set_option('cursorline', false)
   vim.win_executes(winid, win_commands)
+
+  -- set title string
+  local prefix = 'Preview - '
+  local title
+  if window:type() == 'floating' then
+    local title_width = options.width - #prefix
+    title = core.string.truncate(
+      filename,
+      title_width,
+      '..',
+      math.floor(title_width / 2)
+    )
+  else
+    title = filename
+  end
+  window:set_title(prefix .. title)
 
   -- return the current window
   core.window.move(self._winid)
@@ -191,7 +197,7 @@ end
 
 function Preview:close()
   if self.opened then
-    self._view:close()
+    self._window:close()
   end
   self.opened = false
 end

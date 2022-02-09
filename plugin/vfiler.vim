@@ -65,6 +65,7 @@ highlight default link vfilerBookmarkDirectory Directory
 highlight default link vfilerBookmarkFile      None
 highlight default link vfilerBookmarkLink      Constant
 highlight default link vfilerBookmarkPath      Comment
+highlight default link vfilerBookmarkWarning   WarningMsg
 
 " Define commands
 command! -nargs=? -complete=customlist,vfiler#complete VFiler
