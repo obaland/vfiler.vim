@@ -1,4 +1,4 @@
-local u = require('vfiler/actions/utility')
+local util = require('vfiler/actions/utility')
 local config = require('vfiler/config')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
@@ -39,7 +39,7 @@ function M.start(dirpath, configs)
   if not options.new and vfiler then
     vfiler:focus()
     vfiler:update(context)
-    vfiler:do_action(u.cd, dirpath)
+    vfiler:do_action(util.cd, dirpath)
     return true
   end
 
