@@ -1,3 +1,4 @@
+<!-- panvimdoc-ignore-start -->
 <p align="center">
   <img src="https://github.com/obaland/contents/blob/main/vfiler.vim/logo.png?raw=true" alt="vfiler-logo" width=75% height=auto>
 </p>
@@ -6,34 +7,25 @@
 
 [![CI](https://github.com/obaland/vfiler.vim/actions/workflows/ci.yml/badge.svg)](https://github.com/obaland/vfiler.vim/actions/workflows/ci.yml)
 [![Lint](https://github.com/obaland/vfiler.vim/actions/workflows/lint.yml/badge.svg)](https://github.com/obaland/vfiler.vim/actions/workflows/lint.yml)
+<!-- panvimdoc-ignore-end -->
 
 ## Description
 
-- **File manager**
+- You can perform basic operations such as selecting, creating, deleting, copying, moving, and renaming files.
+- It can be treated as 2 window filer.
+- Required enough feature, lightweight operation.
+- Various customizations are possible to your liking.
+- Not depends on other plugins or external.
 
-  You can perform basic operations such as selecting, creating, deleting,
-  copying, moving, and renaming files.
-
-- **Operation between multiple buffers**
-
-  It can be treated as 2 window filer. This makes file operations easier to
-  handle.
-
-- **Not depends on other plugins.**
-
-  It works independently without relying on other plugins.
-
-- **Required enough feature, lightweight operation**
-
-  Aiming for the necessary and sufficient functions to increase working
-  efficiency and their lightweight operation.
-
+<!-- panvimdoc-ignore-start -->
 ![demo](https://github.com/obaland/contents/blob/main/vfiler.vim/image-demo.png?raw=true)
+<!-- panvimdoc-ignore-end -->
 
 ## Requirements
 
 vfiler.vim requires Neovim(0.5.0+) or Vim8.2+ with [if\_lua](https://vimhelp.org/if_lua.txt.html#if_lua.txt).
 
+<!-- panvimdoc-ignore-start -->
 ## Instalattion
 
 Using [vim-plug](https://github.com/junegunn/vim-plug)
@@ -124,3 +116,4 @@ Welcome your requests and suggestions, so please [create an issue](https://githu
 ## License
 Paddington is licensed under the MIT license.
 Copyright © 2018, obaland
+<!-- panvimdoc-ignore-start -->
