@@ -481,7 +481,4 @@ Visit the project page for the latest information:
 
 <https://github.com/obaland/vfiler.vim>
 
-I am hoping to continually improve it as far as time permits.
-Welcome your requests and suggestions, so please [create an issue](https://github.com/obaland/vfiler.vim/issues/new).
-
 ==============================================================================
