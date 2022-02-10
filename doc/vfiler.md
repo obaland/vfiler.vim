@@ -2,21 +2,13 @@
 
 ## Description
 
-- File manager
-You can perform basic operations such as selecting, creating, deleting,
+- You can perform basic operations such as selecting, creating, deleting,
 copying, moving, and renaming files.
--
-- Operation between multiple buffers
-It can be treated as 2 window filer. This makes file operations easier to
-handle.
--
-- Not depends on other plugins.
-It works independently without relying on other plugins.
--
-- Required enough feature, lightweight operation
-Aiming for the necessary and sufficient functions to increase working
-efficiency and their lightweight operation.
-
+- It can be treated as 2 window filer.
+- Required enough feature, lightweight operation.
+- Various customizations are possible to your liking.
+- Not depends on other plugins or external.
+- File manager
 
 ## Requirements
 
