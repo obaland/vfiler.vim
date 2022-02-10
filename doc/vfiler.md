@@ -17,6 +17,7 @@ It works independently without relying on other plugins.
 Aiming for the necessary and sufficient functions to increase working
 efficiency and their lightweight operation.
 
+
 ## Requirements
 
 vfiler.vim requires Neovim(0.5.0+) or Vim8.2+ with if_lua.
@@ -188,7 +189,225 @@ List the bookmarks.
 
 ## Options
 
+{options} are options for a filer buffer.  You may give the following parameters for an option.
+You need to escape spaces with "\\".
+
+#### -no-{option-name}
+Disable {option-name} flag.
+Note: If you use both {option-name} and -no-{option-name} in the same
+vfiler buffer, it is undefined.
+
+#### -auto-cd
+Change the working directory while navigating with vfiler.
+Default: false
+
+#### -auto-resize
+Enabled, it will automatically resize to the size specified by `width` and `height` options.
+Default: false
+
+#### -columns={column1,column2,...}
+Specify the vfiler columns.
+see [columns](##Columns).
+Default: "indent,icon,name,mode,size,time"
+
+#### -git-enabled
+Handles Git information.
+Defualt: true
+
+#### -git-ignored
+Include Git ignored files.
+Defualt: true
+
+#### -git-untracked
+Include Git untracked files.
+Defualt: true
+
+#### -header
+Display the header line.
+Defualt: true
+
+#### -keep
+Keep the vfiler window with the open action.
+Defualt: false
+
+#### -listed
+Display the vfiler buffer in the buffer list.
+Defualt: true
+
+#### -name={buffer-name}
+Specifies a buffer name.
+The default buffer name is blank.
+Note: Buffer name must not contain spaces.
+
+#### -new
+Create new vfiler buffer.
+Default: false
+
+#### -preview-height={window-height}
+The window height of the buffer whose layout is "top", "bottom", "floating".
+If you specify "0", the height will be calculated automatically.
+Default: 0
+
+#### -preview-layout={type}
+Specify the layout of the preview window.
+Default: "floating"
+
+    "left":     Split to the left.
+    "right":    Split to the right.
+    "top":      Split to the top.
+    "bottom":   Split to the bottom.
+    "floating": Floating window.
+
+#### -preview-width={window-width}
+The window width of the buffer whose layout is "left", "right", "floating".
+If you specify "0", the width will be calculated automatically.
+Default: 0
+
+#### -show-hidden-files
+If enabled, Make hidden files visible by default.
+Default: false
+
+#### -layout={type}
+Specify the layout of the window.
+Default: "none"
+
+    "left":   Split to the left.
+    "right":  Split to the right.
+    "top":    Split to the top.
+    "bottom": Split to the bottom.
+    "tab":    Create the new tabpage
+    "none":   No split
+
+#### -height={window-height}
+Set the height of the window.
+It is a valid value when the window is splitted by
+the [layout](####-layout) option etc.
+Default: 30
+
+#### -width={window-width}
+Set the width of the window.
+It is a valid value when the window is splitted by
+the [layout](####-layout) option etc.
+Default: 90
+
+## Columns
+
+#### name
+File name.
+
+#### indent
+Tree indentaion.
+
+#### icon
+Icon such as directory, and marks.
+
+#### mode
+File mode.
+
+#### size
+File size.
+
+#### time
+File modified time.
+
+#### type
+File type.
+
+#### git
+Git status.
+
+#### space
+Space column for padding.
+
+## Configurations
+
+There are two main types of configurations, {options} and {mappings}.
+
+#### options
+Sets the behavior of vfiler.
+The meaning of each option is the same as the [options](##options).
+
+#### mappings
+Associate the action with the key mapping.
+Set the key string and action as a key-value pair.
+
+Example:
+```
+    require('vfiler/config').setup {
+      options = {
+        auto_cd = false,
+        columns = 'indent,icon,name,mode,size,time',
+        header = true,
+        listed = true,
+        -- ...
+        width = 90,
+        height = 30,
+        new = false,
+        quit = true,
+      },
+
+      mappings = {
+        ['.']         = action.toggle_show_hidden,
+        ['<BS>']      = action.change_to_parent,
+        ['<C-l>']     = action.reload,
+        ['<C-p>']     = action.toggle_auto_preview,
+        ['<CR>']      = action.open,
+        -- ...
+        ['S']         = action.change_sort,
+        ['U']         = action.clear_selected_all,
+        ['YY']        = action.yank_name,
+      },
+    }
+```
+
 ## Key mappings
+
+Following keymappings are default keymappings.
+
+| {lhs} | {rhs} (action) |
+| --- | --- |
+|j|loop_cursor_down|
+|k|loop_cursor_up|
+|l|open_tree|
+|h|close_tree_or_cd|
+|gg|move_cursor_top|
+|G|move_cursor_bottom|
+|.|toggle_show_hidden|
+|~|jump_to_home|
+|\\|jump_to_root|
+|o|open_tree_recursive|
+|p|toggle_preview|
+|t|open_by_tabpage|
+|s|open_by_split|
+|v|open_by_vsplit|
+|x|execute_file|
+|yy|yank_path|
+|YY|yank_name|
+|P|paste|
+|L|switch_to_drive|
+|S|change_sort|
+|q|quit|
+|<CR>|open|
+|<Space>|toggle_select_down|
+|<S-Space>|toggle_select_up|
+|\*|toggle_select_all|
+|U|clear_selected_all|
+|<Tab>|switch_to_filer|
+|<BS>|change_to_parent|
+|<C-l>|reload|
+|<C-p>|toggle_auto_preview|
+|<C-r>|sync_with_current_filer|
+|<C-s>|toggle_sort|
+|J|jump_to_directory|
+|N|new_file|
+|K|new_directory|
+|dd|delete|
+|D|delete|
+|r|rename|
+|cc|copy|
+|C|copy|
+|mm|move|
+|M|move|
 
 # Customization
 

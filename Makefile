@@ -12,4 +12,4 @@ doc:
 		--lua-filter ../panvimdoc/scripts/skip-blocks.lua \
 		--lua-filter ../panvimdoc/scripts/include-files.lua \
 		-t ../panvimdoc/scripts/panvimdoc.lua \
-		./doc/vfiler.md -o ./doc/vfiler_.txt
+		./doc/vfiler.md -o ./doc/vfiler.txt
