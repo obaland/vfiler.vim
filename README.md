@@ -114,6 +114,9 @@ Please use it as you like.
 ### Explorer style (with [devicons](https://github.com/obaland/vfiler-column-devicons))
 ![tree](https://github.com/obaland/contents/blob/main/vfiler.vim/image-tree.png?raw=true)
 
+### Floating window style
+![tree](https://github.com/obaland/contents/blob/main/vfiler.vim/image-floating.png?raw=true)
+
 ## Feedback
 I am hoping to continually improve it as far as time permits.<br>
 Welcome your requests and suggestions, so please [create an issue](https://github.com/obaland/vfiler.vim/issues/new).

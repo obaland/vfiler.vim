@@ -16,7 +16,6 @@ M.configs = {
     name = '',
     show_hidden_files = false,
     sort = 'name',
-    statusline = false, -- NOTE: abosolute
     layout = 'none',
     width = 90,
     height = 30,

@@ -141,9 +141,11 @@ Clears marks in all lines.
 
 #### switch_to_filer
 Switch the filer buffer in the tab page. If there is no buffer to switch, create it.
+Note: It does not work in floating windows.
 
 #### sync_with_current_filer
 Synchronizes another filer current directory with current filer.
+Note: It does not work in floating windows.
 
 #### switch_to_drive
 Switches to other drive(Windows) or mount point(Mac/Linux).
@@ -244,23 +246,23 @@ Create new vfiler buffer.
 Default: false
 
 #### -preview-height={window-height}
-The window height of the buffer whose layout is "top", "bottom", "floating".
-If you specify "0", the height will be calculated automatically.
+The window height of the buffer whose layout is `top`, `bottom`, `floating`.
+If you specify `0`, the height will be calculated automatically.
 Default: 0
 
 #### -preview-layout={type}
 Specify the layout of the preview window.
-Default: "floating"
+Default: `floating`
 
-    "left":     Split to the left.
-    "right":    Split to the right.
-    "top":      Split to the top.
-    "bottom":   Split to the bottom.
-    "floating": Floating window.
+    left    : Split to the left.
+    right   : Split to the right.
+    top     : Split to the top.
+    bottom  : Split to the bottom.
+    floating: Floating window.
 
 #### -preview-width={window-width}
-The window width of the buffer whose layout is "left", "right", "floating".
-If you specify "0", the width will be calculated automatically.
+The window width of the buffer whose layout is `left`, `right`, `floating`.
+If you specify `0`, the width will be calculated automatically.
 Default: 0
 
 #### -show-hidden-files
@@ -269,26 +271,57 @@ Default: false
 
 #### -layout={type}
 Specify the layout of the window.
-Default: "none"
+Default: `none`
 
-    "left":   Split to the left.
-    "right":  Split to the right.
-    "top":    Split to the top.
-    "bottom": Split to the bottom.
-    "tab":    Create the new tabpage
-    "none":   No split
+    left    : Split to the left.
+    right   : Split to the right.
+    top     : Split to the top.
+    bottom  : Split to the bottom.
+    tab     : Create the new tabpage.
+    floating: Floating window. Note: only Neovim
+    none    : No split or floating.
 
 #### -height={window-height}
 Set the height of the window.
-It is a valid value when the window is splitted by
+It is a valid value when the window is splitted or floating by
 the [layout](####-layout) option etc.
 Default: 30
 
 #### -width={window-width}
 Set the width of the window.
-It is a valid value when the window is splitted by
+It is a valid value when the window is splitted or floating by
 the [layout](####-layout) option etc.
 Default: 90
+
+#### -row={window-row}
+Set the row position to display the floating window.
+If `0`, it will be set automatically according to the current window size.
+Note: This option is valid only when the [layout](####-layout) option is `floating`.
+Default: 0
+
+#### -col={window-column}
+Set the column position to display the floating window.
+If `0`, it will be set automatically according to the current window size.
+Note: This option is valid only when the [layout](####-layout) option is `floating`.
+Default: 0
+
+#### -blend={value}
+Enables pseudo-transparency for a floating window. Valid values are in
+the range of 0 for fully opaque window (disabled) to 100 for fully
+transparent background. Values between 0-30 are typically most useful.
+Note: This option is valid only when the [layout](####-layout) option is `floating`.
+Default: 0
+
+#### -border={type}
+Style of window border.
+Note: This option is valid only when the [layout](####-layout) option is `floating`.
+Default: `rounded`
+
+#### -zindex={value}
+Stacking order.
+floats with higher `zindex` go on top on floats with lower indices. Must be larger than zero.
+Note: This option is valid only when the [layout](####-layout) option is `floating`.
+Default: 200
 
 ## Columns
 

@@ -21,6 +21,7 @@ Table of Contents                               *vfiler.vim-table-of-contents*
 ==============================================================================
 1. Introduction                                      *vfiler.vim-introduction*
 
+------------------------------------------------------------------------------
 DESCRIPTION                                           *vfiler.vim-description*
 
 
@@ -40,6 +41,7 @@ DESCRIPTION                                           *vfiler.vim-description*
     efficiency and their lightweight operation.
 
 
+------------------------------------------------------------------------------
 REQUIREMENTS                                         *vfiler.vim-requirements*
 
 vfiler.vim requires Neovim(0.5.0+) or Vim8.2+ with if_lua.
@@ -47,6 +49,7 @@ vfiler.vim requires Neovim(0.5.0+) or Vim8.2+ with if_lua.
 ==============================================================================
 2. Interface                                            *vfiler.vim-interface*
 
+------------------------------------------------------------------------------
 COMMANDS                                                 *vfiler.vim-commands*
 
                                                        *vfiler.vim-:VFiler-[]*
@@ -68,7 +71,7 @@ Example:
     :VFiler -name=foo -no-listed /foo/bar
 <
 
-
+------------------------------------------------------------------------------
 FUNCTIONS                                               *vfiler.vim-functions*
 
                                                  *vfiler.vim-vfiler.start([])*
@@ -102,6 +105,7 @@ vfiler.config.setup({configs})         Setup various configuration values.
                                        see |vfiler.vim-configurations|.
 
 
+------------------------------------------------------------------------------
 ACTIONS                                                   *vfiler.vim-actions*
 
                                                  *vfiler.vim-loop_cursor_down*
@@ -244,13 +248,15 @@ clear_selected_all                     Clears marks in all lines.
 
 switch_to_filer                        Switch the filer buffer in the tab page.
                                        If there is no buffer to switch, create
-                                       it.
+                                       it. Note: It does not work in floating
+                                       windows.
 
 
                                           *vfiler.vim-sync_with_current_filer*
 
 sync_with_current_filer                Synchronizes another filer current
-                                       directory with current filer.
+                                       directory with current filer. Note: It
+                                       does not work in floating windows.
 
 
                                                   *vfiler.vim-switch_to_drive*
@@ -327,6 +333,7 @@ add_bookmark                           Add the item in the current line to the
 list_bookmark                          List the bookmarks.
 
 
+------------------------------------------------------------------------------
 OPTIONS                                                   *vfiler.vim-options*
 
 {options} are options for a filer buffer. You may give the following parameters
@@ -408,31 +415,30 @@ for an option. You need to escape spaces with "\".
                                                  *vfiler.vim--preview-height=*
 
 -preview-height={window-height}        The window height of the buffer whose
-                                       layout is "top", "bottom", "floating".
-                                       If you specify "0", the height will be
+                                       layout is `top`, `bottom`, `floating`.
+                                       If you specify `0`, the height will be
                                        calculated automatically. Default: 0
 
 
                                                  *vfiler.vim--preview-layout=*
 
 -preview-layout={type}                 Specify the layout of the preview
-                                       window. Default: "floating"
+                                       window. Default: `floating`
 
 
 >
-    "left":     Split to the left.
-    "right":    Split to the right.
-    "top":      Split to the top.
-    "bottom":   Split to the bottom.
-    "floating": Floating window.
+    left    : Split to the left.
+    right   : Split to the right.
+    top     : Split to the top.
+    bottom  : Split to the bottom.
+    floating: Floating window.
 <
-
 
                                                   *vfiler.vim--preview-width=*
 
 -preview-width={window-width}          The window width of the buffer whose
-                                       layout is "left", "right", "floating".
-                                       If you specify "0", the width will be
+                                       layout is `left`, `right`, `floating`.
+                                       If you specify `0`, the width will be
                                        calculated automatically. Default: 0
 
 
@@ -445,35 +451,87 @@ for an option. You need to escape spaces with "\".
                                                          *vfiler.vim--layout=*
 
 -layout={type}                         Specify the layout of the window.
-                                       Default: "none"
+                                       Default: `none`
 
 
 >
-    "left":   Split to the left.
-    "right":  Split to the right.
-    "top":    Split to the top.
-    "bottom": Split to the bottom.
-    "tab":    Create the new tabpage
-    "none":   No split
+    left    : Split to the left.
+    right   : Split to the right.
+    top     : Split to the top.
+    bottom  : Split to the bottom.
+    tab     : Create the new tabpage.
+    floating: Floating window. Note: only Neovim
+    none    : No split or floating.
 <
-
 
                                                          *vfiler.vim--height=*
 
 -height={window-height}                Set the height of the window. It is a
                                        valid value when the window is splitted
-                                       by the |vfiler.vim-layout| option etc.
-                                       Default: 30
+                                       or floating by the |vfiler.vim-layout|
+                                       option etc. Default: 30
 
 
                                                           *vfiler.vim--width=*
 
 -width={window-width}                  Set the width of the window. It is a
                                        valid value when the window is splitted
-                                       by the |vfiler.vim-layout| option etc.
-                                       Default: 90
+                                       or floating by the |vfiler.vim-layout|
+                                       option etc. Default: 90
 
 
+                                                            *vfiler.vim--row=*
+
+-row={window-row}                      Set the row position to display the
+                                       floating window. If `0`, it will be set
+                                       automatically according to the current
+                                       window size. Note: This option is valid
+                                       only when the |vfiler.vim-layout| option
+                                       is `floating`. Default: 0
+
+
+                                                            *vfiler.vim--col=*
+
+-col={window-column}                   Set the column position to display the
+                                       floating window. If `0`, it will be set
+                                       automatically according to the current
+                                       window size. Note: This option is valid
+                                       only when the |vfiler.vim-layout| option
+                                       is `floating`. Default: 0
+
+
+                                                          *vfiler.vim--blend=*
+
+-blend={value}                         Enables pseudo-transparency for a
+                                       floating window. Valid values are in the
+                                       range of 0 for fully opaque window
+                                       (disabled) to 100 for fully transparent
+                                       background. Values between 0-30 are
+                                       typically most useful. Note: This option
+                                       is valid only when the
+                                       |vfiler.vim-layout| option is
+                                       `floating`. Default: 0
+
+
+                                                         *vfiler.vim--border=*
+
+-border={type}                         Style of window border. Note: This
+                                       option is valid only when the
+                                       |vfiler.vim-layout| option is
+                                       `floating`. Default: `rounded`
+
+
+                                                         *vfiler.vim--zindex=*
+
+-zindex={value}                        Stacking order. floats with higher
+                                       `zindex` go on top on floats with lower
+                                       indices. Must be larger than zero. Note:
+                                       This option is valid only when the
+                                       |vfiler.vim-layout| option is
+                                       `floating`. Default: 200
+
+
+------------------------------------------------------------------------------
 COLUMNS                                                   *vfiler.vim-columns*
 
                                                              *vfiler.vim-name*
@@ -521,6 +579,7 @@ git                                    Git status.
 space                                  Space column for padding.
 
 
+------------------------------------------------------------------------------
 CONFIGURATIONS                                     *vfiler.vim-configurations*
 
 There are two main types of configurations, {options} and {mappings}.
@@ -569,7 +628,7 @@ Example:
         }
 <
 
-
+------------------------------------------------------------------------------
 KEY MAPPINGS                                         *vfiler.vim-key-mappings*
 
 Following keymappings are default keymappings.
@@ -624,6 +683,7 @@ Following keymappings are default keymappings.
 
 Here are some examples of customization.
 
+------------------------------------------------------------------------------
 EXPLORER STYLE                                     *vfiler.vim-explorer-style*
 
 In addition to the settings for Explorer, we’ll also change the actions to
@@ -635,7 +695,6 @@ When starting with a command:
     :VFiler -name=explorer -auto-cd -auto-resize -keep -layout=left
             \ -width=30 -columns=indent,icon,name
 <
-
 
 When string with a lua script:
 
@@ -656,7 +715,6 @@ When string with a lua script:
     require('vfiler').start()
 <
 
-
 ==============================================================================
 4. About                                                    *vfiler.vim-about*
 
@@ -670,4 +728,4 @@ requests and suggestions, so please create an issue
 <https://github.com/obaland/vfiler.vim/issues/new>.
 
 ==============================================================================
-vim:tw=78:ts=8:noet:ft=help:norl:
+vim:ft=help:norl:ts=8:tw=78:
