@@ -25,7 +25,6 @@ M.configs = {
   events = {
     vfiler_menu = {
       WinLeave = action.quit,
-      QuitPre = action.quit,
     },
   },
 }

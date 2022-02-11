@@ -98,7 +98,6 @@ M.configs = {
       FocusGained = action.latest_update,
       TabLeave = action.close_floating,
       VimResized = action.redraw,
-      QuitPre = action.quit_force,
     },
 
     vfiler_preview = {

@@ -3,6 +3,12 @@ local core = require('vfiler/libs/core')
 
 local Floating = {}
 
+function Floating._try_close(winid)
+  if api.nvim_win_is_valid(winid) then
+    api.nvim_win_close(winid, true)
+  end
+end
+
 function Floating.new()
   local Window = require('vfiler/windows/window')
   local self = core.inherit(Floating, Window)
@@ -23,6 +29,10 @@ function Floating:set_title(title)
     -- create
     config.noautocmd = true
     local bufnr = api.nvim_create_buf(false, true)
+    api.nvim_buf_set_option(bufnr, 'bufhidden', 'wipe')
+    api.nvim_buf_set_option(bufnr, 'buftype', 'nofile')
+    api.nvim_buf_set_option(bufnr, 'swapfile', false)
+
     local winid = api.nvim_open_win(bufnr, false, config)
 
     -- set options
@@ -48,13 +58,14 @@ function Floating:set_title(title)
 end
 
 function Floating:close()
-  if self._winid > 0 then
-    api.nvim_win_close(self._winid, true)
-    self._winid = 0
-  end
+  local close = Floating._try_close
   if self._title then
-    api.nvim_win_close(self._title.winid, true)
+    close(self._title.winid)
     self._title = nil
+  end
+  if self._winid > 0 then
+    close(self._winid)
+    self._winid = 0
   end
 end
 
@@ -72,6 +83,16 @@ function Floating:_on_open(buffer, config)
   local enter = config.focusable ~= nil and config.focusable or true
   self._winid = api.nvim_open_win(buffer.number, enter, self._config)
   api.nvim_win_set_option(self._winid, 'winhighlight', 'Normal:Normal')
+
+  local autocmd = {
+    'autocmd! QuitPre',
+    ('<buffer=%d> ++once ++nested'):format(buffer.number),
+    (':lua require("vfiler/windows/floating")._try_close(%d)'):format(
+      self._winid
+    ),
+  }
+  vim.cmd(table.concat(autocmd, ' '))
+
   return self._winid
 end
 

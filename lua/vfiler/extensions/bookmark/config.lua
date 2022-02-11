@@ -25,7 +25,6 @@ M.configs = {
   events = {
     vfiler_bookmark = {
       WinLeave = action.quit,
-      QuitPre = action.quit,
     },
   },
 }
