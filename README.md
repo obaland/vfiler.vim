@@ -9,11 +9,11 @@
 
 ## Description
 
-- You can perform basic operations such as selecting, creating, deleting, copying, moving, and renaming files.
-- It can be treated as 2 window filer.
-- Required enough feature, lightweight operation.
-- Various customizations are possible to your liking.
-- Not depends on other plugins or external.
+- :page_facing_up: Performing basic file operations.
+- :bookmark_tabs: Supports easy-to-use 2-window filer.
+- :sparkle: Light operability.
+- :customs: Customizable to your liking.
+- :link: Not depends on other plugins or external.
 
 ![demo](https://github.com/obaland/contents/blob/main/vfiler.vim/image-demo.png?raw=true)
 
