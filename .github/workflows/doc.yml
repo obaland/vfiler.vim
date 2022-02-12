@@ -15,14 +15,13 @@ jobs:
           - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Prepare
-        run: |
-          sudo apt -y install pandoc
-          pandoc --version
-          git clone --depth 1 https://github.com/obaland/panvimdoc ../panvimdoc
       - name: Generating documents
-        run: |
-          make doc -B
+        uses: obaland/panvimdoc@main
+        with:
+          vimdoc: vfiler.vim
+          description: File manager plugin for Vim/Neovim
+          pandoc: doc/vfiler.md
+          toc: true
       - name: Update doucments
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
