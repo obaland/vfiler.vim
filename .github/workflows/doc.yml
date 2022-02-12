@@ -18,6 +18,7 @@ jobs:
       - name: Prepare
         run: |
           sudo apt -y install pandoc
+          pandoc --version
           git clone --depth 1 https://github.com/obaland/panvimdoc ../panvimdoc
       - name: Generating documents
         run: |
