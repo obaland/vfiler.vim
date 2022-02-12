@@ -184,6 +184,17 @@ function M.open_file(vfiler, context, view, path, layout)
   else
     open_file(vfiler, context, view, path, layout)
   end
+
+  -- perform auto cd
+  if context.options.auto_cd then
+    local dirpath
+    if core.path.is_directory(path) then
+      dirpath = path
+    else
+      dirpath = core.path.parent(path)
+    end
+    vim.command('silent lcd ' .. dirpath)
+  end
 end
 
 function M.start_extension(vfiler, context, view, extension)
