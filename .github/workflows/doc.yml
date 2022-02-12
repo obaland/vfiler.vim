@@ -11,14 +11,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-            manager: sudo apt
-            packages: -y pandoc
+        os:
+          - ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Prepare
         run: |
+          sudo apt -y install pandoc
           git clone --depth 1 https://github.com/obaland/panvimdoc ../panvimdoc
       - name: Generating documents
         run: |
