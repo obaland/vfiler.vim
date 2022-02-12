@@ -1,28 +1,28 @@
-*vfiler.vim.txt*                            File manager plugin for Vim/Neovim
+*vfiler.txt*                                File manager plugin for Vim/Neovim
 
 ==============================================================================
-Table of Contents                               *vfiler.vim-table-of-contents*
+Table of Contents                                   *vfiler-table-of-contents*
 
-1. Usage                                                    |vfiler.vim-usage|
-  - Command usage                                   |vfiler.vim-command-usage|
-  - Lua function usage                         |vfiler.vim-lua-function-usage|
-2. Customization                                    |vfiler.vim-customization|
-  - Introduction                                     |vfiler.vim-introduction|
-  - Default configurations                 |vfiler.vim-default-configurations|
-  - Options                                               |vfiler.vim-options|
-  - Mappings                                             |vfiler.vim-mappings|
-  - Column customization                     |vfiler.vim-column-customization|
-  - Actions                                               |vfiler.vim-actions|
-3. About                                                    |vfiler.vim-about|
+1. Usage                                                        |vfiler-usage|
+  - Command usage                                       |vfiler-command-usage|
+  - Lua function usage                             |vfiler-lua-function-usage|
+2. Customization                                        |vfiler-customization|
+  - Introduction                                         |vfiler-introduction|
+  - Default configurations                     |vfiler-default-configurations|
+  - Options                                                   |vfiler-options|
+  - Mappings                                                 |vfiler-mappings|
+  - Column customization                         |vfiler-column-customization|
+  - Actions                                                   |vfiler-actions|
+3. About                                                        |vfiler-about|
 
 ==============================================================================
-1. Usage                                                    *vfiler.vim-usage*
+1. Usage                                                        *vfiler-usage*
 
 There are two ways to start vfiler: starting from a command and starting from a
 Lua function.
 
 ------------------------------------------------------------------------------
-COMMAND USAGE                                       *vfiler.vim-command-usage*
+COMMAND USAGE                                           *vfiler-command-usage*
 
 >
     :VFiler [{options}...] [{path}]
@@ -41,7 +41,7 @@ them with `-no-{option-name}` disables the option.
   vfiler buffer, it is undefined.
 
 
-Please see the |vfiler.vim-options| for details.
+Please see the |vfiler-options| for details.
 
 EXAMPLES ~
 
@@ -69,7 +69,7 @@ EXAMPLES ~
 
 
 ------------------------------------------------------------------------------
-LUA FUNCTION USAGE                             *vfiler.vim-lua-function-usage*
+LUA FUNCTION USAGE                                 *vfiler-lua-function-usage*
 
 Starting vfiler with Lua function:
 
@@ -84,7 +84,7 @@ omit `configs`, the default settings will be applied. It is possible to change
 the behavior according to the situation by specifying it when you want to start
 with a setting different from the default setting.
 
-see: |vfiler.vim-customization| for details on the customization.
+see: |vfiler-customization| for details on the customization.
 
 EXAMPLE ~
 
@@ -110,10 +110,10 @@ EXAMPLE ~
 <
 
 ==============================================================================
-2. Customization                                    *vfiler.vim-customization*
+2. Customization                                        *vfiler-customization*
 
 ------------------------------------------------------------------------------
-INTRODUCTION                                         *vfiler.vim-introduction*
+INTRODUCTION                                             *vfiler-introduction*
 
 As a basis for configuration, you need to run `require'vfiler/config'.setup()`
 in your personal settings. There are two main types of configurations,
@@ -140,7 +140,7 @@ VFILER SETUP STRUCTURE ~
 <
 
 ------------------------------------------------------------------------------
-DEFAULT CONFIGURATIONS                     *vfiler.vim-default-configurations*
+DEFAULT CONFIGURATIONS                         *vfiler-default-configurations*
 
 >
     -- following options are the default
@@ -232,9 +232,9 @@ DEFAULT CONFIGURATIONS                     *vfiler.vim-default-configurations*
 <
 
 ------------------------------------------------------------------------------
-OPTIONS                                                   *vfiler.vim-options*
+OPTIONS                                                       *vfiler-options*
 
-                                                          *vfiler.vim-auto_cd*
+                                                              *vfiler-auto_cd*
 
 auto_cd                                Change the working directory while
                                        navigating with vfiler.
@@ -246,7 +246,7 @@ auto_cd                                Change the working directory while
 - Command option format: `-auto-cd`
 
 
-                                                      *vfiler.vim-auto_resize*
+                                                          *vfiler-auto_resize*
 
 auto_resize                            Enabled, it will automatically resize to
                                        the size specified by `width` and
@@ -259,10 +259,10 @@ auto_resize                            Enabled, it will automatically resize to
 - Command option format: `-auto-resize`
 
 
-                                                          *vfiler.vim-columns*
+                                                              *vfiler-columns*
 
 columns                                Specify the vfiler columns. see:
-                                       |vfiler.vim-column-customization|
+                                       |vfiler-column-customization|
 
 
 
@@ -271,7 +271,7 @@ columns                                Specify the vfiler columns. see:
 - Command option format: `-columns={column1,column2,...}`
 
 
-                                                      *vfiler.vim-git.enabled*
+                                                          *vfiler-git.enabled*
 
 git.enabled                            Handles Git information.
 
@@ -282,7 +282,7 @@ git.enabled                            Handles Git information.
 - Command option format: `-git-enabled`
 
 
-                                                      *vfiler.vim-git.ignored*
+                                                          *vfiler-git.ignored*
 
 git.ignored                            Include Git ignored files.
 
@@ -293,7 +293,7 @@ git.ignored                            Include Git ignored files.
 - Command option format: `-git-ignored`
 
 
-                                                    *vfiler.vim-git.untracked*
+                                                        *vfiler-git.untracked*
 
 git.untracked                          Include Git untracked files.
 
@@ -304,7 +304,7 @@ git.untracked                          Include Git untracked files.
 - Command option format: `-git-untracked`
 
 
-                                                           *vfiler.vim-header*
+                                                               *vfiler-header*
 
 header                                 Display the header line.
 
@@ -315,7 +315,7 @@ header                                 Display the header line.
 - Command option format: `-header`
 
 
-                                                             *vfiler.vim-keep*
+                                                                 *vfiler-keep*
 
 keep                                   Keep the vfiler window with the open
                                        action.
@@ -327,7 +327,7 @@ keep                                   Keep the vfiler window with the open
 - Command option format: `-keep`
 
 
-                                                           *vfiler.vim-listed*
+                                                               *vfiler-listed*
 
 listed                                 Display the vfiler buffer in the buffer
                                        list.
@@ -339,7 +339,7 @@ listed                                 Display the vfiler buffer in the buffer
 - Command option format: `-listed`
 
 
-                                                             *vfiler.vim-name*
+                                                                 *vfiler-name*
 
 name                                   Specifies a buffer name.
 
@@ -354,7 +354,7 @@ name                                   Specifies a buffer name.
 - Command option format: `-name={buffer-name}`
 
 
-                                                              *vfiler.vim-new*
+                                                                  *vfiler-new*
 
 new                                    Create new vfiler buffer.
 
@@ -365,7 +365,7 @@ new                                    Create new vfiler buffer.
 - Command option format: `-new`
 
 
-                                                   *vfiler.vim-preview.layout*
+                                                       *vfiler-preview.layout*
 
 preview.layout                         Specify the layout of the preview
                                        window.
@@ -383,7 +383,7 @@ preview.layout                         Specify the layout of the preview
 - Command option format: `-preview-layout={type}`
 
 
-                                                   *vfiler.vim-preview.height*
+                                                       *vfiler-preview.height*
 
 preview.height                         The window height of the buffer whose
                                        layout is `top`, `bottom`, `floating`.
@@ -397,7 +397,7 @@ preview.height                         The window height of the buffer whose
 - Command option format: `-prepreview-height={window-height}`
 
 
-                                                    *vfiler.vim-preview.width*
+                                                        *vfiler-preview.width*
 
 preview.width                          The window width of the buffer whose
                                        layout is `left`, `right`, `floating`.
@@ -411,7 +411,7 @@ preview.width                          The window width of the buffer whose
 - Command option format: `-preview-width={window-width}`
 
 
-                                                *vfiler.vim-show_hidden_files*
+                                                    *vfiler-show_hidden_files*
 
 show_hidden_files                      If enabled, Make hidden files visible by
                                        default.
@@ -423,7 +423,7 @@ show_hidden_files                      If enabled, Make hidden files visible by
 - Command option format: `-show-hidden-files`
 
 
-                                                           *vfiler.vim-layout*
+                                                               *vfiler-layout*
 
 layout                                 Specify the layout of the window.
 
@@ -442,7 +442,7 @@ layout                                 Specify the layout of the window.
 - Command option format: `-layout={type}`
 
 
-                                                           *vfiler.vim-height*
+                                                               *vfiler-height*
 
 height                                 Set the height of the window. It is a
                                        valid value when the window is splitted
@@ -455,7 +455,7 @@ height                                 Set the height of the window. It is a
 - Command option format: `-height={window-height}`
 
 
-                                                            *vfiler.vim-width*
+                                                                *vfiler-width*
 
 width                                  Set the width of the window. It is a
                                        valid value when the window is splitted
@@ -468,7 +468,7 @@ width                                  Set the width of the window. It is a
 - Command option format: `-width={window-width}`
 
 
-                                                              *vfiler.vim-row*
+                                                                  *vfiler-row*
 
 row                                    Set the row position to display the
                                        floating window. If `0`, it will be set
@@ -486,7 +486,7 @@ row                                    Set the row position to display the
 - Command option format: `-row={window-row}`
 
 
-                                                              *vfiler.vim-col*
+                                                                  *vfiler-col*
 
 col                                    Set the column position to display the
                                        floating window. If `0`, it will be set
@@ -504,7 +504,7 @@ col                                    Set the column position to display the
 - Command option format: `-col={window-column}`
 
 
-                                                            *vfiler.vim-blend*
+                                                                *vfiler-blend*
 
 blend                                  Enables pseudo-transparency for a
                                        floating window. Valid values are in the
@@ -524,7 +524,7 @@ blend                                  Enables pseudo-transparency for a
 - Command option format: `-blend={value}`
 
 
-                                                           *vfiler.vim-border*
+                                                               *vfiler-border*
 
 border                                 Style of window border.
 
@@ -539,7 +539,7 @@ border                                 Style of window border.
 - Command option format: `-border={type}`
 
 
-                                                           *vfiler.vim-zindex*
+                                                               *vfiler-zindex*
 
 zindex                                 Stacking order. floats with higher
                                        `zindex` go on top on floats with lower
@@ -557,7 +557,7 @@ zindex                                 Stacking order. floats with higher
 
 
 ------------------------------------------------------------------------------
-MAPPINGS                                                 *vfiler.vim-mappings*
+MAPPINGS                                                     *vfiler-mappings*
 
 vfiler also gives you the flexibility to customize your keymap.
 
@@ -584,7 +584,7 @@ is no default keymap, it will be added.
     }
 <
 
-Please see the |vfiler.vim-actions| for details.
+Please see the |vfiler-actions| for details.
 
 UNMAP ~
 
@@ -609,7 +609,7 @@ keymaps.
 
 
 ------------------------------------------------------------------------------
-COLUMN CUSTOMIZATION                         *vfiler.vim-column-customization*
+COLUMN CUSTOMIZATION                             *vfiler-column-customization*
 
 vfiler.vim supports several columns.<br/>You can change each column to show or
 hide, and also change the display order.
@@ -634,39 +634,39 @@ COLUMN TYPES ~
 
 
 ------------------------------------------------------------------------------
-ACTIONS                                                   *vfiler.vim-actions*
+ACTIONS                                                       *vfiler-actions*
 
 ------------------------------------------------------------------------------
 
 ACTION TO CURSOR ~
 
-                                                 *vfiler.vim-loop_cursor_down*
+                                                     *vfiler-loop_cursor_down*
 
 loop_cursor_down                       Move the cursor down with loop.
 
 
-                                                   *vfiler.vim-loop_cursor_up*
+                                                       *vfiler-loop_cursor_up*
 
 loop_cursor_up                         Move the cursor up with loop.
 
 
-                                                 *vfiler.vim-move_cursor_down*
+                                                     *vfiler-move_cursor_down*
 
 move_cursor_down                       Move the cursor down.
 
 
-                                                   *vfiler.vim-move_cursor_up*
+                                                       *vfiler-move_cursor_up*
 
 move_cursor_up                         Move the cursor up.
 
 
-                                               *vfiler.vim-move_cursor_bottom*
+                                                   *vfiler-move_cursor_bottom*
 
 move_cursor_bottom                     Moves the cursor to the bottom of the
                                        filer.
 
 
-                                                  *vfiler.vim-move_cursor_top*
+                                                      *vfiler-move_cursor_top*
 
 move_cursor_top                        Moves the cursor to the top of the
                                        filer.
@@ -676,39 +676,39 @@ move_cursor_top                        Moves the cursor to the top of the
 
 ACTION TO DIRECTORY ~
 
-                                                        *vfiler.vim-open_tree*
+                                                            *vfiler-open_tree*
 
 open_tree                              Expand the directory on the cursor.
 
 
-                                              *vfiler.vim-open_tree_recursive*
+                                                  *vfiler-open_tree_recursive*
 
 open_tree_recursive                    Recursively expand the directory on the
                                        cursor.
 
 
-                                                 *vfiler.vim-close_tree_or_cd*
+                                                     *vfiler-close_tree_or_cd*
 
 close_tree_or_cd                       Close cursor directory tree or change to
                                        parent directory.
 
 
-                                                 *vfiler.vim-change_to_parent*
+                                                     *vfiler-change_to_parent*
 
 change_to_parent                       Change to parent directory.
 
 
-                                                     *vfiler.vim-jump_to_home*
+                                                         *vfiler-jump_to_home*
 
 jump_to_home                           Jump to home directory.
 
 
-                                                     *vfiler.vim-jump_to_root*
+                                                         *vfiler-jump_to_root*
 
 jump_to_root                           Jump to root directory.
 
 
-                                                *vfiler.vim-jump_to_directory*
+                                                    *vfiler-jump_to_directory*
 
 jump_to_directory                      Jump to specified directory.
 
@@ -717,17 +717,17 @@ jump_to_directory                      Jump to specified directory.
 
 ACTION TO SELECT ~
 
-                                                    *vfiler.vim-toggle_select*
+                                                        *vfiler-toggle_select*
 
 toggle_select                          Toggle the item on the current cursor.
 
 
-                                                *vfiler.vim-toggle_select_all*
+                                                    *vfiler-toggle_select_all*
 
 toggle_select_all                      Toggles marks in all lines.
 
 
-                                               *vfiler.vim-clear_selected_all*
+                                                   *vfiler-clear_selected_all*
 
 clear_selected_all                     Clears marks in all lines.
 
@@ -736,23 +736,23 @@ clear_selected_all                     Clears marks in all lines.
 
 ACTION TO OPEN ~
 
-                                                             *vfiler.vim-open*
+                                                                 *vfiler-open*
 
 open                                   Change cursor directory or open cursor
                                        file.
 
 
-                                                    *vfiler.vim-open_by_split*
+                                                        *vfiler-open_by_split*
 
 open_by_split                          Open cursor file by split.
 
 
-                                                   *vfiler.vim-open_by_vsplit*
+                                                       *vfiler-open_by_vsplit*
 
 open_by_vsplit                         Open cursor file by vsplit.
 
 
-                                                  *vfiler.vim-open_by_tabpage*
+                                                      *vfiler-open_by_tabpage*
 
 open_by_tabpage                        Open cursor file by tabpage.
 
@@ -761,35 +761,35 @@ open_by_tabpage                        Open cursor file by tabpage.
 
 ACTION TO FILE OPERATION ~
 
-                                                     *vfiler.vim-execute_file*
+                                                         *vfiler-execute_file*
 
 execute_file                           Execute the file with an external
                                        program.
 
 
-                                                         *vfiler.vim-new_file*
+                                                             *vfiler-new_file*
 
 new_file                               Creates new files. If directory tree is
                                        opened, create new files in directory
                                        tree.
 
 
-                                                    *vfiler.vim-new_directory*
+                                                        *vfiler-new_directory*
 
 new_directory                          Make the directories.
 
 
-                                                           *vfiler.vim-delete*
+                                                               *vfiler-delete*
 
 delete                                 Delete the files.
 
 
-                                                           *vfiler.vim-rename*
+                                                               *vfiler-rename*
 
 rename                                 Rename the files.
 
 
-                                                             *vfiler.vim-copy*
+                                                                 *vfiler-copy*
 
 copy                                   Copy the files. If it is in the
                                        2-window-filer state, it will be copied
@@ -798,7 +798,7 @@ copy                                   Copy the files. If it is in the
                                        to the clipboard.
 
 
-                                                             *vfiler.vim-move*
+                                                                 *vfiler-move*
 
 move                                   Move the files. If it is in the
                                        2-window-filer state, it will be moved
@@ -807,7 +807,7 @@ move                                   Move the files. If it is in the
                                        to the clipboard.
 
 
-                                                            *vfiler.vim-paste*
+                                                                *vfiler-paste*
 
 paste                                  Paste files saved in the clipboard.
 
@@ -816,13 +816,13 @@ paste                                  Paste files saved in the clipboard.
 
 ACTION TO YANK ~
 
-                                                        *vfiler.vim-yank_path*
+                                                            *vfiler-yank_path*
 
 yank_path                              Yanks full path to clipboard register
                                        and unnamed register.
 
 
-                                                        *vfiler.vim-yank_name*
+                                                            *vfiler-yank_name*
 
 yank_name                              Yanks filename to clipboard register and
                                        unnamed register.
@@ -832,12 +832,12 @@ yank_name                              Yanks filename to clipboard register and
 
 ACTION TO PREVIEW ~
 
-                                              *vfiler.vim-toggle_auto_preview*
+                                                  *vfiler-toggle_auto_preview*
 
 toggle_auto_preview                    Toggle the automatic preview window.
 
 
-                                                   *vfiler.vim-toggle_preview*
+                                                       *vfiler-toggle_preview*
 
 toggle_preview                         Toggle the preview window for the item
                                        in the current cursor.
@@ -847,18 +847,18 @@ toggle_preview                         Toggle the preview window for the item
 
 ACTION TO VIEW ~
 
-                                               *vfiler.vim-toggle_show_hidden*
+                                                   *vfiler-toggle_show_hidden*
 
 toggle_show_hidden                     Toggles visible hidden files.
 
 
-                                                      *vfiler.vim-toggle_sort*
+                                                          *vfiler-toggle_sort*
 
 toggle_sort                            Toggle the ascending/descending order of
                                        the current sort method.
 
 
-                                                      *vfiler.vim-change_sort*
+                                                          *vfiler-change_sort*
 
 change_sort                            Change the sort method.
 
@@ -867,7 +867,7 @@ change_sort                            Change the sort method.
 
 ACTION TO BUFFER ~
 
-                                                  *vfiler.vim-switch_to_filer*
+                                                      *vfiler-switch_to_filer*
 
 switch_to_filer                        Switch the filer buffer in the tab page.
                                        If there is no buffer to switch, create
@@ -878,7 +878,7 @@ switch_to_filer                        Switch the filer buffer in the tab page.
   NOTE: It does not work in floating windows.
 
 
-                                          *vfiler.vim-sync_with_current_filer*
+                                              *vfiler-sync_with_current_filer*
 
 sync_with_current_filer                Synchronizes another filer current
                                        directory with current filer.
@@ -888,18 +888,18 @@ sync_with_current_filer                Synchronizes another filer current
   NOTE: It does not work in floating windows.
 
 
-                                                  *vfiler.vim-switch_to_drive*
+                                                      *vfiler-switch_to_drive*
 
 switch_to_drive                        Switches to other drive(Windows) or
                                        mount point(Mac/Linux).
 
 
-                                                           *vfiler.vim-reload*
+                                                               *vfiler-reload*
 
 reload                                 Reload filer.
 
 
-                                                             *vfiler.vim-quit*
+                                                                 *vfiler-quit*
 
 quit                                   Quit the filer.
 
@@ -908,19 +908,19 @@ quit                                   Quit the filer.
 
 ACTION TO BOOKMARK ~
 
-                                                     *vfiler.vim-add_bookmark*
+                                                         *vfiler-add_bookmark*
 
 add_bookmark                           Add the item in the current line to the
                                        bookmark.
 
 
-                                                    *vfiler.vim-list_bookmark*
+                                                        *vfiler-list_bookmark*
 
 list_bookmark                          List the bookmarks.
 
 
 ==============================================================================
-3. About                                                    *vfiler.vim-about*
+3. About                                                        *vfiler-about*
 
 vfiler.vim is developed by obaland and licensed under the MIT License. Visit
 the project page for the latest information:
