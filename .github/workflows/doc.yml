@@ -1,0 +1,30 @@
+name: Generate documents
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  docs:
+    name: Generate documents
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            manager: sudo apt
+            packages: -y pandoc
+    steps:
+      - uses: actions/checkout@v2
+      - name: Prepare
+        run: |
+          git clone --depth 1 https://github.com/obaland/panvimdoc ../panvimdoc
+      - name: Generating documents
+        run: |
+          make doc -B
+      - name: Update doucments
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'Update doc/vfiler.txt'
+          branch: ${{ github.head_ref }}
