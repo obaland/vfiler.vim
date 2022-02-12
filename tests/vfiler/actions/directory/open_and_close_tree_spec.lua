@@ -1,17 +1,13 @@
-local item_a = require('vfiler/actions/item')
+local a = require('vfiler/actions/directory')
 local u = require('tests/utility')
 
 local configs = {
   options = u.vfiler.generate_options(),
 }
 
-local function desc(action_name, vfiler)
-  return ('%s root:%s'):format(action_name, vfiler._context.root.path)
-end
-
-describe('item actions', function()
+describe('directory actions', function()
   local vfiler = u.vfiler.start(configs)
-  it(desc('open and close tree', vfiler), function()
+  it(u.vfiler.desc('open and close tree', vfiler), function()
     local view = vfiler._view
     local init_lnum = configs.options.header and 2 or 1
     local num_lines = view:num_lines()
@@ -29,10 +25,10 @@ describe('item actions', function()
 
     item = view:get_current()
     assert.is_true(item.is_directory)
-    u.vfiler.do_action(vfiler, item_a.open_tree)
+    u.vfiler.do_action(vfiler, a.open_tree)
     assert.is_true(item.opened, item.path)
 
-    u.vfiler.do_action(vfiler, item_a.close_tree)
+    u.vfiler.do_action(vfiler, a.close_tree)
     item = view:get_current()
     assert.is_false(item.opened, item.path)
   end)

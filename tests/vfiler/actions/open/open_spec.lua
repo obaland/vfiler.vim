@@ -1,17 +1,13 @@
-local item_a = require('vfiler/actions/item')
+local a = require('vfiler/actions/open')
 local u = require('tests/utility')
 
 local configs = {
   options = u.vfiler.generate_options(),
 }
 
-local function desc(action_name, vfiler)
-  return ('%s root:%s'):format(action_name, vfiler._context.root.path)
-end
-
-describe('item actions', function()
+describe('open actions', function()
   local vfiler = u.vfiler.start(configs)
-  it(desc('open', vfiler), function()
+  it(u.vfiler.desc('open', vfiler), function()
     local view = vfiler._view
     local init_lnum = configs.options.header and 2 or 1
 
@@ -23,7 +19,7 @@ describe('item actions', function()
         break
       end
     end
-    u.vfiler.do_action(vfiler, item_a.open)
+    u.vfiler.do_action(vfiler, a.open)
 
     -- open file
     for lnum = init_lnum, view:num_lines() do
@@ -33,7 +29,7 @@ describe('item actions', function()
         break
       end
     end
-    u.vfiler.do_action(vfiler, item_a.open)
+    u.vfiler.do_action(vfiler, a.open)
   end)
   vfiler:quit(true)
 end)

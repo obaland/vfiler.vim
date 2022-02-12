@@ -1,4 +1,4 @@
-local util = require('vfiler/actions/utility')
+local api = require('vfiler/actions/api')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
@@ -9,12 +9,12 @@ local M = {}
 ------------------------------------------------------------------------------
 
 function M.quit(vfiler, context, view)
-  util.close_preview(vfiler, context, view)
+  api.close_preview(vfiler, context, view)
   vfiler:quit()
 end
 
 function M.quit_force(vfiler, context, view)
-  util.close_preview(vfiler, context, view)
+  api.close_preview(vfiler, context, view)
   vfiler:quit(true)
 end
 
@@ -38,7 +38,7 @@ function M.switch_to_filer(vfiler, context, view)
   end
 
   -- close preview window
-  util.close_preview(vfiler, context, view)
+  api.close_preview(vfiler, context, view)
 
   local linked = context.linked
   -- already linked
@@ -48,7 +48,7 @@ function M.switch_to_filer(vfiler, context, view)
     else
       linked:open('right')
     end
-    linked:do_action(util.open_preview)
+    linked:do_action(api.open_preview)
     return
   end
 
@@ -65,7 +65,7 @@ function M.switch_to_filer(vfiler, context, view)
   view:draw(context)
 
   newfiler:focus() -- return other filer
-  newfiler:do_action(util.open_preview)
+  newfiler:do_action(api.open_preview)
 end
 
 function M.sync_with_current_filer(vfiler, context, view)

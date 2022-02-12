@@ -563,8 +563,9 @@ vfiler also gives you the flexibility to customize your keymap.
 
 CHANGE KEYMAPS ~
 
-If you don’t like the default keymap, you can specify any key and the action
-for it in the mappings table. If there is no default keymap, it will be added.
+If you don’t like the default keymap, you can specify any `key string` and
+the `require'vfiler/action'` functions for it in the mappings table. If there
+is no default keymap, it will be added.
 
 >
     local action = require('vfiler/action')
@@ -583,9 +584,11 @@ for it in the mappings table. If there is no default keymap, it will be added.
     }
 <
 
+Please see the |vfiler.vim-actions| for details.
+
 UNMAP ~
 
-You can remove the extra keymap.
+You can unmap the extra keymap.
 
 >
     -- Specify the key string you want to unmap. (e.g. '<CR>', 'h')
@@ -594,7 +597,7 @@ You can remove the extra keymap.
 
 CLEAR KEYMAPS ~
 
-If you want to reassign the default keymap, you can delete all the default
+If you want to reassign the default keymap, you can unmap all the default
 keymaps.
 
 >
@@ -633,14 +636,28 @@ COLUMN TYPES ~
 ------------------------------------------------------------------------------
 ACTIONS                                                   *vfiler.vim-actions*
 
+------------------------------------------------------------------------------
+
+ACTION TO CURSOR ~
+
                                                  *vfiler.vim-loop_cursor_down*
 
-loop_cursor_down                       Switches to next line with loop.
+loop_cursor_down                       Move the cursor down with loop.
 
 
                                                    *vfiler.vim-loop_cursor_up*
 
-loop_cursor_up                         Switches to previous line with loop.
+loop_cursor_up                         Move the cursor up with loop.
+
+
+                                                 *vfiler.vim-move_cursor_down*
+
+move_cursor_down                       Move the cursor down.
+
+
+                                                   *vfiler.vim-move_cursor_up*
+
+move_cursor_up                         Move the cursor up.
 
 
                                                *vfiler.vim-move_cursor_bottom*
@@ -655,44 +672,9 @@ move_cursor_top                        Moves the cursor to the top of the
                                        filer.
 
 
-                                                             *vfiler.vim-open*
+------------------------------------------------------------------------------
 
-open                                   Change cursor directory or open cursor
-                                       file.
-
-
-                                                        *vfiler.vim-yank_path*
-
-yank_path                              Yanks full path to clipboard register
-                                       and unnamed register.
-
-
-                                                        *vfiler.vim-yank_name*
-
-yank_name                              Yanks filename to clipboard register and
-                                       unnamed register.
-
-
-                                                  *vfiler.vim-open_by_tabpage*
-
-open_by_tabpage                        Open cursor file by tabpage.
-
-
-                                                    *vfiler.vim-open_by_split*
-
-open_by_split                          Open cursor file by split.
-
-
-                                                   *vfiler.vim-open_by_vsplit*
-
-open_by_vsplit                         Open cursor file by vsplit.
-
-
-                                                     *vfiler.vim-execute_file*
-
-execute_file                           Execute the file with an external
-                                       program.
-
+ACTION TO DIRECTORY ~
 
                                                         *vfiler.vim-open_tree*
 
@@ -726,6 +708,130 @@ jump_to_home                           Jump to home directory.
 jump_to_root                           Jump to root directory.
 
 
+                                                *vfiler.vim-jump_to_directory*
+
+jump_to_directory                      Jump to specified directory.
+
+
+------------------------------------------------------------------------------
+
+ACTION TO SELECT ~
+
+                                                    *vfiler.vim-toggle_select*
+
+toggle_select                          Toggle the item on the current cursor.
+
+
+                                                *vfiler.vim-toggle_select_all*
+
+toggle_select_all                      Toggles marks in all lines.
+
+
+                                               *vfiler.vim-clear_selected_all*
+
+clear_selected_all                     Clears marks in all lines.
+
+
+------------------------------------------------------------------------------
+
+ACTION TO OPEN ~
+
+                                                             *vfiler.vim-open*
+
+open                                   Change cursor directory or open cursor
+                                       file.
+
+
+                                                    *vfiler.vim-open_by_split*
+
+open_by_split                          Open cursor file by split.
+
+
+                                                   *vfiler.vim-open_by_vsplit*
+
+open_by_vsplit                         Open cursor file by vsplit.
+
+
+                                                  *vfiler.vim-open_by_tabpage*
+
+open_by_tabpage                        Open cursor file by tabpage.
+
+
+------------------------------------------------------------------------------
+
+ACTION TO FILE OPERATION ~
+
+                                                     *vfiler.vim-execute_file*
+
+execute_file                           Execute the file with an external
+                                       program.
+
+
+                                                         *vfiler.vim-new_file*
+
+new_file                               Creates new files. If directory tree is
+                                       opened, create new files in directory
+                                       tree.
+
+
+                                                    *vfiler.vim-new_directory*
+
+new_directory                          Make the directories.
+
+
+                                                           *vfiler.vim-delete*
+
+delete                                 Delete the files.
+
+
+                                                           *vfiler.vim-rename*
+
+rename                                 Rename the files.
+
+
+                                                             *vfiler.vim-copy*
+
+copy                                   Copy the files. If it is in the
+                                       2-window-filer state, it will be copied
+                                       under the directory where the other
+                                       filer is open. If not, it will be saved
+                                       to the clipboard.
+
+
+                                                             *vfiler.vim-move*
+
+move                                   Move the files. If it is in the
+                                       2-window-filer state, it will be moved
+                                       under the directory where the other
+                                       filer is open. If not, it will be saved
+                                       to the clipboard.
+
+
+                                                            *vfiler.vim-paste*
+
+paste                                  Paste files saved in the clipboard.
+
+
+------------------------------------------------------------------------------
+
+ACTION TO YANK ~
+
+                                                        *vfiler.vim-yank_path*
+
+yank_path                              Yanks full path to clipboard register
+                                       and unnamed register.
+
+
+                                                        *vfiler.vim-yank_name*
+
+yank_name                              Yanks filename to clipboard register and
+                                       unnamed register.
+
+
+------------------------------------------------------------------------------
+
+ACTION TO PREVIEW ~
+
                                               *vfiler.vim-toggle_auto_preview*
 
 toggle_auto_preview                    Toggle the automatic preview window.
@@ -737,25 +843,13 @@ toggle_preview                         Toggle the preview window for the item
                                        in the current cursor.
 
 
+------------------------------------------------------------------------------
+
+ACTION TO VIEW ~
+
                                                *vfiler.vim-toggle_show_hidden*
 
 toggle_show_hidden                     Toggles visible hidden files.
-
-
-                                               *vfiler.vim-toggle_select_down*
-
-toggle_select_down                     Toggles mark in cursor line and move
-                                       down.
-
-
-                                                 *vfiler.vim-toggle_select_up*
-
-toggle_select_up                       Toggles mark in cursor line and move up.
-
-
-                                                *vfiler.vim-toggle_select_all*
-
-toggle_select_all                      Toggles marks in all lines.
 
 
                                                       *vfiler.vim-toggle_sort*
@@ -764,10 +858,14 @@ toggle_sort                            Toggle the ascending/descending order of
                                        the current sort method.
 
 
-                                               *vfiler.vim-clear_selected_all*
+                                                      *vfiler.vim-change_sort*
 
-clear_selected_all                     Clears marks in all lines.
+change_sort                            Change the sort method.
 
+
+------------------------------------------------------------------------------
+
+ACTION TO BUFFER ~
 
                                                   *vfiler.vim-switch_to_filer*
 
@@ -796,19 +894,9 @@ switch_to_drive                        Switches to other drive(Windows) or
                                        mount point(Mac/Linux).
 
 
-                                                      *vfiler.vim-change_sort*
-
-change_sort                            Change the sort method.
-
-
                                                            *vfiler.vim-reload*
 
 reload                                 Reload filer.
-
-
-                                                *vfiler.vim-jump_to_directory*
-
-jump_to_directory                      Jump to specified directory.
 
 
                                                              *vfiler.vim-quit*
@@ -816,42 +904,9 @@ jump_to_directory                      Jump to specified directory.
 quit                                   Quit the filer.
 
 
-                                                         *vfiler.vim-new_file*
+------------------------------------------------------------------------------
 
-new_file                               Creates new files. If directory tree is
-                                       opened, create new files in directory
-                                       tree.
-
-
-                                                    *vfiler.vim-new_directory*
-
-new_directory                          Make the directories.
-
-
-                                                           *vfiler.vim-delete*
-
-delete                                 Delete files.
-
-
-                                                           *vfiler.vim-rename*
-
-rename                                 Rename files.
-
-
-                                                             *vfiler.vim-copy*
-
-copy                                   Copy files.
-
-
-                                                             *vfiler.vim-move*
-
-move                                   Move files.
-
-
-                                                            *vfiler.vim-paste*
-
-paste                                  Paste files saved in the clipboard.
-
+ACTION TO BOOKMARK ~
 
                                                      *vfiler.vim-add_bookmark*
 

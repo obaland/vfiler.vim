@@ -197,4 +197,8 @@ function M.vfiler.do_action(filer, action, ...)
   wait(filer)
 end
 
+function M.vfiler.desc(name, filer)
+  return ('%s root:%s'):format(name, filer._context.root.path)
+end
+
 return M

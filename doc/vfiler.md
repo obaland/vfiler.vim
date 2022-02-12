@@ -1,3 +1,20 @@
+<!-- panvimdoc-ignore-start -->
+# Table of contents
+
+- [Usage](#usage)
+  - [Command usage](#command-usage)
+  - [Lua function usage](#lua-function-usage)
+- [Customization](#customization)
+  - [Introduction](#introduction)
+  - [Default configurations](#default-configurations)
+  - [Options](#options)
+  - [Mappings](#mappings)
+  - [Column customization](#column-customization)
+  - [Actions](#actions)
+- [About](#about)
+
+<!-- panvimdoc-ignore-end -->
+
 # Usage
 There are two ways to start vfiler: starting from a command and starting from a Lua function.
 
@@ -14,7 +31,7 @@ For flag options, prefixing them with `-no-{option-name}` disables the option.
 
 > NOTE: If you use both `{option-name}` and `-no-{option-name}` in the same vfiler buffer, it is undefined.
 
-Please see the [Options](##Options) for details.
+Please see the [Options](#options) for details.
 
 ### Examples
 ```
@@ -202,7 +219,7 @@ Enabled, it will automatically resize to the size specified by `width` and `heig
 
 #### columns
 Specify the vfiler columns.<br>
-see: [Column customization](##column-customization)
+see: [Column customization](#column-customization)
 
 - Type: `string`
 - Default: `indent,icon,name,mode,size,time`
@@ -388,7 +405,7 @@ Must be larger than zero.
 vfiler also gives you the flexibility to customize your keymap.
 
 ### Change keymaps
-If you don't like the default keymap, you can specify any key and the action for it in the mappings table.<br>
+If you don't like the default keymap, you can specify any `key string` and the `require'vfiler/action'` functions for it in the mappings table.<br>
 If there is no default keymap, it will be added.
 ```lua
 local action = require('vfiler/action')
@@ -406,16 +423,17 @@ require('vfiler/config').setup {
   },
 }
 ```
+Please see the [Actions](#actions) for details.
 
 ### Unmap
-You can remove the extra keymap.
+You can unmap the extra keymap.
 ```lua
 -- Specify the key string you want to unmap. (e.g. '<CR>', 'h')
 require'vfiler/config'.unmap(key)
 ```
 
 ### Clear keymaps
-If you want to reassign the default keymap, you can delete all the default keymaps.
+If you want to reassign the default keymap, you can unmap all the default keymaps.
 ```lua
 require'vfiler/config'.clear_mappings()
 ```
@@ -464,11 +482,21 @@ The display order is from the left side of the description.
 
 ## Actions
 
+---
+
+### Action to cursor
+
 #### loop_cursor_down
-Switches to next line with loop.
+Move the cursor down with loop.
 
 #### loop_cursor_up
-Switches to previous line with loop.
+Move the cursor up with loop.
+
+#### move_cursor_down
+Move the cursor down.
+
+#### move_cursor_up
+Move the cursor up.
 
 #### move_cursor_bottom
 Moves the cursor to the bottom of the filer.
@@ -476,26 +504,9 @@ Moves the cursor to the bottom of the filer.
 #### move_cursor_top
 Moves the cursor to the top of the filer.
 
-#### open
-Change cursor directory or open cursor file.
+---
 
-#### yank_path
-Yanks full path to clipboard register and unnamed register.
-
-#### yank_name
-Yanks filename to clipboard register and unnamed register.
-
-#### open_by_tabpage
-Open cursor file by tabpage.
-
-#### open_by_split
-Open cursor file by split.
-
-#### open_by_vsplit
-Open cursor file by vsplit.
-
-#### execute_file
-Execute the file with an external program.
+###  Action to directory
 
 #### open_tree
 Expand the directory on the cursor.
@@ -515,29 +526,106 @@ Jump to home directory.
 #### jump_to_root
 Jump to root directory.
 
+#### jump_to_directory
+Jump to specified directory.
+
+---
+
+### Action to select
+
+#### toggle_select
+Toggle the item on the current cursor.
+
+#### toggle_select_all
+Toggles marks in all lines.
+
+#### clear_selected_all
+Clears marks in all lines.
+
+---
+
+### Action to open
+
+#### open
+Change cursor directory or open cursor file.
+
+#### open_by_split
+Open cursor file by split.
+
+#### open_by_vsplit
+Open cursor file by vsplit.
+
+#### open_by_tabpage
+Open cursor file by tabpage.
+
+---
+
+### Action to file operation
+
+#### execute_file
+Execute the file with an external program.
+
+#### new_file
+Creates new files. If directory tree is opened, create new files in directory tree.
+
+#### new_directory
+Make the directories.
+
+#### delete
+Delete the files.
+
+#### rename
+Rename the files.
+
+#### copy
+Copy the files.<br>
+If it is in the 2-window-filer state, it will be copied under the directory where the other filer is open.<br>
+If not, it will be saved to the clipboard.
+
+#### move
+Move the files.<br>
+If it is in the 2-window-filer state, it will be moved under the directory where the other filer is open.<br>
+If not, it will be saved to the clipboard.
+
+#### paste
+Paste files saved in the clipboard.
+
+---
+
+### Action to yank
+
+#### yank_path
+Yanks full path to clipboard register and unnamed register.
+
+#### yank_name
+Yanks filename to clipboard register and unnamed register.
+
+---
+
+### Action to preview
+
 #### toggle_auto_preview
 Toggle the automatic preview window.
 
 #### toggle_preview
 Toggle the preview window for the item in the current cursor. 
 
+---
+
+### Action to view
+
 #### toggle_show_hidden
 Toggles visible hidden files.
-
-#### toggle_select_down
-Toggles mark in cursor line and move down.
-
-#### toggle_select_up
-Toggles mark in cursor line and move up.
-
-#### toggle_select_all
-Toggles marks in all lines.
 
 #### toggle_sort
 Toggle the ascending/descending order of the current sort method.
 
-#### clear_selected_all
-Clears marks in all lines.
+#### change_sort
+Change the sort method.
+
+---
+
+### Action to buffer
 
 #### switch_to_filer
 Switch the filer buffer in the tab page. If there is no buffer to switch, create it.
@@ -552,38 +640,15 @@ Synchronizes another filer current directory with current filer.
 #### switch_to_drive
 Switches to other drive(Windows) or mount point(Mac/Linux).
 
-#### change_sort
-Change the sort method.
-
 #### reload
 Reload filer.
-
-#### jump_to_directory
-Jump to specified directory.
 
 #### quit
 Quit the filer.
 
-#### new_file
-Creates new files. If directory tree is opened, create new files in directory tree.
+---
 
-#### new_directory
-Make the directories.
-
-#### delete
-Delete files.
-
-#### rename
-Rename files.
-
-#### copy
-Copy files.
-
-#### move
-Move files.
-
-#### paste
-Paste files saved in the clipboard.
+### Action to bookmark
 
 #### add_bookmark
 Add the item in the current line to the bookmark.

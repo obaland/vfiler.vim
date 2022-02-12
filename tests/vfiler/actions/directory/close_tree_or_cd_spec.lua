@@ -1,21 +1,17 @@
 local core = require('vfiler/libs/core')
-local item = require('vfiler/actions/item')
+local a = require('vfiler/actions/directory')
 local u = require('tests/utility')
 
 local configs = {
   options = u.vfiler.generate_options(),
 }
 
-local function desc(action_name, vfiler)
-  return ('%s root:%s'):format(action_name, vfiler._context.root.path)
-end
-
-describe('item actions', function()
+describe('directory actions', function()
   local vfiler = u.vfiler.start(configs)
-  it(desc('close_tree_or_cd', vfiler), function()
+  it(u.vfiler.desc('close_tree_or_cd', vfiler), function()
     local root = vfiler._context.root
     local parent_path = core.path.parent(root.path)
-    u.vfiler.do_action(vfiler, item.close_tree_or_cd)
+    u.vfiler.do_action(vfiler, a.close_tree_or_cd)
     root = vfiler._context.root
     assert.equal(parent_path, root.path)
   end)
