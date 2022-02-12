@@ -1,58 +1,466 @@
-# Introduction
+# Usage
+There are two ways to start vfiler: starting from a command and starting from a Lua function.
 
-## Description
-
-- You can perform basic operations such as selecting, creating, deleting,
-copying, moving, and renaming files.
-- It can be treated as 2 window filer.
-- Required enough feature, lightweight operation.
-- Various customizations are possible to your liking.
-- Not depends on other plugins or external.
-- File manager
-
-## Requirements
-
-vfiler.vim requires Neovim(0.5.0+) or Vim8.2+ with if_lua.
-
-# Interface
-
-## Commands
-
-#### :VFiler [{options}..] [{path}]
-Runs vfiler. This command reuses a buffer if a filer buffer already
-exists. If you omit {path} and a filer buffer do not exist, vfiler opens
-current directory. {path} needs to be a directory.
-{options} are options for a filer buffer: [options](##options)
-
-Example:
+## Command usage
 ```
-" Starts by specifying the buffer name and widthout adding it to the
-" buffer list.
-:VFiler -name=foo -no-listed /foo/bar
+:VFiler [{options}...] [{path}]
+```
+If `{path}` is not specified, it will start in the current directory.<br>
+`{options}` are options for the behavior of vfiler.
+
+### Command options
+Command options are in the form starting with `-`.<br>
+For flag options, prefixing them with `-no-{option-name}` disables the option.
+
+> NOTE: If you use both `{option-name}` and `-no-{option-name}` in the same vfiler buffer, it is undefined.
+
+Please see the [Options](##Options) for details.
+
+### Examples
+```
+:VFiler -auto-cd -keep -layout=left -width=30 columns=indent,icon,name
+:VFiler -no-git-enabled
 ```
 
-## Functions
+### Command and configuration options
+The names of the command options and the configuration options by `require'vfiler/config'.setup()` are very similar. <br>
+Also, the meaning is exactly the same.<br>
+The setting by `require'vfiler/config'.setup()` is the default setting, and the command option is different in that it overrides the default setting and starts vfiler.
 
-#### vfiler.start([{dirpath}, {configs}])
-Start vfiler.
-If {dirpath} is nil or empty, it means that the current directory path is
-specified.
-{configs} is a table that stores various setting values.
-For nil, the value set just before this function is called is applied.
-see [configurations](##configurations).
+### Examples
+| Configuration option | Command option |
+| ---- | ---- |
+| name = 'buffer-name' | -name=buffer-name |
+| auto_cd = true | -auto-cd |
+| auto_cd = false | -no-auto-cd |
+| git.ignored = true | -git-ignored |
+| git.ignored = false | -no-git-ignored |
 
+## Lua function usage
+Starting vfiler with Lua function:
+```lua
+require'vfiler'.start(path, configs)
+```
+Here `path` is any directory path string. If omitted or an empty string, it will be started as the current directory.<br>
+The `configs` is a configuration table with the same configuration as `require'vfiler/config'.setup()`. If you omit `configs`, the default settings will be applied. <br>
+It is possible to change the behavior according to the situation by specifying it when you want to start with a setting different from the default setting.
 
-#### vfiler.start_command({args})
-Start vfiler from the command line arguments.
-{args} is a command line argument string.
-see [options](##options).
+see: [Customization](#customization) for details on the customization.
 
-#### vfiler.config.setup({configs})
-Setup various configuration values.
-{configs} is a table, overwritten with the specified value.
-The return value will be the overwritten configuration values,
-and can be passed to the [vfiler.start()](####vfiler.start) function.
-see [configurations](##configurations).
+### Example
+```lua
+-- Start by partially changing the configurations from the default.
+local action = require'vfiler/action'
+local configs = {
+  options = {
+    name = 'myfiler',
+    preview = {
+      layout = 'right',
+    },
+  },
+
+  mappings = {
+    ['<C-l>'] = action.open_tree,
+    ['<C-h>'] = action.close_tree_or_cd,
+  },
+}
+
+-- Start vfiler
+require'vfiler'.start(dirpath, configs)
+```
+
+# Customization
+
+## Introduction
+As a basis for configuration, you need to run `require'vfiler/config'.setup()` in your personal settings.<br>
+There are two main types of configurations, `options` and `mappings`.
+
+### vfiler setup structure
+``` lua
+local action = require('vfiler/action')
+require('vfiler/config').setup {
+  options = {
+    -- Default configuration for vfiler goes here:
+    -- option_key = value,
+  },
+  
+  mappings = {
+    -- Associate the action with the key mapping.
+    -- Set the key string and action as a key-value pair.
+
+    -- map actions.change_to_parent to <C-h> (default: <BS>)
+    ['<C-h>'] = action.change_to_parent
+  },
+}
+```
+
+## Default configurations
+```lua
+-- following options are the default
+require'vfiler/config'.setup {
+  options = {
+    auto_cd = false,
+    auto_resize = false,
+    columns = 'indent,icon,name,mode,size,time',
+    header = true,
+    keep = false,
+    listed = true,
+    name = '',
+    show_hidden_files = false,
+    sort = 'name',
+    layout = 'none',
+    width = 90,
+    height = 30,
+    new = false,
+    quit = true,
+    row = 0,
+    col = 0,
+    blend = 0,
+    border = 'rounded',
+    zindex = 200,
+    git = {
+      enabled = true,
+      ignored = true,
+      untracked = true,
+    },
+    preview = {
+      layout = 'floating',
+      width = 0,
+      height = 0,
+    },
+  },
+
+  mappings = {
+    ['.'] = action.toggle_show_hidden,
+    ['<BS>'] = action.change_to_parent,
+    ['<C-l>'] = action.reload,
+    ['<C-p>'] = action.toggle_auto_preview,
+    ['<C-r>'] = action.sync_with_current_filer,
+    ['<C-s>'] = action.toggle_sort,
+    ['<CR>'] = action.open,
+    ['<S-Space>'] = function(vfiler, context, view)
+      action.toggle_select(vfiler, context, view)
+      action.move_cursor_up(vfiler, context, view)
+    end,
+    ['<Space>'] = function(vfiler, context, view)
+      action.toggle_select(vfiler, context, view)
+      action.move_cursor_down(vfiler, context, view)
+    end,
+    ['<Tab>'] = action.switch_to_filer,
+    ['~'] = action.jump_to_home,
+    ['*'] = action.toggle_select_all,
+    ['\\'] = action.jump_to_root,
+    ['cc'] = action.copy_to_filer,
+    ['dd'] = action.delete,
+    ['gg'] = action.move_cursor_top,
+    ['b'] = action.list_bookmark,
+    ['h'] = action.close_tree_or_cd,
+    ['j'] = action.loop_cursor_down,
+    ['k'] = action.loop_cursor_up,
+    ['l'] = action.open_tree,
+    ['mm'] = action.move_to_filer,
+    ['p'] = action.toggle_preview,
+    ['q'] = action.quit,
+    ['r'] = action.rename,
+    ['s'] = action.open_by_split,
+    ['t'] = action.open_by_tabpage,
+    ['v'] = action.open_by_vsplit,
+    ['x'] = action.execute_file,
+    ['yy'] = action.yank_path,
+    ['B'] = action.add_bookmark,
+    ['C'] = action.copy,
+    ['D'] = action.delete,
+    ['G'] = action.move_cursor_bottom,
+    ['J'] = action.jump_to_directory,
+    ['K'] = action.new_directory,
+    ['L'] = action.switch_to_drive,
+    ['M'] = action.move,
+    ['N'] = action.new_file,
+    ['P'] = action.paste,
+    ['S'] = action.change_sort,
+    ['U'] = action.clear_selected_all,
+    ['YY'] = action.yank_name,
+  },
+}
+```
+
+## Options
+
+#### auto_cd
+Change the working directory while navigating with vfiler.
+
+- Type: `boolean`
+- Default: `false`
+- Command option format: `-auto-cd`
+
+#### auto_resize
+Enabled, it will automatically resize to the size specified by `width` and `height` options.
+
+- Type: `boolean`
+- Default: `false`
+- Command option format: `-auto-resize`
+
+#### columns
+Specify the vfiler columns.<br>
+see: [Column customization](##column-customization)
+
+- Type: `string`
+- Default: `indent,icon,name,mode,size,time`
+- Command option format: `-columns={column1,column2,...}`
+
+#### git.enabled
+Handles Git information.
+
+- Type: `boolean`
+- Defalt: `true`
+- Command option format: `-git-enabled`
+
+#### git.ignored
+Include Git ignored files.
+
+- Type: `boolean`
+- Defalt: `true`
+- Command option format: `-git-ignored`
+
+#### git.untracked
+Include Git untracked files.
+
+- Type: `boolean`
+- Defalt: `true`
+- Command option format: `-git-untracked`
+
+#### header
+Display the header line.
+
+- Type: `boolean`
+- Default: `true`
+- Command option format: `-header`
+
+#### keep
+Keep the vfiler window with the open action.
+
+- Type: `boolean`
+- Default: `false`
+- Command option format: `-keep`
+
+#### listed
+Display the vfiler buffer in the buffer list.
+
+- Type: `boolean`
+- Default: `true`
+- Command option format: `-listed`
+
+#### name
+Specifies a buffer name. <br>
+
+>NOTE: Buffer name must contain spaces.
+
+- Type: `string`
+- Default: `""`
+- Command option format: `-name={buffer-name}`
+
+#### new
+Create new vfiler buffer.
+
+- Type: `boolean`
+- Default: `false`
+- Command option format: `-new`
+
+#### preview.layout
+Specify the layout of the preview window.
+
+- Layouts:
+  - `left`: Split to the left.
+  - `right`: Split to the right.
+  - `top`: Split to the top.
+  - `bottom`: Split to the bottom.
+  - `floating`: Floating window.
+- Type: `string`
+- Defualt: `"floating"`
+- Command option format: `-preview-layout={type}`
+
+#### preview.height
+The window height of the buffer whose layout is `top`, `bottom`, `floating`.<br>
+If you specify `0`, the height will be calculated automatically.
+
+- Type: `number`
+- Default: `0`
+- Command option format: `-prepreview-height={window-height}`
+
+#### preview.width
+The window width of the buffer whose layout is `left`, `right`, `floating`.<br>
+If you specify `0`, the width will be calculated automatically.
+
+- Type: `number`
+- Default: `0`
+- Command option format: `-preview-width={window-width}`
+
+#### show_hidden_files
+If enabled, Make hidden files visible by default.
+
+- Type: `boolean`
+- Default: `false`
+- Command option format: `-show-hidden-files`
+
+#### layout
+Specify the layout of the window.
+
+- Layouts:
+  - `left`: Split to the left.
+  - `right`: Split to the right.
+  - `top`: Split to the top.
+  - `bottom`: Split to the bottom.
+  - `tab`: Create the new tabpage.
+  - `floating`: Floating window.
+  - `none`: No split or floating.
+- Type: `string`
+- Default: `"none"`
+- Command option format: `-layout={type}`
+
+#### height
+Set the height of the window.<br>
+It is a valid value when the window is splitted or floating by the `layout` option etc.
+
+- Type: `number`
+- Default: `0`
+- Command option format: `-height={window-height}`
+
+#### width
+Set the width of the window.<br>
+It is a valid value when the window is splitted or floating by the `layout` option etc.
+
+- Type: `number`
+- Default: `0`
+- Command option format: `-width={window-width}`
+
+#### row
+Set the row position to display the floating window.<br>
+If `0`, it will be set automatically according to the current window size.
+
+> NOTE: This option is valid only when the `layout` option is `floating`.
+
+- Type: `number`
+- Default: `0`
+- Command option format: `-row={window-row}`
+
+#### col
+Set the column position to display the floating window.<br>
+If `0`, it will be set automatically according to the current window size.
+
+> NOTE: This option is valid only when the `layout` option is `floating`.
+
+- Type: `number`
+- Default: `0`
+- Command option format: `-col={window-column}`
+
+#### blend
+Enables pseudo-transparency for a floating window.<br>
+Valid values are in the range of `0` for fully opaque window (disabled) to `100` for fully transparent background.<br>
+Values between `0-30` are typically most useful.
+
+> NOTE: This option is valid only when the `layout` option is `floating`.
+
+- Type: `number`
+- Default: `0`
+- Command option format: `-blend={value}`
+
+#### border
+Style of window border.
+
+> NOTE: This option is valid only when the `layout` option is `floating`.
+
+- Type: `string`
+- Default: `"rounded"`
+- Command option format: `-border={type}`
+
+#### zindex
+Stacking order.<br>
+floats with higher `zindex` go on top on floats with lower indices. <br>
+Must be larger than zero.
+
+> NOTE: This option is valid only when the `layout` option is `floating`.
+
+- Type: `number`
+- Default: `200`
+- Command option format: `-zindex={value}`
+
+## Mappings
+vfiler also gives you the flexibility to customize your keymap.
+
+### Change keymaps
+If you don't like the default keymap, you can specify any key and the action for it in the mappings table.<br>
+If there is no default keymap, it will be added.
+```lua
+local action = require('vfiler/action')
+require('vfiler/config').setup {
+  options = {
+    -- Default configuration for vfiler goes here:
+  },
+  
+  mappings = {
+    -- Associate the action with the key mapping.
+    -- Set the key string and action as a key-value pair.
+    ['<C-h>'] = action.change_to_parent,
+    ['<C-l>'] = action.open_tree,
+    ['<C-c>'] = action.open_by_choose,
+  },
+}
+```
+
+### Unmap
+You can remove the extra keymap.
+```lua
+-- Specify the key string you want to unmap. (e.g. '<CR>', 'h')
+require'vfiler/config'.unmap(key)
+```
+
+### Clear keymaps
+If you want to reassign the default keymap, you can delete all the default keymaps.
+```lua
+require'vfiler/config'.clear_mappings()
+```
+> NOTE: However, please call the function before specifying the keymap.
+
+## Column customization
+vfiler.vim supports several columns.  
+You can change each column to show or hide, and also change the display order.
+
+### How to specify.
+List the column names separated by commas.<br>
+The display order is from the left side of the description.
+
+### Column types
+| Name | Description |
+| ---- | ---- |
+| `name` | File name. |
+| `indent` | Tree indentaion. |
+| `icon` | Icon such as directory, and marks. |
+| `mode` | File mode. |
+| `size` | File size. |
+| `time` | File modified time. |
+| `type` | File type. |
+| `git` | Git status. |
+| `space` | Space column for padding. |
+
+<!-- panvimdoc-ignore-start -->
+
+### Example
+#### Default
+`columns = 'indent,icon,name,mode,size,time'`
+
+![column-configurations-default](https://github.com/obaland/contents/blob/main/vfiler.vim/image-configurations-column-default.png?raw=true)
+
+#### Reduce the columns
+`columns = 'indent,name,size'`
+
+![column-configurations-reduce](https://github.com/obaland/contents/blob/main/vfiler.vim/image-configurations-column-reduce.png?raw=true)
+
+#### Change the order
+`columns = 'indent,icon,name,time,mode,size'`
+
+![column-configurations-order](https://github.com/obaland/contents/blob/main/vfiler.vim/image-configurations-column-order.png?raw=true)
+
+<!-- panvimdoc-ignore-end -->
 
 ## Actions
 
@@ -126,18 +534,20 @@ Toggles mark in cursor line and move up.
 Toggles marks in all lines.
 
 #### toggle_sort
-Toggle the ascending / descending order of the current sort method.
+Toggle the ascending/descending order of the current sort method.
 
 #### clear_selected_all
 Clears marks in all lines.
 
 #### switch_to_filer
 Switch the filer buffer in the tab page. If there is no buffer to switch, create it.
-Note: It does not work in floating windows.
+
+> NOTE: It does not work in floating windows.
 
 #### sync_with_current_filer
 Synchronizes another filer current directory with current filer.
-Note: It does not work in floating windows.
+
+> NOTE: It does not work in floating windows.
 
 #### switch_to_drive
 Switches to other drive(Windows) or mount point(Mac/Linux).
@@ -181,294 +591,9 @@ Add the item in the current line to the bookmark.
 #### list_bookmark
 List the bookmarks.
 
-## Options
-
-{options} are options for a filer buffer.  You may give the following parameters for an option.
-You need to escape spaces with "\\".
-
-#### -no-{option-name}
-Disable {option-name} flag.
-Note: If you use both {option-name} and -no-{option-name} in the same
-vfiler buffer, it is undefined.
-
-#### -auto-cd
-Change the working directory while navigating with vfiler.
-Default: false
-
-#### -auto-resize
-Enabled, it will automatically resize to the size specified by `width` and `height` options.
-Default: false
-
-#### -columns={column1,column2,...}
-Specify the vfiler columns.
-see [columns](##Columns).
-Default: "indent,icon,name,mode,size,time"
-
-#### -git-enabled
-Handles Git information.
-Defualt: true
-
-#### -git-ignored
-Include Git ignored files.
-Defualt: true
-
-#### -git-untracked
-Include Git untracked files.
-Defualt: true
-
-#### -header
-Display the header line.
-Defualt: true
-
-#### -keep
-Keep the vfiler window with the open action.
-Defualt: false
-
-#### -listed
-Display the vfiler buffer in the buffer list.
-Defualt: true
-
-#### -name={buffer-name}
-Specifies a buffer name.
-The default buffer name is blank.
-Note: Buffer name must not contain spaces.
-
-#### -new
-Create new vfiler buffer.
-Default: false
-
-#### -preview-height={window-height}
-The window height of the buffer whose layout is `top`, `bottom`, `floating`.
-If you specify `0`, the height will be calculated automatically.
-Default: 0
-
-#### -preview-layout={type}
-Specify the layout of the preview window.
-Default: `floating`
-
-    left    : Split to the left.
-    right   : Split to the right.
-    top     : Split to the top.
-    bottom  : Split to the bottom.
-    floating: Floating window.
-
-#### -preview-width={window-width}
-The window width of the buffer whose layout is `left`, `right`, `floating`.
-If you specify `0`, the width will be calculated automatically.
-Default: 0
-
-#### -show-hidden-files
-If enabled, Make hidden files visible by default.
-Default: false
-
-#### -layout={type}
-Specify the layout of the window.
-Default: `none`
-
-    left    : Split to the left.
-    right   : Split to the right.
-    top     : Split to the top.
-    bottom  : Split to the bottom.
-    tab     : Create the new tabpage.
-    floating: Floating window. Note: only Neovim
-    none    : No split or floating.
-
-#### -height={window-height}
-Set the height of the window.
-It is a valid value when the window is splitted or floating by
-the [layout](####-layout) option etc.
-Default: 30
-
-#### -width={window-width}
-Set the width of the window.
-It is a valid value when the window is splitted or floating by
-the [layout](####-layout) option etc.
-Default: 90
-
-#### -row={window-row}
-Set the row position to display the floating window.
-If `0`, it will be set automatically according to the current window size.
-Note: This option is valid only when the [layout](####-layout) option is `floating`.
-Default: 0
-
-#### -col={window-column}
-Set the column position to display the floating window.
-If `0`, it will be set automatically according to the current window size.
-Note: This option is valid only when the [layout](####-layout) option is `floating`.
-Default: 0
-
-#### -blend={value}
-Enables pseudo-transparency for a floating window. Valid values are in
-the range of 0 for fully opaque window (disabled) to 100 for fully
-transparent background. Values between 0-30 are typically most useful.
-Note: This option is valid only when the [layout](####-layout) option is `floating`.
-Default: 0
-
-#### -border={type}
-Style of window border.
-Note: This option is valid only when the [layout](####-layout) option is `floating`.
-Default: `rounded`
-
-#### -zindex={value}
-Stacking order.
-floats with higher `zindex` go on top on floats with lower indices. Must be larger than zero.
-Note: This option is valid only when the [layout](####-layout) option is `floating`.
-Default: 200
-
-## Columns
-
-#### name
-File name.
-
-#### indent
-Tree indentaion.
-
-#### icon
-Icon such as directory, and marks.
-
-#### mode
-File mode.
-
-#### size
-File size.
-
-#### time
-File modified time.
-
-#### type
-File type.
-
-#### git
-Git status.
-
-#### space
-Space column for padding.
-
-## Configurations
-
-There are two main types of configurations, {options} and {mappings}.
-
-#### options
-Sets the behavior of vfiler.
-The meaning of each option is the same as the [options](##options).
-
-#### mappings
-Associate the action with the key mapping.
-Set the key string and action as a key-value pair.
-
-Example:
-```
-    require('vfiler/config').setup {
-      options = {
-        auto_cd = false,
-        columns = 'indent,icon,name,mode,size,time',
-        header = true,
-        listed = true,
-        -- ...
-        width = 90,
-        height = 30,
-        new = false,
-        quit = true,
-      },
-
-      mappings = {
-        ['.']         = action.toggle_show_hidden,
-        ['<BS>']      = action.change_to_parent,
-        ['<C-l>']     = action.reload,
-        ['<C-p>']     = action.toggle_auto_preview,
-        ['<CR>']      = action.open,
-        -- ...
-        ['S']         = action.change_sort,
-        ['U']         = action.clear_selected_all,
-        ['YY']        = action.yank_name,
-      },
-    }
-```
-
-## Key mappings
-
-Following keymappings are default keymappings.
-
-| {lhs} | {rhs} (action) |
-| --- | --- |
-|j|loop_cursor_down|
-|k|loop_cursor_up|
-|l|open_tree|
-|h|close_tree_or_cd|
-|gg|move_cursor_top|
-|G|move_cursor_bottom|
-|.|toggle_show_hidden|
-|~|jump_to_home|
-|\\|jump_to_root|
-|o|open_tree_recursive|
-|p|toggle_preview|
-|t|open_by_tabpage|
-|s|open_by_split|
-|v|open_by_vsplit|
-|x|execute_file|
-|yy|yank_path|
-|YY|yank_name|
-|P|paste|
-|L|switch_to_drive|
-|S|change_sort|
-|q|quit|
-|<CR>|open|
-|<Space>|toggle_select_down|
-|<S-Space>|toggle_select_up|
-|\*|toggle_select_all|
-|U|clear_selected_all|
-|<Tab>|switch_to_filer|
-|<BS>|change_to_parent|
-|<C-l>|reload|
-|<C-p>|toggle_auto_preview|
-|<C-r>|sync_with_current_filer|
-|<C-s>|toggle_sort|
-|J|jump_to_directory|
-|N|new_file|
-|K|new_directory|
-|dd|delete|
-|D|delete|
-|r|rename|
-|cc|copy|
-|C|copy|
-|mm|move|
-|M|move|
-
-# Customization
-
-Here are some examples of customization.
-
-## Explorer style
-In addition to the settings for Explorer,
-we'll also change the actions to make it easier to use.
-
-When starting with a command:
-```
-:VFiler -name=explorer -auto-cd -auto-resize -keep -layout=left
-        \ -width=30 -columns=indent,icon,name
-```
-
-When string with a lua script:
-```
-local action = require('vfiler/action')
-require('vfiler/config').setup {
-  options = {
-    auto_cd = true,
-    auto_resize = true,
-    keep = true,
-    layout = 'left',
-    name = 'explorer',
-    width = 30,
-    columns = 'indent,icon,name',
-  },
-}
-
-require('vfiler').start()
-```
-
 # About
 
-vfiler.vim is developed by obaland and licensed under the MIT License.
+vfiler.vim is developed by obaland and licensed under the MIT License.<br>
 Visit the project page for the latest information:
 
 <https://github.com/obaland/vfiler.vim>
