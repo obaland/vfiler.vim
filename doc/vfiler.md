@@ -14,7 +14,7 @@ For flag options, prefixing them with `-no-{option-name}` disables the option.
 
 > NOTE: If you use both `{option-name}` and `-no-{option-name}` in the same vfiler buffer, it is undefined.
 
-Please see the [Options](##Options) for details.
+Please see the [Options](#Options) for details.
 
 ### Examples
 ```
@@ -202,7 +202,7 @@ Enabled, it will automatically resize to the size specified by `width` and `heig
 
 #### columns
 Specify the vfiler columns.<br>
-see: [Column customization](##column-customization)
+see: [Column customization](#column-customization)
 
 - Type: `string`
 - Default: `indent,icon,name,mode,size,time`
