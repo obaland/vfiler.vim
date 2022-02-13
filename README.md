@@ -49,8 +49,7 @@ require('vfiler').start(path)
 ```
 
 ### More details
-Checkout wiki for more details:
-- [Usage details](https://github.com/obaland/vfiler.vim/wiki/usage-details)
+- see: [Usage](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#usage)
 
 
 ## Customization
@@ -82,8 +81,7 @@ require('vfiler').start()
 
 ### More details
 vfiler has various other customization mechanisms.<br>
-Checkout wiki for more details:
-- [Customization](https://github.com/obaland/vfiler.vim/wiki/Customization)
+- see: [Customization](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#customization)
 
 ## Extension plugins
 There are also some extension plugins for vfiler.<br>
@@ -101,7 +99,7 @@ Please use it as you like.
 ### Explorer style (with [devicons](https://github.com/obaland/vfiler-column-devicons))
 ![tree](https://github.com/obaland/contents/blob/main/vfiler.vim/image-tree.png?raw=true)
 
-### Floating window style
+### Floating window style (only Neovim)
 ![tree](https://github.com/obaland/contents/blob/main/vfiler.vim/image-floating.png?raw=true)
 
 ## Feedback
