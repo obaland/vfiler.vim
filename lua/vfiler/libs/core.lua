@@ -125,7 +125,9 @@ function M.file.execute(path)
 end
 
 function M.file.move(src, dest)
-  os.rename(src, dest)
+  -- NOTE: with the Lua function, an error will occur if the file is large.
+  --os.rename(M.string.shellescape(src), M.string.shellescape(dest))
+  vim.fn.rename(src, dest)
 end
 
 ------------------------------------------------------------------------------
@@ -411,7 +413,9 @@ M.string.replace_keycode = vim.fn['vfiler#core#replace_keycode']
 
 if M.is_windows then
   function M.string.shellescape(str)
-    return ('"%s"'):format(trim_end(vim.fn.escape(str:gsub('/', [[\]])), '/'))
+    -- convert path separator
+    str = str:gsub('/', '\\')
+    return ('"%s"'):format(trim_end(vim.fn.escape(str, '/')))
   end
 else
   function M.string.shellescape(str)
