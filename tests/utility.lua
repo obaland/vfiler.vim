@@ -97,6 +97,15 @@ function M.randomseed()
   math.randomseed(math.floor(os.clock() * 1000))
 end
 
+function M.feedkey(key, mode)
+  mode = mode or ''
+  vim.api.nvim_feedkeys(
+    vim.api.nvim_replace_termcodes(key, true, true, true),
+    mode,
+    true
+  )
+end
+
 M.int = {}
 
 function M.int.random(min, max)
@@ -181,7 +190,7 @@ function M.vfiler.start(configs)
   local filer = require('vfiler/vfiler').get_current()
   assert(filer ~= nil)
   wait(filer)
-  return filer
+  return filer, filer._context, filer._view
 end
 
 function M.vfiler.start_command(args)
@@ -189,7 +198,7 @@ function M.vfiler.start_command(args)
   local filer = require('vfiler/vfiler').get_current()
   assert(filer ~= nil)
   wait(filer)
-  return filer
+  return filer, filer._context, filer._view
 end
 
 function M.vfiler.do_action(filer, action, ...)

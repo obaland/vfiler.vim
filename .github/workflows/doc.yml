@@ -7,12 +7,9 @@ on:
 jobs:
   docs:
     name: Generate documents
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os:
-          - ubuntu-latest
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v2
       - name: Generating documents
@@ -22,8 +19,15 @@ jobs:
           description: File manager plugin for Vim/Neovim
           pandoc: doc/vfiler.md
           toc: true
-      - name: Update doucments
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: 'Update doc/vfiler.txt'
-          branch: ${{ github.head_ref }}
+      # inspired by nvim-lspconfigs
+      - name: Commit changes
+        env:
+          COMMIT_MSG: |
+            docs: update doc/vfiler.txt
+            skip-checks: true
+        run:
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add doc/vfiler.txt
+          # Only commit and push if we have changes
+          git diff --quiet && git diff --staged --quiet || (git commit -m "${COMMIT_MSG}"; git push)
