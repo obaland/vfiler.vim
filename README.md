@@ -24,16 +24,22 @@ vfiler.vim requires Neovim(0.5.0+) or Vim8.2+ with [if\_lua](https://vimhelp.org
 ## Instalattion
 
 Using [vim-plug](https://github.com/junegunn/vim-plug)
-
 ```vim
 Plug 'obaland/vfiler.vim'
 ```
 
 Using [dein.vim](https://github.com/Shougo/dein.vim)
-
 ```vim
 call dein#add('obaland/vfiler.vim')
 ```
+
+Using [packer.nvim](https://github.com/wbthomason/packer.nvim)
+```lua
+use {
+  'obaland/vfiler.vim',
+}
+```
+
 ## Usage
 ### Quick Start
 Basically, after installing in any way, start with the **VFiler** command.
