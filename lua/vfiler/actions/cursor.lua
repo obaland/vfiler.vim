@@ -10,7 +10,7 @@ function M.loop_cursor_down(vfiler, context, view)
     core.cursor.move(view:top_lnum())
     -- Correspondence to show the header line
     -- when moving to the beginning of the line.
-    vim.command('normal zb')
+    vim.fn.execute('normal zb', 'silent')
   else
     core.cursor.move(lnum)
   end
@@ -37,7 +37,7 @@ function M.move_cursor_top(vfiler, context, view)
   core.cursor.move(view:top_lnum())
   -- Correspondence to show the header line
   -- when moving to the beginning of the line.
-  vim.command('normal zb')
+  vim.fn.execute('normal zb', 'silent')
 end
 
 function M.move_cursor_up(vfiler, context, view)

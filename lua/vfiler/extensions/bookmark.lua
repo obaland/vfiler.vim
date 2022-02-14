@@ -226,8 +226,8 @@ function Bookmark:_on_opened(winid, buffer, items, configs)
     end
   end
 
-  vim.win_executes(winid, syntaxes)
-  vim.win_executes(winid, highlights)
+  vim.win_executes(winid, syntaxes, 'silent')
+  vim.win_executes(winid, highlights, 'silent')
   return 2 -- initial lnum
 end
 

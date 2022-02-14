@@ -172,7 +172,7 @@ function Preview:open(path)
     window:set_option('signcolumn', 'no')
   end
   window:set_option('cursorline', false)
-  vim.win_executes(winid, win_commands)
+  vim.win_executes(winid, win_commands, 'silent')
 
   -- set title string
   local prefix = 'Preview - '

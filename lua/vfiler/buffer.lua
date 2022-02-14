@@ -21,7 +21,7 @@ function Buffer.new(name)
   if vim.fn.bufloaded(number) ~= 1 then
     -- NOTE: In the case of vim, an extra message is displayed, so execute
     -- it with "silent".
-    vim.command(('silent noautocmd call bufload(%d)'):format(number))
+    vim.fn.execute(('noautocmd call bufload(%d)'):format(number), 'silent')
   end
 
   -- Set a flag in the buffer variable to identify the vfiler.
@@ -33,7 +33,7 @@ end
 
 function Buffer:delete()
   if vim.fn.bufexists(self.number) == 1 then
-    vim.command(('silent %dbdelete!'):format(self.number))
+    vim.fn.execute(self.number .. 'bdelete!', 'silent')
   end
   self.number = -1
 end
@@ -47,7 +47,7 @@ end
 
 function Buffer:wipeout()
   if vim.fn.bufexists(self.number) == 1 then
-    vim.command(('silent %dbwipeout!'):format(self.number))
+    vim.fn.execute(self.number .. 'bwipeout!', 'silent')
   end
   self.number = -1
 end

@@ -158,7 +158,7 @@ else
     local winid = vim.fn.bufwinid(buffer)
     assert(winid >= 0)
     opts._buffer = true
-    vim.fn.win_execute(winid, set_keymap(mode, lhs, rhs, opts))
+    vim.fn.win_execute(winid, set_keymap(mode, lhs, rhs, opts), 'silent')
   end
 
   function M.del_keymap(mode, lhs)
@@ -167,7 +167,7 @@ else
   function M.del_buf_keymap(buffer, mode, lhs)
     local winid = vim.fn.bufwinid(buffer)
     assert(winid >= 0)
-    vim.fn.win_execute(winid, del_keymap(mode, lhs, true))
+    vim.fn.win_execute(winid, del_keymap(mode, lhs, true), 'silent')
   end
 end
 
@@ -252,9 +252,10 @@ function M.commands(cmds)
   end
 end
 
-function M.win_executes(window, cmds)
+function M.win_executes(window, cmds, silent)
+  silent = silent or 'silent'
   for _, cmd in ipairs(cmds) do
-    M.fn.win_execute(window, cmd)
+    M.fn.win_execute(window, cmd, silent)
   end
 end
 

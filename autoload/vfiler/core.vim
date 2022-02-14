@@ -11,7 +11,7 @@ endfunction
 function! vfiler#core#clear_undo() abort
   let l:undolevels = &undolevels
   setlocal undolevels=-1
-  silent execute "normal! I \<BS>\<Esc>"
-  execute 'setlocal undolevels=' . l:undolevels
+  call execute("normal! I \<BS>\<Esc>", 'silent')
+  call execute('setlocal undolevels=' . l:undolevels, 'silent')
   unlet l:undolevels
 endfunction

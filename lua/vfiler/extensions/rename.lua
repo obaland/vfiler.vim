@@ -115,13 +115,13 @@ function Rename:_on_opened(winid, bufnr, items, configs)
       core.syntax.match_command(group_notchanged, pattern)
     )
   end
-  vim.win_executes(winid, syntaxes)
+  vim.win_executes(winid, syntaxes, 'silent')
 
   -- highlights
   vim.win_executes(winid, {
     core.highlight.link_command(group_changed, 'Special'),
     core.highlight.link_command(group_notchanged, 'Normal'),
-  })
+  }, 'silent')
   return 1 -- initial lnum
 end
 

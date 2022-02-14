@@ -56,7 +56,7 @@ end
 --@param window number
 --@param lnum number
 function M.cursor.winmove(window, lnum)
-  vim.fn.win_execute(window, ('call cursor(%d, 1)'):format(lnum))
+  vim.fn.win_execute(window, ('call cursor(%d, 1)'):format(lnum), 'silent')
 end
 
 ------------------------------------------------------------------------------
@@ -174,13 +174,13 @@ end
 ---@param height number
 function M.window.resize_height(winnr, height)
   assert(winnr >= 0)
-  vim.command(('silent! %dresize %d'):format(winnr, height))
+  vim.fn.execute(('%dresize %d'):format(winnr, height), 'silent!')
 end
 
 ---@param width number
 function M.window.resize_width(winnr, width)
   assert(winnr >= 0)
-  vim.command(('silent! vertical %dresize %d'):format(winnr, width))
+  vim.fn.execute(('vertical %dresize %d'):format(winnr, width), 'silent!')
 end
 
 ------------------------------------------------------------------------------

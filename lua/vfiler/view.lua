@@ -203,7 +203,7 @@ function View:move_cursor(path)
   core.cursor.move(math.max(lnum, self:top_lnum()))
   -- Correspondence to show the header line
   -- when moving to the beginning of the line.
-  vim.command('normal zb')
+  vim.fn.execute('normal zb', 'silent')
 end
 
 --- Get the number of line in the view buffer

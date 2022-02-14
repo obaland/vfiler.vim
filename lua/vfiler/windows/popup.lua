@@ -17,7 +17,8 @@ function Popup:close()
   -- NOTE: If you do not run it from the calling window, you will get an error
   vim.fn.win_execute(
     self._src_winid,
-    ('call popup_close(%d)'):format(self._winid)
+    ('call popup_close(%d)'):format(self._winid),
+    'silent'
   )
   self._winid = 0
   self._bufnr = 0
@@ -41,7 +42,7 @@ function Popup:define_mappings(mappings, funcstr)
           self._bufnr,
           keypairs[key]
         )
-        vim.fn.win_execute(winid, command)
+        vim.fn.win_execute(winid, command, 'silent')
       end
       return true
     end,

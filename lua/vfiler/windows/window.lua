@@ -15,7 +15,7 @@ function Window:close()
   if winnr <= 0 then
     return
   end
-  vim.fn.execute(('%dclose!'):format(winnr))
+  vim.fn.execute(('%dclose!'):format(winnr), 'silent')
 end
 
 function Window:id()
@@ -95,7 +95,7 @@ function Window:_on_update(winid, buffer, config)
     return
   end
   vim.fn.win_gotoid(winid)
-  vim.fn.win_execute(winid, ('%dbuffer!'):format(buffer.number))
+  vim.fn.win_execute(winid, ('%dbuffer!'):format(buffer.number), 'silent')
   self:resize(config.width, config.height)
 end
 

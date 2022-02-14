@@ -294,7 +294,7 @@ end
 
 --- Update from context
 function VFiler:update(context)
-  self._context = context
+  self._context:update(context)
   -- Save the status quo
   local current = self._view:get_current()
   if current then

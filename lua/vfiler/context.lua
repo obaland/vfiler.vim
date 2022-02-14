@@ -199,7 +199,7 @@ function Context:switch(dirpath, on_completed)
   dirpath = core.path.normalize(dirpath)
   -- perform auto cd
   if self.options.auto_cd then
-    vim.command('silent lcd ' .. dirpath)
+    vim.fn.execute('lcd ' .. dirpath, 'silent')
   end
 
   local function wrap_on_completed(ctx, path)
