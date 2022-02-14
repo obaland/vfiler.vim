@@ -63,7 +63,8 @@ local function get_line(item, column_widths)
     end
     table.insert(texts, text)
   end
-  return table.concat(texts, ' '), text_width + (#columns - 1)
+  -- margin at the right edge (+1)
+  return table.concat(texts, ' '), text_width + (#columns - 1) + 1
 end
 
 local Bookmark = {}

@@ -65,10 +65,16 @@ local function to_window_options(options, name, win_size, content_size)
     layout = options.top and 'top' or 'bottom'
     local value = options.top or options.bottom
     woptions.width = 0
+
+    -- in the window, if 'auto', add one spece line.
+    local content_height = content_size.height
+    if value == 'auto' then
+      content_height = content_height + 1
+    end
     woptions.height = winvalue(
       value,
       win_size.height,
-      content_size.height,
+      content_height,
       1,
       win_size.height
     )
@@ -85,8 +91,11 @@ local function to_window_options(options, name, win_size, content_size)
     woptions.height = 0
   end
 
-  -- '2' is space width
-  woptions.width = math.max(vim.fn.strwidth(name) + 2, woptions.width)
+  -- width correction including the title string.
+  if woptions.width ~= 0 then
+    -- '2' is space width
+    woptions.width = math.max(vim.fn.strwidth(name) + 2, woptions.width)
+  end
 
   -- set window position
   if options.floating then
