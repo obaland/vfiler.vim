@@ -26,6 +26,9 @@ function IndentColumn.new()
 end
 
 function IndentColumn:get_width(items, width)
+  if not items then
+    return 0
+  end
   local max_level = 0
   for _, item in ipairs(items) do
     if item.level > max_level then

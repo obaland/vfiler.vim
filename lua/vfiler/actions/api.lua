@@ -99,7 +99,7 @@ local function open_file(vfiler, context, view, path, layout)
   if dest_winid ~= view:winid() then
     vfiler:focus()
     view:redraw()
-    core.window.move(dest_winid, true)
+    core.window.move(dest_winid)
   end
 end
 

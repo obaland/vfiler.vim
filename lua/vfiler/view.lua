@@ -230,7 +230,6 @@ function View:open(buffer, layout)
   end
 
   self._buffer = buffer
-  self:_apply_syntaxes()
   self:_resize()
 end
 
@@ -257,6 +256,7 @@ function View:redraw()
   elseif cache.winid ~= winid then
     -- set window options
     vim.set_win_options(winid, self._winoptions)
+    self:_apply_syntaxes()
     cache.winid = winid
   end
 
