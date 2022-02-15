@@ -19,9 +19,7 @@ function M.quit_force(vfiler, context, view)
 end
 
 function M.redraw(vfiler, context, view)
-  context:reload_gitstatus(function()
-    view:draw(context)
-  end)
+  view:redraw()
 end
 
 function M.reload(vfiler, context, view)
