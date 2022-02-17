@@ -180,14 +180,14 @@ end
 
 function M.execute(path)
   local command
-  if M.is_windows then
+  if core.is_windows then
     command = ('start rundll32 url.dll,FileProtocolHandler %s'):format(
       vim.fn.escape(path, '#%')
     )
-  elseif M.is_mac and vim.fn.executable('open') == 1 then
+  elseif core.is_mac and vim.fn.executable('open') == 1 then
     -- For Mac OS
     command = ('open %s &'):format(vim.fn.shellescape(path))
-  elseif M.is_cygwin then
+  elseif core.is_cygwin then
     -- For Cygwin
     command = ('cygstart %s'):format(vim.fn.shellescape(path))
   elseif vim.fn.executable('xdg-open') == 1 then
@@ -206,7 +206,7 @@ function M.execute(path)
     -- For Xfce
     command = ('exo-open %s &'):format(vim.fn.shellescape(path))
   else
-    M.message.error('Not supported platform.')
+    core.message.error('Not supported platform.')
     return
   end
   vim.fn.system(command)
