@@ -105,6 +105,16 @@ function VFiler.find_visible(name)
   return nil -- not found
 end
 
+--- Do action for each displays
+function VFiler.foreach_displays(action, ...)
+  local current = VFiler.get_current()
+  for _, filer in ipairs(VFiler.get_displays()) do
+    filer:focus()
+    filer:do_action(action, ...)
+  end
+  current:focus()
+end
+
 --- Get the filer from the buffer number
 ---@param bufnr number Buffer number
 function VFiler.get(bufnr)
@@ -123,7 +133,7 @@ end
 function VFiler.get_displays()
   local filers = {}
   for bufnr, filer in pairs(vfilers) do
-    if vim.fn.winnr(bufnr) >= 0 then
+    if vim.fn.bufwinnr(bufnr) >= 0 then
       table.insert(filers, filer.object)
     end
   end

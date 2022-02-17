@@ -1,23 +1,51 @@
+local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 local buffer = require('vfiler/actions/buffer')
 
 local M = {}
 
+local event_lock = setmetatable({
+  _bufnrs = {},
+}, {})
+
+function event_lock:lock(bufnr)
+  if self._bufnrs[bufnr] then
+    return true
+  end
+  self._bufnrs[bufnr] = true
+end
+
+function event_lock:unlock(bufnr)
+  self._bufnrs[bufnr] = nil
+end
+
 function M.latest_update(vfiler, context, view)
-  local root = context.root
-  if vim.fn.getftime(root.path) > root.time then
-    vfiler:do_action(buffer.reload)
+  local bufnr = view:bufnr()
+  if event_lock:lock(bufnr) then
     return
   end
 
-  for item in view:walk_items() do
-    if item.is_directory then
-      if vim.fn.getftime(item.path) > item.time then
+  core.try({
+    function()
+      local root = context.root
+      if vim.fn.getftime(root.path) > root.time then
         vfiler:do_action(buffer.reload)
         return
       end
-    end
-  end
+
+      for item in view:walk_items() do
+        if item.is_directory then
+          if vim.fn.getftime(item.path) > item.time then
+            vfiler:do_action(buffer.reload)
+            return
+          end
+        end
+      end
+    end,
+    finally = function()
+      event_lock:unlock(bufnr)
+    end,
+  })
 end
 
 function M.close_floating(vfiler, context, view)

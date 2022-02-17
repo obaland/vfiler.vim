@@ -1,25 +1,23 @@
 local core = require('vfiler/libs/core')
+local fs = require('vfiler/libs/filesystem')
 local vim = require('vfiler/libs/vim')
 
 local Item = {}
 Item.__index = Item
 
-function Item.new(filepath, link)
-  local size = vim.fn.getfsize(filepath)
-  local time = vim.fn.getftime(filepath)
-
+function Item.new(stat)
   return setmetatable({
     gitstatus = nil,
-    is_directory = core.path.is_directory(filepath),
-    is_link = link,
+    is_directory = stat.type == fs.types.DIRECTORY,
+    is_link = stat.link,
     level = 0,
-    name = core.path.name(filepath),
+    name = stat.name,
     parent = nil,
-    path = core.path.normalize(filepath),
+    path = stat.path,
     selected = false,
-    size = size,
-    time = time,
-    mode = vim.fn.getfperm(filepath),
+    size = stat.size,
+    time = stat.time,
+    mode = stat.mode,
   }, Item)
 end
 
@@ -60,7 +58,7 @@ function Item:_become_orphan()
 end
 
 function Item:_move(destpath)
-  core.file.move(self.path, destpath)
+  fs.move(self.path, destpath)
   if not core.path.exists(destpath) and core.path.exists(self.path) then
     return false
   end

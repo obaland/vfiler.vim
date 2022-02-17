@@ -1,4 +1,5 @@
 local core = require('vfiler/libs/core')
+local fs = require('vfiler/libs/filesystem')
 local git = require('vfiler/libs/git')
 local vim = require('vfiler/libs/vim')
 
@@ -229,7 +230,7 @@ function Context:switch(dirpath, on_completed)
     end
   end
 
-  self.root = Directory.new(dirpath, false)
+  self.root = Directory.new(fs.stat(dirpath))
   self.root:open()
   self._session:load(self.root)
 

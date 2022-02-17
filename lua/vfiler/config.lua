@@ -1,5 +1,6 @@
 local action = require('vfiler/action')
 local core = require('vfiler/libs/core')
+local event = require('vfiler/actions/event')
 local vim = require('vfiler/libs/vim')
 
 local M = {}
@@ -93,10 +94,10 @@ M.configs = {
   events = {
     vfiler = {
       BufEnter = action.redraw,
-      BufLeave = action.close_floating,
-      CursorHold = action.latest_update,
-      FocusGained = action.latest_update,
-      TabLeave = action.close_floating,
+      BufLeave = event.close_floating,
+      CursorHold = event.latest_update,
+      FocusGained = event.latest_update,
+      TabLeave = event.close_floating,
       VimResized = action.redraw,
     },
 

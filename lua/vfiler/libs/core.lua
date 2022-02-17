@@ -44,7 +44,7 @@ function M.try(block)
 end
 
 ------------------------------------------------------------------------------
--- File and Directory
+-- Cursor
 ------------------------------------------------------------------------------
 M.cursor = {}
 
@@ -57,77 +57,6 @@ end
 --@param lnum number
 function M.cursor.winmove(window, lnum)
   vim.fn.win_execute(window, ('call cursor(%d, 1)'):format(lnum), 'silent')
-end
-
-------------------------------------------------------------------------------
--- File and Directory
-------------------------------------------------------------------------------
-M.dir = {}
-M.file = {}
-
-local copy_file_format, copy_directory_format
-if M.is_windows then
-  copy_file_format = 'copy /y %s %s'
-  copy_directory_format = 'robocopy /e %s %s'
-else
-  copy_file_format = 'cp -f %s %s'
-  copy_directory_format = 'cp -fR %s %s'
-end
-
-function M.dir.copy(src, dest)
-  local command = copy_directory_format:format(
-    M.string.shellescape(src),
-    M.string.shellescape(dest)
-  )
-  vim.fn.system(command)
-end
-
-function M.file.copy(src, dest)
-  local command = copy_file_format:format(
-    M.string.shellescape(src),
-    M.string.shellescape(dest)
-  )
-  vim.fn.system(command)
-end
-
-function M.file.execute(path)
-  local command
-  if M.is_windows then
-    command = ('start rundll32 url.dll,FileProtocolHandler %s'):format(
-      vim.fn.escape(path, '#%')
-    )
-  elseif M.is_mac and vim.fn.executable('open') == 1 then
-    -- For Mac OS
-    command = ('open %s &'):format(vim.fn.shellescape(path))
-  elseif M.is_cygwin then
-    -- For Cygwin
-    command = ('cygstart %s'):format(vim.fn.shellescape(path))
-  elseif vim.fn.executable('xdg-open') == 1 then
-    -- For Linux
-    command = ('xdg-open %s &'):format(vim.fn.shellescape(path))
-  elseif
-    os.getenv('KDE_FULL_SESSION')
-    and os.getenv('KDE_FULL_SESSION') == 'true'
-  then
-    -- For KDE
-    command = ('kioclient exec %s &'):format(vim.fn.shellescape(path))
-  elseif os.getenv('GNOME_DESKTOP_SESSION_ID') then
-    -- For GNOME
-    command = ('gnome-open %s &'):format(vim.fn.shellescape(path))
-  elseif vim.fn.executable('exo-open') == 1 then
-    -- For Xfce
-    command = ('exo-open %s &'):format(vim.fn.shellescape(path))
-  else
-    M.message.error('Not supported platform.')
-    return
-  end
-  vim.fn.system(command)
-end
-
-function M.file.move(src, dest)
-  -- NOTE: with the Lua function, an error will occur if the file is large.
-  --os.rename(M.string.shellescape(src), M.string.shellescape(dest))
-  vim.fn.rename(src, dest)
 end
 
 ------------------------------------------------------------------------------

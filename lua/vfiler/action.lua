@@ -3,7 +3,6 @@ local action_modules = {
   'buffer',
   'cursor',
   'directory',
-  'event',
   'file_operation',
   'open',
   'preview',

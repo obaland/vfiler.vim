@@ -1,4 +1,5 @@
 local core = require('vfiler/libs/core')
+local fs = require('vfiler/libs/filesystem')
 local vim = require('vfiler/libs/vim')
 
 local File = {}
@@ -16,12 +17,12 @@ function File.create(path)
   if #result > 0 then
     return nil
   end
-  return File.new(path, false)
+  return File.new(fs.stat(path))
 end
 
-function File.new(path, link)
+function File.new(stat)
   local Item = require('vfiler/items/item')
-  local self = core.inherit(File, Item, path, link)
+  local self = core.inherit(File, Item, stat)
   if not self then
     return nil
   end
@@ -30,16 +31,16 @@ function File.new(path, link)
 end
 
 function File:copy(destpath)
-  core.file.copy(self.path, destpath)
+  fs.copy_file(self.path, destpath)
   if not core.path.exists(destpath) then
     return nil
   end
-  return File.new(destpath, self.is_link)
+  return File.new(fs.stat(destpath))
 end
 
 function File:move(destpath)
   if self:_move(destpath) then
-    return File.new(destpath, self.is_link)
+    return File.new(fs.stat(destpath))
   end
   return nil
 end

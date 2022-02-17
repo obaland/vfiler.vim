@@ -1,44 +1,25 @@
 local core = require('vfiler/libs/core')
-local vim = require('vfiler/libs/vim')
+local fs = require('vfiler/libs/filesystem')
 
 local File = require('vfiler/items/file')
 
 local Directory = {}
 
-local function create_item(path)
-  local ftype = vim.fn.getftype(path)
-  if #ftype == 0 then
-    return nil
-  end
-
-  local item = nil
-  if ftype == 'dir' then
-    item = Directory.new(path, false)
-  elseif ftype == 'file' then
-    item = File.new(path, false)
-  elseif ftype == 'link' then
-    if core.path.is_directory(path) then
-      item = Directory.new(path, true)
-    else
-      item = File.new(path, true)
-    end
+local function new_item(stat)
+  local item
+  if stat.type == fs.types.DIRECTORY then
+    item = Directory.new(stat)
+  elseif stat.type == fs.types.FILE then
+    item = File.new(stat)
   else
-    core.message.warning('Unknown "%s" file type. (%s)', ftype, path)
+    core.message.warning('Unknown "%s" file type. (%s)', stat.type, stat.path)
   end
   return item
 end
 
-function Directory.create(dirpath)
-  if vim.fn.mkdir(dirpath) ~= 1 then
-    return nil
-  end
-  return Directory.new(dirpath, false)
-end
-
-function Directory.new(dirpath, link)
+function Directory.new(stat)
   local Item = require('vfiler/items/item')
-
-  local self = core.inherit(Directory, Item, dirpath, link)
+  local self = core.inherit(Directory, Item, stat)
   self.children = nil
   self.opened = false
   self.type = self.is_link and 'L' or 'D'
@@ -60,15 +41,15 @@ end
 
 function Directory:copy(destpath)
   if self.is_link then
-    core.file.copy(self.path, destpath)
+    fs.copy_file(self.path, destpath)
   else
-    core.dir.copy(self.path, destpath)
+    fs.copy_directory(self.path, destpath)
   end
 
   if not core.path.exists(destpath) then
     return nil
   end
-  return Directory.new(destpath, self.is_link)
+  return Directory.new(fs.stat(destpath))
 end
 
 function Directory:create_directory(name)
@@ -93,14 +74,15 @@ end
 
 function Directory:move(destpath)
   if self:_move(destpath) then
-    return Directory.new(destpath, self.is_link)
+    return Directory.new(fs.stat(destpath))
   end
   return nil
 end
 
 function Directory:open(recursive)
   self.children = {}
-  for item in self:_ls() do
+  for stat in fs.scandir(self.path) do
+    local item = new_item(stat)
     self:_add(item)
     if recursive and item.is_directory then
       item:open(recursive)
@@ -113,33 +95,6 @@ function Directory:_add(item)
   item.parent = self
   item.level = self.level + 1
   table.insert(self.children, item)
-end
-
-function Directory:_ls()
-  local paths = vim.list.from(
-    vim.fn.glob(core.path.join(self.path, '/*'), 1, 1)
-  )
-
-  -- extend hidden paths
-  local dotpaths = vim.list.from(
-    vim.fn.glob(core.path.join(self.path, '/.*'), 1, 1)
-  )
-  for _, dotpath in ipairs(dotpaths) do
-    local dotfile = vim.fn.fnamemodify(dotpath, ':t')
-    if not (dotfile == '.' or dotfile == '..') then
-      table.insert(paths, dotpath)
-    end
-  end
-
-  local function _ls()
-    for _, path in ipairs(paths) do
-      local item = create_item(path)
-      if item then
-        coroutine.yield(item)
-      end
-    end
-  end
-  return coroutine.wrap(_ls)
 end
 
 function Directory:_remove(item)
