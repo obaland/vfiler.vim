@@ -52,7 +52,7 @@ end
 function NameColumn:_get_text(item, width)
   local name = item.name
   -- append directory mark
-  if item.is_directory then
+  if item.type == 'directory' then
     name = name .. '/'
   end
   return core.string.truncate(name, width, '..', math.floor(width / 2))
@@ -64,12 +64,10 @@ function NameColumn:_get_syntax_name(item, width)
     syntax = 'selected'
   elseif item.name:sub(1, 1) == '.' then
     syntax = 'hidden'
-  elseif item.is_link then
+  elseif item.link then
     syntax = 'link'
-  elseif item.is_directory then
-    syntax = 'directory'
   else
-    syntax = 'file'
+    syntax = item.type
   end
   return syntax
 end

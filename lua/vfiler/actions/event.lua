@@ -34,7 +34,7 @@ function M.latest_update(vfiler, context, view)
       end
 
       for item in view:walk_items() do
-        if item.is_directory then
+        if item.type == 'directory' then
           if vim.fn.getftime(item.path) > item.time then
             vfiler:do_action(buffer.reload)
             return

@@ -1,17 +1,17 @@
-local core = require('vfiler/libs/core')
-local vim = require('vfiler/libs/vim')
+local fs = require('vfiler/libs/filesystem')
 
 local Item = {}
 Item.__index = Item
 
 function Item.new(name, path)
+  local fstat = fs.stat(path)
   return setmetatable({
     name = name,
-    is_directory = core.path.is_directory(path),
-    is_link = vim.fn.getftype(path) == 'link',
     level = 2,
     parent = nil,
     path = path,
+    link = fstat.link,
+    type = fstat.type,
   }, Item)
 end
 

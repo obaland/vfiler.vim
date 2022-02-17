@@ -8,8 +8,6 @@ Item.__index = Item
 function Item.new(stat)
   return setmetatable({
     gitstatus = nil,
-    is_directory = stat.type == fs.types.DIRECTORY,
-    is_link = stat.link,
     level = 0,
     name = stat.name,
     parent = nil,
@@ -17,7 +15,9 @@ function Item.new(stat)
     selected = false,
     size = stat.size,
     time = stat.time,
+    type = stat.type,
     mode = stat.mode,
+    link = stat.link,
   }, Item)
 end
 

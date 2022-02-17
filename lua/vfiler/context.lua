@@ -44,7 +44,7 @@ function ItemAttribute.parse(root)
     return root_attr
   end
   for _, child in ipairs(root.children) do
-    if child.is_directory and child.opened then
+    if child.opened then
       root_attr.opened_attributes[child.name] = ItemAttribute.parse(child)
     end
     if child.selected then

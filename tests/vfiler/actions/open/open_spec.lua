@@ -14,7 +14,7 @@ describe('open actions', function()
     -- open directory
     for lnum = init_lnum, view:num_lines() do
       local item = view:get_item(lnum)
-      if item.is_directory then
+      if item.type == 'directory' then
         view:move_cursor(item.path)
         break
       end
@@ -24,7 +24,7 @@ describe('open actions', function()
     -- open file
     for lnum = init_lnum, view:num_lines() do
       local item = view:get_item(lnum)
-      if not item.is_directory then
+      if item.type ~= 'directory' then
         view:move_cursor(item.path)
         break
       end

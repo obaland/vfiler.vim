@@ -218,7 +218,7 @@ end
 
 function M.new_directory(vfiler, context, view)
   local item = view:get_current()
-  local dir = (item.is_directory and item.opened) and item or item.parent
+  local dir = item.opened and item or item.parent
 
   local function create_directory(dest, name, filepath)
     if core.path.is_directory(filepath) then
@@ -251,7 +251,7 @@ function M.new_file(vfiler, context, view)
   if not item then
     -- If there is no header line and the current root directory is empty.
     dir = context.root
-  elseif item.is_directory and item.opened then
+  elseif item.opened then
     dir = item
   else
     dir = item.parent
@@ -290,7 +290,7 @@ function M.paste(vfiler, context, view)
   end
 
   local item = view:get_current()
-  local dest = (item.is_directory and item.opened) and item or item.parent
+  local dest = item.opened and item or item.parent
   if cb:paste(dest) and cb.keep then
     context.clipboard = nil
   end

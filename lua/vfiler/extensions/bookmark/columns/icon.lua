@@ -50,27 +50,17 @@ end
 
 function IconColumn:_get_text(item, width)
   local iname
-  if item.is_category then
+  if item.type == 'category' then
     iname = item.opened and 'opened' or 'closed'
-  elseif item.is_directory then
-    iname = 'directory'
   else
-    iname = 'file'
+    iname = item.type
   end
   local icon = self.configs[iname]
   return icon .. (' '):rep(self.icon_width - vim.fn.strwidth(icon))
 end
 
 function IconColumn:_get_syntax_name(item, width)
-  local syntax
-  if item.is_category then
-    syntax = 'category'
-  elseif item.is_directory then
-    syntax = 'directory'
-  else
-    syntax = 'file'
-  end
-  return syntax
+  return item.type
 end
 
 return IconColumn

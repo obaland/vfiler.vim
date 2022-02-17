@@ -7,9 +7,9 @@ local Directory = {}
 
 local function new_item(stat)
   local item
-  if stat.type == fs.types.DIRECTORY then
+  if stat.type == 'directory' then
     item = Directory.new(stat)
-  elseif stat.type == fs.types.FILE then
+  elseif stat.type == 'file' then
     item = File.new(stat)
   else
     core.message.warning('Unknown "%s" file type. (%s)', stat.type, stat.path)
@@ -22,7 +22,6 @@ function Directory.new(stat)
   local self = core.inherit(Directory, Item, stat)
   self.children = nil
   self.opened = false
-  self.type = self.is_link and 'L' or 'D'
   return self
 end
 
@@ -40,7 +39,7 @@ function Directory:close()
 end
 
 function Directory:copy(destpath)
-  if self.is_link then
+  if self.link then
     fs.copy_file(self.path, destpath)
   else
     fs.copy_directory(self.path, destpath)
@@ -84,7 +83,7 @@ function Directory:open(recursive)
   for stat in fs.scandir(self.path) do
     local item = new_item(stat)
     self:_add(item)
-    if recursive and item.is_directory then
+    if recursive and item.type == 'directory' then
       item:open(recursive)
     end
   end
@@ -100,10 +99,7 @@ end
 function Directory:_remove(item)
   local pos = nil
   for i, child in ipairs(self.children) do
-    if
-      (child.name == item.name)
-      and (child.is_directory == item.is_directory)
-    then
+    if (child.name == item.name) and (child.type == item.type) then
       pos = i
       break
     end

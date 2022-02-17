@@ -167,7 +167,7 @@ function M.open_preview(vfiler, context, view)
 
   preview.line = vim.fn.line('.')
   local item = view:get_item(preview.line)
-  if item.is_directory then
+  if item.type == 'directory' then
     preview:close()
   else
     preview:open(item.path)

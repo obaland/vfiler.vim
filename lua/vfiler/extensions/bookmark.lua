@@ -246,7 +246,7 @@ function Bookmark:_get_lines(items)
   local width = 0
   local lines = vim.list({})
   for _, item in ipairs(items) do
-    if item.is_category then
+    if item.type == 'category' then
       local category = item
       local line, text_width = get_line(category, column_widths)
       table.insert(lines, line)

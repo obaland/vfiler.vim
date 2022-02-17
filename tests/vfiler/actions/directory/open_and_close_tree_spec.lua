@@ -17,14 +17,14 @@ describe('directory actions', function()
     local item
     for lnum = init_lnum, view:num_lines() do
       item = view:get_item(lnum)
-      if item.is_directory then
+      if item.type == 'directory' then
         view:move_cursor(item.path)
         break
       end
     end
 
     item = view:get_current()
-    assert.is_true(item.is_directory)
+    assert.is_true(item.type == 'directory')
     u.vfiler.do_action(vfiler, a.open_tree)
     assert.is_true(item.opened, item.path)
 

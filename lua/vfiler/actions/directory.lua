@@ -63,7 +63,7 @@ end
 
 function M.close_tree(vfiler, context, view)
   local item = view:get_current()
-  local target = (item.is_directory and item.opened) and item or item.parent
+  local target = item.opened and item or item.parent
 
   target:close()
   view:draw(context)
@@ -86,7 +86,7 @@ end
 function M.open_tree(vfiler, context, view)
   local lnum = vim.fn.line('.')
   local item = view:get_item(lnum)
-  if not item.is_directory or item.opened then
+  if item.type ~= 'directory' or item.opened then
     return
   end
   item:open()
@@ -97,7 +97,7 @@ end
 function M.open_tree_recursive(vfiler, context, view)
   local lnum = vim.fn.line('.')
   local item = view:get_item(lnum)
-  if not item.is_directory or item.opened then
+  if item.type ~= 'directory' or item.opened then
     return
   end
   item:open(true)

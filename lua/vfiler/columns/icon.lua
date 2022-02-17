@@ -59,7 +59,7 @@ function IconColumn:_get_text(item, width)
   local iname
   if item.selected then
     iname = 'selected'
-  elseif item.is_directory then
+  elseif item.type == 'directory' then
     iname = item.opened and 'opened' or 'closed'
   else
     iname = 'file'
@@ -73,10 +73,8 @@ function IconColumn:_get_syntax_name(item, width)
   local syntax
   if item.selected then
     syntax = 'selected'
-  elseif item.is_directory then
-    syntax = 'directory'
   else
-    syntax = 'file'
+    syntax = item.type
   end
   return syntax
 end

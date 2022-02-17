@@ -40,7 +40,11 @@ local status_configs = {
       if not item then
         return ''
       end
-      return item.name .. (item.is_directory and '/' or '')
+      local name = item.name
+      if item.type == 'directory' then
+        name = name .. '/'
+      end
+      return name
     end,
   },
 

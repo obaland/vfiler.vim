@@ -46,14 +46,10 @@ end
 
 function NameColumn:_get_syntax_name(item, width)
   local syntax
-  if item.is_category then
-    syntax = 'category'
-  elseif item.is_link then
+  if item.link then
     syntax = 'link'
-  elseif item.is_directory then
-    syntax = 'directory'
   else
-    syntax = 'file'
+    syntax = item.type
   end
   return syntax
 end

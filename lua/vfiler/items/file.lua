@@ -22,12 +22,7 @@ end
 
 function File.new(stat)
   local Item = require('vfiler/items/item')
-  local self = core.inherit(File, Item, stat)
-  if not self then
-    return nil
-  end
-  self.type = self.is_link and 'L' or 'F'
-  return self
+  return core.inherit(File, Item, stat)
 end
 
 function File:copy(destpath)

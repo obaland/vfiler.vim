@@ -14,7 +14,7 @@ end
 
 function M.open_by_choose_or_cd(vfiler, context, view)
   local item = view:get_current()
-  if item.is_directory then
+  if item.type == 'directory' then
     api.cd(vfiler, context, view, item.path)
   else
     api.open_file(vfiler, context, view, item.path, 'choose')

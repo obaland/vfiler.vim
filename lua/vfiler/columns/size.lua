@@ -23,7 +23,7 @@ function SizeColumn:get_width(items, width)
 end
 
 function SizeColumn:_get_text(item, width)
-  if item.is_directory then
+  if item.type == 'directory' then
     return (' '):rep(self._width), self._width
   end
 

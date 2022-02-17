@@ -3,11 +3,6 @@ local vim = require('vfiler/libs/vim')
 
 local M = {}
 
-M.types = {
-  FILE = 1,
-  DIRECTORY = 2,
-}
-
 if core.is_nvim then
   ----------------------------------------------------------------------------
   -- for Neovim
@@ -38,23 +33,13 @@ if core.is_nvim then
   end
 
   local function get_stat(path, name, stat, link)
-    local type
-    if stat.type == 'directory' then
-      type = M.types.DIRECTORY
-    elseif stat.type == 'file' then
-      type = M.types.FILE
-    else
-      core.message.warning('Unknown "%s" file type. (%s)', stat.type, path)
-      return nil
-    end
-
     return {
       path = core.path.normalize(path),
       name = name,
       size = stat.size,
       time = stat.mtime.sec,
       mode = to_mode_string(stat.mode),
-      type = type,
+      type = stat.type,
       link = link,
     }
   end
@@ -98,17 +83,15 @@ else
     local ftype = vim.fn.getftype(path)
     local type
     if ftype == 'dir' then
-      type = M.types.DIRECTORY
-    elseif ftype == 'file' then
-      type = M.types.FILE
+      type = 'directory'
     elseif ftype == 'link' then
       if core.path.is_directory(path) then
-        type = M.types.DIRECTORY
+        type = 'directory'
       else
-        type = M.types.FILE
+        type = 'file'
       end
     else
-      return nil
+      type = ftype
     end
     return type, (ftype == 'link')
   end
