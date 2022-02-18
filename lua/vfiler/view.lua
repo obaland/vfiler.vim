@@ -282,14 +282,18 @@ function View:redraw()
 
   -- set buffer lines
   local saved_view = vim.fn.winsaveview()
-
-  buffer:set_option('modifiable', true)
-  buffer:set_option('readonly', false)
-  buffer:set_lines(lines)
-  buffer:set_option('modifiable', false)
-  buffer:set_option('readonly', true)
-
-  vim.fn.winrestview(saved_view)
+  core.try({
+    function()
+      buffer:set_option('modifiable', true)
+      buffer:set_option('readonly', false)
+      buffer:set_lines(lines)
+    end,
+    finally = function()
+      buffer:set_option('modifiable', false)
+      buffer:set_option('readonly', true)
+      vim.fn.winrestview(saved_view)
+    end,
+  })
 
   -- set title (only floating)
   if self._window:type() == 'floating' then
@@ -308,11 +312,17 @@ function View:redraw_line(lnum)
   end
 
   local buffer = self._buffer
-  buffer:set_option('modifiable', true)
-  buffer:set_option('readonly', false)
-  buffer:set_line(lnum, line)
-  buffer:set_option('modifiable', false)
-  buffer:set_option('readonly', true)
+  core.try({
+    function()
+      buffer:set_option('modifiable', true)
+      buffer:set_option('readonly', false)
+      buffer:set_line(lnum, line)
+    end,
+    finally = function()
+      buffer:set_option('modifiable', false)
+      buffer:set_option('readonly', true)
+    end,
+  })
 end
 
 --- Reset from another context

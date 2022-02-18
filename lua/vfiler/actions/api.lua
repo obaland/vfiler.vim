@@ -18,6 +18,7 @@ local function choose_window(winid)
   for winnr = 1, vim.fn.winnr('$') do
     local bufnr = vim.fn.winbufnr(winnr)
     if not Buffer.is_vfiler_buffer(bufnr) then
+      print('bufname:', vim.fn.bufname(bufnr))
       table.insert(winids, vim.fn.win_getid(winnr))
     end
   end
@@ -110,7 +111,9 @@ local function choose_file(vfiler, context, view, path)
   elseif winid < 0 then
     core.window.open('right')
   else
-    core.window.move(winid)
+    -- for example, dare to raise the autocmd event and close
+    -- the preview window.
+    core.window.move(winid, true)
   end
   open_file(vfiler, context, view, path, 'none')
 end

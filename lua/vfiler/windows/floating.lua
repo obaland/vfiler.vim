@@ -1,6 +1,8 @@
 local api = vim.api
 local core = require('vfiler/libs/core')
 
+local Buffer = require('vfiler/buffer')
+
 local Floating = {}
 
 function Floating._try_close(winid)
@@ -23,17 +25,31 @@ function Floating:set_title(title)
   if self._title then
     -- update
     api.nvim_win_set_config(self._title.winid, config)
-    api.nvim_buf_set_lines(self._title.bufnr, 0, -1, true, { title_name })
+    local buffer = self._title.buffer
+    core.try({
+      function()
+        buffer:set_option('modifiable', true)
+        buffer:set_option('readonly', false)
+        buffer:set_line(1, title_name)
+      end,
+      finally = function()
+        buffer:set_option('modifiable', false)
+        buffer:set_option('readonly', true)
+      end,
+    })
     self._title.name = title
   else
     -- create
-    config.noautocmd = true
-    local bufnr = api.nvim_create_buf(false, true)
-    api.nvim_buf_set_option(bufnr, 'bufhidden', 'wipe')
-    api.nvim_buf_set_option(bufnr, 'buftype', 'nofile')
-    api.nvim_buf_set_option(bufnr, 'swapfile', false)
+    local buffer = Buffer.new('vfiler-title:' .. title)
+    buffer:set_options({
+      bufhidden = 'wipe',
+      buflisted = false,
+      buftype = 'nofile',
+      swapfile = false,
+    })
 
-    local winid = api.nvim_open_win(bufnr, false, config)
+    config.noautocmd = true
+    local winid = api.nvim_open_win(buffer.number, false, config)
 
     -- set options
     api.nvim_win_set_option(
@@ -47,11 +63,21 @@ function Floating:set_title(title)
     api.nvim_win_set_option(winid, 'signcolumn', 'no')
 
     -- set title name
-    api.nvim_buf_set_lines(bufnr, 0, -1, true, { title_name })
+    core.try({
+      function()
+        buffer:set_option('modifiable', true)
+        buffer:set_option('readonly', false)
+        buffer:set_line(1, title_name)
+      end,
+      finally = function()
+        buffer:set_option('modifiable', false)
+        buffer:set_option('readonly', true)
+      end,
+    })
 
     self._title = {
       name = title,
-      bufnr = bufnr,
+      buffer = buffer,
       winid = winid,
     }
   end
