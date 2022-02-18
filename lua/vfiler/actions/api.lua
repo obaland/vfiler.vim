@@ -18,7 +18,6 @@ local function choose_window(winid)
   for winnr = 1, vim.fn.winnr('$') do
     local bufnr = vim.fn.winbufnr(winnr)
     if not Buffer.is_vfiler_buffer(bufnr) then
-      print('bufname:', vim.fn.bufname(bufnr))
       table.insert(winids, vim.fn.win_getid(winnr))
     end
   end
