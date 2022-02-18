@@ -42,33 +42,36 @@ use {
 
 ## Usage
 ### Quick Start
-Basically, after installing in any way, start with the **VFiler** command.
+Basically, after installing in any way, start with the `VFiler` command. The vfiler.vim will start in the current directory.
 
     :VFiler
 
-The vfiler will start in the current directory.
+You can do various things with `options`.<br>
+See [Command usage](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#command-usage) for details.
 
-### Start by calling a Lua function
-vfiler can also be started by calling a `require'vfiler'.start()`.
+### Start by Lua function
+vfiler.vim can also be started by calling a `require'vfiler'.start()`.
 ```lua
-require('vfiler').start(path)
+require('vfiler').start({path})
 ```
+You can do various things with `configs`.<br>
+See [Lua function usage](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#lua-function-usage) for details.
 
 ### More details
-- see: [Usage](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#usage)
+- see more details: [Usage](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#usage)
 
 
 ## Customization
-vfiler can be customized to your liking.<br>
+vfiler.vim can be customized to your liking.<br>
 The following is an example.
 
 ### Explorer style
-#### Starting with a command:
+#### Start by command:
 ```vim
 :VFiler -auto-cd -auto-resize -keep -layout=left -name=explorer -width=30 columns=indent,icon,name
 ```
 
-#### Starting with a lua script:
+#### Start by Lua script:
 ```lua
 require('vfiler/config').setup {
   options = {
@@ -86,11 +89,11 @@ require('vfiler').start()
 ```
 
 ### More details
-vfiler has various other customization mechanisms.<br>
+vfiler.vim has various other customization mechanisms.<br>
 - see: [Customization](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#customization)
 
 ## Extension plugins
-There are also some extension plugins for vfiler.<br>
+There are also some extension plugins for vfiler.vim.<br>
 Please use it as you like.
 - [obaland/vfiler-column-devicons](https://github.com/obaland/vfiler-column-devicons)
 - [obaland/vfiler-fzf](https://github.com/obaland/vfiler-fzf)
