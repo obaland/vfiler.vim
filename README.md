@@ -47,7 +47,7 @@ Basically, after installing in any way, start with the `VFiler` command. The vfi
     :VFiler
 
 You can do various things with `options`.<br>
-See [Command usage](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#command-usage) for details.
+See [command usage](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#command-usage) for details.
 
 ### Start by Lua function
 vfiler.vim can also be started by calling a `require'vfiler'.start()`.
