@@ -58,7 +58,7 @@ You can do various things with `configs`.<br>
 See [Lua function usage](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#lua-function-usage) for details.
 
 ### More details
-- see more details: [Usage](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#usage)
+- Please see more details: [Usage](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#usage)
 
 
 ## Customization
@@ -90,7 +90,7 @@ require('vfiler').start()
 
 ### More details
 vfiler.vim has various other customization mechanisms.<br>
-- see: [Customization](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#customization)
+- Please see more details: [Customization](https://github.com/obaland/vfiler.vim/blob/main/doc/vfiler.md#customization)
 
 ## Extension plugins
 There are also some extension plugins for vfiler.vim.<br>
