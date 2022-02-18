@@ -15,7 +15,7 @@
 - :customs: Customizable to your liking.
 - :link: Not depends on other plugins or external.
 
-![demo](https://github.com/obaland/contents/blob/main/vfiler.vim/image-demo.png?raw=true)
+![demo](https://github.com/obaland/contents/blob/main/vfiler.vim/image-demo.gif?raw=true)
 
 ## Requirements
 

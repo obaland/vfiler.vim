@@ -120,13 +120,12 @@ end
 local function edit_file(vfiler, context, view, path)
   if core.path.is_directory(path) then
     M.cd(vfiler, context, view, path)
-    return
   elseif context.options.keep then
     -- change the action if the "keep" option is enabled
     choose_file(vfiler, context, view, path)
-    return
+  else
+    core.window.open('none', path)
   end
-  core.window.open('none', path)
 end
 
 function M.cd(vfiler, context, view, dirpath, on_completed)
