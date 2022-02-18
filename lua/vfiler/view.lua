@@ -63,7 +63,7 @@ local function get_window_size(layout, wvalue, hvalue)
   local width, height
   if layout == 'floating' or layout == 'right' or layout == 'left' then
     if core.math.type(wvalue) == 'float' then
-      width = vim.get_option('columns') * wvalue
+      width = math.floor(vim.get_option('columns') * wvalue)
     else
       width = wvalue
     end
@@ -72,7 +72,7 @@ local function get_window_size(layout, wvalue, hvalue)
   end
   if layout == 'floating' or layout == 'top' or layout == 'bottom' then
     if core.math.type(hvalue) == 'float' then
-      height = vim.get_option('lines') * hvalue
+      height = math.floor(vim.get_option('lines') * hvalue)
     else
       height = hvalue
     end
@@ -132,7 +132,7 @@ function View.new(context)
       wrap = false,
     },
   }, View)
-  self:_initialize(context)
+  self:reset(context)
   return self
 end
 
@@ -249,9 +249,7 @@ function View:redraw()
   local cache = self._cache
   local winid = self:winid()
   if winid < 0 then
-    core.message.warning(
-      'Cannot draw because the buffer is not displayed in the window.'
-    )
+    core.message.warning('The buffer is invisible and cannot be drawn.')
     return
   elseif cache.winid ~= winid then
     -- set window options
@@ -328,7 +326,16 @@ end
 --- Reset from another context
 ---@param context table
 function View:reset(context)
-  self:_initialize(context)
+  local options = context.options
+  self._columns = create_columns(options.columns)
+  if not self._columns then
+    return nil
+  end
+
+  self._auto_resize = options.auto_resize
+  self._cache = { winwidth = 0 }
+  self._header = options.header
+  self._win_config = to_win_config(options)
 end
 
 --- Set size
@@ -356,12 +363,12 @@ function View:selected_items()
   return selected
 end
 
---- Get the top line number where the item is displayed
+--- Get the top line number of the visible item
 function View:top_lnum()
   return self._header and 2 or 1
 end
 
---- Get the top line number where the item is displayed
+--- Get the window type
 function View:type()
   return self._window:type()
 end
@@ -455,19 +462,6 @@ function View:_create_column_props(winwidth)
     start_col = prop.end_col + 1 -- "1" is space between columns
   end
   return props
-end
-
-function View:_initialize(context)
-  local options = context.options
-  self._columns = create_columns(options.columns)
-  if not self._columns then
-    return nil
-  end
-
-  self._auto_resize = options.auto_resize
-  self._cache = { winwidth = 0 }
-  self._header = options.header
-  self._win_config = to_win_config(options)
 end
 
 function View:_resize()

@@ -19,7 +19,7 @@ end
 function Buffer.new(name)
   local number = vim.fn.bufadd(name)
   if vim.fn.bufloaded(number) ~= 1 then
-    -- NOTE: In the case of vim, an extra message is displayed, so execute
+    -- NOTE: In the case of vim, an extra message is visible, so execute
     -- it with "silent".
     vim.fn.execute(('noautocmd call bufload(%d)'):format(number), 'silent')
   end

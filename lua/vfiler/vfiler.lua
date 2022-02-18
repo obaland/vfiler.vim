@@ -97,18 +97,19 @@ function VFiler.find_visible(name)
   -- in tabpage
   for bufnr, vfiler in pairs(vfilers) do
     local object = vfiler.object
+    assert(bufnr == object._view:bufnr())
     local options = object._context.options
-    if (options.name == name) and (vim.fn.bufwinnr(bufnr) >= 0) then
+    if (options.name == name) and object:visible() then
       return object
     end
   end
   return nil -- not found
 end
 
---- Do action for each displays
-function VFiler.foreach_displays(action, ...)
+--- Do action for each visible filers
+function VFiler.foreach(action, ...)
   local current = VFiler.get_current()
-  for _, filer in ipairs(VFiler.get_displays()) do
+  for _, filer in ipairs(VFiler.get_visible()) do
     filer:focus()
     filer:do_action(action, ...)
   end
@@ -129,12 +130,14 @@ function VFiler.get_current()
   return VFiler.get(vim.fn.bufnr())
 end
 
---- Get the currently displayed filers
-function VFiler.get_displays()
+--- Get the filer that is currently visible
+function VFiler.get_visible()
   local filers = {}
   for bufnr, filer in pairs(vfilers) do
-    if vim.fn.bufwinnr(bufnr) >= 0 then
-      table.insert(filers, filer.object)
+    local object = filer.object
+    assert(bufnr == object._view:bufnr())
+    if object:visible() then
+      table.insert(filers, object)
     end
   end
   return filers
@@ -189,8 +192,8 @@ function VFiler._handle_event(bufnr, group, type)
   vfiler:do_action(action)
 end
 
---- Is the filer displayed?
-function VFiler:displayed()
+--- Is the filer visible?
+function VFiler:visible()
   return self._view:winnr() >= 0
 end
 

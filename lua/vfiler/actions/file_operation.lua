@@ -53,7 +53,7 @@ local function rename_files(vfiler, context, view, targets)
 
       if #renamed > 0 then
         core.message.info('Renamed - %d files', #renamed)
-        VFiler.foreach_displays(buffer.reload)
+        VFiler.foreach(buffer.reload)
         v:move_cursor(renamed[1].path)
       end
     end,
@@ -82,7 +82,7 @@ local function rename_one_file(vfiler, context, view, target)
   end
 
   core.message.info('Renamed - "%s" -> "%s"', name, rename)
-  VFiler.foreach_displays(buffer.reload)
+  VFiler.foreach(buffer.reload)
 end
 
 function M.copy(vfiler, context, view)
@@ -111,7 +111,7 @@ function M.copy_to_filer(vfiler, context, view)
     return
   end
   local linked = context.linked
-  if not (linked and linked:displayed()) then
+  if not (linked and linked:visible()) then
     -- Copy to clipboard
     vfiler:do_action(M.copy)
     return
@@ -130,7 +130,7 @@ function M.copy_to_filer(vfiler, context, view)
   for _, item in ipairs(selected) do
     item.selected = false
   end
-  VFiler.foreach_displays(buffer.reload)
+  VFiler.foreach(buffer.reload)
 end
 
 function M.delete(vfiler, context, view)
@@ -204,7 +204,7 @@ function M.move_to_filer(vfiler, context, view)
     return
   end
   local linked = context.linked
-  if not (linked and linked:displayed()) then
+  if not (linked and linked:visible()) then
     -- Move to clipboard
     vfiler:do_action(M.move)
     return
@@ -213,7 +213,7 @@ function M.move_to_filer(vfiler, context, view)
   -- Move to linked filer
   local cb = Clipboard.move(selected)
   cb:paste(linked:get_root_item())
-  VFiler.foreach_displays(buffer.reload)
+  VFiler.foreach(buffer.reload)
 end
 
 function M.new_directory(vfiler, context, view)
@@ -238,7 +238,7 @@ function M.new_directory(vfiler, context, view)
   cmdline.input_multiple('New directory names?', function(contents)
     local created = create_files(dir, contents, create_directory)
     if created then
-      VFiler.foreach_displays(buffer.reload)
+      VFiler.foreach(buffer.reload)
       -- move the cursor to the created item path
       view:move_cursor(created[1].path)
     end
@@ -275,7 +275,7 @@ function M.new_file(vfiler, context, view)
   cmdline.input_multiple('New file names?', function(contents)
     local created = create_files(dir, contents, create_file)
     if created then
-      VFiler.foreach_displays(buffer.reload)
+      VFiler.foreach(buffer.reload)
       -- move the cursor to the created item path
       view:move_cursor(created[1].path)
     end
@@ -294,7 +294,7 @@ function M.paste(vfiler, context, view)
   if cb:paste(dest) and cb.keep then
     context.clipboard = nil
   end
-  VFiler.foreach_displays(buffer.reload)
+  VFiler.foreach(buffer.reload)
 end
 
 function M.rename(vfiler, context, view)

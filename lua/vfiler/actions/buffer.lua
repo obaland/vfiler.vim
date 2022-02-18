@@ -41,7 +41,7 @@ function M.switch_to_filer(vfiler, context, view)
   local linked = context.linked
   -- already linked
   if linked then
-    if linked:displayed() then
+    if linked:visible() then
       linked:focus()
     else
       linked:open('right')
@@ -68,7 +68,7 @@ end
 
 function M.sync_with_current_filer(vfiler, context, view)
   local linked = context.linked
-  if not (linked and linked:displayed()) then
+  if not (linked and linked:visible()) then
     return
   end
 
