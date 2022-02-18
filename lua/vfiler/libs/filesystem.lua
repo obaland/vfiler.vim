@@ -81,6 +81,11 @@ else
 
   local function get_ftype(path)
     local ftype = vim.fn.getftype(path)
+    if #ftype == 0 then
+      -- unknown file type
+      return nil
+    end
+
     local type
     if ftype == 'dir' then
       type = 'directory'
