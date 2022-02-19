@@ -16,20 +16,20 @@
 <!-- panvimdoc-ignore-end -->
 
 # Usage
-There are two ways to start vfiler.vim: starting from a command and starting from a Lua function.
+There are two ways to start `vfiler.vim`: starting from a command and starting from a Lua function.
 
 ## Command usage
 ```
 :VFiler [{options}...] [{path}]
 ```
 If `{path}` is not specified, it will start in the current directory.<br>
-`{options}` are options for the behavior of vfiler.vim.
+`{options}` are options for the behavior of `vfiler.vim`.
 
 ### Command options
 Command options are in the form starting with `-`.<br>
 For flag options, prefixing them with `-no-{option-name}` disables the option.
 
-> NOTE: If you use both `{option-name}` and `-no-{option-name}` in the same vfiler.vim buffer, it is undefined.
+> NOTE: If you use both `{option-name}` and `-no-{option-name}` in the same `vfiler.vim` buffer, it is undefined.
 
 Please see the [Options](#options) for details.
 
@@ -42,7 +42,7 @@ Please see the [Options](#options) for details.
 ### Command and configuration options
 The names of the command options and the configuration options by `require'vfiler/config'.setup()` are very similar. <br>
 Also, the meaning is exactly the same.<br>
-The setting by `require'vfiler/config'.setup()` is the default setting, and the command option is different in that it overrides the default setting and starts vfiler.vim.
+The setting by `require'vfiler/config'.setup()` is the default setting, and the command option is different in that it overrides the default setting and starts `vfiler.vim`.
 
 ### Examples
 | Configuration option | Command option |
@@ -54,7 +54,7 @@ The setting by `require'vfiler/config'.setup()` is the default setting, and the 
 | git.ignored = false | -no-git-ignored |
 
 ## Lua function usage
-Starting vfiler.vim with Lua function:
+Starting vfiler.vim by Lua function:
 ```lua
 require'vfiler'.start(path, configs)
 ```
@@ -92,7 +92,7 @@ require'vfiler'.start(dirpath, configs)
 As a basis for configuration, you need to run `require'vfiler/config'.setup()` in your personal settings.<br>
 There are two main types of configurations, `options` and `mappings`.
 
-### vfiler.vim setup structure
+### `vfiler.vim` setup structure
 ``` lua
 local action = require('vfiler/action')
 require('vfiler/config').setup {
@@ -204,7 +204,7 @@ require'vfiler/config'.setup {
 ## Options
 
 #### auto_cd
-Change the working directory while navigating with vfiler.vim.
+Change the working directory while navigating with `vfiler.vim`.
 
 - Type: `boolean`
 - Default: `false`
@@ -218,7 +218,7 @@ Enabled, it will automatically resize to the size specified by `width` and `heig
 - Command option format: `-auto-resize`
 
 #### columns
-Specify the vfiler.vim columns.<br>
+Specify the `vfiler.vim` columns.<br>
 see: [Column customization](#column-customization)
 
 - Type: `string`
@@ -254,14 +254,14 @@ Display the header line.
 - Command option format: `-header`
 
 #### keep
-Keep the vfiler.vim window with the open action.
+Keep the `vfiler.vim` window with the open action.
 
 - Type: `boolean`
 - Default: `false`
 - Command option format: `-keep`
 
 #### listed
-Display the vfiler.vim buffer in the buffer list.
+Display the `vfiler.vim` buffer in the buffer list.
 
 - Type: `boolean`
 - Default: `true`
@@ -277,7 +277,7 @@ Specifies a buffer name. <br>
 - Command option format: `-name={buffer-name}`
 
 #### new
-Create new vfiler.vim buffer.
+Create new `vfiler.vim` buffer.
 
 - Type: `boolean`
 - Default: `false`
@@ -402,7 +402,7 @@ Must be larger than zero.
 - Command option format: `-zindex={value}`
 
 ## Mappings
-vfiler.vim also gives you the flexibility to customize your keymap.
+`vfiler.vim` also gives you the flexibility to customize your keymap.
 
 ### Change keymaps
 If you don't like the default keymap, you can specify any `key string` and the `require'vfiler/action'` functions for it in the mappings table.<br>
@@ -440,7 +440,7 @@ require'vfiler/config'.clear_mappings()
 > NOTE: However, please call the function before specifying the keymap.
 
 ## Column customization
-vfiler.vim supports several columns.  
+`vfiler.vim` supports several columns.  
 You can change each column to show or hide, and also change the display order.
 
 ### How to specify.
@@ -499,10 +499,10 @@ Move the cursor down.
 Move the cursor up.
 
 #### move_cursor_bottom
-Moves the cursor to the bottom of the vfiler.vim buffer.
+Moves the cursor to the bottom of the `vfiler.vim` buffer.
 
 #### move_cursor_top
-Moves the cursor to the top of the vfiler.vim buffer.
+Moves the cursor to the top of the `vfiler.vim` buffer.
 
 ---
 
@@ -579,12 +579,12 @@ Rename the files.
 
 #### copy
 Copy the files.<br>
-If it is in the 2-window-filer state, it will be copied under the directory where the other vfiler.vim buffer is open.<br>
+If it is in the 2-window-filer state, it will be copied under the directory where the other `vfiler.vim` buffer is open.<br>
 If not, it will be saved to the clipboard.
 
 #### move
 Move the files.<br>
-If it is in the 2-window-filer state, it will be moved under the directory where the other vfiler.vim buffer is open.<br>
+If it is in the 2-window-filer state, it will be moved under the directory where the other `vfiler.vim` buffer is open.<br>
 If not, it will be saved to the clipboard.
 
 #### paste
@@ -633,7 +633,7 @@ Switch the filer buffer in the tab page. If there is no buffer to switch, create
 > NOTE: It does not work in floating windows.
 
 #### sync_with_current_filer
-Synchronizes another vfiler.vim buffer current directory with current vfiler.vim buffer.
+Synchronizes another `vfiler.vim` buffer current directory with current `vfiler.vim` buffer.
 
 > NOTE: It does not work in floating windows.
 
@@ -641,10 +641,10 @@ Synchronizes another vfiler.vim buffer current directory with current vfiler.vim
 Switches to other drive(Windows) or mount point(Mac/Linux).
 
 #### reload
-Reload vfiler.vim buffer.
+Reload the `vfiler.vim` buffer.
 
 #### quit
-Quit the vfiler.vim buffer.
+Quit the `vfiler.vim` buffer.
 
 ---
 
@@ -658,7 +658,7 @@ List the bookmarks.
 
 # About
 
-vfiler.vim is developed by obaland and licensed under the MIT License.<br>
+`vfiler.vim` is developed by obaland and licensed under the MIT License.<br>
 Visit the project page for the latest information:
 
 <https://github.com/obaland/vfiler.vim>
