@@ -94,6 +94,7 @@ function M.reload_status(rootpath, options, on_completed)
       on_completed(gitstatus)
     end,
   })
+  return job
 end
 
 return M

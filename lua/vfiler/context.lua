@@ -179,54 +179,25 @@ function Context:parent_path()
   return core.path.parent(self.root.path)
 end
 
---- Reload Git status
----@param on_completed function
-function Context:reload_gitstatus(on_completed)
-  if not self.gitroot then
-    return
-  end
-
-  self.in_progress = true
-  self:_reload_gitstatus(function(gitstatus)
-    self.gitstatus = gitstatus
-    on_completed(self)
-    self.in_progress = false
-  end)
-end
-
 --- Switch the context to the specified directory path
 ---@param dirpath string
-function Context:switch(dirpath, on_completed)
+function Context:switch(dirpath)
   dirpath = core.path.normalize(dirpath)
   -- perform auto cd
   if self.options.auto_cd then
     vim.fn.execute('lcd ' .. dirpath, 'silent')
   end
 
-  local function wrap_on_completed(ctx, path)
-    on_completed(ctx, path)
-    ctx.in_progress = false
-  end
-
   local previus_path = self._session:get_previous_path(dirpath)
-  local num_processes = 1
-  local completed = 0
 
   -- reload git status
+  local job
   if self._git_enabled then
     if not (self.gitroot and dirpath:match(self.gitroot)) then
       self.gitroot = git.get_toplevel(dirpath)
     end
     if self.gitroot then
-      self.in_progress = true
-      num_processes = num_processes + 1
-      self:_reload_gitstatus(function(gitstatus)
-        self.gitstatus = gitstatus
-        completed = completed + 1
-        if completed >= num_processes then
-          wrap_on_completed(self, previus_path)
-        end
-      end)
+      job = self:_reload_gitstatus_job()
     end
   end
 
@@ -234,27 +205,27 @@ function Context:switch(dirpath, on_completed)
   self.root:open()
   self._session:load(self.root)
 
-  completed = completed + 1
-  if completed >= num_processes then
-    wrap_on_completed(self, previus_path)
+  if job then
+    job:wait()
   end
+  return previus_path
 end
 
 --- Switch the context to the specified drive path
 ---@param drive string
-function Context:switch_drive(drive, on_completed)
+function Context:switch_drive(drive)
   local dirpath = self._session:load_dirpath(drive)
   if not dirpath then
     dirpath = drive
   end
-  self:switch(dirpath, on_completed)
+  return self:switch(dirpath)
 end
 
 --- Synchronize with other context
 ---@param context table
-function Context:sync(context, on_completed)
+function Context:sync(context)
   self._session:save(context.root, context.root.path)
-  self:switch(context.root.path, on_completed)
+  return self:switch(context.root.path)
 end
 
 --- Update from another context
@@ -280,20 +251,21 @@ function Context:_initialize()
   self.root = nil
   self.gitroot = nil
   self.gitstatus = {}
-  self.in_progress = false
   self.in_preview = {
     preview = nil,
     once = false,
   }
 end
 
-function Context:_reload_gitstatus(on_completed)
+function Context:_reload_gitstatus_job()
   local git_options = self.options.git
   local options = {
     untracked = git_options.untracked,
     ignored = git_options.ignored,
   }
-  git.reload_status(self.gitroot, options, on_completed)
+  return git.reload_status(self.gitroot, options, function(status)
+    self.gitstatus = status
+  end)
 end
 
 return Context

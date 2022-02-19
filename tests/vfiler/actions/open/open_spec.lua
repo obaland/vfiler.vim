@@ -19,7 +19,7 @@ describe('open actions', function()
         break
       end
     end
-    u.vfiler.do_action(vfiler, a.open)
+    vfiler:do_action(a.open)
 
     -- open file
     for lnum = init_lnum, view:num_lines() do
@@ -29,7 +29,7 @@ describe('open actions', function()
         break
       end
     end
-    u.vfiler.do_action(vfiler, a.open)
+    vfiler:do_action(a.open)
   end)
   vfiler:quit(true)
 end)

@@ -17,14 +17,14 @@ describe('yank actions', function()
       vfiler:do_action(cursor.move_cursor_down)
     end
     assert.is_equal(view:get_current().name, target)
-    u.vfiler.do_action(vfiler, a.yank_path)
+    vfiler:do_action(a.yank_path)
 
     local expected = core.path.join(vim.fn.getcwd(), target)
     assert.is_equal(expected, vim.api.nvim_eval('@0'))
   end)
 
   it(u.vfiler.desc('yank_name', vfiler), function()
-    u.vfiler.do_action(vfiler, a.yank_name)
+    vfiler:do_action(a.yank_name)
     assert.is_equal(target, vim.api.nvim_eval('@0'))
   end)
   vfiler:quit(true)

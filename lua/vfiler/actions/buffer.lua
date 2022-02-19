@@ -24,9 +24,8 @@ end
 
 function M.reload(vfiler, context, view)
   context:save(view:get_current().path)
-  context:switch(context.root.path, function(ctx)
-    view:draw(ctx)
-  end)
+  context:switch(context.root.path)
+  view:draw(context)
 end
 
 function M.switch_to_filer(vfiler, context, view)
@@ -73,10 +72,9 @@ function M.sync_with_current_filer(vfiler, context, view)
   end
 
   linked:focus()
-  linked:sync(context, function()
-    linked:draw()
-    vfiler:focus() -- return current window
-  end)
+  linked:sync(context)
+  linked:draw()
+  vfiler:focus() -- return current window
 end
 
 return M

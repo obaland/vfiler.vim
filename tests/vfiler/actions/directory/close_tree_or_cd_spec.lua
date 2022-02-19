@@ -11,7 +11,7 @@ describe('directory actions', function()
   it(u.vfiler.desc('close_tree_or_cd', vfiler), function()
     local root = vfiler._context.root
     local parent_path = core.path.parent(root.path)
-    u.vfiler.do_action(vfiler, a.close_tree_or_cd)
+    vfiler:do_action(a.close_tree_or_cd)
     root = vfiler._context.root
     assert.equal(parent_path, root.path)
   end)

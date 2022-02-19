@@ -11,7 +11,7 @@ describe('open actions', function()
   it(u.vfiler.desc('open by vsplit', vfiler), function()
     local view = vfiler._view
     core.cursor.move(u.int.random(2, view:num_lines()))
-    u.vfiler.do_action(vfiler, a.open_by_vsplit)
+    vfiler:do_action(a.open_by_vsplit)
   end)
   vfiler:quit(true)
 end)

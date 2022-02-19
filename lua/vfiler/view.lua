@@ -27,12 +27,8 @@ end
 local function new_window(layout)
   local window
   if layout == 'floating' then
-    if core.is_nvim then
-      window = require('vfiler/windows/floating')
-    else
-      core.message.warning('Vim does not support floating windows.')
-      window = require('vfiler/windows/window')
-    end
+    assert(core.is_nvim, 'Vim does not support floating windows.')
+    window = require('vfiler/windows/floating')
   else
     window = require('vfiler/windows/window')
   end

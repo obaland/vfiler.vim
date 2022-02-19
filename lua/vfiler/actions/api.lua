@@ -128,7 +128,7 @@ local function edit_file(vfiler, context, view, path)
   end
 end
 
-function M.cd(vfiler, context, view, dirpath, on_completed)
+function M.cd(vfiler, context, view, dirpath)
   if context.root and context.root.path == dirpath then
     -- Same directory path
     return
@@ -138,13 +138,9 @@ function M.cd(vfiler, context, view, dirpath, on_completed)
   if current then
     context:save(current.path)
   end
-  context:switch(dirpath, function(ctx, path)
-    view:draw(ctx)
-    view:move_cursor(path)
-    if on_completed then
-      on_completed()
-    end
-  end)
+  local path = context:switch(dirpath)
+  view:draw(context)
+  view:move_cursor(path)
 end
 
 function M.close_preview(vfiler, context, view)

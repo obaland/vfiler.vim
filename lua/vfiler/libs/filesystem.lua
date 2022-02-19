@@ -125,7 +125,7 @@ else
         local type, link = get_ftype(path)
         if type then
           coroutine.yield({
-            path = path,
+            path = core.path.normalize(path),
             name = dict.name,
             size = dict.size,
             time = dict.time,

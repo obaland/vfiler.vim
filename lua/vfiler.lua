@@ -34,6 +34,14 @@ function M.start(dirpath, configs)
   VFiler.cleanup()
 
   local options = merged_configs.options
+  -- correction of option values
+  if not core.is_nvim then
+    if options.layout == 'floating' then
+      core.message.warning('Vim does not support floating windows.')
+      options.layout = 'none'
+    end
+  end
+
   local context = Context.new(merged_configs)
   local vfiler = VFiler.find_visible(options.name)
   if not options.new and vfiler then

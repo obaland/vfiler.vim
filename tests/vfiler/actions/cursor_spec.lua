@@ -13,7 +13,7 @@ describe('cursor actions', function()
   }
   for name, action in pairs(action_sequence) do
     it(u.vfiler.desc(name, vfiler), function()
-      u.vfiler.do_action(vfiler, action)
+      vfiler:do_action(action)
     end)
   end
 end)

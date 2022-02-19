@@ -44,11 +44,10 @@ function! vfiler#job#stop(id) abort
   call remove(s:jobs, a:id)
 endfunction
 
-function! vfiler#job#wait(id, timeout) abort
+function! vfiler#job#wait(id, timeout, start) abort
   if !has_key(s:jobs, a:id)
-    return
+    return -3
   endif
-
   let l:job = s:jobs[a:id]
   let l:timeout = a:timeout / 1000.0
   try

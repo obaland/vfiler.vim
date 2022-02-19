@@ -166,7 +166,7 @@ function M.delete(vfiler, context, view)
   else
     core.message.info('Deleted - %d files', #deleted)
   end
-  VFiler.foreach_displays(buffer.reload)
+  VFiler.foreach(buffer.reload)
 end
 
 function M.execute_file(vfiler, context, view)

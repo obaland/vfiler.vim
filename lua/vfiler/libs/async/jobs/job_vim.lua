@@ -70,7 +70,7 @@ end
 function Job:wait(timeout)
   if self._id ~= 0 then
     timeout = timeout or -1
-    job_wait(self._id, timeout)
+    job_wait(self._id, timeout, vim.fn.reltime())
   end
 end
 

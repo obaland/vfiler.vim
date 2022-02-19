@@ -177,19 +177,9 @@ function M.vfiler.generate_options()
   return M.generate_values(option_params)
 end
 
-local function wait(filer)
-  -- wait for debug
-  while filer._context.in_progress do
-    print('start waiting ...')
-    vim.cmd('sleep 100m')
-  end
-end
-
 function M.vfiler.start(configs)
   require('vfiler').start('', configs)
   local filer = require('vfiler/vfiler').get_current()
-  assert(filer ~= nil)
-  wait(filer)
   return filer, filer._context, filer._view
 end
 
@@ -197,13 +187,7 @@ function M.vfiler.start_command(args)
   require('vfiler').start_command(args)
   local filer = require('vfiler/vfiler').get_current()
   assert(filer ~= nil)
-  wait(filer)
   return filer, filer._context, filer._view
-end
-
-function M.vfiler.do_action(filer, action, ...)
-  filer:do_action(action, ...)
-  wait(filer)
 end
 
 function M.vfiler.desc(name, filer)

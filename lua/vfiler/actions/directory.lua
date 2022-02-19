@@ -33,9 +33,8 @@ end
 
 function M.change_to_parent(vfiler, context, view)
   local current_path = context.root.path
-  api.cd(vfiler, context, view, context:parent_path(), function()
-    view:move_cursor(current_path)
-  end)
+  api.cd(vfiler, context, view, context:parent_path())
+  view:move_cursor(current_path)
 end
 
 function M.jump_to_directory(vfiler, context, view)
@@ -75,9 +74,8 @@ function M.close_tree_or_cd(vfiler, context, view)
   local level = item and item.level or 0
   if level == 0 or (level <= 1 and not item.opened) then
     local path = context.root.path
-    api.cd(vfiler, context, view, context:parent_path(), function()
-      view:move_cursor(path)
-    end)
+    api.cd(vfiler, context, view, context:parent_path())
+    view:move_cursor(path)
   else
     M.close_tree(vfiler, context, view)
   end
@@ -127,10 +125,9 @@ function M.switch_to_drive(vfiler, context, view)
 
       local path = v:get_current().path
       ctx:save(path)
-      ctx:switch_drive(drive, function(c, p)
-        v:draw(c)
-        v:move_cursor(p)
-      end)
+      local focus_path = ctx:switch_drive(drive)
+      v:draw(ctx)
+      v:move_cursor(focus_path)
     end,
   })
   api.start_extension(vfiler, context, view, menu)

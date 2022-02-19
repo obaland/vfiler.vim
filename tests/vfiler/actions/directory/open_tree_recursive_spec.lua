@@ -19,7 +19,7 @@ describe('directory actions', function()
         break
       end
     end
-    u.vfiler.do_action(vfiler, a.open_tree_recursive)
+    vfiler:do_action(a.open_tree_recursive)
     assert.is_true(item.opened)
   end)
   vfiler:quit(true)

@@ -19,11 +19,11 @@ describe('view actions', function()
     local target = '.gitignore'
 
     it(u.vfiler.desc('show_hidden: ON', vfiler), function()
-      u.vfiler.do_action(vfiler, a.toggle_show_hidden)
+      vfiler:do_action(a.toggle_show_hidden)
       assert.is_true(find(view, target))
     end)
     it(u.vfiler.desc('show_hidden: OFF', vfiler), function()
-      u.vfiler.do_action(vfiler, a.toggle_show_hidden)
+      vfiler:do_action(a.toggle_show_hidden)
       assert.is_false(find(view, target))
     end)
 
@@ -36,16 +36,16 @@ describe('view actions', function()
     local vfiler, context = u.vfiler.start(options)
 
     it(u.vfiler.desc('toggle_sort', vfiler), function()
-      u.vfiler.do_action(vfiler, a.toggle_sort)
+      vfiler:do_action(a.toggle_sort)
       assert.is_equal('Name', context.options.sort)
       -- TODO:
 
-      u.vfiler.do_action(vfiler, a.toggle_sort)
+      vfiler:do_action(a.toggle_sort)
       assert.is_equal('name', context.options.sort)
     end)
 
     it(u.vfiler.desc('change_sort', vfiler), function()
-      u.vfiler.do_action(vfiler, a.change_sort)
+      vfiler:do_action(a.change_sort)
       assert.is_not_nil(context.extension)
       assert.is_equal('name', context.extension:get_current())
 
