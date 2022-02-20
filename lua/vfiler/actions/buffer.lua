@@ -72,8 +72,8 @@ function M.sync_with_current_filer(vfiler, context, view)
   end
 
   linked:focus()
-  linked:sync(context)
-  linked:draw()
+  linked:update(context)
+  linked:do_action(api.cd, context.root.path)
   vfiler:focus() -- return current window
 end
 

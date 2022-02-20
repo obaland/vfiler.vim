@@ -285,12 +285,6 @@ function VFiler:statusline()
   return status.statusline(self._context, self._view)
 end
 
---- Synchronize to the vfiler
----@param context table
-function VFiler:sync(context)
-  self._context:sync(context)
-end
-
 --- Unlink filer
 function VFiler:unlink()
   local vfiler = self._context.linked

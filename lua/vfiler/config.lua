@@ -15,6 +15,7 @@ M.configs = {
     keep = false,
     listed = true,
     name = '',
+    session = 'buffer',
     show_hidden_files = false,
     sort = 'name',
     layout = 'none',
