@@ -5,8 +5,7 @@ local Bookmark = require('vfiler/extensions/bookmark')
 local M = {}
 
 function M.add_bookmark(vfiler, context, view)
-  local item = view:get_current()
-  Bookmark.add(item)
+  Bookmark.add(view:get_item())
 end
 
 function M.list_bookmark(vfiler, context, view)

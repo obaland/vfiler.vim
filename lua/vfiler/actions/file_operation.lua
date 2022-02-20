@@ -170,7 +170,7 @@ function M.delete(vfiler, context, view)
 end
 
 function M.execute_file(vfiler, context, view)
-  local item = view:get_current()
+  local item = view:get_item()
   if item then
     fs.execute(item.path)
   else
@@ -217,7 +217,7 @@ function M.move_to_filer(vfiler, context, view)
 end
 
 function M.new_directory(vfiler, context, view)
-  local item = view:get_current()
+  local item = view:get_item()
   local dir = item.opened and item or item.parent
 
   local function create_directory(dest, name, filepath)
@@ -246,7 +246,7 @@ function M.new_directory(vfiler, context, view)
 end
 
 function M.new_file(vfiler, context, view)
-  local item = view:get_current()
+  local item = view:get_item()
   local dir
   if not item then
     -- If there is no header line and the current root directory is empty.
@@ -289,7 +289,7 @@ function M.paste(vfiler, context, view)
     return
   end
 
-  local item = view:get_current()
+  local item = view:get_item()
   local dest = item.opened and item or item.parent
   if cb:paste(dest) and cb.keep then
     context.clipboard = nil

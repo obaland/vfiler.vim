@@ -108,7 +108,7 @@ end
 
 --- Do action for each visible filers
 function VFiler.foreach(action, ...)
-  local current = VFiler.get_current()
+  local current = VFiler.get()
   for _, filer in ipairs(VFiler.get_visible()) do
     filer:focus()
     filer:do_action(action, ...)
@@ -119,15 +119,11 @@ end
 --- Get the filer from the buffer number
 ---@param bufnr number Buffer number
 function VFiler.get(bufnr)
+  bufnr = bufnr or vim.fn.bufnr()
   if not vfilers[bufnr] then
     return nil
   end
   return vfilers[bufnr].object
-end
-
---- Get the filer of the current buffer
-function VFiler.get_current()
-  return VFiler.get(vim.fn.bufnr())
 end
 
 --- Get the filer that is currently visible
@@ -308,7 +304,7 @@ end
 function VFiler:update(context)
   self._context:update(context)
   -- Save the status quo
-  local current = self._view:get_current()
+  local current = self._view:get_item()
   if current then
     self._context:save(current.path)
   end

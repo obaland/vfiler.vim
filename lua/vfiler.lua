@@ -64,7 +64,7 @@ end
 
 --- Get current status string
 function M.status()
-  local current = VFiler.get_current()
+  local current = VFiler.get()
   if not current then
     return ''
   end
@@ -73,7 +73,7 @@ end
 
 --- Get current status string for statusline
 function M.statusline()
-  local current = VFiler.get_current()
+  local current = VFiler.get()
   if not current then
     return ''
   end

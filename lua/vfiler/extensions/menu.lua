@@ -10,7 +10,7 @@ function Menu.new(filer, name, options)
 end
 
 function Menu:select()
-  local item = self:get_current()
+  local item = self:get_item()
   self:quit()
 
   if self.on_selected then

@@ -13,10 +13,10 @@ describe('yank actions', function()
   local target = 'README.md'
   it(u.vfiler.desc('yank_path', vfiler), function()
     -- move to "README.md"
-    while view:get_current().name ~= target do
+    while view:get_item().name ~= target do
       vfiler:do_action(cursor.move_cursor_down)
     end
-    assert.is_equal(view:get_current().name, target)
+    assert.is_equal(view:get_item().name, target)
     vfiler:do_action(a.yank_path)
 
     local expected = core.path.join(vim.fn.getcwd(), target)

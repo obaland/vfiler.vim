@@ -134,7 +134,7 @@ function M.cd(vfiler, context, view, dirpath)
     return
   end
 
-  local current = view:get_current()
+  local current = view:get_item()
   if current then
     context:save(current.path)
   end

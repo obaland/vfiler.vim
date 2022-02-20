@@ -214,14 +214,10 @@ function Extension:do_action(action)
   action(self)
 end
 
---- Get the item on the current cursor
-function Extension:get_current()
-  return self:get_item(vim.fn.line('.'))
-end
-
 --- Get the item in the specified line number
 ---@param lnum number
 function Extension:get_item(lnum)
+  lnum = lnum or vim.fn.line('.')
   return self._items[lnum]
 end
 

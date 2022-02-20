@@ -179,13 +179,13 @@ end
 
 function M.vfiler.start(configs)
   require('vfiler').start('', configs)
-  local filer = require('vfiler/vfiler').get_current()
+  local filer = require('vfiler/vfiler').get()
   return filer, filer._context, filer._view
 end
 
 function M.vfiler.start_command(args)
   require('vfiler').start_command(args)
-  local filer = require('vfiler/vfiler').get_current()
+  local filer = require('vfiler/vfiler').get()
   assert(filer ~= nil)
   return filer, filer._context, filer._view
 end

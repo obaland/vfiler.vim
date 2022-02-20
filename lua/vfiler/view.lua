@@ -167,17 +167,13 @@ function View:draw(context)
   self:redraw()
 end
 
---- Get the item on the current cursor
-function View:get_current()
-  return self:get_item(vim.fn.line('.'))
-end
-
 --- Get the item in the specified line number
 ---@param lnum number
 function View:get_item(lnum)
   if not self._items then
     return nil
   end
+  lnum = lnum or vim.fn.line('.')
   return self._items[lnum]
 end
 

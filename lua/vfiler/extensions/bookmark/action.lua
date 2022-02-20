@@ -5,7 +5,7 @@ local vim = require('vfiler/libs/vim')
 
 local function select(extension, layout)
   layout = layout or 'none'
-  local item = extension:get_current()
+  local item = extension:get_item()
   if item.type == 'category' or not core.path.exists(item.path) then
     return
   end
@@ -13,7 +13,7 @@ local function select(extension, layout)
 end
 
 function action.change_category(extension)
-  local item = extension:get_current()
+  local item = extension:get_item()
   if item.type == 'category' then
     return
   end
@@ -25,7 +25,7 @@ function action.change_category(extension)
 end
 
 function action.delete(extension)
-  local item = extension:get_current()
+  local item = extension:get_item()
   local prompt = 'Are you sure you want to delete? - ' .. item.name
   local choices = { cmdline.choice.YES, cmdline.choice.NO }
   if cmdline.confirm(prompt, choices, 2) ~= cmdline.choice.YES then
@@ -40,7 +40,7 @@ function action.delete(extension)
 end
 
 function action.rename(extension)
-  local item = extension:get_current()
+  local item = extension:get_item()
   local name = item.name
   local rename = cmdline.input('New name? - ' .. name, name)
   if #rename == 0 then
@@ -57,7 +57,7 @@ function action.rename(extension)
 end
 
 function action.open(extension)
-  local item = extension:get_current()
+  local item = extension:get_item()
   if item.type == 'category' then
     action.open_tree(extension)
   else
@@ -89,7 +89,7 @@ function action.open_tree(extension)
 end
 
 function action.close_tree(extension)
-  local item = extension:get_current()
+  local item = extension:get_item()
   local category
   if item.type == 'category' then
     category = item

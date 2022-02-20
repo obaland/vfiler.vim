@@ -36,7 +36,7 @@ local status_configs = {
     end,
 
     itemname = function(context, view)
-      local item = view:get_current()
+      local item = view:get_item()
       if not item then
         return ''
       end

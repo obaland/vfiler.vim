@@ -47,7 +47,7 @@ describe('view actions', function()
     it(u.vfiler.desc('change_sort', vfiler), function()
       vfiler:do_action(a.change_sort)
       assert.is_not_nil(context.extension)
-      assert.is_equal('name', context.extension:get_current())
+      assert.is_equal('name', context.extension:get_item())
 
       -- quit window
       context.extension:quit()

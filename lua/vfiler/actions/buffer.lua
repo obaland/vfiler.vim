@@ -23,7 +23,7 @@ function M.redraw(vfiler, context, view)
 end
 
 function M.reload(vfiler, context, view)
-  context:save(view:get_current().path)
+  context:save(view:get_item().path)
   context:switch(context.root.path)
   view:draw(context)
 end

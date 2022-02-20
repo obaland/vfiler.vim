@@ -23,13 +23,13 @@ describe('directory actions', function()
       end
     end
 
-    item = view:get_current()
+    item = view:get_item()
     assert.is_true(item.type == 'directory')
     vfiler:do_action(a.open_tree)
     assert.is_true(item.opened, item.path)
 
     vfiler:do_action(a.close_tree)
-    item = view:get_current()
+    item = view:get_item()
     assert.is_false(item.opened, item.path)
   end)
   vfiler:quit(true)

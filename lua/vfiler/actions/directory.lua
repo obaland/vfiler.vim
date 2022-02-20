@@ -61,16 +61,17 @@ function M.jump_to_root(vfiler, context, view)
 end
 
 function M.close_tree(vfiler, context, view)
-  local item = view:get_current()
+  local item = view:get_item()
   local target = item.opened and item or item.parent
 
   target:close()
   view:draw(context)
   view:move_cursor(target.path)
+  context:save(target.path)
 end
 
 function M.close_tree_or_cd(vfiler, context, view)
-  local item = view:get_current()
+  local item = view:get_item()
   local level = item and item.level or 0
   if level == 0 or (level <= 1 and not item.opened) then
     local path = context.root.path
@@ -89,7 +90,9 @@ function M.open_tree(vfiler, context, view)
   end
   item:open()
   view:draw(context)
-  core.cursor.move(lnum + 1)
+  lnum = lnum + 1
+  core.cursor.move(lnum)
+  context:save(view:get_item(lnum).path)
 end
 
 function M.open_tree_recursive(vfiler, context, view)
@@ -100,7 +103,9 @@ function M.open_tree_recursive(vfiler, context, view)
   end
   item:open(true)
   view:draw(context)
-  core.cursor.move(lnum + 1)
+  lnum = lnum + 1
+  core.cursor.move(lnum)
+  context:save(view:get_item(lnum).path)
 end
 
 function M.switch_to_drive(vfiler, context, view)
@@ -123,8 +128,7 @@ function M.switch_to_drive(vfiler, context, view)
         drive = core.path.join(get_mount_path(), drive)
       end
 
-      local path = v:get_current().path
-      ctx:save(path)
+      ctx:save(v:get_item().path)
       local focus_path = ctx:switch_drive(drive)
       v:draw(ctx)
       v:move_cursor(focus_path)

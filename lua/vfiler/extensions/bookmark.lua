@@ -180,7 +180,7 @@ function Bookmark:save()
 end
 
 function Bookmark:select(path, open)
-  local item = self:get_current()
+  local item = self:get_item()
   self:quit()
 
   if self.on_selected then
