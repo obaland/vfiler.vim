@@ -312,6 +312,17 @@ If you specify `0`, the width will be calculated automatically.
 - Default: `0`
 - Command option format: `-preview-width={window-width}`
 
+#### session
+Specifies how to save the session.
+
+- Types:
+  - `none`: Does not save the session.
+  - `buffer`: Sessions are saved each `vfiler.vim` buffer.
+  - `share`: Session are shared.
+- Type: `string`
+- Default: `"buffer"`
+- Command option format: `-session={type}`
+
 #### show_hidden_files
 If enabled, Make hidden files visible by default.
 

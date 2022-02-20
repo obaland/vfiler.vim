@@ -223,6 +223,7 @@ function View:open(buffer, layout)
 
   self._buffer = buffer
   self:_resize()
+  self:_clear_cache()
 end
 
 --- Redraw the current contents
@@ -325,9 +326,9 @@ function View:reset(context)
   end
 
   self._auto_resize = options.auto_resize
-  self._cache = { winwidth = 0 }
   self._header = options.header
   self._win_config = to_win_config(options)
+  self:_clear_cache()
 end
 
 --- Set size
@@ -415,6 +416,10 @@ function View:_apply_syntaxes()
 
   vim.commands(syntaxes)
   vim.commands(highlights)
+end
+
+function View:_clear_cache()
+  self._cache = { winwidth = 0 }
 end
 
 function View:_create_column_props(winwidth)
