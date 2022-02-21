@@ -411,6 +411,21 @@ preview.width                          The window width of the buffer whose
 - Command option format: `-preview-width={window-width}`
 
 
+                                                              *vfiler-session*
+
+session                                Specifies how to save the session.
+
+
+
+- Types:
+    - `none`: Does not save the session.
+    - `buffer`: Sessions are saved each `vfiler.vim` buffer.
+    - `share`: Session are shared.
+- Type: `string`
+- Default: `"buffer"`
+- Command option format: `-session={type}`
+
+
                                                     *vfiler-show_hidden_files*
 
 show_hidden_files                      If enabled, Make hidden files visible by
