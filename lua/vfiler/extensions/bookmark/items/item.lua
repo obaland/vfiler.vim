@@ -10,8 +10,8 @@ function Item.new(name, path)
     level = 2,
     parent = nil,
     path = path,
-    link = fstat.link,
-    type = fstat.type,
+    link = fstat and fstat.link or false,
+    type = fstat and fstat.type or 'unknown',
   }, Item)
 end
 

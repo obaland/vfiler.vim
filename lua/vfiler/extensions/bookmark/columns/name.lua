@@ -27,6 +27,11 @@ function NameColumn.new()
         start_mark = 'n@l\\',
         highlight = 'vfilerBookmarkLink',
       },
+      unknown = {
+        group = 'vfilerBookmarkName_Unknown',
+        start_mark = 'n@u\\',
+        highlight = 'vfilerBookmarkUnknown',
+      },
     },
     end_mark = '\\n@',
   })

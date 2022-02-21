@@ -8,6 +8,7 @@ IconColumn.configs = {
   directory = ' ',
   closed = '+',
   opened = '-',
+  unknown = '?',
 }
 
 function IconColumn.setup(configs)
@@ -33,6 +34,11 @@ function IconColumn.new()
         start_mark = 'i@c\\',
         highlight = 'vfilerBookmarkCategory',
       },
+      unknown = {
+        group = 'vfilerBookmarkIcon_Unknown',
+        start_mark = 'i@u\\',
+        highlight = 'vfilerBookmarkUnknown',
+      },
     },
     end_mark = '\\i@',
   })
@@ -49,13 +55,13 @@ function IconColumn:get_width(items)
 end
 
 function IconColumn:_get_text(item, width)
-  local iname
+  local key
   if item.type == 'category' then
-    iname = item.opened and 'opened' or 'closed'
+    key = item.opened and 'opened' or 'closed'
   else
-    iname = item.type
+    key = item.type
   end
-  local icon = self.configs[iname]
+  local icon = self.configs[key]
   return icon .. (' '):rep(self.icon_width - vim.fn.strwidth(icon))
 end
 

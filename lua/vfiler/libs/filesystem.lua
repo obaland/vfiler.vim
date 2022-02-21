@@ -46,6 +46,9 @@ if core.is_nvim then
 
   function M.stat(path)
     local stat = uv.fs_lstat(path)
+    if not stat then
+      return nil
+    end
     local link = stat.type == 'link'
     if link then
       stat = uv.fs_stat(path)

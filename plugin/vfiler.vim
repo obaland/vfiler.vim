@@ -64,6 +64,7 @@ highlight default link vfilerBookmarkCategory  Title
 highlight default link vfilerBookmarkDirectory Directory
 highlight default link vfilerBookmarkFile      None
 highlight default link vfilerBookmarkLink      Constant
+highlight default link vfilerBookmarkUnknown   Comment
 highlight default link vfilerBookmarkPath      Comment
 highlight default link vfilerBookmarkWarning   WarningMsg
 
