@@ -123,6 +123,7 @@ require'vfiler/config'.setup {
     keep = false,
     listed = true,
     name = '',
+    session = 'buffer',
     show_hidden_files = false,
     sort = 'name',
     layout = 'none',
