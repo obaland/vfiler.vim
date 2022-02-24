@@ -17,6 +17,17 @@ local function new_item(stat)
   return item
 end
 
+function Directory.create(dirpath)
+  if vim.fn.mkdir(dirpath) ~= 1 then
+    return nil
+  end
+  local stat = fs.stat(dirpath)
+  if not stat then
+    return nil
+  end
+  return Directory.new(stat)
+end
+
 function Directory.new(stat)
   local Item = require('vfiler/items/item')
   local self = core.inherit(Directory, Item, stat)
