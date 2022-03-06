@@ -32,9 +32,8 @@ end
 
 function Item:rename(name)
   local newpath = core.path.join(self.parent.path, name)
-  local result, message, code = os.rename(self.path, newpath)
-  if not result then
-    core.message.error('%s (code:%d)', message, code)
+  if not fs.move(self.path, newpath) then
+    core.message.error('Failed to rename.')
     return false
   end
   self.name = name
@@ -58,7 +57,9 @@ function Item:_become_orphan()
 end
 
 function Item:_move(destpath)
-  fs.move(self.path, destpath)
+  if not fs.move(self.path, destpath) then
+    return false
+  end
   if not core.path.exists(destpath) and core.path.exists(self.path) then
     return false
   end

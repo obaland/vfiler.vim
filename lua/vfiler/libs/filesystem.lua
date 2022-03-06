@@ -206,7 +206,7 @@ end
 function M.move(src, dest)
   -- NOTE: with the Lua function, an error will occur if the file is large.
   --os.rename(M.string.shellescape(src), M.string.shellescape(dest))
-  vim.fn.rename(src, dest)
+  return vim.fn.rename(src, dest) == 0
 end
 
 return M
