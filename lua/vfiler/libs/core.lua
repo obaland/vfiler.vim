@@ -333,18 +333,6 @@ end
 ---@param s string
 M.string.replace_keycode = vim.fn['vfiler#core#replace_keycode']
 
-if M.is_windows then
-  function M.string.shellescape(str)
-    -- convert path separator
-    str = str:gsub('/', '\\')
-    return ('"%s"'):format(vim.fn.trim(vim.fn.escape(str, '/'), '/\\'))
-  end
-else
-  function M.string.shellescape(str)
-    return vim.fn.shellescape(str)
-  end
-end
-
 function M.string.split(str, pattern)
   return vim.list.from(vim.fn.split(str, pattern))
 end

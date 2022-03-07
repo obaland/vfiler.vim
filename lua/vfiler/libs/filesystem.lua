@@ -153,19 +153,25 @@ else
   copy_directory_format = 'cp -fR %s %s'
 end
 
+local function escape(path)
+  if core.is_windows then
+    -- trim end
+    path = path:gsub('[/\\]+$', '')
+    -- convert path separator
+    path = path:gsub('/', '\\')
+    return ('"%s"'):format(vim.fn.escape(path, '/'))
+  else
+    return vim.fn.shellescape(path)
+  end
+end
+
 function M.copy_directory(src, dest)
-  local command = copy_directory_format:format(
-    core.string.shellescape(src),
-    core.string.shellescape(dest)
-  )
+  local command = copy_directory_format:format(escape(src), escape(dest))
   vim.fn.system(command)
 end
 
 function M.copy_file(src, dest)
-  local command = copy_file_format:format(
-    core.string.shellescape(src),
-    core.string.shellescape(dest)
-  )
+  local command = copy_file_format:format(escape(src), escape(dest))
   vim.fn.system(command)
 end
 
