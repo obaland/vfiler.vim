@@ -298,13 +298,6 @@ end
 ------------------------------------------------------------------------------
 M.string = {}
 
-local function trim_end(str, char)
-  if str:sub(#str, #str) == char then
-    return str:sub(1, #str - 1)
-  end
-  return str
-end
-
 -- truncate string
 local function strwidthpart(str, width)
   local vcol = width + 2
