@@ -90,6 +90,22 @@ describe('core.string', function()
       eq('あいうえおかきくけ..しすせそたちつてと', actual)
     end)
   end)
+
+  describe('shellescape', function()
+    if core.is_windows then
+      local paths = {
+        { input = 'C:/Users\\home/foo\\', excepted = '"C:\\Users\\home\\foo"', },
+        { input = 'C:/Users\\home/foo\\ba r', excepted = '"C:\\Users\\home\\foo\\ba r"', },
+      }
+      for _, path in ipairs(paths) do
+        it(path.input, function()
+          eq(path.excepted, core.string.shellescape(path.input))
+        end)
+      end
+    else
+      -- TODO:
+    end
+  end)
 end)
 
 describe('core.path', function()

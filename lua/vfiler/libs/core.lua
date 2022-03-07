@@ -344,11 +344,11 @@ if M.is_windows then
   function M.string.shellescape(str)
     -- convert path separator
     str = str:gsub('/', '\\')
-    return ('"%s"'):format(trim_end(vim.fn.escape(str, '/')))
+    return ('"%s"'):format(vim.fn.trim(vim.fn.escape(str, '/'), '/\\'))
   end
 else
   function M.string.shellescape(str)
-    return vim.fn.shellescape(trim_end(str))
+    return vim.fn.shellescape(str)
   end
 end
 

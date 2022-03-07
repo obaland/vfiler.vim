@@ -147,7 +147,7 @@ local copy_file_format, copy_directory_format
 
 if core.is_windows then
   copy_file_format = 'copy /y %s %s'
-  copy_directory_format = 'robocopy /e %s %s'
+  copy_directory_format = 'robocopy /s /e %s %s'
 else
   copy_file_format = 'cp -f %s %s'
   copy_directory_format = 'cp -fR %s %s'
