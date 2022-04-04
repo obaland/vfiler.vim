@@ -160,6 +160,10 @@ function M.path.exists(path)
   return M.path.filereadable(path) or M.path.is_directory(path)
 end
 
+function M.path.extension(path)
+  return vim.fn.fnamemodify(path, ':e')
+end
+
 function M.path.filereadable(path)
   return vim.fn.filereadable(path) == 1
 end

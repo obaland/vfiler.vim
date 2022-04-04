@@ -173,6 +173,11 @@ function M.open_preview(vfiler, context, view)
 end
 
 function M.open_file(vfiler, context, view, path, layout)
+  -- Supports Windows shortcut file
+  if core.is_windows and core.path.extension(path) == 'lnk' then
+    path = vim.fn.resolve(path)
+  end
+
   layout = layout or 'none'
   if layout == 'none' then
     edit_file(vfiler, context, view, path)
