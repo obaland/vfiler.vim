@@ -50,12 +50,7 @@ function Directory:close()
 end
 
 function Directory:copy(destpath)
-  if self.link then
-    fs.copy_file(self.path, destpath)
-  else
-    fs.copy_directory(self.path, destpath)
-  end
-
+  fs.copy_directory(self.path, destpath)
   if not core.path.exists(destpath) then
     return nil
   end
