@@ -34,7 +34,7 @@ if core.is_nvim then
 
   local function get_stat(path, name, stat, link)
     return {
-      path = core.path.normalize(path),
+      path = path,
       name = name,
       size = stat.size,
       time = stat.mtime.sec,
@@ -53,7 +53,12 @@ if core.is_nvim then
     if link then
       stat = uv.fs_stat(path)
     end
-    return get_stat(path, core.path.name(path), stat, link)
+    return get_stat(
+      core.path.normalize(path),
+      core.path.name(path),
+      stat,
+      link
+    )
   end
 
   function M.scandir(dirpath)
@@ -62,17 +67,33 @@ if core.is_nvim then
       if not fd then
         return nil
       end
+      local fcount = 0
+      local done = 0
+      local stats = {}
       while true do
         local name, type = uv.fs_scandir_next(fd)
         if not name then
           break
         end
+        fcount = fcount + 1
         local path = core.path.join(dirpath, name)
-        local fstat = uv.fs_stat(path)
-        if fstat then
-          local stat = get_stat(path, name, fstat, type == 'link')
-          coroutine.yield(stat)
-        end
+        uv.fs_stat(path, function(_, stat)
+          if stat then
+            table.insert(stats, {
+              path = stat.type == 'directory' and path .. '/' or path,
+              name = name,
+              stat = stat,
+              link = type == 'link',
+            })
+          end
+          done = done + 1
+        end)
+      end
+      vim.fn.wait(-1, function() return fcount == done end, 1)
+
+      -- convert stat table
+      for _, s in ipairs(stats) do
+        coroutine.yield(get_stat(s.path, s.name, s.stat, s.link))
       end
     end
     return coroutine.wrap(scandir)
@@ -128,7 +149,7 @@ else
         local type, link = get_ftype(path)
         if type then
           coroutine.yield({
-            path = core.path.normalize(path),
+            path = type == 'directory' and path .. '/' or path,
             name = dict.name,
             size = dict.size,
             time = dict.time,
