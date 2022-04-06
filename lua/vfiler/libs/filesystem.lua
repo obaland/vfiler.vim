@@ -89,7 +89,9 @@ if core.is_nvim then
           done = done + 1
         end)
       end
-      vim.fn.wait(-1, function() return fcount == done end, 1)
+      vim.fn.wait(-1, function()
+        return fcount == done
+      end, 1)
 
       -- convert stat table
       for _, s in ipairs(stats) do
