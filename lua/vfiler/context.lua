@@ -144,6 +144,21 @@ end
 ------------------------------------------------------------------------------
 -- Context class
 ------------------------------------------------------------------------------
+local function walk_directories(root)
+  local function walk(item)
+    if item.children then
+      for _, child in ipairs(item.children) do
+        if child.type == 'directory' then
+          walk(child)
+          coroutine.yield(child)
+        end
+      end
+    end
+  end
+  return coroutine.wrap(function()
+    walk(root)
+  end)
+end
 
 local Context = {}
 Context.__index = Context
@@ -190,6 +205,27 @@ function Context:parent_path()
   return core.path.parent(self.root.path)
 end
 
+-- Reload the current directory path
+function Context:reload()
+  local root_path = self.root.path
+  if vim.fn.getftime(root_path) > self.root.time then
+    self:switch(root_path)
+    return
+  end
+  local job = self:_reload_gitstatus_job(root_path)
+  for dir in walk_directories(self) do
+    if dir.opened then
+      if vim.fn.getftime(dir.path) > dir.time then
+        dir:open()
+      end
+    end
+  end
+
+  if job then
+    job:wait()
+  end
+end
+
 --- Switch the context to the specified directory path
 ---@param dirpath string
 function Context:switch(dirpath)
@@ -200,16 +236,7 @@ function Context:switch(dirpath)
   end
 
   -- reload git status
-  local job
-  if self._git_enabled then
-    if not (self.gitroot and dirpath:match(self.gitroot)) then
-      self.gitroot = git.get_toplevel(dirpath)
-    end
-    if self.gitroot then
-      job = self:_reload_gitstatus_job()
-    end
-  end
-
+  local job = self:_reload_gitstatus_job(dirpath)
   self.root = Directory.new(fs.stat(dirpath))
   self.root:open()
 
@@ -259,13 +286,20 @@ function Context:_initialize()
   }
 end
 
-function Context:_reload_gitstatus_job()
-  local git_options = self.options.git
-  local options = {
-    untracked = git_options.untracked,
-    ignored = git_options.ignored,
-  }
-  return git.reload_status(self.gitroot, options, function(status)
+function Context:_reload_gitstatus_job(dirpath)
+  if not self._git_enabled then
+    return nil
+  end
+  if not (self.gitroot and dirpath:match(self.gitroot)) then
+    self.gitroot = git.get_toplevel(dirpath)
+  end
+  if not self.gitroot then
+    return nil
+  end
+  return git.reload_status(self.gitroot, {
+    untracked = self.options.git.untracked,
+    ignored = self.options.git.ignored,
+  }, function(status)
     self.gitstatus = status
   end)
 end

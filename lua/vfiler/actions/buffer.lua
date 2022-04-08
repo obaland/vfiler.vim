@@ -2,6 +2,8 @@ local api = require('vfiler/actions/api')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
+local VFiler = require('vfiler/vfiler')
+
 local M = {}
 
 ------------------------------------------------------------------------------
@@ -24,8 +26,12 @@ end
 
 function M.reload(vfiler, context, view)
   context:save(view:get_item().path)
-  context:switch(context.root.path)
+  context:reload()
   view:draw(context)
+end
+
+function M.reload_all(vfiler, context, view)
+  VFiler.foreach(M.reload)
 end
 
 function M.switch_to_filer(vfiler, context, view)

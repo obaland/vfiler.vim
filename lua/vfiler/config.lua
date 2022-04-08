@@ -94,12 +94,11 @@ M.configs = {
 
   events = {
     vfiler = {
-      BufEnter = action.redraw,
+      BufEnter = action.reload_all,
       BufLeave = event.close_floating,
-      CursorHold = event.latest_update,
-      FocusGained = event.latest_update,
+      FocusGained = event.reload_all,
       TabLeave = event.close_floating,
-      VimResized = action.redraw,
+      VimResized = action.reload_all,
     },
 
     vfiler_preview = {

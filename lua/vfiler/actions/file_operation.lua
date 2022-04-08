@@ -120,11 +120,6 @@ function M.copy_to_filer(vfiler, context, view)
   -- Copy to linked filer
   local cb = Clipboard.copy(selected)
   cb:paste(linked:get_root_item())
-  linked:focus()
-  linked:draw()
-
-  -- Return to current
-  vfiler:focus()
 
   -- clear selected mark
   for _, item in ipairs(selected) do
