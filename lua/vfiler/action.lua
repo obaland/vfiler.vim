@@ -1,3 +1,5 @@
+local config = require('vfiler/actions/config')
+
 local action_modules = {
   'bookmark',
   'buffer',
@@ -25,5 +27,9 @@ local M = setmetatable({}, {
     return nil
   end,
 })
+
+function M.setup(configs)
+  config.setup(configs)
+end
 
 return M

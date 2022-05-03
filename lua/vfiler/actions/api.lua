@@ -1,4 +1,5 @@
 local cmdline = require('vfiler/libs/cmdline')
+local config = require('vfiler/actions/config')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
@@ -21,7 +22,11 @@ local function choose_window(winid)
       table.insert(winids, vim.fn.win_getid(winnr))
     end
   end
-  if #winids == 0 then
+  local hook = config.configs.hook.filter_choose_window
+  if hook then
+    winids = hook(winids)
+  end
+  if not winids or #winids == 0 then
     return -1
   elseif #winids == 1 then
     return winids[1]
