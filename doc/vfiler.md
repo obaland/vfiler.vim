@@ -11,6 +11,9 @@
   - [Mappings](#mappings)
   - [Column customization](#column-customization)
   - [Actions](#actions)
+- [Action Configuration](#action-configuration)
+  - [Action Default configurations](#action-default-configurations)
+  - [Action Options](#action-options)
 - [About](#about)
 
 <!-- panvimdoc-ignore-end -->
@@ -667,6 +670,44 @@ Add the item in the current line to the bookmark.
 
 #### list_bookmark
 List the bookmarks.
+
+# Action Configuration
+As a action module for configuration, you need to run `require'vfiler/action'.setup()` in your personal settings.
+
+## Action Default configurations
+```lua
+-- following options are the default
+require'vfiler/action'.setup {
+  hook = {
+    filter_choose_window = function(winids)
+      return winids
+    end,
+  },
+}
+```
+
+## Action Options
+
+#### hook.filter_choose_window
+Sets the function to be hooked when opening a file or other object in the choose window.</br>
+This hook function is used to filter specific windows.
+
+- Type: `function`
+
+##### Example
+```lua
+require('vfiler/action').setup {
+  hook = {
+    -- Filter windows for specific file types.
+    filter_choose_window = function(winids)
+      return vim.tbl_filter(function(winid)
+        local buffer = vim.api.nvim_win_get_buf(winid)
+        return vim.api.nvim_buf_get_option(buffer, 'filetype') ~= 'incline'
+      end, winids)
+    end,
+  },
+}
+```
 
 # About
 
