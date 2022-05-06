@@ -13,7 +13,10 @@ Table of Contents                                   *vfiler-table-of-contents*
   - Mappings                                                 |vfiler-mappings|
   - Column customization                         |vfiler-column-customization|
   - Actions                                                   |vfiler-actions|
-3. About                                                        |vfiler-about|
+3. Action Configuration                          |vfiler-action-configuration|
+  - Action Default configurations       |vfiler-action-default-configurations|
+  - Action Options                                     |vfiler-action-options|
+4. About                                                        |vfiler-about|
 
 ==============================================================================
 1. Usage                                                        *vfiler-usage*
@@ -937,7 +940,58 @@ list_bookmark                          List the bookmarks.
 
 
 ==============================================================================
-3. About                                                        *vfiler-about*
+3. Action Configuration                          *vfiler-action-configuration*
+
+As a action module for configuration, you need to run
+`require'vfiler/action'.setup()` in your personal settings.
+
+------------------------------------------------------------------------------
+ACTION DEFAULT CONFIGURATIONS           *vfiler-action-default-configurations*
+
+>
+    -- following options are the default
+    require'vfiler/action'.setup {
+      hook = {
+        filter_choose_window = function(winids)
+          return winids
+        end,
+      },
+    }
+<
+
+------------------------------------------------------------------------------
+ACTION OPTIONS                                         *vfiler-action-options*
+
+                                            *vfiler-hook.filter_choose_window*
+
+hook.filter_choose_window              Sets the function to be hooked when
+                                       opening a file or other object in the
+                                       choose window.</br> This hook function
+                                       is used to filter specific windows.
+
+
+
+- Type: `function`
+
+
+EXAMPLE
+
+>
+    require('vfiler/action').setup {
+      hook = {
+        -- Filter windows for specific file types.
+        filter_choose_window = function(winids)
+          return vim.tbl_filter(function(winid)
+            local buffer = vim.api.nvim_win_get_buf(winid)
+            return vim.api.nvim_buf_get_option(buffer, 'filetype') ~= 'incline'
+          end, winids)
+        end,
+      },
+    }
+<
+
+==============================================================================
+4. About                                                        *vfiler-about*
 
 `vfiler.vim` is developed by obaland and licensed under the MIT License. Visit
 the project page for the latest information:
