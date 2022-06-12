@@ -11,13 +11,15 @@ local M = {}
 ------------------------------------------------------------------------------
 
 function M.quit(vfiler, context, view)
-  api.close_preview(vfiler, context, view)
-  vfiler:quit()
+  if context.options.quit then
+    api.close_preview(vfiler, context, view)
+    vfiler:quit()
+  end
 end
 
 function M.quit_force(vfiler, context, view)
   api.close_preview(vfiler, context, view)
-  vfiler:quit(true)
+  vfiler:quit()
 end
 
 function M.redraw(vfiler, context, view)

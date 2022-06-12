@@ -244,19 +244,13 @@ function VFiler:open(layout)
 end
 
 --- Quit filer
----@param force boolean
-function VFiler:quit(force)
-  force = force or false
+function VFiler:quit()
   local bufnr = self._buffer.number
   if bufnr <= 0 then
     return
   end
-  if force or self._context.options.quit then
-    self._view:close()
-    self._buffer:wipeout()
-    self:unlink()
-    vfilers[bufnr] = nil
-  end
+  self._view:close()
+  self:unlink()
 end
 
 --- Set size
@@ -306,6 +300,18 @@ function VFiler:update(context)
   -- set buffer options
   self._buffer:set_option('buflisted', context.options.listed)
   self._view:reset(context)
+end
+
+--- Wipeout filer
+function VFiler:wipeout()
+  self:quit()
+  -- wipeout buffer
+  local bufnr = self._buffer.number
+  if bufnr <= 0 then
+    return
+  end
+  self._buffer:wipeout()
+  vfilers[bufnr] = nil
 end
 
 function VFiler:_define_mappings()
