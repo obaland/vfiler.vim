@@ -11,6 +11,7 @@ M.configs = {
     auto_cd = false,
     auto_resize = false,
     columns = 'indent,icon,name,mode,size,time',
+    find = false,
     header = true,
     keep = false,
     listed = true,
