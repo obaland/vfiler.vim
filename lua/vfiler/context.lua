@@ -188,6 +188,14 @@ function Context:copy()
   return new
 end
 
+--- Find the specified path from the current root
+---@param path string
+---@param recursive boolean
+function Context:find(path, recursive)
+  path = core.path.normalize(path)
+  print('root:', self.root.path, 'path:', path)
+end
+
 --- Save the path in the current context
 ---@param path string
 function Context:save(path)

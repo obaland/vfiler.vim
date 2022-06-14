@@ -42,12 +42,17 @@ function M.start(dirpath, configs)
     end
   end
 
+  -- Find a file in the active buffer
+  local filepath
+  if options.find_file then
+    filepath = vim.fn.expand('%:p')
+  end
+
   local context = Context.new(merged_configs)
   local vfiler = VFiler.find_visible(options.name)
   if not options.new and vfiler then
     vfiler:focus()
     vfiler:update(context)
-    vfiler:do_action(api.cd, dirpath)
   else
     vfiler = VFiler.find_hidden(options.name)
     if options.new or not vfiler then
@@ -56,13 +61,8 @@ function M.start(dirpath, configs)
       vfiler:update(context)
     end
     vfiler:open(options.layout)
-    vfiler:start(dirpath)
   end
-
-  -- Find a file in the active buffer
-  if options.find_file then
-    print('find file:', vim.fn.expand('%:p'))
-  end
+  vfiler:start(dirpath, filepath)
   return true
 end
 

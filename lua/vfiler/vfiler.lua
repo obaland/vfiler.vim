@@ -263,10 +263,15 @@ end
 
 --- Start the filer
 ---@param dirpath string
-function VFiler:start(dirpath)
-  self._context:switch(dirpath)
+---@param filepath string
+function VFiler:start(dirpath, filepath)
+  local path = self._context:switch(dirpath)
+  -- Find the specified path
+  if filepath then
+    path = self._context:find(filepath, true)
+  end
   self:draw()
-  core.cursor.move(self._view:top_lnum())
+  self._view:move_cursor(path)
 end
 
 --- Get current status string
