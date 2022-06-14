@@ -55,22 +55,6 @@ Session.__index = Session
 local shared_attributes = {}
 local shared_drives = {}
 
-local function expand(root, attribute)
-  for _, child in ipairs(root.children) do
-    local opened = attribute.opened_attributes[child.name]
-    if opened then
-      child:open()
-      expand(child, opened)
-    end
-
-    local selected = attribute.selected_names[child.name]
-    if selected then
-      child.selected = true
-    end
-  end
-  return root
-end
-
 function Session.new(type)
   local attributes
   if type == 'buffer' then
@@ -91,6 +75,22 @@ function Session.new(type)
     _attributes = attributes,
     _drives = drives,
   }, Session)
+end
+
+function Session.expand(root, attribute)
+  for _, child in ipairs(root.children) do
+    local opened = attribute.opened_attributes[child.name]
+    if opened then
+      child:open()
+      Session.expand(child, opened)
+    end
+
+    local selected = attribute.selected_names[child.name]
+    if selected then
+      child.selected = true
+    end
+  end
+  return root
 end
 
 function Session:copy()
@@ -129,7 +129,7 @@ function Session:load(root)
   if not attribute then
     return nil
   end
-  expand(root, attribute.object)
+  Session.expand(root, attribute.object)
   return attribute.previus_path
 end
 
@@ -144,6 +144,23 @@ end
 ------------------------------------------------------------------------------
 -- Context class
 ------------------------------------------------------------------------------
+
+function Session.expand(root, attribute)
+  for _, child in ipairs(root.children) do
+    local opened = attribute.opened_attributes[child.name]
+    if opened then
+      child:open()
+      Session.expand(child, opened)
+    end
+
+    local selected = attribute.selected_names[child.name]
+    if selected then
+      child.selected = true
+    end
+  end
+  return root
+end
+
 local function walk_directories(root)
   local function walk(item)
     if item.children then
@@ -190,10 +207,38 @@ end
 
 --- Find the specified path from the current root
 ---@param path string
----@param recursive boolean
 function Context:find(path, recursive)
   path = core.path.normalize(path)
-  print('root:', self.root.path, 'path:', path)
+  local s, e = path:find(self.root.path)
+  if not s then
+    return nil
+  end
+  -- extract except for path separator
+  local names = vim.fn.split(path:sub(e + 1), '/')
+  if #names == 0 or (recursive and #names > 1) then
+    return nil
+  end
+  local target = self.root
+  for i, name in ipairs(names) do
+    for _, child in pairs(target.children) do
+      if name == child.name then
+        if child.type == 'directory' then
+          if i == #names then
+            return child
+          else
+            if not child.opened then
+              child:open()
+            end
+            target = child
+            break
+          end
+        else
+          return child
+        end
+      end
+    end
+  end
+  return nil
 end
 
 --- Save the path in the current context

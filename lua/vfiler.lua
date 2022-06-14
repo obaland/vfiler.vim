@@ -1,4 +1,3 @@
-local api = require('vfiler/actions/api')
 local config = require('vfiler/config')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')

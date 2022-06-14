@@ -268,7 +268,10 @@ function VFiler:start(dirpath, filepath)
   local path = self._context:switch(dirpath)
   -- Find the specified path
   if filepath then
-    path = self._context:find(filepath, true)
+    local found = self._context:find(filepath)
+    if found then
+      path = found.path
+    end
   end
   self:draw()
   self._view:move_cursor(path)
