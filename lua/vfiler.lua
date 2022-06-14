@@ -48,17 +48,21 @@ function M.start(dirpath, configs)
     vfiler:focus()
     vfiler:update(context)
     vfiler:do_action(api.cd, dirpath)
-    return true
+  else
+    vfiler = VFiler.find_hidden(options.name)
+    if options.new or not vfiler then
+      vfiler = VFiler.new(context)
+    else
+      vfiler:update(context)
+    end
+    vfiler:open(options.layout)
+    vfiler:start(dirpath)
   end
 
-  vfiler = VFiler.find_hidden(options.name)
-  if options.new or not vfiler then
-    vfiler = VFiler.new(context)
-  else
-    vfiler:update(context)
+  -- Find a file in the active buffer
+  if options.find_file then
+    print('find file:', vim.fn.expand('%:p'))
   end
-  vfiler:open(options.layout)
-  vfiler:start(dirpath)
   return true
 end
 

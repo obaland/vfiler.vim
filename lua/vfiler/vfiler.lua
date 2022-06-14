@@ -188,21 +188,6 @@ function VFiler._handle_event(bufnr, group, type)
   vfiler:do_action(action)
 end
 
---- Is the filer visible?
-function VFiler:visible()
-  return self._view:winnr() >= 0
-end
-
---- Do action
-function VFiler:do_action(action, ...)
-  action(self, self._context, self._view, ...)
-end
-
---- Draw the filer in the current window
-function VFiler:draw()
-  self._view:draw(self._context)
-end
-
 --- Copy the vfiler
 function VFiler:copy()
   local options = self._context.options
@@ -215,6 +200,16 @@ function VFiler:copy()
     new = VFiler.new(newcontext)
   end
   return new
+end
+
+--- Do action
+function VFiler:do_action(action, ...)
+  action(self, self._context, self._view, ...)
+end
+
+--- Draw the filer in the current window
+function VFiler:draw()
+  self._view:draw(self._context)
 end
 
 --- Focus filer
@@ -234,6 +229,11 @@ end
 function VFiler:link(vfiler)
   self._context.linked = vfiler
   vfiler._context.linked = self
+end
+
+--- Move the cursor to the specified path
+function VFiler:move_cursor(path)
+  self._view:move_cursor(path)
 end
 
 --- Open filer
@@ -300,6 +300,11 @@ function VFiler:update(context)
   -- set buffer options
   self._buffer:set_option('buflisted', context.options.listed)
   self._view:reset(context)
+end
+
+--- Is the filer visible?
+function VFiler:visible()
+  return self._view:winnr() >= 0
 end
 
 --- Wipeout filer
