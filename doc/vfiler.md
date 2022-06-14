@@ -231,7 +231,7 @@ see: [Column customization](#column-customization)
 - Command option format: `-columns={column1,column2,...}`
 
 #### find_file
-If this option is enabled, the cursor in the tree is changed to the current `bufname`.
+If this option is enabled, the cursor in the tree is changed to the current `bufname`. <br>
 It also recursively opens the leaf of the tree leading to the file in the buffer.
 
 - Type: `boolean`
