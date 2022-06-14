@@ -122,6 +122,7 @@ require'vfiler/config'.setup {
     auto_cd = false,
     auto_resize = false,
     columns = 'indent,icon,name,mode,size,time',
+    find_file = false,
     header = true,
     keep = false,
     listed = true,
@@ -228,6 +229,14 @@ see: [Column customization](#column-customization)
 - Type: `string`
 - Default: `indent,icon,name,mode,size,time`
 - Command option format: `-columns={column1,column2,...}`
+
+#### find_file
+If this option is enabled, the cursor in the tree is changed to the current `bufname`.
+It also recursively opens the leaf of the tree leading to the file in the buffer.
+
+- Type: `boolean`
+- Default: `false`
+- Command option format: `-find-file`
 
 #### git.enabled
 Handles Git information.
