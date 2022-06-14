@@ -268,9 +268,9 @@ function VFiler:start(dirpath, filepath)
   local path = self._context:switch(dirpath)
   -- Find the specified path
   if filepath then
-    local found = self._context:find(filepath)
-    if found then
-      path = found.path
+    local item = self._context:open_tree(filepath)
+    if item then
+      path = item.path
     end
   end
   self:draw()

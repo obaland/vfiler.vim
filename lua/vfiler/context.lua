@@ -77,12 +77,12 @@ function Session.new(type)
   }, Session)
 end
 
-function Session.expand(root, attribute)
+function Session._open(root, attribute)
   for _, child in ipairs(root.children) do
     local opened = attribute.opened_attributes[child.name]
     if opened then
       child:open()
-      Session.expand(child, opened)
+      Session._open(child, opened)
     end
 
     local selected = attribute.selected_names[child.name]
@@ -129,7 +129,7 @@ function Session:load(root)
   if not attribute then
     return nil
   end
-  Session.expand(root, attribute.object)
+  Session._open(root, attribute.object)
   return attribute.previus_path
 end
 
@@ -144,22 +144,6 @@ end
 ------------------------------------------------------------------------------
 -- Context class
 ------------------------------------------------------------------------------
-
-function Session.expand(root, attribute)
-  for _, child in ipairs(root.children) do
-    local opened = attribute.opened_attributes[child.name]
-    if opened then
-      child:open()
-      Session.expand(child, opened)
-    end
-
-    local selected = attribute.selected_names[child.name]
-    if selected then
-      child.selected = true
-    end
-  end
-  return root
-end
 
 local function walk_directories(root)
   local function walk(item)
@@ -205,9 +189,9 @@ function Context:copy()
   return new
 end
 
---- Find the specified path from the current root
+--- Open the tree recursively according to the specified path
 ---@param path string
-function Context:find(path, recursive)
+function Context:open_tree(path)
   path = core.path.normalize(path)
   local s, e = path:find(self.root.path)
   if not s then
@@ -215,12 +199,12 @@ function Context:find(path, recursive)
   end
   -- extract except for path separator
   local names = vim.fn.split(path:sub(e + 1), '/')
-  if #names == 0 or (recursive and #names > 1) then
+  if #names == 0 then
     return nil
   end
-  local target = self.root
+  local directory = self.root
   for i, name in ipairs(names) do
-    for _, child in pairs(target.children) do
+    for _, child in pairs(directory.children) do
       if name == child.name then
         if child.type == 'directory' then
           if i == #names then
@@ -229,7 +213,7 @@ function Context:find(path, recursive)
             if not child.opened then
               child:open()
             end
-            target = child
+            directory = child
             break
           end
         else
