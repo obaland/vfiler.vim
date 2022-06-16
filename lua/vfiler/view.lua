@@ -256,7 +256,13 @@ function View:redraw()
     self:_resize()
   end
 
-  local winwidth = vim.fn.winwidth(winid) - 1 -- padding end
+  local winwidth = vim.fn.winwidth(winid) - 1 -- padding endline
+  local number = vim.get_win_flag_option(winid, 'number')
+  local relativenumber = vim.get_win_flag_option(winid, 'relativenumber')
+  if number or relativenumber then
+    winwidth = winwidth - vim.get_win_option(winid, 'numberwidth')
+  end
+
   if cache.winwidth ~= winwidth or not cache.column_props then
     cache.column_props = self:_create_column_props(winwidth)
     cache.winwidth = winwidth
