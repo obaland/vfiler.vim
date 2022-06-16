@@ -528,6 +528,18 @@ Moves the cursor to the bottom of the `vfiler.vim` buffer.
 #### move_cursor_top
 Moves the cursor to the top of the `vfiler.vim` buffer.
 
+#### move_cursor_down_sibling
+Move the cursor to the next sibling.
+
+#### move_cursor_up_sibling
+Move the cursor to the previous sibling.
+
+#### move_cursor_bottom_sibling
+Move the cursor to the last sibling.
+
+#### move_cursor_top_sibling
+Move the cursor to the first sibling.
+
 ---
 
 ###  Action to directory

@@ -198,6 +198,70 @@ function View:move_cursor(path)
   vim.fn.execute('normal zb', 'silent')
 end
 
+--- Get the first sibling item
+function View:first_sibling_item(lnum)
+  local top_lnum = self:top_lnum()
+  if lnum <= top_lnum then
+    return top_lnum, self._items[top_lnum]
+  end
+  local level = self._items[lnum].level
+  for i = lnum - 1, top_lnum, -1 do
+    local item = self._items[i]
+    if item.level < level then
+      return i + 1, self._items[i + 1]
+    end
+  end
+  return top_lnum, self._items[top_lnum]
+end
+
+--- Get the last sibling item
+function View:last_sibling_item(lnum)
+  local lines = #self._items
+  if lnum >= lines then
+    return lines, self._items[lines]
+  end
+  local level = self._items[lnum].level
+  for i = lnum + 1, #self._items do
+    local item = self._items[i]
+    if item.level < level then
+      return i - 1, self._items[i - 1]
+    end
+  end
+  return lines, self._items[lines]
+end
+
+--- Get the next sibling item
+function View:next_sibling_item(lnum)
+  local lines = #self._items
+  if lnum >= lines then
+    return lines, self._items[lines]
+  end
+  local level = self._items[lnum].level
+  for i = lnum + 1, #self._items do
+    local item = self._items[i]
+    if item.level == level then
+      return i, item
+    end
+  end
+  return lnum, self._items[lnum]
+end
+
+--- Get the previous sibiling item
+function View:prev_sibling_item(lnum)
+  local top_lnum = self:top_lnum()
+  if lnum <= top_lnum then
+    return top_lnum, self._items[top_lnum]
+  end
+  local level = self._items[lnum].level
+  for i = lnum - 1, top_lnum, -1 do
+    local item = self._items[i]
+    if item.level == level then
+      return i, item
+    end
+  end
+  return lnum, self._items[lnum]
+end
+
 --- Get the number of line in the view buffer
 function View:num_lines()
   if not self._items then
