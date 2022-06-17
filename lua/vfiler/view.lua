@@ -2,26 +2,15 @@ local core = require('vfiler/libs/core')
 local sort = require('vfiler/sort')
 local vim = require('vfiler/libs/vim')
 
-local View = {}
-View.__index = View
+local LnumIndex = {}
+LnumIndex.__index = LnumIndex
 
-local function walk(root, sort_compare, gitstatus)
-  local function _walk(item)
-    -- Override gitstatus of items
-    item.gitstatus = gitstatus[item.path]
-
-    local children = item.children
-    if children then
-      table.sort(children, sort_compare)
-      for _, child in ipairs(children) do
-        coroutine.yield(child)
-        _walk(child)
-      end
-    end
-  end
-  return coroutine.wrap(function()
-    _walk(root)
-  end)
+function LnumIndex.new(level, prev_sibling, next_sibling)
+  return setmetatable({
+    level = level,
+    prev_sibling = prev_sibling,
+    next_sibling = next_sibling,
+  }, LnumIndex)
 end
 
 local function new_window(layout)
@@ -107,6 +96,9 @@ local function to_win_config(options)
   }
 end
 
+local View = {}
+View.__index = View
+
 --- Create a view object
 ---@param context table
 function View.new(context)
@@ -149,20 +141,21 @@ end
 --- Draw along the context
 ---@param context table
 function View:draw(context)
-  -- expand item list
+  -- flatten hierarchical items into a list
   self._items = {}
+  self._lnum_indexes = {}
   if self._header then
     table.insert(self._items, context.root)
+    table.insert(self._lnum_indexes, LnumIndex.new(context.root.level))
   end
 
   local options = context.options
-  local compare = sort.get(options.sort)
-  for item in walk(context.root, compare, context.gitstatus) do
-    local hidden = item.name:sub(1, 1) == '.'
-    if options.show_hidden_files or not hidden then
-      table.insert(self._items, item)
-    end
-  end
+  self:_flatten_items(
+    context.root,
+    sort.get(options.sort),
+    context.gitstatus,
+    options.show_hidden_files
+  )
 
   self:redraw()
 end
@@ -188,6 +181,50 @@ function View:indexof(path)
   return 0
 end
 
+--- Get the index of the first sibling item
+function View:indexof_first_sibling(lnum)
+  local level = self._lnum_indexes[lnum].level
+  local top_lnum = self:top_lnum()
+  for i = lnum - 1, top_lnum, -1 do
+    local index = self._lnum_indexes[i]
+    if index.level == level and not index.prev_sibling then
+      return i
+    end
+  end
+  return top_lnum
+end
+
+--- Get the index of the last sibling item
+function View:indexof_last_sibling(lnum)
+  local level = self._lnum_indexes[lnum].level
+  local lines = #self._items
+  for i = lnum + 1, #self._lnum_indexes do
+    local index = self._lnum_indexes[i]
+    if index.level == level and not index.next_sibling then
+      return i
+    end
+  end
+  return lines
+end
+
+--- Get the index of the next sibling item
+function View:indexof_next_sibling(lnum)
+  local next = self._lnum_indexes[lnum].next_sibling
+  if next then
+    return next
+  end
+  return lnum
+end
+
+--- Get the index of the previous sibiling item
+function View:indexof_prev_sibling(lnum)
+  local prev = self._lnum_indexes[lnum].prev_sibling
+  if prev then
+    return prev
+  end
+  return lnum
+end
+
 --- Move the cursor to the position of the specified path
 function View:move_cursor(path)
   local lnum = self:indexof(path)
@@ -196,70 +233,6 @@ function View:move_cursor(path)
   -- Correspondence to show the header line
   -- when moving to the beginning of the line.
   vim.fn.execute('normal zb', 'silent')
-end
-
---- Get the first sibling item
-function View:first_sibling_item(lnum)
-  local top_lnum = self:top_lnum()
-  if lnum <= top_lnum then
-    return top_lnum, self._items[top_lnum]
-  end
-  local level = self._items[lnum].level
-  for i = lnum - 1, top_lnum, -1 do
-    local item = self._items[i]
-    if item.level < level then
-      return i + 1, self._items[i + 1]
-    end
-  end
-  return top_lnum, self._items[top_lnum]
-end
-
---- Get the last sibling item
-function View:last_sibling_item(lnum)
-  local lines = #self._items
-  if lnum >= lines then
-    return lines, self._items[lines]
-  end
-  local level = self._items[lnum].level
-  for i = lnum + 1, #self._items do
-    local item = self._items[i]
-    if item.level < level then
-      return i - 1, self._items[i - 1]
-    end
-  end
-  return lines, self._items[lines]
-end
-
---- Get the next sibling item
-function View:next_sibling_item(lnum)
-  local lines = #self._items
-  if lnum >= lines then
-    return lines, self._items[lines]
-  end
-  local level = self._items[lnum].level
-  for i = lnum + 1, #self._items do
-    local item = self._items[i]
-    if item.level == level then
-      return i, item
-    end
-  end
-  return lnum, self._items[lnum]
-end
-
---- Get the previous sibiling item
-function View:prev_sibling_item(lnum)
-  local top_lnum = self:top_lnum()
-  if lnum <= top_lnum then
-    return top_lnum, self._items[top_lnum]
-  end
-  local level = self._items[lnum].level
-  for i = lnum - 1, top_lnum, -1 do
-    local item = self._items[i]
-    if item.level == level then
-      return i, item
-    end
-  end
-  return lnum, self._items[lnum]
 end
 
 --- Get the number of line in the view buffer
@@ -529,6 +502,36 @@ function View:_create_column_props(winwidth)
     start_col = prop.end_col + 1 -- "1" is space between columns
   end
   return props
+end
+
+function View:_flatten_items(item, sort_compare, gitstatus, show_hidden_files)
+  -- Override gitstatus of items
+  item.gitstatus = gitstatus[item.path]
+
+  local children = item.children
+  if not children then
+    return
+  end
+
+  table.sort(children, sort_compare)
+  local prev_sibling
+  for i, child in ipairs(children) do
+    local hidden = child.name:sub(1, 1) == '.'
+    if show_hidden_files or not hidden then
+      local index = LnumIndex.new(child.level, prev_sibling)
+
+      table.insert(self._items, child)
+      table.insert(self._lnum_indexes, index)
+      prev_sibling = #self._items
+
+      -- recursive flattening
+      self:_flatten_items(child, sort_compare, gitstatus)
+
+      if i ~= #children then
+        index.next_sibling = prev_sibling + (#self._items - prev_sibling) + 1
+      end
+    end
+  end
 end
 
 function View:_resize()

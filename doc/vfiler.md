@@ -516,6 +516,12 @@ Move the cursor down with loop.
 #### loop_cursor_up
 Move the cursor up with loop.
 
+#### loop_cursor_down_sibling
+Move the cursor to the next sibling with loop.
+
+#### loop_cursor_up_sibling
+Move the cursor to the previous sibling with loop.
+
 #### move_cursor_down
 Move the cursor down.
 

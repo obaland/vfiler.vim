@@ -14,6 +14,8 @@ describe('cursor actions', function()
     move_cursor_top_sibling = a.move_cursor_top_sibling,
     loop_cursor_up = a.loop_cursor_up,
     loop_cursor_down = a.loop_cursor_down,
+    loop_cursor_up_sibling = a.loop_cursor_up_sibling,
+    loop_cursor_down_sibling = a.loop_cursor_down_sibling,
   }
   for name, action in pairs(action_sequence) do
     it(u.vfiler.desc(name, vfiler), function()
