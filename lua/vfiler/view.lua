@@ -68,11 +68,8 @@ local function get_window_size(layout, wvalue, hvalue)
 end
 
 local function to_win_config(options)
-  local width, height = get_window_size(
-    options.layout,
-    options.width,
-    options.height
-  )
+  local width, height =
+    get_window_size(options.layout, options.width, options.height)
   local col = options.col
   if col == 0 then
     -- Calculate so that the window is in the middle.
@@ -488,10 +485,8 @@ function View:_create_column_props(winwidth)
   if #variable_columns > 0 then
     local width_by_columns = math.floor(rest_width / #variable_columns)
     for _, column in ipairs(variable_columns) do
-      props[column.index].width = column.object:get_width(
-        self._items,
-        width_by_columns
-      )
+      props[column.index].width =
+        column.object:get_width(self._items, width_by_columns)
     end
   end
 
@@ -525,7 +520,7 @@ function View:_flatten_items(item, sort_compare, gitstatus, show_hidden_files)
       prev_sibling = #self._items
 
       -- recursive flattening
-      self:_flatten_items(child, sort_compare, gitstatus)
+      self:_flatten_items(child, sort_compare, gitstatus, show_hidden_files)
 
       if i ~= #children then
         index.next_sibling = prev_sibling + (#self._items - prev_sibling) + 1

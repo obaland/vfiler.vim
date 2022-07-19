@@ -71,23 +71,13 @@ local function to_window_options(options, name, win_size, content_size)
     if value == 'auto' then
       content_height = content_height + 1
     end
-    woptions.height = winvalue(
-      value,
-      win_size.height,
-      content_height,
-      1,
-      win_size.height
-    )
+    woptions.height =
+      winvalue(value, win_size.height, content_height, 1, win_size.height)
   elseif options.right or options.left then
     layout = options.right and 'right' or 'left'
     local value = options.right or options.left
-    woptions.width = winvalue(
-      value,
-      win_size.width,
-      content_size.width,
-      1,
-      win_size.width
-    )
+    woptions.width =
+      winvalue(value, win_size.width, content_size.width, 1, win_size.width)
     woptions.height = 0
   end
 
@@ -277,12 +267,8 @@ function Extension:start()
     width = width,
     height = #lines,
   }
-  local woptions, layout = to_window_options(
-    configs.options,
-    self.name,
-    win_size,
-    content_size
-  )
+  local woptions, layout =
+    to_window_options(configs.options, self.name, win_size, content_size)
   if layout ~= 'floating' then
     core.window.open(layout)
   end
@@ -337,12 +323,8 @@ function Extension:reload()
     width = width,
     height = #lines,
   }
-  local woptions = to_window_options(
-    configs.options,
-    self.name,
-    win_size,
-    content_size
-  )
+  local woptions =
+    to_window_options(configs.options, self.name, win_size, content_size)
   self._window:open(self._buffer, woptions)
   self._window:set_options(self:_get_win_options(configs))
   self._window:set_title(self.name)

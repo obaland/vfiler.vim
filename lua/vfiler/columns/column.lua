@@ -25,17 +25,11 @@ local function create_syntax_commands(syntaxes, end_mark)
 
     local command
     if syntax.keyword then
-      command = core.syntax.keyword_command(
-        syntax.group,
-        syntax.keyword,
-        options
-      )
+      command =
+        core.syntax.keyword_command(syntax.group, syntax.keyword, options)
     elseif syntax.pattern then
-      command = core.syntax.match_command(
-        syntax.group,
-        syntax.pattern,
-        options
-      )
+      command =
+        core.syntax.match_command(syntax.group, syntax.pattern, options)
     else
       local start_mark = core.string.vesc(syntax.start_mark)
       options.concealends = true

@@ -13,14 +13,8 @@ function Rename.new(filer, options)
   end
 
   local Extension = require('vfiler/extensions/extension')
-  local self = core.inherit(
-    Rename,
-    Extension,
-    filer,
-    'Rename',
-    configs,
-    options
-  )
+  local self =
+    core.inherit(Rename, Extension, filer, 'Rename', configs, options)
   -- overwrite buffer options
   self._buffer:set_options({
     buftype = 'acwrite',
