@@ -50,7 +50,9 @@ end
 
 function M.close_floating(vfiler, context, view)
   if view:type() == 'floating' then
-    view:close()
+    -- For floating windows, close the window,
+    -- including the buffer, as this will lead to problems.
+    vfiler:wipeout()
   end
 end
 
