@@ -263,7 +263,7 @@ end
 --- Redraw the current contents
 function View:redraw()
   local buffer = self._buffer
-  if (not buffer) or (buffer.number ~= vim.fn.bufnr()) then
+  if not buffer or (buffer.number ~= vim.fn.bufnr()) then
     -- for debug
     --core.message.warning(
     --  'Cannot draw because the buffer is different. (%d != %d)',
