@@ -263,7 +263,7 @@ end
 --- Redraw the current contents
 function View:redraw()
   local buffer = self._buffer
-  if buffer.number ~= vim.fn.bufnr() then
+  if (not buffer) or (buffer.number ~= vim.fn.bufnr()) then
     -- for debug
     --core.message.warning(
     --  'Cannot draw because the buffer is different. (%d != %d)',
@@ -426,6 +426,9 @@ end
 
 --- Get the window ID of the view
 function View:winid()
+  if not self._window then
+    return 0
+  end
   return self._window:id()
 end
 
