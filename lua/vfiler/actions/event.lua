@@ -48,10 +48,10 @@ function M.latest_update(vfiler, context, view)
   })
 end
 
-function M.close_floating(vfiler, context, view)
+function M.leave(vfiler, context, view)
+  -- For floating windows, close the window,
+  -- including the buffer, as this will lead to problems.
   if view:type() == 'floating' then
-    -- For floating windows, close the window,
-    -- including the buffer, as this will lead to problems.
     vfiler:wipeout()
   end
 end

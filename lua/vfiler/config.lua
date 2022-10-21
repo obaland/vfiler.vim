@@ -96,9 +96,9 @@ M.configs = {
   events = {
     vfiler = {
       BufEnter = action.reload_all,
-      BufLeave = event.close_floating,
+      BufLeave = event.leave,
       FocusGained = event.reload_all,
-      TabLeave = event.close_floating,
+      TabLeave = event.leave,
       VimResized = action.reload_all,
     },
 
