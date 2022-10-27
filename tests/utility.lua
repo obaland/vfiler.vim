@@ -180,13 +180,13 @@ end
 
 function M.vfiler.start(configs)
   require('vfiler').start('', configs)
-  local filer = require('vfiler/vfiler').get()
+  local filer = require('vfiler/vfiler').get(vim.fn.bufnr())
   return filer, filer._context, filer._view
 end
 
 function M.vfiler.start_command(args)
   require('vfiler').start_command(args)
-  local filer = require('vfiler/vfiler').get()
+  local filer = require('vfiler/vfiler').get(vim.fn.bufnr())
   assert(filer ~= nil)
   return filer, filer._context, filer._view
 end
