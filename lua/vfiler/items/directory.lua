@@ -88,9 +88,11 @@ function Directory:open(recursive)
   self.children = {}
   for stat in fs.scandir(self.path) do
     local item = new_item(stat)
-    self:_add(item)
-    if recursive and item.type == 'directory' then
-      item:open(recursive)
+    if item then
+      self:_add(item)
+      if recursive and item.type == 'directory' then
+        item:open(recursive)
+      end
     end
   end
   self.opened = true

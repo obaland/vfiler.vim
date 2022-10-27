@@ -67,7 +67,7 @@ end
 
 --- Get current status string
 function M.status()
-  local current = VFiler.get()
+  local current = VFiler.get(vim.fn.bufnr())
   if not current then
     return ''
   end
@@ -76,7 +76,7 @@ end
 
 --- Get current status string for statusline
 function M.statusline()
-  local current = VFiler.get()
+  local current = VFiler.get(vim.fn.bufnr())
   if not current then
     return ''
   end

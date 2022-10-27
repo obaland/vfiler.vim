@@ -108,7 +108,14 @@ end
 
 --- Do action for each visible filers
 function VFiler.foreach(action, ...)
-  local current = VFiler.get()
+  local current = VFiler.get(vim.fn.bufnr())
+  if not current then
+    core.message.error(
+      'The vfiler buffer dones not exist. (%d)',
+      vim.fn.bufnr()
+    )
+    return
+  end
   for _, filer in ipairs(VFiler.get_visible()) do
     filer:focus()
     filer:do_action(action, ...)
@@ -119,7 +126,6 @@ end
 --- Get the filer from the buffer number
 ---@param bufnr number Buffer number
 function VFiler.get(bufnr)
-  bufnr = bufnr or vim.fn.bufnr()
   if not vfilers[bufnr] then
     return nil
   end
@@ -165,6 +171,10 @@ end
 
 function VFiler._do_action(bufnr, key)
   local vfiler = VFiler.get(bufnr)
+  if not vfiler then
+    core.message.error('The vfiler buffer dones not exist. (%d)', bufnr)
+    return
+  end
   local action = vfiler._mappings[key]
   assert(action, 'Not defined in the key')
   vfiler:do_action(action)

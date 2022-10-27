@@ -334,7 +334,6 @@ function M.string.pesc(s)
 end
 
 --- Replace keycode (<CR>, <Esc>, ...)
----@param s string
 M.string.replace_keycode = vim.fn['vfiler#core#replace_keycode']
 
 function M.string.split(str, pattern)
