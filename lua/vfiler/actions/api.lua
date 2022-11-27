@@ -191,6 +191,7 @@ function M.open_file(vfiler, context, view, path, layout)
   else
     open_file(vfiler, context, view, path, layout)
   end
+  context:perform_auto_cd()
 end
 
 function M.start_extension(vfiler, context, view, extension)

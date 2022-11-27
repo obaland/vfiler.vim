@@ -242,6 +242,13 @@ function Context:parent_path()
   return core.path.parent(self.root.path)
 end
 
+-- Rerform auto cd
+function Context:perform_auto_cd()
+  if self.options.auto_cd then
+    vim.fn.execute('lcd ' .. self.root.path, 'silent')
+  end
+end
+
 -- Reload the current directory path
 function Context:reload()
   local root_path = self.root.path
