@@ -2,7 +2,6 @@ local config = require('vfiler/config')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
-local Context = require('vfiler/context')
 local VFiler = require('vfiler/vfiler')
 
 local M = {}
@@ -47,6 +46,7 @@ function M.start(dirpath, configs)
     filepath = vim.fn.expand('%:p')
   end
 
+  local Context = require('vfiler/context')
   local context = Context.new(merged_configs)
   local vfiler = VFiler.find_visible(options.name)
   if not options.new and vfiler then

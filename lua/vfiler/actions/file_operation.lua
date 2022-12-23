@@ -5,7 +5,6 @@ local core = require('vfiler/libs/core')
 local fs = require('vfiler/libs/filesystem')
 
 local Clipboard = require('vfiler/clipboard')
-local Rename = require('vfiler/extensions/rename')
 local VFiler = require('vfiler/vfiler')
 
 local M = {}
@@ -35,6 +34,7 @@ local function create_files(dest, contents, create)
 end
 
 local function rename_files(vfiler, context, view, targets)
+  local Rename = require('vfiler/extensions/rename')
   local rename = Rename.new(vfiler, {
     initial_items = targets,
     on_execute = function(filer, c, v, items, renames)

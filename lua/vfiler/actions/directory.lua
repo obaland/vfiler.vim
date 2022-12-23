@@ -2,8 +2,6 @@ local api = require('vfiler/actions/api')
 local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
 
-local Menu = require('vfiler/extensions/menu')
-
 local M = {}
 
 local function get_mount_path()
@@ -115,6 +113,8 @@ function M.switch_to_drive(vfiler, context, view)
   end
 
   local root = core.path.root(context.root.path)
+
+  local Menu = require('vfiler/extensions/menu')
   local menu = Menu.new(vfiler, 'Select Drive', {
     initial_items = drives,
     default = root,

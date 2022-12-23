@@ -2,15 +2,13 @@ local core = require('vfiler/libs/core')
 local status = require('vfiler/status')
 local vim = require('vfiler/libs/vim')
 
-local Buffer = require('vfiler/buffer')
-local View = require('vfiler/view')
-
 local vfilers = {}
 
 local VFiler = {}
 VFiler.__index = VFiler
 
 local function new_buffer(bufname, context)
+  local Buffer = require('vfiler/buffer')
   local buffer = Buffer.new(bufname)
   buffer:set_options({
     bufhidden = 'hide',
@@ -153,6 +151,7 @@ function VFiler.new(context)
   local buffer = new_buffer(bufname, context)
   buffer:set_option('buflisted', context.options.listed)
 
+  local View = require('vfiler/view')
   local self = setmetatable({
     _buffer = buffer,
     _context = context,

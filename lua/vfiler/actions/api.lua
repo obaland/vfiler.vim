@@ -3,8 +3,6 @@ local config = require('vfiler/actions/config')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
-local Buffer = require('vfiler/buffer')
-
 local M = {}
 
 -- stylua: ignore
@@ -15,6 +13,8 @@ local choose_keys = {
 }
 
 local function choose_window(winid)
+  local Buffer = require('vfiler/buffer')
+
   local winids = {}
   for winnr = 1, vim.fn.winnr('$') do
     local bufnr = vim.fn.winbufnr(winnr)
@@ -89,6 +89,7 @@ local function open_file(vfiler, context, view, path, layout)
     newfiler:open()
     newfiler:start(path)
   else
+    local Buffer = require('vfiler/buffer')
     local result = core.window.open('none', path)
     if not result then
       -- NOTE: correspondence of "ATTENTION E325"

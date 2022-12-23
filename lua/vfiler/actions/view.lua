@@ -1,11 +1,10 @@
 local api = require('vfiler/actions/api')
 local sort = require('vfiler/sort')
 
-local Menu = require('vfiler/extensions/menu')
-
 local M = {}
 
 function M.change_sort(vfiler, context, view)
+  local Menu = require('vfiler/extensions/menu')
   local menu = Menu.new(vfiler, 'Select Sort', {
     initial_items = sort.types(),
     default = context.options.sort,

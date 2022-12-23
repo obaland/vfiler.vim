@@ -1,8 +1,6 @@
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
-local Buffer = require('vfiler/buffer')
-
 local Preview = {}
 Preview.__index = Preview
 
@@ -129,6 +127,8 @@ function Preview:open(path)
     local message = ('"%s" could not be opened.'):format(filename)
     table.insert(lines, message)
   end
+
+  local Buffer = require('vfiler/buffer')
 
   -- NOTE: In the case of vim, avoid the problem that the top row of
   -- the window is changed arbitrarily.
