@@ -646,8 +646,8 @@ keymaps.
 ------------------------------------------------------------------------------
 COLUMN CUSTOMIZATION                             *vfiler-column-customization*
 
-`vfiler.vim` supports several columns.<br/>You can change each column to show
-or hide, and also change the display order.
+`vfiler.vim` supports several columns. You can change each column to show or
+hide, and also change the display order.
 
 HOW TO SPECIFY. ~
 
