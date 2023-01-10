@@ -49,7 +49,7 @@ Please see the |vfiler-options| for details.
 EXAMPLES ~
 
 >
-    :VFiler -auto-cd -keep -layout=left -width=30 columns=indent,icon,name
+    :VFiler -auto-cd -keep -layout=left -width=30 -columns=indent,icon,name
     :VFiler -no-git-enabled
 <
 
