@@ -38,7 +38,7 @@ Please see the [Options](#options) for details.
 
 ### Examples
 ```
-:VFiler -auto-cd -keep -layout=left -width=30 columns=indent,icon,name
+:VFiler -auto-cd -keep -layout=left -width=30 -columns=indent,icon,name
 :VFiler -no-git-enabled
 ```
 
