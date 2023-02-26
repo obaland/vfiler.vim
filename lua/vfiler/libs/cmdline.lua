@@ -10,7 +10,8 @@ M.choice = {
 }
 
 function M.clear_prompt()
-  vim.command('normal :esc<CR>')
+  -- Clear the message show on the command line.
+  vim.command('echo')
 end
 
 function M.confirm(prompt, choices, default)
