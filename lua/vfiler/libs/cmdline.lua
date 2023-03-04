@@ -11,7 +11,7 @@ M.choice = {
 
 function M.clear_prompt()
   -- Clear the message show on the command line.
-  vim.command('echo')
+  vim.fn.feedkeys(':', 'nx')
 end
 
 function M.confirm(prompt, choices, default)

@@ -291,11 +291,6 @@ function VFiler:status()
   return status.status(self._context, self._view)
 end
 
---- Get current status string for statusline
-function VFiler:statusline()
-  return status.statusline(self._context, self._view)
-end
-
 --- Unlink filer
 function VFiler:unlink()
   local vfiler = self._context.linked

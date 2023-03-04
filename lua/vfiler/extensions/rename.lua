@@ -26,7 +26,8 @@ function Rename.new(filer, options)
 end
 
 function Rename:check()
-  cmdline.clear_prompt()
+  -- Clear message
+  vim.command('echo')
 
   -- Check the difference in the number of target files
   local buflen = vim.fn.line('$')

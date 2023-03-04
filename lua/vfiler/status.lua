@@ -105,26 +105,6 @@ function M.status(context, view)
   return table.concat(status, status_configs.separator)
 end
 
---- Status string for statusline
----@param context table
----@param view table
-function M.statusline(context, view)
-  local status = {}
-  local status_blocks = build_status_blocks(context, view)
-  for i = 1, #status_blocks do
-    local hl = status_configs.component_highlights[i]
-    if not hl then
-      hl = 'vfilerStatusLine'
-    end
-    local block = ('%%#%s#%s'):format(
-      hl,
-      table.concat(status_blocks[i], status_configs.subseparator)
-    )
-    table.insert(status, block)
-  end
-  return table.concat(status, status_configs.separator)
-end
-
 --- Setup status configs
 ---@param configs table
 function M.setup(configs)

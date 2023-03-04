@@ -63,6 +63,7 @@ local function choose_window(winid)
   local prompt = ('choose (%s) ?'):format(table.concat(keys, '/'))
   repeat
     key = cmdline.getchar(prompt)
+    cmdline.clear_prompt()
     if key == '<ESC>' then
       break
     end

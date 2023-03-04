@@ -74,13 +74,4 @@ function M.status()
   return current:status()
 end
 
---- Get current status string for statusline
-function M.statusline()
-  local current = VFiler.get(vim.fn.bufnr())
-  if not current then
-    return ''
-  end
-  return current:statusline()
-end
-
 return M

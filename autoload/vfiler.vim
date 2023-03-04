@@ -25,7 +25,3 @@ endfunction
 function! vfiler#status() abort
   return luaeval('require("vfiler").status()')
 endfunction
-
-function! vfiler#statusline() abort
-  return luaeval('require("vfiler").statusline()')
-endfunction
