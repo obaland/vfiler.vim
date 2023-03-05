@@ -20,7 +20,7 @@ function M.status(context, view)
       type = item.type,
       mode = item.mode,
       link = item.link,
-    }
+    },
   }
 end
 
