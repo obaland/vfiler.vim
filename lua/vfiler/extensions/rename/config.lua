@@ -18,7 +18,7 @@ M.configs = {
       WinLeave = action.quit,
       BufWriteCmd = action.execute,
       InsertLeave = action.check,
-      CursorMoved = action.check,
+      TextChanged = action.check,
     },
   },
 }

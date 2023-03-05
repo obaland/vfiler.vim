@@ -65,7 +65,7 @@ function M.start(dirpath, configs)
   return true
 end
 
---- Get current status string
+--- Get current status
 function M.status()
   local current = VFiler.get(vim.fn.bufnr())
   if not current then

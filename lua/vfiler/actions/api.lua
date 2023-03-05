@@ -12,6 +12,22 @@ local choose_keys = {
   '2', '3', '4', '5', '6', '7', '8', '9', '0',
 }
 
+local function get_key_status_string(winwidth, key)
+  local caption_width = winwidth / 4
+  local padding = (' '):rep(math.ceil(caption_width / 2))
+  local margin = (' '):rep(math.ceil((winwidth - caption_width) / 2))
+  local status = {
+    '%#vfilerStatusLine#',
+    margin,
+    '%#vfilerStatusLineSection#',
+    padding,
+    key,
+    padding,
+    '%#vfilerStatusLine#',
+  }
+  return table.concat(status, '')
+end
+
 local function choose_window(winid)
   local Buffer = require('vfiler/buffer')
 
@@ -48,13 +64,12 @@ local function choose_window(winid)
   local laststatus = vim.get_option('laststatus')
 
   -- Choose window
-  local status = require('vfiler/status')
   vim.set_option('laststatus', 2)
   for key, id in pairs(winkeys) do
     vim.set_win_option(
       id,
       'statusline',
-      status.choose_window_key(vim.fn.winwidth(id), key)
+      get_key_status_string(vim.fn.winwidth(id), key)
     )
     vim.command('redraw')
   end
