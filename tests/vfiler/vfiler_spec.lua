@@ -74,7 +74,7 @@ describe('vfiler', function()
       assert.is_not_nil(vfiler)
 
       local status = vfiler:status()
-      assert.equal('string', type(status))
+      assert.equal('table', type(status))
 
       vfiler:quit()
     end)
