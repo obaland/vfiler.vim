@@ -8,13 +8,6 @@ local M = {}
 function M.status(context, view)
   local offset = context.options.header and 1 or 0
   local item = view:get_item()
-      if not item then
-        return ''
-      end
-      local name = item.name
-      if item.type == 'directory' then
-        name = name .. '/'
-      end
   return {
     root = vim.fn.fnamemodify(context.root.path, ':~'):gsub('\\', '/'),
     num_items = vim.fn.line('$') - offset,
