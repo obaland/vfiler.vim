@@ -365,6 +365,15 @@ end
 M.list = {}
 M.table = {}
 
+function M.list.indexof(list, value)
+  for i, v in ipairs(list) do
+    if v == value then
+      return i
+    end
+  end
+  return -1
+end
+
 function M.list.extend(dest, src)
   local pos = #dest
   for i = 1, #src do
