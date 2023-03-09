@@ -76,6 +76,22 @@ describe('vfiler', function()
       local status = vfiler:status()
       assert.equal('table', type(status))
 
+      assert.is_not_nil(status.bufnr)
+      assert.is_not_nil(status.root)
+      assert.is_not_nil(status.num_items)
+      assert.is_not_nil(status.current_item)
+      assert.equal('table', type(status.current_item))
+
+      local current_item = status.current_item
+      assert.is_not_nil(current_item.number)
+      assert.is_not_nil(current_item.name)
+      assert.is_not_nil(current_item.path)
+      assert.is_not_nil(current_item.size)
+      assert.is_not_nil(current_item.time)
+      assert.is_not_nil(current_item.type)
+      assert.is_not_nil(current_item.mode)
+      assert.is_not_nil(current_item.link)
+
       vfiler:quit()
     end)
   end)

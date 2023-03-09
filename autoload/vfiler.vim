@@ -22,6 +22,6 @@ function! vfiler#start_command(args)
   call luaeval('require("vfiler").start_command(_A)', a:args)
 endfunction
 
-function! vfiler#status() abort
-  return luaeval('require("vfiler").status()')
+function! vfiler#status(bufnr) abort
+  return luaeval('require("vfiler").status(_A)', a:bufnr)
 endfunction

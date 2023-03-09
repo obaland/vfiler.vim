@@ -66,12 +66,16 @@ function M.start(dirpath, configs)
 end
 
 --- Get current status
-function M.status()
-  local current = VFiler.get(vim.fn.bufnr())
+---@param bufnr number: buffer number.
+--     If "0" is specified, status on the current buffer is returned.
+---@return table
+function M.status(bufnr)
+  local number = (not bufnr or bufnr == 0) and vim.fn.bufnr() or bufnr
+  local current = VFiler.get(number)
   if not current then
-    return ''
+    return vim.dict({})
   end
-  return current:status()
+  return vim.dict(current:status())
 end
 
 return M

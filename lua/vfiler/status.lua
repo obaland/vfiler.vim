@@ -8,7 +8,11 @@ local M = {}
 function M.status(context, view)
   local offset = context.options.header and 1 or 0
   local item = view:get_item()
+  if not item then
+    return {}
+  end
   return {
+    bufnr = view:bufnr(),
     root = vim.fn.fnamemodify(context.root.path, ':~'):gsub('\\', '/'),
     num_items = vim.fn.line('$') - offset,
     current_item = {
