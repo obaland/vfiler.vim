@@ -29,7 +29,7 @@ function M.status(context, view)
     options = {
       width = options.width,
       height = options.height,
-    }
+    },
   }
 end
 
