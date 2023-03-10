@@ -79,8 +79,8 @@ describe('vfiler', function()
       assert.is_not_nil(status.bufnr)
       assert.is_not_nil(status.root)
       assert.is_not_nil(status.num_items)
-      assert.is_not_nil(status.current_item)
       assert.equal('table', type(status.current_item))
+      assert.equal('table', type(status.options))
 
       local current_item = status.current_item
       assert.is_not_nil(current_item.number)
@@ -91,6 +91,10 @@ describe('vfiler', function()
       assert.is_not_nil(current_item.type)
       assert.is_not_nil(current_item.mode)
       assert.is_not_nil(current_item.link)
+
+      local options = status.options
+      assert.is_not_nil(options.width)
+      assert.is_not_nil(options.height)
 
       vfiler:quit()
     end)

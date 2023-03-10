@@ -1,3 +1,4 @@
+local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
 local M = {}
@@ -6,7 +7,8 @@ local M = {}
 ---@param context table
 ---@param view table
 function M.status(context, view)
-  local offset = context.options.header and 1 or 0
+  local options = context.options
+  local offset = header and 1 or 0
   local item = view:get_item()
   if not item then
     return {}
@@ -25,6 +27,10 @@ function M.status(context, view)
       mode = item.mode,
       link = item.link,
     },
+    options = {
+      width = options.width,
+      height = options.height,
+    }
   }
 end
 
