@@ -18,7 +18,7 @@ local function update_dirstatus(dirstatus, status)
 end
 
 function M.get_toplevel(dirpath)
-  local command = ('git -C %s rev-parse --show-toplevel'):format(dirpath)
+  local command = ('git -C "%s" rev-parse --show-toplevel'):format(dirpath)
   local path = vim.fn.system(command)
   if (not path or #path == 0) or path:match('^fatal') then
     return nil
@@ -42,7 +42,7 @@ function M.reload_status(rootpath, options, on_completed)
   end
 
   local gitstatus = {}
-  local command = ('git -C %s %s'):format(rootpath, table.concat(args, ' '))
+  local command = ('git -C "%s" %s'):format(rootpath, table.concat(args, ' '))
 
   local job = Job.new()
   job:start(command, {
