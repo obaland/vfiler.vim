@@ -1,4 +1,3 @@
-local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
 local M = {}
@@ -8,7 +7,7 @@ local M = {}
 ---@param view table
 function M.status(context, view)
   local options = context.options
-  local offset = header and 1 or 0
+  local offset = options.header and 1 or 0
   local item = view:get_item()
   if not item then
     return {}
