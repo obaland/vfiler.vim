@@ -94,7 +94,7 @@ function M.window.open(layout, file)
   end
 
   if file then
-    command = command .. ' ' .. file
+    command = command .. ' ' .. vim.fn.fnameescape(file)
   end
   local ok = pcall(vim.command, command)
   return ok
@@ -417,7 +417,6 @@ function M.table.inspect(t, level, indent)
   indent = indent or 0
   for key, value in pairs(t) do
     local info = ('%s %s : %s'):format(('-'):rep(indent), key, value)
-    print(info)
     if type(value) == 'table' and level > 0 then
       M.table.inspect(value, level - 1, indent + 1)
     end

@@ -245,7 +245,7 @@ end
 -- Rerform auto cd
 function Context:perform_auto_cd()
   if self.options.auto_cd then
-    vim.fn.execute('lcd ' .. self.root.path, 'silent')
+    vim.fn.execute('lcd ' .. vim.fn.fnameescape(self.root.path), 'silent')
   end
 end
 
@@ -274,10 +274,6 @@ end
 ---@param dirpath string
 function Context:switch(dirpath)
   dirpath = core.path.normalize(dirpath)
-  -- perform auto cd
-  if self.options.auto_cd then
-    vim.fn.execute('lcd ' .. dirpath, 'silent')
-  end
 
   -- reload git status
   local job = self:_reload_gitstatus_job(dirpath)
@@ -288,6 +284,7 @@ function Context:switch(dirpath)
   if job then
     job:wait()
   end
+  self:perform_auto_cd()
   return path
 end
 
