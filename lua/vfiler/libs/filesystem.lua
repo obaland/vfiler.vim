@@ -199,32 +199,37 @@ function M.copy_file(src, dest)
 end
 
 function M.execute(path)
-  local command
   if core.is_windows then
-    command = ('start rundll32 url.dll,FileProtocolHandler %s'):format(
-      vim.fn.escape(path, '#%')
-    )
-  elseif core.is_mac and vim.fn.executable('open') == 1 then
+    --command = ('start rundll32 url.dll,FileProtocolHandler %s'):format(
+    --  vim.fn.escape(path, '#%')
+    --)
+    vim.fn.execute(('!start %s'):format(vim.fn.escape(path, '#%')))
+    return
+  end
+
+  local command
+  local escaped_path = vim.fn.shellescape(path)
+  if core.is_mac and vim.fn.executable('open') == 1 then
     -- For Mac OS
-    command = ('open %s &'):format(vim.fn.shellescape(path))
+    command = ('open %s &'):format(escaped_path)
   elseif core.is_cygwin then
     -- For Cygwin
-    command = ('cygstart %s'):format(vim.fn.shellescape(path))
+    command = ('cygstart %s'):format(escaped_path)
   elseif vim.fn.executable('xdg-open') == 1 then
     -- For Linux
-    command = ('xdg-open %s &'):format(vim.fn.shellescape(path))
+    command = ('xdg-open %s &'):format(escaped_path)
   elseif
     os.getenv('KDE_FULL_SESSION')
     and os.getenv('KDE_FULL_SESSION') == 'true'
   then
     -- For KDE
-    command = ('kioclient exec %s &'):format(vim.fn.shellescape(path))
+    command = ('kioclient exec %s &'):format(escaped_path)
   elseif os.getenv('GNOME_DESKTOP_SESSION_ID') then
     -- For GNOME
-    command = ('gnome-open %s &'):format(vim.fn.shellescape(path))
+    command = ('gnome-open %s &'):format(escaped_path)
   elseif vim.fn.executable('exo-open') == 1 then
     -- For Xfce
-    command = ('exo-open %s &'):format(vim.fn.shellescape(path))
+    command = ('exo-open %s &'):format(escaped_path)
   else
     core.message.error('Not supported platform.')
     return
