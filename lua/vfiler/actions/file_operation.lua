@@ -1,10 +1,10 @@
 local api = require('vfiler/actions/api')
 local buffer = require('vfiler/actions/buffer')
+local clipboard = require('vfiler/clipboard')
 local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
 local fs = require('vfiler/libs/filesystem')
 
-local Clipboard = require('vfiler/clipboard')
 local VFiler = require('vfiler/vfiler')
 
 local M = {}
@@ -91,7 +91,7 @@ function M.copy(vfiler, context, view)
     return
   end
 
-  context.clipboard = Clipboard.copy(selected)
+  clipboard.copy(selected)
   if #selected == 1 then
     core.message.info('Copy to the clipboard - %s', selected[1].name)
   else
@@ -118,8 +118,9 @@ function M.copy_to_filer(vfiler, context, view)
   end
 
   -- Copy to linked filer
-  local cb = Clipboard.copy(selected)
+  local cb = clipboard.copy(selected)
   cb:paste(linked:get_root_item())
+  clipboard.clear()
 
   -- clear selected mark
   for _, item in ipairs(selected) do
@@ -179,7 +180,7 @@ function M.move(vfiler, context, view)
     return
   end
 
-  context.clipboard = Clipboard.move(selected)
+  clipboard.move(selected)
   if #selected == 1 then
     core.message.info('Move to the clipboard - %s', selected[1].name)
   else
@@ -206,7 +207,7 @@ function M.move_to_filer(vfiler, context, view)
   end
 
   -- Move to linked filer
-  local cb = Clipboard.move(selected)
+  local cb = clipboard.move(selected)
   cb:paste(linked:get_root_item())
   VFiler.foreach(buffer.reload)
 end
@@ -278,7 +279,7 @@ function M.new_file(vfiler, context, view)
 end
 
 function M.paste(vfiler, context, view)
-  local cb = context.clipboard
+  local cb = clipboard.get_current()
   if not cb then
     core.message.warning('No clipboard')
     return
@@ -286,9 +287,7 @@ function M.paste(vfiler, context, view)
 
   local item = view:get_item()
   local dest = item.opened and item or item.parent
-  if cb:paste(dest) and cb.keep then
-    context.clipboard = nil
-  end
+  cb:paste(dest)
   VFiler.foreach(buffer.reload)
 end
 

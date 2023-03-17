@@ -315,7 +315,6 @@ function Context:_check_git_enabled()
 end
 
 function Context:_initialize()
-  self.clipboard = nil
   self.extension = nil
   self.linked = nil
   self.root = nil

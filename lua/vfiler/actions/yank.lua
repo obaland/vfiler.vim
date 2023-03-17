@@ -1,6 +1,5 @@
+local clipboard = require('vfiler/clipboard')
 local core = require('vfiler/libs/core')
-
-local Clipboard = require('vfiler/clipboard')
 
 local M = {}
 
@@ -11,11 +10,11 @@ function M.yank_name(vfiler, context, view)
     table.insert(names, item.name)
   end
   if #names == 1 then
-    Clipboard.yank(names[1])
+    clipboard.yank(names[1])
     core.message.info('Yanked name - "%s"', names[1])
   elseif #names > 1 then
     local content = table.concat(names, '\n')
-    Clipboard.yank(content)
+    clipboard.yank(content)
     core.message.info('Yanked %d names', #names)
   end
 
@@ -33,11 +32,11 @@ function M.yank_path(vfiler, context, view)
     table.insert(paths, item.path)
   end
   if #paths == 1 then
-    Clipboard.yank(paths[1])
+    clipboard.yank(paths[1])
     core.message.info('Yanked path - "%s"', paths[1])
   elseif #paths > 1 then
     local content = table.concat(paths, '\n')
-    Clipboard.yank(content)
+    clipboard.yank(content)
     core.message.info('Yanked %d paths', #paths)
   end
 
