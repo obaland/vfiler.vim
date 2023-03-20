@@ -26,8 +26,6 @@ function PasteFunctor:paste(directory)
       if new then
         directory:add(new)
         table.insert(pasted, new)
-      else
-        core.message.error('%s "%s"', self._fail_message_prefix, item.name)
       end
     end
   end
