@@ -100,12 +100,12 @@ You can then use <TAB> to switch focus between the filer windows.
 ### Actions for the 2-window filer
 |Default key|Action|
 |-|-|
-|`<TAB>`|[switch_to_filer](#switch_to_filer)|
-|`cc`|[copy_to_filer](#copy_to_filer)|
-|`mm`|[move_to_filer](#move_to_filer)|
-|`<C-r>`|[sync_with_current_filer](#sync_with_current_filer)|
+|`<TAB>`|switch_to_filer|
+|`cc`|copy_to_filer|
+|`mm`|move_to_filer|
+|`<C-r>`|sync_with_current_filer|
 
-see: [Actions](#actions)
+see: [switch_to_filer](#switch_to_filer), [copy_to_filer](#copy_to_filer), [move_to_filer](#move_to_filer), [sync_with_current_filer](#sync_with_current_filer)
 
 # Customization
 
