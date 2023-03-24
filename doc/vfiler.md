@@ -4,6 +4,7 @@
 - [Usage](#usage)
   - [Command usage](#command-usage)
   - [Lua function usage](#lua-function-usage)
+  - [Lua function usage](#lua-function-usage)
 - [Customization](#customization)
   - [Introduction](#introduction)
   - [Default configurations](#default-configurations)
@@ -89,6 +90,23 @@ local configs = {
 require'vfiler'.start(dirpath, configs)
 ```
 
+## 2-window filer usage
+`vfiler.vim` is a 2-window filer that allows you to conveniently copy and move files between two different directories.
+
+### How to start
+The default keymap is `<TAB>` (`switch_to_filer` action), which will activate the 2-window filer.<br>
+You can then use <TAB> to switch focus between the filer windows.
+
+### Actions for the 2-window filer
+|Default key|Action|
+|-|-|
+|`<TAB>`|[switch_to_filer](#switch_to_filer)|
+|`cc`|[copy_to_filer](#copy_to_filer)|
+|`mm`|[move_to_filer](#move_to_filer)|
+|`<C-r>`|[sync_with_current_filer](#sync_with_current_filer)|
+
+see: [Actions](#actions)
+
 # Customization
 
 ## Introduction
@@ -103,7 +121,7 @@ require('vfiler/config').setup {
     -- Default configuration for vfiler.vim goes here:
     -- option_key = value,
   },
-  
+
   mappings = {
     -- Associate the action with the key mapping.
     -- Set the key string and action as a key-value pair.
@@ -437,7 +455,7 @@ require('vfiler/config').setup {
   options = {
     -- Default configuration for vfiler.vim goes here:
   },
-  
+
   mappings = {
     -- Associate the action with the key mapping.
     -- Set the key string and action as a key-value pair.
@@ -464,7 +482,7 @@ require'vfiler/config'.clear_mappings()
 > NOTE: However, please call the function before specifying the keymap.
 
 ## Column customization
-`vfiler.vim` supports several columns.  
+`vfiler.vim` supports several columns.<br>
 You can change each column to show or hide, and also change the display order.
 
 ### How to specify.
@@ -620,13 +638,21 @@ Delete the files.
 Rename the files.
 
 #### copy
-Copy the files.<br>
-If it is in the 2-window-filer state, it will be copied under the directory where the other `vfiler.vim` buffer is open.<br>
+Copies selected files to `vfiler.vim` clipboard.<br>
+If no selected files, copies the file on the cursor to `vfiler.vim` clipboard.
+
+#### copy_to_filer
+If it is in the 2-window-filer state,<br>
+it will be copied under the directory where the other `vfiler.vim` buffer is open.<br>
 If not, it will be saved to the clipboard.
 
 #### move
-Move the files.<br>
-If it is in the 2-window-filer state, it will be moved under the directory where the other `vfiler.vim` buffer is open.<br>
+Moves selected files to `vfiler.vim` clipboard.<br>
+If no selected files, moves the file on the cursor to `vfiler.vim` clipboard.
+
+#### move_to_filer
+If it is in the 2-window-filer state,<br>
+it will be moved under the directory where the other `vfiler.vim` buffer is open.<br>
 If not, it will be saved to the clipboard.
 
 #### paste
@@ -650,7 +676,7 @@ Yanks filename to clipboard register and unnamed register.
 Toggle the automatic preview window.
 
 #### toggle_preview
-Toggle the preview window for the item in the current cursor. 
+Toggle the preview window for the item in the current cursor.
 
 ---
 
