@@ -127,14 +127,15 @@ windows.
 
 ACTIONS FOR THE 2-WINDOW FILER ~
 
-│Default key│             Action             │
-│<TAB>      │|vfiler-switch_to_filer|        │
-│cc         │|vfiler-copy_to_filer|          │
-│mm         │|vfiler-move_to_filer|          │
-│<C-r>      │|vfiler-sync_with_current_filer|│
+│Default key│        Action         │
+│<TAB>      │switch_to_filer        │
+│cc         │copy_to_filer          │
+│mm         │move_to_filer          │
+│<C-r>      │sync_with_current_filer│
 
 
-see: |vfiler-actions|
+see: |vfiler-switch_to_filer|, |vfiler-copy_to_filer|, |vfiler-move_to_filer|,
+|vfiler-sync_with_current_filer|
 
 ==============================================================================
 2. Customization                                        *vfiler-customization*
