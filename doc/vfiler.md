@@ -4,7 +4,7 @@
 - [Usage](#usage)
   - [Command usage](#command-usage)
   - [Lua function usage](#lua-function-usage)
-  - [Lua function usage](#lua-function-usage)
+  - [2-window filer usage](#2-window-filer-usage)
 - [Customization](#customization)
   - [Introduction](#introduction)
   - [Default configurations](#default-configurations)
