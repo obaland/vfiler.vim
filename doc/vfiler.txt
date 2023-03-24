@@ -6,6 +6,7 @@ Table of Contents                                   *vfiler-table-of-contents*
 1. Usage                                                        |vfiler-usage|
   - Command usage                                       |vfiler-command-usage|
   - Lua function usage                             |vfiler-lua-function-usage|
+  - 2-window filer usage                         |vfiler-2-window-filer-usage|
 2. Customization                                        |vfiler-customization|
   - Introduction                                         |vfiler-introduction|
   - Default configurations                     |vfiler-default-configurations|
@@ -112,6 +113,29 @@ EXAMPLE ~
     require'vfiler'.start(dirpath, configs)
 <
 
+------------------------------------------------------------------------------
+2-WINDOW FILER USAGE                             *vfiler-2-window-filer-usage*
+
+`vfiler.vim` is a 2-window filer that allows you to conveniently copy and move
+files between two different directories.
+
+HOW TO START ~
+
+The default keymap is `<TAB>` (`switch_to_filer` action), which will activate
+the 2-window filer. You can then use <TAB> to switch focus between the filer
+windows.
+
+ACTIONS FOR THE 2-WINDOW FILER ~
+
+│Default key│             Action             │
+│<TAB>      │|vfiler-switch_to_filer|        │
+│cc         │|vfiler-copy_to_filer|          │
+│mm         │|vfiler-move_to_filer|          │
+│<C-r>      │|vfiler-sync_with_current_filer|│
+
+
+see: |vfiler-actions|
+
 ==============================================================================
 2. Customization                                        *vfiler-customization*
 
@@ -131,7 +155,7 @@ in your personal settings. There are two main types of configurations,
         -- Default configuration for vfiler.vim goes here:
         -- option_key = value,
       },
-      
+    
       mappings = {
         -- Associate the action with the key mapping.
         -- Set the key string and action as a key-value pair.
@@ -608,7 +632,7 @@ is no default keymap, it will be added.
       options = {
         -- Default configuration for vfiler.vim goes here:
       },
-      
+    
       mappings = {
         -- Associate the action with the key mapping.
         -- Set the key string and action as a key-value pair.
@@ -858,20 +882,36 @@ rename                                 Rename the files.
 
                                                                  *vfiler-copy*
 
-copy                                   Copy the files. If it is in the
-                                       2-window-filer state, it will be copied
-                                       under the directory where the other
-                                       `vfiler.vim` buffer is open. If not, it
-                                       will be saved to the clipboard.
+copy                                   Copies selected files to `vfiler.vim`
+                                       clipboard. If no selected files, copies
+                                       the file on the cursor to `vfiler.vim`
+                                       clipboard.
+
+
+                                                        *vfiler-copy_to_filer*
+
+copy_to_filer                          If it is in the 2-window-filer state, it
+                                       will be copied under the directory where
+                                       the other `vfiler.vim` buffer is open.
+                                       If not, it will be saved to the
+                                       clipboard.
 
 
                                                                  *vfiler-move*
 
-move                                   Move the files. If it is in the
-                                       2-window-filer state, it will be moved
-                                       under the directory where the other
-                                       `vfiler.vim` buffer is open. If not, it
-                                       will be saved to the clipboard.
+move                                   Moves selected files to `vfiler.vim`
+                                       clipboard. If no selected files, moves
+                                       the file on the cursor to `vfiler.vim`
+                                       clipboard.
+
+
+                                                        *vfiler-move_to_filer*
+
+move_to_filer                          If it is in the 2-window-filer state, it
+                                       will be moved under the directory where
+                                       the other `vfiler.vim` buffer is open.
+                                       If not, it will be saved to the
+                                       clipboard.
 
 
                                                                 *vfiler-paste*
