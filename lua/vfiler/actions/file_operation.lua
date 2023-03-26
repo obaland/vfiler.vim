@@ -91,7 +91,7 @@ function M.copy(vfiler, context, view)
     return
   end
 
-  clipboard.copy(selected)
+  clipboard.copy_to_clipboard(selected)
   if #selected == 1 then
     core.message.info('Copy to the clipboard - %s', selected[1].name)
   else
@@ -118,9 +118,7 @@ function M.copy_to_filer(vfiler, context, view)
   end
 
   -- Copy to linked filer
-  local cb = clipboard.copy(selected)
-  cb:paste(linked:get_root_item())
-  clipboard.clear()
+  clipboard.copy(selected, linked:get_root_item())
 
   -- clear selected mark
   for _, item in ipairs(selected) do
@@ -180,7 +178,7 @@ function M.move(vfiler, context, view)
     return
   end
 
-  clipboard.move(selected)
+  clipboard.move_to_clipboard(selected)
   if #selected == 1 then
     core.message.info('Move to the clipboard - %s', selected[1].name)
   else
@@ -207,8 +205,7 @@ function M.move_to_filer(vfiler, context, view)
   end
 
   -- Move to linked filer
-  local cb = clipboard.move(selected)
-  cb:paste(linked:get_root_item())
+  clipboard.move(selected, linked:get_root_item())
   VFiler.foreach(buffer.reload)
 end
 
