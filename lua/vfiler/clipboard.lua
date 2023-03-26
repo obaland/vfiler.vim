@@ -10,7 +10,7 @@ PasteFunctor.__index = PasteFunctor
 function PasteFunctor.new(items, clear_after_paste)
   return setmetatable({
     _items = items,
-    _clear_after_paste = clear_after_paste
+    _clear_after_paste = clear_after_paste,
   }, PasteFunctor)
 end
 
