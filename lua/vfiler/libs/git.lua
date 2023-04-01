@@ -19,7 +19,7 @@ end
 
 function M.get_toplevel(dirpath)
   local command = ('git -C "%s" rev-parse --show-toplevel'):format(dirpath)
-  local path = vim.fn.system(command)
+  local path = core.system(command)
   if (not path or #path == 0) or path:match('^fatal') then
     return nil
   end

@@ -190,12 +190,12 @@ end
 
 function M.copy_directory(src, dest)
   local command = copy_directory_format:format(escape(src), escape(dest))
-  return vim.fn.system(command)
+  return core.system(command)
 end
 
 function M.copy_file(src, dest)
   local command = copy_file_format:format(escape(src), escape(dest))
-  return vim.fn.system(command)
+  return core.system(command)
 end
 
 function M.execute(path)
@@ -234,7 +234,7 @@ function M.execute(path)
     core.message.error('Not supported platform.')
     return
   end
-  vim.fn.system(command)
+  M.system(command)
 end
 
 function M.move(src, dest)

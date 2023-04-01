@@ -43,6 +43,23 @@ function M.try(block)
   end
 end
 
+function M.system(expr)
+  local shell = vim.get_option('shell')
+  M.try({
+    function()
+      if M.is_windows then
+        vim.set_option('shell', 'cmd.exe')
+      else
+        vim.set_option('shell', '$SHELL')
+      end
+      vim.fn.system(expr)
+    end,
+    finally = function()
+      vim.set_option('shell', shell)
+    end,
+  })
+end
+
 ------------------------------------------------------------------------------
 -- Cursor
 ------------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 local core = require('vfiler/libs/core')
 local fs = require('vfiler/libs/filesystem')
-local vim = require('vfiler/libs/vim')
 
 local File = {}
 
@@ -13,7 +12,7 @@ function File.create(path)
     command = ('touch "%s"'):format(path)
   end
 
-  local result = vim.fn.system(command)
+  local result = core.system(command)
   if #result > 0 then
     return nil
   end
