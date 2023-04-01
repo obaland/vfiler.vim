@@ -199,17 +199,13 @@ function M.copy_file(src, dest)
 end
 
 function M.execute(path)
-  if core.is_windows then
-    --command = ('start rundll32 url.dll,FileProtocolHandler %s'):format(
-    --  vim.fn.escape(path, '#%')
-    --)
-    vim.fn.execute(('!start %s'):format(vim.fn.escape(path, '#%')))
-    return
-  end
-
   local command
   local escaped_path = vim.fn.shellescape(path)
-  if core.is_mac and vim.fn.executable('open') == 1 then
+  if core.is_windows then
+    command = ('start rundll32 url.dll,FileProtocolHandler %s'):format(
+      vim.fn.escape(path, '#%')
+    )
+  elseif core.is_mac and vim.fn.executable('open') == 1 then
     -- For Mac OS
     command = ('open %s &'):format(escaped_path)
   elseif core.is_cygwin then
@@ -234,7 +230,7 @@ function M.execute(path)
     core.message.error('Not supported platform.')
     return
   end
-  M.system(command)
+  core.system(command)
 end
 
 function M.move(src, dest)
