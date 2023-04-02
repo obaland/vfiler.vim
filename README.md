@@ -68,7 +68,7 @@ The following is an example.
 ### Explorer style
 #### Start by command:
 ```vim
-:VFiler -auto-cd -auto-resize -keep -layout=left -name=explorer -width=30 columns=indent,icon,name
+:VFiler -auto-cd -auto-resize -keep -layout=left -name=explorer -width=30 -columns=indent,icon,name
 ```
 
 #### Start by Lua script:
