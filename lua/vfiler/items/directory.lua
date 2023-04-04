@@ -18,7 +18,7 @@ local function new_item(stat)
 end
 
 function Directory.create(dirpath)
-  if vim.fn.mkdir(dirpath) ~= 1 then
+  if not fs.create_directory(dirpath) then
     return nil
   end
   local stat = fs.stat(dirpath)

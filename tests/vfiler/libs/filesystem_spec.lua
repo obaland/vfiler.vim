@@ -1,7 +1,7 @@
 local core = require('vfiler/libs/core')
 local fs = require('vfiler/libs/filesystem')
 
-describe('filesystem', function()
+describe('filesystem $shell:' .. vim.o.shell, function()
   local paths = vim.fn.glob('./*', 1, 1)
   describe('stat', function()
     for _, path in ipairs(paths) do
@@ -26,48 +26,249 @@ describe('filesystem', function()
     end
   end)
 
-  --[[ TODO:
-  describe('copy_file', function()
-    local src = core.path.normalize('README.md')
-    local dest = core.path.normalize('doc/README.md')
-    it(('copy file: %s -> %s'):format(src, dest), function()
-      assert.is_false(core.path.filereadable(dest))
-      fs.copy_file(src, dest)
-      assert.is_true(core.path.filereadable(dest))
-    end)
-  end)
+  -- TODO: ubuntu
+  if core.is_windows or core.is_mac then
+    describe('create file', function()
+      local filepaths = {
+        'testfile',
+        '#testfile',
+        'test#file',
+        '%testfile',
+        'test%file',
+        '#test%file',
+        '%test#file',
+      }
 
-  describe('copy_directory', function()
-    local src = 'tests'
-    local dest = 'lua/tests'
-    it(('copy directory: %s -> %s'):format(src, dest), function()
-      assert.is_false(core.path.is_directory(dest))
-      fs.copy_directory(src, dest)
-      assert.is_true(core.path.is_directory(dest))
-    end)
-  end)
+      for _, path in ipairs(filepaths) do
+        it(path, function()
+          local result = fs.create_file(path)
+          assert.is_true(result)
+          assert.is_true(core.path.filereadable(path))
 
-  describe('move', function()
-    local src_file = 'doc/README.md'
-    local dest_file = 'autoload/README.md'
-    local src_dir = 'lua/tests'
-    local dest_dir = 'autoload/tests'
-
-    it(('move file: %s -> %s'):format(src_file, dest_file), function()
-      assert.is_true(core.path.filereadable(src_file))
-      assert.is_false(core.path.filereadable(dest_file))
-      fs.move(src_file, dest_file)
-      assert.is_true(core.path.filereadable(dest_file))
-      assert.is_false(core.path.filereadable(src_file))
+          result = fs.delete(path)
+          assert.is_true(result)
+          assert.is_false(core.path.filereadable(path))
+        end)
+      end
     end)
 
-    it(('move directory: %s -> %s'):format(src_dir, dest_dir), function()
-      assert.is_true(core.path.is_directory(src_dir))
-      assert.is_false(core.path.is_directory(dest_dir))
-      fs.move(src_dir, dest_dir)
-      assert.is_true(core.path.is_directory(dest_dir))
-      assert.is_false(core.path.is_directory(src_dir))
+    describe('create directory', function()
+      local dirpaths = {
+        'testdir',
+        '#testdir',
+        'test#dir',
+        '%testdir',
+        'test%dir',
+        '#test%dir',
+        '%test#dir',
+      }
+      for _, path in ipairs(dirpaths) do
+        it(path, function()
+          local result = fs.create_directory(path)
+          assert.is_true(result)
+          assert.is_true(core.path.is_directory(path))
+
+          result = fs.delete(path)
+          assert.is_true(result)
+          assert.is_false(core.path.is_directory(path))
+        end)
+      end
     end)
-  end)
-  ]]
+
+    describe('copy file', function()
+      local destdir = 'testdir'
+      local filepaths = {
+        'testfile',
+        '#testfile',
+        'test#file',
+        '%testfile',
+        'test%file',
+        '#test%file',
+        '%test#file',
+      }
+
+      -- Prepare
+      local result
+      if not core.path.is_directory(destdir) then
+        result = fs.create_directory(destdir)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(destdir))
+      end
+
+      for _, path in ipairs(filepaths) do
+        it(path .. ' -> ' .. destdir, function()
+          result = fs.create_file(path)
+          assert.is_true(result)
+
+          local destpath = core.path.join(destdir, path)
+
+          result = fs.copy_file(path, destpath)
+          assert.is_true(result)
+          assert.is_true(core.path.filereadable(destpath))
+          assert.is_true(core.path.filereadable(path))
+
+          result = fs.delete(path)
+          assert.is_true(result)
+          assert.is_false(core.path.filereadable(path))
+        end)
+      end
+
+      -- Post
+      result = fs.delete(destdir)
+      assert.is_true(result)
+      assert.is_false(core.path.is_directory(destdir))
+    end)
+
+    describe('move file', function()
+      local destdir = 'testdir'
+      local filepaths = {
+        'testfile',
+        '#testfile',
+        'test#file',
+        '%testfile',
+        'test%file',
+        '#test%file',
+        '%test#file',
+      }
+
+      -- Prepare
+      local result
+      if not core.path.is_directory(destdir) then
+        result = fs.create_directory(destdir)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(destdir))
+      end
+
+      for _, path in ipairs(filepaths) do
+        it(path .. ' -> ' .. destdir, function()
+          result = fs.create_file(path)
+          assert.is_true(result)
+
+          local destpath = core.path.join(destdir, path)
+
+          result = fs.move(path, destpath)
+          assert.is_true(result)
+          assert.is_true(core.path.filereadable(destpath))
+          assert.is_false(core.path.filereadable(path))
+        end)
+      end
+
+      -- Post
+      result = fs.delete(destdir)
+      assert.is_true(result)
+      assert.is_false(core.path.is_directory(destdir))
+    end)
+
+    describe('copy directory', function()
+      local srcdir = 'srcdir'
+      local destdir = 'destdir'
+      local filepaths = {
+        'testfile',
+        '#testfile',
+        'test#file',
+        '%testfile',
+        'test%file',
+        '#test%file',
+        '%test#file',
+      }
+
+      -- Prepare
+      local result
+      if not core.path.is_directory(srcdir) then
+        result = fs.create_directory(srcdir)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(srcdir))
+      end
+
+      if not core.path.is_directory(destdir) then
+        result = fs.create_directory(destdir)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(destdir))
+      end
+
+      for _, path in ipairs(filepaths) do
+        local filepath = core.path.join(srcdir, path)
+        result = fs.create_file(filepath)
+        assert.is_true(result)
+        assert.is_true(core.path.filereadable(filepath))
+      end
+
+      it(srcdir .. ' -> ' .. destdir, function()
+        local destpath = core.path.join(destdir, srcdir)
+        result = fs.copy_directory(srcdir, destpath)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(destpath))
+
+        for _, path in ipairs(filepaths) do
+          local srcpath = core.path.join(srcdir, path)
+          assert.is_true(core.path.filereadable(srcpath))
+          local copiedpath = core.path.join(destpath, path)
+          assert.is_true(core.path.filereadable(copiedpath))
+        end
+      end)
+
+      -- Post
+      result = fs.delete(srcdir)
+      assert.is_true(result)
+      assert.is_false(core.path.is_directory(srcdir))
+
+      result = fs.delete(destdir)
+      assert.is_true(result)
+      assert.is_false(core.path.is_directory(destdir))
+    end)
+
+    describe('move directory', function()
+      local srcdir = 'srcdir'
+      local destdir = 'destdir'
+      local filepaths = {
+        'testfile',
+        '#testfile',
+        'test#file',
+        '%testfile',
+        'test%file',
+        '#test%file',
+        '%test#file',
+      }
+
+      -- Prepare
+      local result
+      if not core.path.is_directory(srcdir) then
+        result = fs.create_directory(srcdir)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(srcdir))
+      end
+
+      if not core.path.is_directory(destdir) then
+        result = fs.create_directory(destdir)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(destdir))
+      end
+
+      for _, path in ipairs(filepaths) do
+        local filepath = core.path.join(srcdir, path)
+        result = fs.create_file(filepath)
+        assert.is_true(result)
+        assert.is_true(core.path.filereadable(filepath))
+      end
+
+      it(srcdir .. ' -> ' .. destdir, function()
+        local destpath = core.path.join(destdir, srcdir)
+        result = fs.move(srcdir, destpath)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(destpath))
+
+        for _, path in ipairs(filepaths) do
+          local srcpath = core.path.join(srcdir, path)
+          assert.is_false(core.path.filereadable(srcpath))
+          local movedpath = core.path.join(destpath, path)
+          assert.is_true(core.path.filereadable(movedpath))
+        end
+      end)
+
+      -- Post
+      result = fs.delete(destdir)
+      assert.is_true(result)
+      assert.is_false(core.path.is_directory(destdir))
+    end)
+  end
 end)

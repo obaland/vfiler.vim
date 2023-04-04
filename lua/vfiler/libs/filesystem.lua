@@ -166,71 +166,91 @@ else
   end
 end
 
-local copy_file_format, copy_directory_format
-
-if core.is_windows then
-  copy_file_format = 'copy /y %s %s'
-  copy_directory_format = 'robocopy /s /e %s %s'
-else
-  copy_file_format = 'cp -f %s %s'
-  copy_directory_format = 'cp -fR %s %s'
-end
-
 local function escape(path)
   if core.is_windows then
     -- trim end
     path = path:gsub('[/\\]+$', '')
     -- convert path separator
-    path = path:gsub('/', '\\')
-    return ('"%s"'):format(vim.fn.escape(path, '/'))
+    return path:gsub('/', '\\')
   else
     return vim.fn.shellescape(path)
   end
 end
 
-function M.copy_directory(src, dest)
-  local command = copy_directory_format:format(escape(src), escape(dest))
-  return core.system(command)
+if core.is_windows then
+  function M.copy_directory(src, dest)
+    core.system(
+      ('robocopy /s /e "%s" "%s"'):format(escape(src), escape(dest))
+    )
+    return vim.v.shell_error < 8
+  end
+
+  function M.copy_file(src, dest)
+    core.system(('copy /y "%s" "%s"'):format(escape(src), escape(dest)))
+    return vim.v.shell_error == 0
+  end
+
+  function M.create_file(path)
+    core.system(('type nul > "%s"'):format(escape(path)))
+    return core.path.filereadable(path)
+  end
+else
+  function M.copy_directory(src, dest)
+    core.system(('cp -fR %s %s'):format(escape(src), escape(dest)))
+    return vim.v.shell_error == 0
+  end
+
+  function M.copy_file(src, dest)
+    core.system(('cp -f %s %s'):format(escape(src), escape(dest)))
+    return vim.v.shell_error == 0
+  end
+
+  function M.create_file(path)
+    core.system(('touch %s'):format(escape(path)))
+    return core.path.filereadable(path)
+  end
 end
 
-function M.copy_file(src, dest)
-  local command = copy_file_format:format(escape(src), escape(dest))
-  return core.system(command)
+function M.create_directory(path)
+  return vim.fn.mkdir(path) == 1
+end
+
+function M.delete(path)
+  return vim.fn.delete(path, 'rf') == 0
 end
 
 function M.execute(path)
-  local command
-  local escaped_path = vim.fn.shellescape(path)
+  local expr
   if core.is_windows then
-    command = ('start rundll32 url.dll,FileProtocolHandler %s'):format(
-      vim.fn.escape(path, '#%')
+    expr = ('start rundll32 url.dll,FileProtocolHandler "%s"'):format(
+      escape(path)
     )
   elseif core.is_mac and vim.fn.executable('open') == 1 then
     -- For Mac OS
-    command = ('open %s &'):format(escaped_path)
+    expr = ('open %s &'):format(escape(path))
   elseif core.is_cygwin then
     -- For Cygwin
-    command = ('cygstart %s'):format(escaped_path)
+    expr = ('cygstart %s'):format(escape(path))
   elseif vim.fn.executable('xdg-open') == 1 then
     -- For Linux
-    command = ('xdg-open %s &'):format(escaped_path)
+    expr = ('xdg-open %s &'):format(escape(path))
   elseif
     os.getenv('KDE_FULL_SESSION')
     and os.getenv('KDE_FULL_SESSION') == 'true'
   then
     -- For KDE
-    command = ('kioclient exec %s &'):format(escaped_path)
+    expr = ('kioclient exec %s &'):format(escape(path))
   elseif os.getenv('GNOME_DESKTOP_SESSION_ID') then
     -- For GNOME
-    command = ('gnome-open %s &'):format(escaped_path)
+    expr = ('gnome-open %s &'):format(escape(path))
   elseif vim.fn.executable('exo-open') == 1 then
     -- For Xfce
-    command = ('exo-open %s &'):format(escaped_path)
+    expr = ('exo-open %s &'):format(escape(path))
   else
     core.message.error('Not supported platform.')
     return
   end
-  core.system(command)
+  core.system(expr)
 end
 
 function M.move(src, dest)

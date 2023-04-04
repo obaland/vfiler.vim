@@ -44,6 +44,7 @@ function M.try(block)
 end
 
 function M.system(expr)
+  local result
   local shell = vim.get_option('shell')
   M.try({
     function()
@@ -52,12 +53,13 @@ function M.system(expr)
       else
         vim.set_option('shell', '$SHELL')
       end
-      vim.fn.system(expr)
+      result = vim.fn.system(expr)
     end,
     finally = function()
       vim.set_option('shell', shell)
     end,
   })
+  return result
 end
 
 ------------------------------------------------------------------------------

@@ -4,16 +4,7 @@ local fs = require('vfiler/libs/filesystem')
 local File = {}
 
 function File.create(path)
-  -- create file
-  local command
-  if core.is_windows then
-    command = ('type nul > "%s"'):format(path)
-  else
-    command = ('touch "%s"'):format(path)
-  end
-
-  local result = core.system(command)
-  if #result > 0 then
+  if not fs.create_file(path) then
     return nil
   end
   return File.new(fs.stat(path))

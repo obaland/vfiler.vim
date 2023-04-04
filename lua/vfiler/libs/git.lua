@@ -27,23 +27,26 @@ function M.get_toplevel(dirpath)
 end
 
 function M.reload_status(rootpath, options, on_completed)
-  local args = {
+  local command = {
+    'git',
+    '-C',
+    rootpath,
     '--no-optional-locks',
     'status',
     '--porcelain=v1',
   }
+
+  -- Options
   if options.untracked then
-    table.insert(args, '-u')
+    table.insert(command, '-u')
   end
   if options.ignored then
-    table.insert(args, '--ignored=matching')
+    table.insert(command, '--ignored=matching')
   else
-    table.insert(args, '--ignored=no')
+    table.insert(command, '--ignored=no')
   end
 
   local gitstatus = {}
-  local command = ('git -C "%s" %s'):format(rootpath, table.concat(args, ' '))
-
   local job = Job.new()
   job:start(command, {
     on_received = function(jself, data)

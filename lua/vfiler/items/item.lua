@@ -1,6 +1,5 @@
 local core = require('vfiler/libs/core')
 local fs = require('vfiler/libs/filesystem')
-local vim = require('vfiler/libs/vim')
 
 local Item = {}
 Item.__index = Item
@@ -22,7 +21,7 @@ function Item.new(stat)
 end
 
 function Item:delete()
-  if vim.fn.delete(self.path, 'rf') < 0 then
+  if not fs.delete(self.path) then
     core.message.error('"%s" Cannot delete.', self.name)
     return false
   end

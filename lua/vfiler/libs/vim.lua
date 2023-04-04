@@ -6,6 +6,7 @@ local M = {}
 -- Aliases
 ------------------------------------------------------------------------------
 M.fn = vim.fn
+M.v = vim.v
 if is_nvim then
   M.command = vim.api.nvim_command
   M.nvim = vim
