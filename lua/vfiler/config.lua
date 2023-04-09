@@ -24,6 +24,7 @@ M.configs = {
     height = 30,
     new = false,
     quit = true,
+    toggle = false,
     row = 0,
     col = 0,
     blend = 0,

@@ -4,6 +4,34 @@ local vim = require('vfiler/libs/vim')
 
 local VFiler = require('vfiler/vfiler')
 
+local function open(configs, dirpath)
+  local options = configs.options
+
+  -- Find a file in the active buffer
+  local filepath
+  if options.find_file then
+    filepath = vim.fn.expand('%:p')
+  end
+
+  local Context = require('vfiler/context')
+  local context = Context.new(configs)
+  local vfiler = VFiler.find_visible(options.name)
+  if not options.new and vfiler then
+    vfiler:focus()
+    vfiler:update(context)
+  else
+    vfiler = VFiler.find_hidden(options.name)
+    if options.new or not vfiler then
+      vfiler = VFiler.new(context)
+    else
+      vfiler:update(context)
+    end
+    vfiler:open(options.layout)
+  end
+  vfiler:start(dirpath, filepath)
+  return true
+end
+
 local M = {}
 
 --- Start vfiler from command line arguments
@@ -32,37 +60,15 @@ function M.start(dirpath, configs)
   VFiler.cleanup()
 
   local options = merged_configs.options
-  -- correction of option values
+
+  -- Correction of option values
   if not core.is_nvim then
     if options.layout == 'floating' then
       core.message.warning('Vim does not support floating windows.')
       options.layout = 'none'
     end
   end
-
-  -- Find a file in the active buffer
-  local filepath
-  if options.find_file then
-    filepath = vim.fn.expand('%:p')
-  end
-
-  local Context = require('vfiler/context')
-  local context = Context.new(merged_configs)
-  local vfiler = VFiler.find_visible(options.name)
-  if not options.new and vfiler then
-    vfiler:focus()
-    vfiler:update(context)
-  else
-    vfiler = VFiler.find_hidden(options.name)
-    if options.new or not vfiler then
-      vfiler = VFiler.new(context)
-    else
-      vfiler:update(context)
-    end
-    vfiler:open(options.layout)
-  end
-  vfiler:start(dirpath, filepath)
-  return true
+  return open(merged_configs, dirpath)
 end
 
 --- Get current status
