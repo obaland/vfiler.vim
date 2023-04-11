@@ -148,7 +148,6 @@ end
 --        If '0' is specified, the current tabpage.
 function VFiler.get_visible_in_tabpage(tabpage)
   tabpage = (tabpage > 0) and tabpage or vim.fn.tabpagenr()
-  print('tabpage:', tabpage)
   local visibilities = {}
   for _, bufnr in ipairs(vim.fn.tabpagebuflist(tabpage)) do
     local vfiler = vfiler_objects[bufnr]
