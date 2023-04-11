@@ -32,6 +32,17 @@ local function open(configs, dirpath)
   return true
 end
 
+local function toggle(configs, dirpath)
+  local vfilers = VFiler.get_visible_in_tabpage(0)
+  if #vfilers > 0 then
+    for _, vfiler in ipairs(vfilers) do
+      vfiler:quit()
+    end
+    return true
+  end
+  return open(configs, dirpath)
+end
+
 local M = {}
 
 --- Start vfiler from command line arguments
@@ -59,14 +70,17 @@ function M.start(dirpath, configs)
 
   VFiler.cleanup()
 
-  local options = merged_configs.options
-
   -- Correction of option values
+  local options = merged_configs.options
   if not core.is_nvim then
     if options.layout == 'floating' then
       core.message.warning('Vim does not support floating windows.')
       options.layout = 'none'
     end
+  end
+
+  if options.toggle then
+    return toggle(merged_configs, dirpath)
   end
   return open(merged_configs, dirpath)
 end

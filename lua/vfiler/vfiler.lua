@@ -2,7 +2,7 @@ local core = require('vfiler/libs/core')
 local status = require('vfiler/status')
 local vim = require('vfiler/libs/vim')
 
-local vfilers = {}
+local vfiler_objects = {}
 
 local VFiler = {}
 VFiler.__index = VFiler
@@ -30,7 +30,7 @@ local function generate_bufname(name)
   end
 
   local maxnr = -1
-  for _, vfiler in pairs(vfilers) do
+  for _, vfiler in pairs(vfiler_objects) do
     local object = vfiler.object
     if name == object._context.options.name then
       maxnr = math.max(vfiler.number, maxnr)
@@ -48,7 +48,7 @@ end
 --- Cleanup vfiler buffers
 function VFiler.cleanup()
   local valid_filers = {}
-  for bufnr, vfiler in pairs(vfilers) do
+  for bufnr, vfiler in pairs(vfiler_objects) do
     local exists = vim.fn.bufexists(bufnr) and vim.fn.bufloaded(bufnr)
     if exists then
       valid_filers[bufnr] = vfiler
@@ -56,12 +56,12 @@ function VFiler.cleanup()
       vim.command('bwipeout ' .. bufnr)
     end
   end
-  vfilers = valid_filers
+  vfiler_objects = valid_filers
 end
 
 --- Exists vfiler buffer
 function VFiler.exists(bufnr)
-  return vfilers[bufnr] ~= nil
+  return vfiler_objects[bufnr] ~= nil
 end
 
 --- Find the currently valid filer by name
@@ -78,7 +78,7 @@ end
 ---@param name string
 function VFiler.find_hidden(name)
   -- in hidden buffers
-  for bufnr, vfiler in pairs(vfilers) do
+  for bufnr, vfiler in pairs(vfiler_objects) do
     local object = vfiler.object
     local options = object._context.options
     local infos = vim.list.from(vim.fn.getbufinfo(bufnr))
@@ -93,7 +93,7 @@ end
 ---@param name string
 function VFiler.find_visible(name)
   -- in tabpage
-  for bufnr, vfiler in pairs(vfilers) do
+  for bufnr, vfiler in pairs(vfiler_objects) do
     local object = vfiler.object
     assert(bufnr == object._view:bufnr())
     local options = object._context.options
@@ -122,25 +122,45 @@ function VFiler.foreach(action, ...)
 end
 
 --- Get the filer from the buffer number
----@param bufnr number Buffer number
+---@param bufnr number: Buffer number
 function VFiler.get(bufnr)
-  if not vfilers[bufnr] then
+  if not vfiler_objects[bufnr] then
     return nil
   end
-  return vfilers[bufnr].object
+  return vfiler_objects[bufnr].object
 end
 
 --- Get the filer that is currently visible
 function VFiler.get_visible()
-  local filers = {}
-  for bufnr, filer in pairs(vfilers) do
-    local object = filer.object
+  local visibilities = {}
+  for bufnr, vfiler in pairs(vfiler_objects) do
+    local object = vfiler.object
     assert(bufnr == object._view:bufnr())
     if object:visible() then
-      table.insert(filers, object)
+      table.insert(visibilities, object)
     end
   end
-  return filers
+  return visibilities
+end
+
+--- Get the filer that is currently visible in tabpage
+---@param tabpage number: Tabpage number.
+--        If '0' is specified, the current tabpage.
+function VFiler.get_visible_in_tabpage(tabpage)
+  tabpage = (tabpage > 0) and tabpage or vim.fn.tabpagenr()
+  print('tabpage:', tabpage)
+  local visibilities = {}
+  for _, bufnr in ipairs(vim.fn.tabpagebuflist(tabpage)) do
+    local vfiler = vfiler_objects[bufnr]
+    if vfiler then
+      local object = vfiler.object
+      assert(bufnr == object._view:bufnr())
+      if object:visible() then
+        table.insert(visibilities, object)
+      end
+    end
+  end
+  return visibilities
 end
 
 --- Create a filer obuject
@@ -161,7 +181,7 @@ function VFiler.new(context)
   }, VFiler)
 
   -- add vfiler resource
-  vfilers[buffer.number] = {
+  vfiler_objects[buffer.number] = {
     object = self,
     number = number,
   }
@@ -328,7 +348,7 @@ function VFiler:wipeout()
     return
   end
   self._buffer:wipeout()
-  vfilers[bufnr] = nil
+  vfiler_objects[bufnr] = nil
 end
 
 function VFiler:_define_mappings()
