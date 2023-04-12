@@ -153,6 +153,7 @@ require'vfiler/config'.setup {
     height = 30,
     new = false,
     quit = true,
+    toggle = false,
     row = 0,
     col = 0,
     blend = 0,
@@ -342,6 +343,13 @@ If you specify `0`, the width will be calculated automatically.
 - Type: `number`
 - Default: `0`
 - Command option format: `-preview-width={window-width}`
+
+#### toggle
+If enabled, Close the `vfiler.vim` window if this `vfiler.vim` window exists.<br>
+
+- Type: `boolean`
+- Default: `false`
+- Command option format: `-toggle`
 
 #### session
 Specifies how to save the session.
