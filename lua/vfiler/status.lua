@@ -10,13 +10,14 @@ function M.status(context, view)
   local offset = options.header and 1 or 0
   local item = view:get_item()
   if not item then
-    return {}
+    return vim.dict({})
   end
-  return {
+  -- NOTE: Convert to 'dict' type for vim.
+  return vim.dict({
     bufnr = view:bufnr(),
     root = vim.fn.fnamemodify(context.root.path, ':~'):gsub('\\', '/'),
     num_items = vim.fn.line('$') - offset,
-    current_item = {
+    current_item = vim.dict({
       number = vim.fn.line('.') - offset,
       name = item.name,
       path = item.path,
@@ -25,12 +26,12 @@ function M.status(context, view)
       type = item.type,
       mode = item.mode,
       link = item.link,
-    },
-    options = {
+    }),
+    options = vim.dict({
       width = options.width,
       height = options.height,
-    },
-  }
+    }),
+  })
 end
 
 return M

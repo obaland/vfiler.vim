@@ -95,7 +95,7 @@ function M.status(bufnr)
   if not current then
     return vim.dict({})
   end
-  return vim.dict(current:status())
+  return current:status()
 end
 
 return M

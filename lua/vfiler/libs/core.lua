@@ -444,6 +444,9 @@ function M.table.inspect(t, level, indent)
 end
 
 function M.table.merge(dest, src)
+  if not src then
+    return dest
+  end
   for key, value in pairs(src) do
     if type(value) == 'table' then
       if not dest[key] then
