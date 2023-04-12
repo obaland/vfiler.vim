@@ -190,6 +190,7 @@ DEFAULT CONFIGURATIONS                         *vfiler-default-configurations*
         height = 30,
         new = false,
         quit = true,
+        toggle = false,
         row = 0,
         col = 0,
         blend = 0,
@@ -454,6 +455,19 @@ preview.width                          The window width of the buffer whose
 - Type: `number`
 - Default: `0`
 - Command option format: `-preview-width={window-width}`
+
+
+                                                               *vfiler-toggle*
+
+toggle                                 If enabled, Close the `vfiler.vim`
+                                       window if this `vfiler.vim` window
+                                       exists.
+
+
+
+- Type: `boolean`
+- Default: `false`
+- Command option format: `-toggle`
 
 
                                                               *vfiler-session*
