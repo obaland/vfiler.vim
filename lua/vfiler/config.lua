@@ -96,16 +96,25 @@ M.configs = {
 
   events = {
     vfiler = {
-      BufEnter = action.reload_all,
-      BufLeave = event.leave,
-      FocusGained = event.reload_all,
-      TabLeave = event.leave,
-      VimResized = action.reload_all,
+      {
+        event = { 'BufEnter', 'FocusGained', 'VimResized' },
+        action = action.reload_all,
+      },
+      {
+        event = { 'BufLeave', 'TabLeave' },
+        action = event.leave,
+      },
     },
 
     vfiler_preview = {
-      BufLeave = action.close_preview,
-      CursorMoved = action.preview_cursor_moved,
+      {
+        event = 'BufLeave',
+        action = action.close_preview,
+      },
+      {
+        event = 'CursorMoved',
+        action = action.preview_cursor_moved,
+      },
     },
   },
 }

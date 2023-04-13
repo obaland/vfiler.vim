@@ -2,6 +2,8 @@ local core = require('vfiler/libs/core')
 local status = require('vfiler/status')
 local vim = require('vfiler/libs/vim')
 
+local Event = require('vfiler/event')
+
 local vfiler_objects = {}
 
 local VFiler = {}
@@ -176,7 +178,7 @@ function VFiler.new(context)
     _context = context,
     _view = View.new(context),
     _mappings = nil,
-    _events = nil,
+    _event = nil,
   }, VFiler)
 
   -- add vfiler resource
@@ -195,24 +197,6 @@ function VFiler._do_action(bufnr, key)
   end
   local action = vfiler._mappings[key]
   assert(action, 'Not defined in the key')
-  vfiler:do_action(action)
-end
-
-function VFiler._handle_event(bufnr, group, type)
-  local vfiler = VFiler.get(bufnr)
-  if not vfiler then
-    return
-  end
-  local events = vfiler._events[group]
-  if not events then
-    core.message.error('Event group "%s" is not registered.', group)
-    return
-  end
-  local action = events[type]
-  if not action then
-    core.message.error('Event "%s" is not registered.', type)
-    return
-  end
   vfiler:do_action(action)
 end
 
@@ -358,14 +342,14 @@ function VFiler:_define_mappings()
 end
 
 function VFiler:_register_events()
-  self._events = {}
-  for group, events in pairs(self._context.events) do
-    self._events[group] = self._buffer:register_events(
-      group,
-      events,
-      [[require('vfiler/vfiler')._handle_event]]
-    )
-  end
+  self._event = Event.new({
+    events = self._context.events,
+    bufnr = self._buffer.number,
+    args = self,
+    callback = function(action, args)
+      args:do_action(action)
+    end,
+  })
 end
 
 return VFiler

@@ -15,10 +15,18 @@ M.configs = {
 
   events = {
     vfiler_rename = {
-      WinLeave = action.quit,
-      BufWriteCmd = action.execute,
-      InsertLeave = action.check,
-      TextChanged = action.check,
+      {
+        event = 'WinLeave',
+        action = action.quit,
+      },
+      {
+        event = 'BufWriteCmd',
+        action = action.execute,
+      },
+      {
+        event = { 'InsertLeave', 'TextChanged' },
+        action = action.check,
+      },
     },
   },
 }

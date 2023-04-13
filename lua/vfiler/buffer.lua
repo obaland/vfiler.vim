@@ -81,46 +81,6 @@ function Buffer:get_option(option)
   return vim.get_buf_option(self.number, option)
 end
 
-function Buffer:register_events(group, events, funcstr)
-  if not events then
-    return
-  end
-  local registerd = {}
-  vim.command('augroup ' .. group)
-  for event, prop in pairs(events) do
-    local commands = {
-      ('autocmd! %s <buffer>'):format(event),
-    }
-    local type = type(prop)
-    local func
-    if type == 'function' then
-      func = prop
-    elseif type == 'table' then
-      func = prop.action
-      local options = prop.options
-      if options then
-        if options.nested then
-          table.insert(commands, '++nested')
-        end
-        if options.once then
-          table.insert(commands, '++once')
-        end
-      end
-    else
-      core.message.error('"%s %s" is not supported event type.', group, event)
-      return
-    end
-    table.insert(
-      commands,
-      (':lua %s(%d, "%s", "%s")'):format(funcstr, self.number, group, event)
-    )
-    vim.command(table.concat(commands, ' '))
-    registerd[event] = func
-  end
-  vim.command('augroup END')
-  return registerd
-end
-
 function Buffer:set_line(lnum, line)
   vim.fn.setbufline(self.number, lnum, line)
 end
@@ -144,10 +104,6 @@ function Buffer:undefine_mappings(mappings)
   for key, _ in pairs(mappings) do
     vim.del_buf_keymap(self.number, 'n', key)
   end
-end
-
-function Buffer:unregister_events(group)
-  vim.command('autocmd! ' .. group)
 end
 
 return Buffer

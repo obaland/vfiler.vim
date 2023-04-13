@@ -2,6 +2,8 @@ local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
+local Event = require('vfiler/event')
+
 local extensions = {}
 
 local Extension = {}
@@ -142,7 +144,7 @@ function Extension.new(filer, name, configs, options)
     _items = nil,
     _window = nil,
     _mappings = nil,
-    _events = nil,
+    _event = nil,
   }, Extension)
   -- set options
 
@@ -175,24 +177,6 @@ function Extension._do_action(bufnr, key)
   local action = ext._mappings[key]
   if not action then
     core.message.error('Not defined in the key')
-    return
-  end
-  ext:do_action(action)
-end
-
-function Extension._handle_event(bufnr, group, type)
-  local ext = Extension.get(bufnr)
-  if not ext then
-    return
-  end
-  local events = ext._events[group]
-  if not events then
-    core.message.error('Event group "%s" is not registered.', group)
-    return
-  end
-  local action = events[type]
-  if not action then
-    core.message.error('Event "%s" is not registered.', type)
     return
   end
   ext:do_action(action)
@@ -289,14 +273,14 @@ function Extension:start()
   self._mappings = define(configs.mappings)
 
   -- register events
-  self._events = {}
-  for group, events in pairs(configs.events) do
-    self._events[group] = self._buffer:register_events(
-      group,
-      events,
-      [[require('vfiler/extensions/extension')._handle_event]]
-    )
-  end
+  self._event = Event.new({
+    events = configs.events,
+    bufnr = self._buffer.number,
+    args = self,
+    callback = function(action, args)
+      args:do_action(action)
+    end,
+  })
 
   -- draw line texts and syntax
   self:_on_draw(self._buffer, lines)
