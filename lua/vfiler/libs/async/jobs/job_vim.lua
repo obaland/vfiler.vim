@@ -56,6 +56,9 @@ function Job:start(command, options)
   if options.on_completed then
     self._on_completed = options.on_completed
   end
+  if type(command) == 'table' then
+    command = vim.list(command)
+  end
   job_start(self._id, command)
 end
 
