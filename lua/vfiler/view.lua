@@ -290,16 +290,18 @@ function View:redraw()
     self:_resize()
   end
 
-  local winwidth = vim.fn.winwidth(winid) - 1 -- padding endline
+  local winwidth = vim.fn.winwidth(winid)
+  local view_width = winwidth - 1 -- padding end column
   local number = vim.get_win_flag_option(winid, 'number')
   local relativenumber = vim.get_win_flag_option(winid, 'relativenumber')
   if number or relativenumber then
-    winwidth = winwidth - vim.get_win_option(winid, 'numberwidth')
+    view_width = view_width - vim.get_win_option(winid, 'numberwidth')
   end
 
-  if cache.winwidth ~= winwidth or not cache.column_props then
-    cache.column_props = self:_create_column_props(winwidth)
-    cache.winwidth = winwidth
+  if cache.view_width ~= view_width or not cache.column_props then
+    cache.column_props = self:_create_column_props(view_width)
+    cache.view_width = view_width
+    cache.win_width = winwidth
   end
 
   -- create text lines
@@ -419,6 +421,11 @@ function View:walk_items()
   return coroutine.wrap(_walk_items)
 end
 
+-- Get the width value
+function View:width()
+  return self._cache.win_width
+end
+
 --- Get the window number of the view
 function View:winnr()
   return vim.fn.bufwinnr(self._buffer.number)
@@ -462,26 +469,29 @@ function View:_apply_syntaxes()
 end
 
 function View:_clear_cache()
-  self._cache = { winwidth = 0 }
+  self._cache = {
+    view_width = 0,
+    win_width = 0,
+  }
 end
 
-function View:_create_column_props(winwidth)
+function View:_create_column_props(width)
   local props = {}
   local variable_columns = {}
 
   -- Subtract the space between columns
-  local rest_width = winwidth - (#self._columns - 1)
+  local rest_width = width - (#self._columns - 1)
 
   for i, column in ipairs(self._columns) do
-    local width = 0
+    local column_width = 0
     if column.variable then
       -- calculate later
       table.insert(variable_columns, { index = i, object = column })
     else
-      width = column:get_width(self._items, rest_width)
+      column_width = column:get_width(self._items, rest_width)
     end
-    table.insert(props, { width = width })
-    rest_width = rest_width - width
+    table.insert(props, { width = column_width })
+    rest_width = rest_width - column_width
   end
 
   -- decide variable column width
@@ -539,9 +549,9 @@ end
 
 ---@param item table
 function View:_toheader(item)
-  local winwidth = self._cache.winwidth
+  local width = self._cache.view_width
   local header = core.path.escape(vim.fn.fnamemodify(item.path, ':~'))
-  return core.string.truncate(header, winwidth, '<', winwidth)
+  return core.string.truncate(header, width, '<', width)
 end
 
 ---@param item table
@@ -570,7 +580,7 @@ function View:_toline(item)
 
     -- If the actual width exceeds the window width,
     -- it will be interrupted
-    if col > self._cache.winwidth then
+    if col > self._cache.view_width then
       break
     end
 
