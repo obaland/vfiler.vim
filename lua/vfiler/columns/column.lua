@@ -1,123 +1,79 @@
 local core = require('vfiler/libs/core')
+local vim = require('vfiler/libs/vim')
 
-local function create_syntax_commands(syntaxes, end_mark)
-  -- sort the definition order
-  local syntax_list = {}
-  for _, syntax in pairs(syntaxes) do
-    table.insert(syntax_list, syntax)
-  end
-  table.sort(syntax_list, function(a, b)
-    local p1 = a.priority or 0
-    local p2 = b.priority or 0
-    return p1 < p2
-  end)
-
-  local group_names = {}
-  local commands = {}
-
-  end_mark = core.string.vesc(end_mark)
-  for _, syntax in ipairs(syntax_list) do
-    -- set options
-    local options = {}
-    if syntax.options then
-      core.table.merge(options, syntax.options)
-    end
-
-    local command
-    if syntax.keyword then
-      command =
-        core.syntax.keyword_command(syntax.group, syntax.keyword, options)
-    elseif syntax.pattern then
-      command =
-        core.syntax.match_command(syntax.group, syntax.pattern, options)
-    else
-      local start_mark = core.string.vesc(syntax.start_mark)
-      options.concealends = true
-      command = core.syntax.region_command(
-        syntax.group,
-        start_mark,
-        end_mark,
-        syntax.group .. 'Mark',
-        options
-      )
-    end
-
-    table.insert(commands, command)
-    table.insert(group_names, syntax.group)
-  end
-
-  -- clear syntax (insert at the first of command list)
-  table.insert(commands, 1, core.syntax.clear_command(group_names))
-  return commands
-end
-
-local function create_highlight_commands(syntaxes)
-  local commands = {}
-  for _, syntax in pairs(syntaxes) do
-    local hl = syntax.highlight
-    if hl then
-      if type(hl) == 'string' then
-        table.insert(commands, core.highlight.link_command(syntax.group, hl))
-      elseif type(hl) == 'table' then
-        table.insert(commands, core.highlight.command(syntax.group, hl))
-      else
-        core.message.error('Illegal "highlight" type. (%s)', type(hl))
-      end
-    end
-  end
-  return commands
-end
-
----@class Syntax
-local Syntax = {}
-Syntax.__index = Syntax
-
-function Syntax.new(configs)
-  local syntaxes = configs.syntaxes
-  return setmetatable({
-    _syntaxes = configs.syntaxes,
-    _end_mark = configs.end_mark,
-    _syntax_commands = create_syntax_commands(syntaxes, configs.end_mark),
-    _highlight_commands = create_highlight_commands(syntaxes),
-  }, Syntax)
-end
-
-function Syntax:syntaxes()
-  return self._syntax_commands
-end
-
-function Syntax:highlights()
-  return self._highlight_commands
-end
-
-function Syntax:surround_text(name, str)
-  return self._syntaxes[name].start_mark .. str .. self._end_mark
-end
-
----@class Column
 local Column = {}
 Column.__index = Column
 
-function Column.new(syntaxes)
-  local syntax = nil
-  if syntaxes then
-    syntax = Syntax.new(syntaxes)
+local function create_syntax(syntax)
+  -- Set default options
+  local syn_options = syntax.options or {}
+  syn_options.display = true
+  syn_options.oneline = true
+
+  local command = ''
+  -- syntax
+  if syntax.region then
+    -- Add options
+    syn_options.concealends = true
+
+    local region = syntax.region
+    command = core.syntax.create(syntax.group, {
+      region = {
+        start_pattern = core.string.vesc(region.start_mark),
+        end_pattern = core.string.vesc(region.end_mark),
+        matchgroup = syntax.group .. 'Conceal',
+      },
+    }, syn_options)
+  elseif syntax.match then
+    command = core.syntax.create(syntax.group, {
+      match = syntax.match,
+    }, syn_options)
+  elseif syntax.keyword then
+    local keyword = string.gsub(syntax.keyword, '%s', '')
+    if #keyword > 0 then
+      command = core.syntax.create(syntax.group, {
+        keyword = syntax.keyword,
+      }, syn_options)
+    end
+  else
+    core.message.error('Nothing the "syntax type". (%s)', syntax.name)
   end
-  return setmetatable({
+  return command
+end
+
+local function create_highlight(syntax)
+  local hi = syntax.highlight
+  if not hi then
+    return ''
+  end
+
+  local command
+  if type(hi) == 'string' then
+    command = core.highlight.link(syntax.group, hi)
+  elseif type(hi) == 'table' then
+    command = core.highlight.create(syntax.group, hi)
+  else
+    core.message.error('Illegal "highlight" type. (%s)', type(hi))
+  end
+  return command
+end
+
+function Column.new(syntaxes)
+  local self = setmetatable({
     variable = false,
     stretch = false,
-    _syntax = syntax,
+    _marks = {},
+    _hi_commands = {},
+    _syn_commands = {},
   }, Column)
+  if syntaxes then
+    self:_initialize(syntaxes)
+  end
+  return self
 end
 
 function Column:get_text(item, width)
-  local text = self:_get_text(item, width)
-  local text_width = vim.fn.strwidth(text)
-  if self._syntax then
-    local syntax = self:_get_syntax_name(item, width)
-    return self._syntax:surround_text(syntax, text), text_width
-  end
-  return text, text_width
+  return '', 0
 end
 
 function Column:get_width(items, width)
@@ -125,25 +81,43 @@ function Column:get_width(items, width)
 end
 
 function Column:highlights()
-  if self._syntax then
-    return self._syntax:highlights()
+  return self._hi_commands
+end
+
+function Column:surround_text(name, text)
+  local mark = self._marks[name]
+  if (not mark) or vim.get_win_option(0, 'conceallevel') < 2 then
+    return text
   end
-  return nil
+  return mark.start_mark .. text .. mark.end_mark
 end
 
 function Column:syntaxes()
-  if self._syntax then
-    return self._syntax:syntaxes()
+  return self._syn_commands
+end
+
+function Column:_initialize(syntaxes)
+  for _, syntax in ipairs(syntaxes) do
+    local command = create_syntax(syntax)
+    if #command > 0 then
+      table.insert(self._syn_commands, command)
+    end
+
+    -- Add marks
+    if syntax.region then
+      local region = syntax.region
+      self._marks[syntax.name] = {
+        start_mark = region.start_mark,
+        end_mark = region.end_mark,
+      }
+    end
+
+    -- highlight
+    command = create_highlight(syntax)
+    if #command > 0 then
+      table.insert(self._syn_commands, command)
+    end
   end
-  return nil
-end
-
-function Column:_get_text(item, width)
-  return ''
-end
-
-function Column:_get_syntax_name(item, width)
-  return ''
 end
 
 return Column

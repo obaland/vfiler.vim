@@ -102,7 +102,7 @@ function Preview:open(path)
   local warning_syntax = 'vfilerPreviewWarning'
   local win_commands = {
     'filetype detect',
-    core.syntax.clear_command({ warning_syntax }),
+    core.syntax.clear(warning_syntax),
   }
 
   -- read file
@@ -118,11 +118,16 @@ function Preview:open(path)
     -- warning message & syntax
     table.insert(
       win_commands,
-      core.syntax.match_command(warning_syntax, [[\%1l.*]])
+      core.syntax.create(warning_syntax, {
+        match = [[\%1l.\+]],
+      }, {
+        display = true,
+        oneline = true,
+      })
     )
     table.insert(
       win_commands,
-      core.highlight.link_command(warning_syntax, 'WarningMsg')
+      core.highlight.link(warning_syntax, 'WarningMsg')
     )
     local message = ('"%s" could not be opened.'):format(filename)
     table.insert(lines, message)

@@ -307,10 +307,10 @@ function View:redraw()
   -- create text lines
   local lines = vim.list({})
   if self._header then
-    table.insert(lines, self:_toheader(self._items[1]))
+    table.insert(lines, self:_to_header(self._items[1]))
   end
   for i = self:top_lnum(), #self._items do
-    table.insert(lines, self:_toline(self._items[i]))
+    table.insert(lines, self:_to_line(self._items[i]))
   end
 
   -- set buffer lines
@@ -339,9 +339,9 @@ function View:redraw_line(lnum)
   local item = self:get_item(lnum)
   local line
   if self._header and lnum == 1 then
-    line = self:_toheader(item)
+    line = self:_to_header(item)
   else
-    line = self:_toline(item)
+    line = self:_to_line(item)
   end
 
   local buffer = self._buffer
@@ -440,32 +440,37 @@ function View:winid()
 end
 
 function View:_apply_syntaxes()
-  local header_group = 'vfilerHeader'
-  local syntaxes = {
-    core.syntax.clear_command({ header_group }),
-  }
-  local highlights = {}
+  local syn_commands = {}
+  local hi_commands = {}
 
+  for _, column in pairs(self._columns) do
+    local syntaxes = column:syntaxes()
+    if syntaxes then
+      core.list.extend(syn_commands, syntaxes)
+    end
+    local highlights = column:highlights()
+    if highlights then
+      core.list.extend(hi_commands, highlights)
+    end
+  end
+
+  -- Header syntax highlight
+  local header_group = 'vfilerHeader'
+  table.insert(syn_commands, core.syntax.clear(header_group))
   if self._header then
     table.insert(
-      syntaxes,
-      core.syntax.match_command(header_group, [[\%1l.*]])
+      syn_commands,
+      core.syntax.create(header_group, {
+        match = '\\%1l.\\+',
+      }, {
+        oneline = true,
+        display = true,
+      })
     )
   end
 
-  for _, column in pairs(self._columns) do
-    local column_syntaxes = column:syntaxes()
-    if column_syntaxes then
-      core.list.extend(syntaxes, column_syntaxes)
-    end
-    local column_highlights = column:highlights()
-    if column_highlights then
-      core.list.extend(highlights, column_highlights)
-    end
-  end
-
-  vim.commands(syntaxes)
-  vim.commands(highlights)
+  vim.commands(syn_commands)
+  vim.commands(hi_commands)
 end
 
 function View:_clear_cache()
@@ -548,14 +553,14 @@ function View:_resize()
 end
 
 ---@param item table
-function View:_toheader(item)
+function View:_to_header(item)
   local width = self._cache.view_width
   local header = core.path.escape(vim.fn.fnamemodify(item.path, ':~'))
   return core.string.truncate(header, width, '<', width)
 end
 
 ---@param item table
-function View:_toline(item)
+function View:_to_line(item)
   local col = 0
   local texts = {}
   for i, column in ipairs(self._columns) do

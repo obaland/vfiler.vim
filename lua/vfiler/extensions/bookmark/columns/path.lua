@@ -10,28 +10,41 @@ local function to_text(item)
 
   local text = item.path
   if not core.path.exists(item.path) then
-    text = ('[Not exist] - %s'):format(item.path)
+    text = '[Not exist] - ' .. item.path
   end
-  return ('(%s)'):format(text)
+  return '(' .. text .. ')'
 end
 
 function PathColumn.new()
+  local end_mark = '/>p'
+
   local Column = require('vfiler/columns/column')
   return core.inherit(PathColumn, Column, {
-    syntaxes = {
-      path = {
-        group = 'vfilerBookmarkItem_Path',
-        start_mark = 'p@p\\',
-        highlight = 'vfilerBookmarkPath',
+    {
+      group = 'vfilerBookmarkItem_Path',
+      name = 'path',
+      region = {
+        start_mark = 'p..</',
+        end_mark = end_mark,
       },
-      notexist = {
-        group = 'vfilerBookmarkItem_NotExist',
-        start_mark = 'p@n\\',
-        highlight = 'vfilerBookmarkWarning',
-      },
+      highlight = 'vfilerBookmarkPath',
     },
-    end_mark = '\\p@',
+    {
+      group = 'vfilerBookmarkItem_NotExist',
+      name = 'notexist',
+      region = {
+        start_mark = 'p.?</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerBookmarkWarning',
+    },
   })
+end
+
+function PathColumn:get_text(item)
+  local syntax = core.path.exists(item.path) and 'path' or 'notexist'
+  local text = item.path and to_text(item) or ''
+  return self:surround_text(syntax, text), vim.fn.strwidth(text)
 end
 
 function PathColumn:get_width(items)
@@ -40,14 +53,6 @@ function PathColumn:get_width(items)
     max = math.max(max, vim.fn.strwidth(to_text(item)))
   end
   return max
-end
-
-function PathColumn:_get_text(item)
-  return item.path and to_text(item) or ''
-end
-
-function PathColumn:_get_syntax_name(item)
-  return core.path.exists(item.path) and 'path' or 'notexist'
 end
 
 return PathColumn

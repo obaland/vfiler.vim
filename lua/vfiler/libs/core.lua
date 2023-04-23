@@ -249,55 +249,53 @@ local function get_syntax_option_string(options)
   local option_strings = {}
   for key, value in pairs(options) do
     local option
-    if type(value) ~= 'boolean' then
-      option = ('%s=%s'):format(key, value)
-    else
+    if type(value) == 'boolean' then
       option = key
+    elseif type(value) == 'table' then
+      option = ('%s=%s'):format(key, table.concat(value, ','))
+    else
+      option = ('%s=%s'):format(key, value)
     end
     table.insert(option_strings, option)
   end
   return table.concat(option_strings, ' ')
 end
 
-function M.syntax.clear_command(names)
-  return ('silent! syntax clear %s'):format(table.concat(names, ' '))
+function M.syntax.clear(group)
+  if type(group) == 'table' then
+    group = table.concat(group, ' ')
+  end
+  return 'silent! syntax clear ' .. group
 end
 
-function M.syntax.keyword_command(name, keyword, options)
-  local command = ('syntax keyword %s %s'):format(name, keyword)
-  local option = get_syntax_option_string(options or {})
-  if #option > 0 then
-    command = command .. ' ' .. option
+function M.syntax.create(group, pattern, options)
+  local cmd = 'syntax '
+  if pattern.match then
+    cmd = cmd .. ('match %s "%s"'):format(group, pattern.match)
+  elseif pattern.keyword then
+    cmd = cmd .. ('keyword %s %s'):format(group, pattern.keyword)
+  elseif pattern.region then
+    local region = pattern.region
+    cmd = cmd .. 'region ' .. group .. ' '
+    if region.matchgroup then
+      cmd = cmd .. 'matchgroup=' .. region.matchgroup .. ' '
+    end
+    cmd = cmd
+      .. ('start="%s" end="%s"'):format(
+        region.start_pattern,
+        region.end_pattern
+      )
   end
-  return command
-end
-
-function M.syntax.match_command(name, pattern, options)
-  local command = ('syntax match %s /%s/'):format(name, pattern)
-  local option = get_syntax_option_string(options or {})
-  if #option > 0 then
-    command = command .. ' ' .. option
+  if options then
+    cmd = cmd .. ' ' .. get_syntax_option_string(options)
   end
-  return command
-end
-
-function M.syntax.region_command(name, startp, endp, matchgroup, options)
-  local command = 'syntax region ' .. name
-  if matchgroup and #matchgroup > 0 then
-    command = command .. ' matchgroup=' .. matchgroup
-  end
-  command = command .. (' start=/%s/ end=/%s/'):format(startp, endp)
-  local option = get_syntax_option_string(options or {})
-  if #option > 0 then
-    command = command .. ' ' .. option
-  end
-  return command
+  return cmd
 end
 
 ---Generate highlight command string
 ---@param name string
 ---@param args table
-function M.highlight.command(name, args)
+function M.highlight.create(name, args)
   if not args then
     return ''
   end
@@ -312,7 +310,7 @@ end
 ---@param from string
 ---@param to string
 ---@return string
-function M.highlight.link_command(from, to)
+function M.highlight.link(from, to)
   return ('highlight! default link %s %s'):format(from, to)
 end
 
@@ -375,7 +373,7 @@ end
 
 -- Escape because of the vim pattern
 function M.string.vesc(s)
-  return s:gsub('([\\^*$.~])', '\\%1')
+  return s:gsub('([%[%]\\^*$.~])', '\\%1')
 end
 
 ------------------------------------------------------------------------------

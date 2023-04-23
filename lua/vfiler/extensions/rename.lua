@@ -98,23 +98,33 @@ function Rename:_on_opened(winid, bufnr, items, configs)
   local group_changed = 'vfilerRename_Changed'
 
   local syntaxes = {
-    core.syntax.clear_command({ group_notchanged, group_changed }),
-    core.syntax.match_command(group_changed, [[^.\+$]]),
+    core.syntax.clear({ group_notchanged, group_changed }),
+    core.syntax.create(group_changed, {
+      match = [[^.\+$]],
+    }, {
+      display = true,
+      oneline = true,
+    }),
   }
   -- Create "NotChanged" syntax for each line
   for i, item in ipairs(items) do
     local pattern = ([[^\%%%dl%s$]]):format(i, item.name)
     table.insert(
       syntaxes,
-      core.syntax.match_command(group_notchanged, pattern)
+      core.syntax.create(group_notchanged, {
+        match = pattern,
+      }, {
+        display = true,
+        oneline = true,
+      })
     )
   end
   vim.win_executes(winid, syntaxes, 'silent')
 
   -- highlights
   vim.win_executes(winid, {
-    core.highlight.link_command(group_changed, 'Special'),
-    core.highlight.link_command(group_notchanged, 'Normal'),
+    core.highlight.link(group_changed, 'Special'),
+    core.highlight.link(group_notchanged, 'Normal'),
   }, 'silent')
   return 1 -- initial lnum
 end

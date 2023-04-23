@@ -16,31 +16,46 @@ function IconColumn.setup(configs)
 end
 
 function IconColumn.new()
+  local end_mark = '/>c'
+
   local Column = require('vfiler/columns/column')
   local self = core.inherit(IconColumn, Column, {
-    syntaxes = {
-      file = {
-        group = 'vfilerBookmarkIcon_File',
-        start_mark = 'i@f\\',
-        highlight = 'vfilerBookmarkFile',
+    {
+      group = 'vfilerBookmarkIcon_File',
+      name = 'file',
+      region = {
+        start_mark = 'c..</',
+        end_mark = end_mark,
       },
-      directory = {
-        group = 'vfilerBookmarkIcon_Directory',
-        start_mark = 'i@d\\',
-        highlight = 'vfilerBookmarkDirectory',
-      },
-      category = {
-        group = 'vfilerBookmarkIcon_Category',
-        start_mark = 'i@c\\',
-        highlight = 'vfilerBookmarkCategory',
-      },
-      unknown = {
-        group = 'vfilerBookmarkIcon_Unknown',
-        start_mark = 'i@u\\',
-        highlight = 'vfilerBookmarkUnknown',
-      },
+      highlight = 'vfilerBookmarkFile',
     },
-    end_mark = '\\i@',
+    {
+      group = 'vfilerBookmarkIcon_Directory',
+      name = 'directory',
+      region = {
+        start_mark = 'c.,</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerBookmarkDirectory',
+    },
+    {
+      group = 'vfilerBookmarkIcon_Category',
+      name = 'category',
+      region = {
+        start_mark = 'c._</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerBookmarkCategory',
+    },
+    {
+      group = 'vfilerBookmarkIcon_Unknown',
+      name = 'unknown',
+      region = {
+        start_mark = 'c.?</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerBookmarkUnknown',
+    },
   })
 
   self.icon_width = 0
@@ -50,11 +65,7 @@ function IconColumn.new()
   return self
 end
 
-function IconColumn:get_width(items)
-  return self.icon_width
-end
-
-function IconColumn:_get_text(item, width)
+function IconColumn:get_text(item, width)
   local key
   if item.type == 'category' then
     key = item.opened and 'opened' or 'closed'
@@ -62,11 +73,12 @@ function IconColumn:_get_text(item, width)
     key = item.type
   end
   local icon = self.configs[key]
-  return icon .. (' '):rep(self.icon_width - vim.fn.strwidth(icon))
+  local text = icon .. (' '):rep(self.icon_width - vim.fn.strwidth(icon))
+  return self:surround_text(item.type, text), self.icon_width
 end
 
-function IconColumn:_get_syntax_name(item, width)
-  return item.type
+function IconColumn:get_width(items)
+  return self.icon_width
 end
 
 return IconColumn

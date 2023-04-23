@@ -29,33 +29,49 @@ end
 
 function IconColumn.new()
   local Column = require('vfiler/columns/column')
+
+  local end_mark = '/>c'
   return core.inherit(IconColumn, Column, {
-    syntaxes = {
-      selected = {
-        group = 'vfilerIcon_Selected',
-        start_mark = 'i@s\\',
-        highlight = 'vfilerSelected',
+    {
+      group = 'vfilerIcon_Selected',
+      name = 'selected',
+      region = {
+        start_mark = 'c.*</',
+        end_mark = end_mark,
       },
-      file = {
-        group = 'vfilerIcon_File',
-        start_mark = 'i@f\\',
-        highlight = 'vfilerFile',
-      },
-      directory = {
-        group = 'vfilerIcon_Directory',
-        start_mark = 'i@d\\',
-        highlight = 'vfilerDirectory',
-      },
+      highlight = 'vfilerSelected',
     },
-    end_mark = '\\i@',
+    {
+      group = 'vfilerIcon_File',
+      name = 'file',
+      region = {
+        start_mark = 'c..</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerFile',
+    },
+    {
+      group = 'vfilerIcon_Closed',
+      name = 'closed',
+      region = {
+        start_mark = 'c.+</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerDirectory',
+    },
+    {
+      group = 'vfilerIcon_Opened',
+      name = 'opened',
+      region = {
+        start_mark = 'c.-</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerDirectory',
+    },
   })
 end
 
-function IconColumn:get_width(items, width)
-  return icon_width
-end
-
-function IconColumn:_get_text(item, width)
+function IconColumn:get_text(item, width)
   local iname
   if item.selected then
     iname = 'selected'
@@ -66,17 +82,12 @@ function IconColumn:_get_text(item, width)
   end
   local icon = IconColumn.configs.icons[iname]
   -- padding spaces
-  return icon .. (' '):rep(icon_width - vim.fn.strwidth(icon))
+  local text = icon .. (' '):rep(icon_width - vim.fn.strwidth(icon))
+  return self:surround_text(iname, text), vim.fn.strwidth(text)
 end
 
-function IconColumn:_get_syntax_name(item, width)
-  local syntax
-  if item.selected then
-    syntax = 'selected'
-  else
-    syntax = item.type
-  end
-  return syntax
+function IconColumn:get_width(items, width)
+  return icon_width
 end
 
 return IconColumn

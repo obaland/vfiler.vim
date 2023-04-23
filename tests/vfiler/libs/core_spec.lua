@@ -290,3 +290,63 @@ describe('core.math', function()
     end
   end)
 end)
+
+describe('core.syntax', function()
+  it('create match', function()
+    local command = core.syntax.create('group', {
+      match = 'test',
+    }, {
+      display = true,
+    })
+    eq('syntax match group "test" display', command)
+  end)
+  it('create region', function()
+    local command = core.syntax.create('group', {
+      region = {
+        start_pattern = 'start',
+        end_pattern = 'end',
+        matchgroup = 'matchgroup'
+      }
+    }, {
+      contained = true,
+    })
+    eq('syntax region group matchgroup=matchgroup start="start" end="end" contained', command)
+  end)
+  it('create keyword', function()
+    local command = core.syntax.create('group', {
+      keyword = 'keyword'
+    })
+    eq('syntax keyword group keyword', command)
+  end)
+  it('options', function()
+    local command = core.syntax.create('group', {
+      match = 'test',
+    }, {
+      contains = 'group1',
+    })
+    eq('syntax match group "test" contains=group1', command)
+    command = core.syntax.create('group', {
+      match = 'test',
+    }, {
+      contains = { 'group1', 'group2' },
+    })
+    eq('syntax match group "test" contains=group1,group2', command)
+  end)
+  it('clear', function()
+    local command = core.syntax.clear('group')
+    eq('silent! syntax clear group', command)
+  end)
+end)
+
+describe('core.highlight', function()
+  it('create', function()
+    local command = core.highlight.create('name', {
+      guifg = '#ffffff',
+    })
+    eq('highlight! default name guifg=#ffffff', command)
+  end)
+  it('link', function()
+    local command = core.highlight.link('from', 'to')
+    eq('highlight! default link from to', command)
+  end)
+end)

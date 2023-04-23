@@ -4,37 +4,61 @@ local vim = require('vfiler/libs/vim')
 local NameColumn = {}
 
 function NameColumn.new()
+  local end_mark = '/>n'
+
   local Column = require('vfiler/columns/column')
   return core.inherit(NameColumn, Column, {
-    syntaxes = {
-      category = {
-        group = 'vfilerBookmarkName_Category',
-        start_mark = 'n@c\\',
-        highlight = 'vfilerBookmarkCategory',
+    {
+      group = 'vfilerBookmarkName_Category',
+      name = 'category',
+      region = {
+        start_mark = 'n._</',
+        end_mark = end_mark,
       },
-      file = {
-        group = 'vfilerBookmarkName_File',
-        start_mark = 'n@f\\',
-        highlight = 'vfilerBookmarkFile',
-      },
-      directory = {
-        group = 'vfilerBookmarkName_Directory',
-        start_mark = 'n@d\\',
-        highlight = 'vfilerBookmarkDirectory',
-      },
-      link = {
-        group = 'vfilerBookmarkName_Link',
-        start_mark = 'n@l\\',
-        highlight = 'vfilerBookmarkLink',
-      },
-      unknown = {
-        group = 'vfilerBookmarkName_Unknown',
-        start_mark = 'n@u\\',
-        highlight = 'vfilerBookmarkUnknown',
-      },
+      highlight = 'vfilerBookmarkCategory',
     },
-    end_mark = '\\n@',
+    {
+      group = 'vfilerBookmarkName_File',
+      name = 'file',
+      region = {
+        start_mark = 'n..</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerBookmarkFile',
+    },
+    {
+      group = 'vfilerBookmarkName_Directory',
+      name = 'directory',
+      region = {
+        start_mark = 'n.,</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerBookmarkDirectory',
+    },
+    {
+      group = 'vfilerBookmarkName_Link',
+      name = 'link',
+      region = {
+        start_mark = 'n.~</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerBookmarkLink',
+    },
+    {
+      group = 'vfilerBookmarkName_Unknown',
+      name = 'unknown',
+      region = {
+        start_mark = 'n.?</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerBookmarkUnknown',
+    },
   })
+end
+
+function NameColumn:get_text(item, width)
+  local syntax = item.link and 'link' or item.type
+  return self:surround_text(syntax, item.name), vim.fn.strwidth(item.name)
 end
 
 function NameColumn:get_width(items)
@@ -43,20 +67,6 @@ function NameColumn:get_width(items)
     max_width = math.max(max_width, vim.fn.strwidth(item.name))
   end
   return max_width
-end
-
-function NameColumn:_get_text(item, width)
-  return item.name
-end
-
-function NameColumn:_get_syntax_name(item, width)
-  local syntax
-  if item.link then
-    syntax = 'link'
-  else
-    syntax = item.type
-  end
-  return syntax
 end
 
 return NameColumn

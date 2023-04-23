@@ -3,39 +3,59 @@ local core = require('vfiler/libs/core')
 local TypeColumn = {}
 
 function TypeColumn.new()
+  local end_mark = '/>t'
+
   local Column = require('vfiler/columns/column')
   return core.inherit(TypeColumn, Column, {
-    syntaxes = {
-      directory = {
-        group = 'vfilerType_Directory',
-        start_mark = 'T@d\\',
-        highlight = 'vfilerDirectory',
+    {
+      group = 'vfilerType_Directory',
+      name = 'directory',
+      region = {
+        start_mark = 't.,</',
+        end_mark = end_mark,
       },
-      link = {
-        group = 'vfilerType_Link',
-        start_mark = 'T@l\\',
-        highlight = 'vfilerLink',
-      },
-      file = {
-        group = 'vfilerType_File',
-        start_mark = 'T@f\\',
-        highlight = 'vfilerFile',
-      },
-      hidden = {
-        group = 'vfilerType_Hidden',
-        start_mark = 'T@h\\',
-        highlight = 'vfilerHidden',
-      },
+      highlight = 'vfilerDirectory',
     },
-    end_mark = '\\T@',
+    {
+      group = 'vfilerType_Link',
+      name = 'link',
+      region = {
+        start_mark = 't.-</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerLink',
+    },
+    {
+      group = 'vfilerType_File',
+      name = 'file',
+      region = {
+        start_mark = 't..</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerFile',
+    },
+    {
+      group = 'vfilerType_Hidden',
+      name = 'hidden',
+      region = {
+        start_mark = 't._</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerHidden',
+    },
   })
 end
 
-function TypeColumn:get_width(items, width)
-  return 3
-end
+function TypeColumn:get_text(item, width)
+  local syntax
+  if item.name:sub(1, 1) == '.' then
+    syntax = 'hidden'
+  elseif item.link then
+    syntax = 'link'
+  else
+    syntax = item.type
+  end
 
-function TypeColumn:_get_text(item, width)
   local type
   if item.link then
     type = '[L]'
@@ -44,19 +64,11 @@ function TypeColumn:_get_text(item, width)
   else
     type = '[F]'
   end
-  return type
+  return self:surround_text(syntax, type), 3
 end
 
-function TypeColumn:_get_syntax_name(item, width)
-  local key
-  if item.name:sub(1, 1) == '.' then
-    key = 'hidden'
-  elseif item.link then
-    key = 'link'
-  else
-    key = item.type
-  end
-  return key
+function TypeColumn:get_width(items, width)
+  return 3
 end
 
 return TypeColumn

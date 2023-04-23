@@ -3,52 +3,59 @@ local core = require('vfiler/libs/core')
 local TimeColumn = {}
 
 function TimeColumn.new()
+  local end_mark = '/>e'
+
   local Column = require('vfiler/columns/column')
   local self = core.inherit(TimeColumn, Column, {
-    syntaxes = {
-      today = {
-        group = 'vfilerTime_Today',
-        start_mark = 't@t\\',
-        highlight = 'vfilerTimeToday',
+    {
+      group = 'vfilerTime_Today',
+      name = 'today',
+      region = {
+        start_mark = 'e.~</',
+        end_mark = end_mark,
       },
-      week = {
-        group = 'vfilerTime_Week',
-        start_mark = 't@w\\',
-        highlight = 'vfilerTimeWeek',
-      },
-      other = {
-        group = 'vfilerTime_Other',
-        start_mark = 't@o\\',
-        highlight = 'vfilerTime',
-      },
+      highlight = 'vfilerTimeToday',
     },
-    end_mark = '\\t@',
+    {
+      group = 'vfilerTime_Week',
+      name = 'week',
+      region = {
+        start_mark = 'e.,</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerTimeWeek',
+    },
+    {
+      group = 'vfilerTime_Other',
+      name = 'other',
+      region = {
+        start_mark = 'e..</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerTime',
+    },
   })
   self.format = '%Y/%m/%d %H:%M'
   return self
 end
 
-function TimeColumn:get_width(items, width)
-  return #os.date(self.format, 0)
-end
-
-function TimeColumn:_get_text(item, width)
-  return os.date(self.format, item.time)
-end
-
-function TimeColumn:_get_syntax_name(item, width)
-  local key
+function TimeColumn:get_text(item, width)
+  local syntax = 'other'
   local difftime = os.difftime(os.time(), item.time)
   if difftime < 86400 then
     -- 1day (60 * 60 * 24 = 86400)
-    key = 'today'
+    syntax = 'today'
   elseif difftime < 604800 then
     -- 1week (86400 * 7 = 604800)
-    key = 'week'
-  else
-    key = 'other'
+    syntax = 'week'
   end
-  return key
+
+  local text = os.date(self.format, item.time)
+  return self:surround_text(syntax, text), vim.fn.strwidth(text)
+end
+
+function TimeColumn:get_width(items, width)
+  return #os.date(self.format, 0)
 end
 
 return TimeColumn

@@ -14,32 +14,30 @@ end
 function IndentColumn.new()
   local Column = require('vfiler/columns/column')
   return core.inherit(IndentColumn, Column, {
-    syntaxes = {
-      indent = {
-        group = 'vfilerBookmarkIndent',
-        start_mark = 'I@\\',
-        highlight = 'vfilerBookmarkCategory',
+    {
+      group = 'vfilerBookmarkIndent',
+      name = 'indent',
+      region = {
+        start_mark = 'i.</',
+        end_mark = '/>i',
       },
+      highlight = 'vfilerBookmarkCategory',
     },
-    end_mark = '\\@I',
   })
+end
+
+function IndentColumn:get_text(item, width)
+  local indent = item.level - 1
+  if indent <= 0 then
+    return '', 0
+  end
+  local text = (' '):rep((indent * 2) - 1) .. self.configs.icon
+  return self:surround_text('indent', text), vim.fn.strwidth(text)
 end
 
 function IndentColumn:get_width(items)
   -- "1" is white space for indent
   return 1 + vim.fn.strwidth(self.configs.icon)
-end
-
-function IndentColumn:_get_text(item, width)
-  local indent = item.level - 1
-  if indent <= 0 then
-    return ''
-  end
-  return (' '):rep((indent * 2) - 1) .. self.configs.icon
-end
-
-function IndentColumn:_get_syntax_name(item, width)
-  return 'indent'
 end
 
 return IndentColumn
