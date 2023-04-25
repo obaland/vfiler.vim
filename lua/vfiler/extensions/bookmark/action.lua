@@ -12,6 +12,19 @@ local function select(extension, layout)
   extension:select(item.path, layout)
 end
 
+local function next_cursor(extension, step, limited)
+  local current = vim.fn.line('.')
+  local pos = current
+  repeat
+    pos = limited(extension, pos + step)
+    local item = extension:get_item(pos)
+    if (item.type ~= 'category') or not item.opened then
+      break
+    end
+  until pos == current
+  return pos
+end
+
 function action.change_category(extension)
   local item = extension:get_item()
   if item.type == 'category' then
@@ -99,6 +112,20 @@ function action.close_tree(extension)
   category:close()
   extension:redraw()
   core.cursor.winmove(extension:winid(), extension:indexof(category))
+end
+
+function action.smart_cursor_down(extension)
+  local pos = next_cursor(extension, 1, function(ext, pos)
+    return (pos > ext:num_lines()) and 1 or pos
+  end)
+  core.cursor.winmove(extension:winid(), pos)
+end
+
+function action.smart_cursor_up(extension)
+  local pos = next_cursor(extension, -1, function(ext, pos)
+    return (pos < 1) and ext:num_lines() or pos
+  end)
+  core.cursor.winmove(extension:winid(), pos)
 end
 
 return action
