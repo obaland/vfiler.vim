@@ -28,6 +28,7 @@ function M.status(context, view)
       link = item.link,
     }),
     options = vim.dict({
+      layout = options.layout,
       width = options.width,
       height = options.height,
     }),
