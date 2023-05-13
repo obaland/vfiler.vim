@@ -26,22 +26,27 @@ end
 
 local function create_columns(columns)
   local column = require('vfiler/column')
-  local objects = {}
+  local list = {}
+  local tbl = {}
 
   local cnames = vim.list.from(vim.fn.split(columns, ','))
   for _, cname in ipairs(cnames) do
     local object = column.load(cname)
     if object then
-      table.insert(objects, object)
+      tbl[cname] = object
+      table.insert(list, object)
     else
       core.message.warning('"%s" is not a valid column.', cname)
     end
   end
-  if #objects <= 0 then
+  if #list <= 0 then
     core.message.error('There are invalid columns. (%s)', columns)
     return nil
   end
-  return objects
+  return {
+    list = list,
+    tbl = tbl,
+  }
 end
 
 local function get_window_size(layout, wvalue, hvalue)
@@ -165,6 +170,12 @@ function View:get_item(lnum)
   end
   lnum = lnum or vim.fn.line('.')
   return self._items[lnum]
+end
+
+--- Checked to see if it has the specified column.
+---@param name string
+function View:has_column(name)
+  return self._columns.tbl[name] ~= nil
 end
 
 --- Find the index of the item in the view buffer for the specified path
@@ -443,7 +454,7 @@ function View:_apply_syntaxes()
   local syn_commands = {}
   local hi_commands = {}
 
-  for _, column in pairs(self._columns) do
+  for _, column in pairs(self._columns.tbl) do
     local syntaxes = column:syntaxes()
     if syntaxes then
       core.list.extend(syn_commands, syntaxes)
@@ -481,22 +492,23 @@ function View:_clear_cache()
 end
 
 function View:_create_column_props(width)
+  local columns = self._columns.list
   local props = {}
   local variable_columns = {}
 
   -- Subtract the space between columns
-  local rest_width = width - (#self._columns - 1)
+  local rest_width = width - (#columns - 1)
 
-  for i, column in ipairs(self._columns) do
-    local column_width = 0
+  for i, column in ipairs(columns) do
+    local cwidth = 0
     if column.variable then
       -- calculate later
       table.insert(variable_columns, { index = i, object = column })
     else
-      column_width = column:get_width(self._items, rest_width)
+      cwidth = column:get_width(self._items, rest_width)
     end
-    table.insert(props, { width = column_width })
-    rest_width = rest_width - column_width
+    table.insert(props, { width = cwidth })
+    rest_width = rest_width - cwidth
   end
 
   -- decide variable column width
@@ -563,7 +575,7 @@ end
 function View:_to_line(item)
   local col = 0
   local texts = {}
-  for i, column in ipairs(self._columns) do
+  for i, column in ipairs(self._columns.list) do
     local prop = self._cache.column_props[i]
 
     local cwidth = prop.width

@@ -68,9 +68,9 @@ describe('vfiler', function()
     end)
   end)
 
-  describe('Start with "new" option', function()
+  describe('Interface', function()
     it('call the "status" interface', function()
-      local vfiler = u.vfiler.start(configs)
+      local vfiler = u.vfiler.start()
       assert.is_not_nil(vfiler)
 
       local status = vfiler:status()

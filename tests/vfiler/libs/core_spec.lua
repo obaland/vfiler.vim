@@ -305,16 +305,19 @@ describe('core.syntax', function()
       region = {
         start_pattern = 'start',
         end_pattern = 'end',
-        matchgroup = 'matchgroup'
-      }
+        matchgroup = 'matchgroup',
+      },
     }, {
       contained = true,
     })
-    eq('syntax region group matchgroup=matchgroup start="start" end="end" contained', command)
+    eq(
+      'syntax region group matchgroup=matchgroup start="start" end="end" contained',
+      command
+    )
   end)
   it('create keyword', function()
     local command = core.syntax.create('group', {
-      keyword = 'keyword'
+      keyword = 'keyword',
     })
     eq('syntax keyword group keyword', command)
   end)
