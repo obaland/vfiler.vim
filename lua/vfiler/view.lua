@@ -325,7 +325,7 @@ function View:redraw()
   end
 
   -- set buffer lines
-  local saved_view = vim.fn.winsaveview()
+  --local saved_view = vim.fn.winsaveview()
   core.try({
     function()
       buffer:set_option('modifiable', true)
@@ -335,7 +335,7 @@ function View:redraw()
     finally = function()
       buffer:set_option('modifiable', false)
       buffer:set_option('readonly', true)
-      vim.fn.winrestview(saved_view)
+      --vim.fn.winrestview(saved_view)
     end,
   })
 

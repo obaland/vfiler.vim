@@ -353,3 +353,108 @@ describe('core.highlight', function()
     eq('highlight! default link from to', command)
   end)
 end)
+
+describe('core.autocmd', function()
+  it('start group', function()
+    local name = 'vfiler_augroup'
+    local command = core.autocmd.start_group(name)
+    eq('augroup vfiler_augroup', command)
+  end)
+  it('end group', function()
+    local command = core.autocmd.end_group()
+    eq('augroup END', command)
+  end)
+  it('delete group', function()
+    local name = 'vfiler_augroup'
+    local command = core.autocmd.delete_group(name)
+    eq('augroup! vfiler_augroup', command)
+  end)
+
+  local create_patterns = {
+    basic = {
+      event = 'BufEnter',
+      cmd = ':echo',
+      expected = 'autocmd! BufEnter :echo',
+    },
+    events = {
+      event = { 'BufEnter', 'BufLeave' },
+      cmd = ':echo',
+      expected = 'autocmd! BufEnter,BufLeave :echo',
+    },
+    options_buffer1 = {
+      event = 'BufEnter',
+      cmd = ':echo',
+      options = {
+        buffer = 0,
+      },
+      expected = 'autocmd! BufEnter <buffer> :echo',
+    },
+    options_buffer2 = {
+      event = 'BufEnter',
+      cmd = ':echo',
+      options = {
+        buffer = 3,
+      },
+      expected = 'autocmd! BufEnter <buffer=3> :echo',
+    },
+    options_buffer3 = {
+      event = 'BufEnter',
+      cmd = ':echo',
+      options = {
+        buffer = 'abuf',
+      },
+      expected = 'autocmd! BufEnter <buffer=abuf> :echo',
+    },
+    options_buffer_unknown = {
+      event = 'BufEnter',
+      cmd = ':echo',
+      options = {
+        buffer = {},
+      },
+      expected = 'autocmd! BufEnter :echo',
+    },
+    options_pattern = {
+      event = 'BufEnter',
+      cmd = ':echo',
+      options = {
+        pattern = 'text',
+      },
+      expected = 'autocmd! BufEnter text :echo',
+    },
+    options_others1 = {
+      event = 'BufEnter',
+      cmd = ':echo',
+      options = {
+        buffer = 2,
+        nested = true,
+      },
+      expected = 'autocmd! BufEnter <buffer=2> ++nested :echo',
+    },
+    options_others2 = {
+      event = 'BufEnter',
+      cmd = ':echo',
+      options = {
+        pattern = '*.txt',
+        once = true,
+      },
+      expected = 'autocmd! BufEnter *.txt ++once :echo',
+    },
+    options_others3 = {
+      event = 'BufEnter',
+      cmd = ':echo',
+      options = {
+        nested = true,
+        once = true,
+      },
+      expected = 'autocmd! BufEnter ++once ++nested :echo',
+    },
+  }
+
+  for name, pattern in pairs(create_patterns) do
+    it('create - ' .. name, function()
+      local command =
+        core.autocmd.create(pattern.event, pattern.cmd, pattern.options)
+      eq(pattern.expected, command)
+    end)
+  end
+end)

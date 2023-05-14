@@ -236,7 +236,7 @@ function M.path.root(path)
 end
 
 ------------------------------------------------------------------------------
--- syntax and highlight command utilities
+-- Syntax and Highlight command utilities
 ------------------------------------------------------------------------------
 M.syntax = {}
 M.highlight = {}
@@ -312,6 +312,75 @@ end
 ---@return string
 function M.highlight.link(from, to)
   return ('highlight! default link %s %s'):format(from, to)
+end
+
+------------------------------------------------------------------------------
+-- autocmd command utilities
+------------------------------------------------------------------------------
+M.autocmd = {}
+
+--- Generate a command to define a group name for "autocmd".
+---@param name string
+---@return string
+function M.autocmd.start_group(name)
+  return 'augroup ' .. name
+end
+
+--- Generate group name definition end command for "autocmd".
+---@return string
+function M.autocmd.end_group()
+  return 'augroup END'
+end
+
+--- Generate commands for delete "autocmd".
+---@param name string
+---@return string
+function M.autocmd.delete_group(name)
+  return 'augroup! ' .. name
+end
+
+--- Generate commands that define automatic commands.
+---@param event string or list
+---@param cmd string
+---@param options table
+function M.autocmd.create(event, cmd, options)
+  if type(event) == 'table' then
+    event = table.concat(event, ',')
+  end
+  local commands = { 'autocmd! ' .. event }
+
+  -- Options
+  if options then
+    if options.buffer ~= nil then
+      local buffer = options.buffer
+      if buffer == 0 then
+        table.insert(commands, '<buffer>')
+      elseif type(buffer) == 'number' then
+        table.insert(commands, '<buffer=' .. buffer .. '>')
+      elseif type(buffer) == 'string' and buffer == 'abuf' then
+        table.insert(commands, '<buffer=abuf>')
+      else
+        M.message.error('Unknown "buffer" option.')
+      end
+    elseif options.pattern then
+      table.insert(commands, options.pattern)
+    end
+
+    if options.once then
+      table.insert(commands, '++once')
+    end
+    if options.nested then
+      table.insert(commands, '++nested')
+    end
+  end
+
+  table.insert(commands, cmd)
+  return table.concat(commands, ' ')
+end
+
+--- Generate commands delete automatic commands.
+function M.autocmd.delete(name)
+  return 'autocmd! ' .. name
 end
 
 ------------------------------------------------------------------------------
