@@ -50,7 +50,7 @@ function Event:unregister()
   end
 
   for group, _ in pairs(self._event_actions) do
-    vim.command('autocmd! ' .. group)
+    core.autocmd.delete_group(group)
   end
 
   if registered_events[bufnr] then
@@ -61,7 +61,7 @@ end
 
 function Event:_register(events)
   for group, eventlist in pairs(events) do
-    local commands = { 'augroup ' .. group }
+    local commands = { core.autocmd.start_group(group) }
     local actions = {}
     local function register(event, action)
       if not actions[event] then
@@ -74,7 +74,7 @@ function Event:_register(events)
         group,
         event
       )
-      table.insert(commands, ('autocmd! %s <buffer> %s'):format(event, cmd))
+      table.insert(commands, core.autocmd.create(event, cmd, { buffer = 0 }))
     end
 
     for i, event in ipairs(eventlist) do
@@ -93,7 +93,7 @@ function Event:_register(events)
       end
     end
     self._event_actions[group] = actions
-    table.insert(commands, 'augroup END')
+    table.insert(commands, core.autocmd.end_group())
     vim.commands(commands)
   end
   registered_events[self._bufnr] = self

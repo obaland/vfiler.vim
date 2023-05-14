@@ -110,14 +110,14 @@ function Floating:_on_open(buffer, config)
   self._winid = api.nvim_open_win(buffer.number, enter, self._config)
   api.nvim_win_set_option(self._winid, 'winhighlight', 'Normal:Normal')
 
-  local autocmd = {
-    'autocmd! QuitPre',
-    ('<buffer=%d> ++once ++nested'):format(buffer.number),
-    (':lua require("vfiler/windows/floating")._try_close(%d)'):format(
-      self._winid
-    ),
-  }
-  vim.cmd(table.concat(autocmd, ' '))
+  local cmd = (':lua require("vfiler/windows/floating")._try_close(%d)'):format(
+    self._winid
+  )
+  vim.cmd(core.autocmd.create('QuitPre', cmd, {
+    buffer = buffer.number,
+    once = true,
+    nested = true,
+  }))
 
   return self._winid
 end
