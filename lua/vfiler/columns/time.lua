@@ -39,7 +39,7 @@ function TimeColumn.new()
   return self
 end
 
-function TimeColumn:get_text(item, width)
+function TimeColumn:to_text(item, width)
   local syntax = 'other'
   local difftime = os.difftime(os.time(), item.time)
   if difftime < 86400 then
@@ -51,10 +51,14 @@ function TimeColumn:get_text(item, width)
   end
 
   local text = os.date(self.format, item.time)
-  return self:surround_text(syntax, text), vim.fn.strwidth(text)
+  return {
+    string = text,
+    width = vim.fn.strwidth(text),
+    syntax = syntax,
+  }
 end
 
-function TimeColumn:get_width(items, width)
+function TimeColumn:get_width(items, width, winid)
   return #os.date(self.format, 0)
 end
 

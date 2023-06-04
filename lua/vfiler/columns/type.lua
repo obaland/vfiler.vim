@@ -46,7 +46,7 @@ function TypeColumn.new()
   })
 end
 
-function TypeColumn:get_text(item, width)
+function TypeColumn:to_text(item, width)
   local syntax
   if item.name:sub(1, 1) == '.' then
     syntax = 'hidden'
@@ -64,10 +64,14 @@ function TypeColumn:get_text(item, width)
   else
     type = '[F]'
   end
-  return self:surround_text(syntax, type), 3
+  return {
+    string = type,
+    width = 3,
+    syntax = syntax,
+  }
 end
 
-function TypeColumn:get_width(items, width)
+function TypeColumn:get_width(_, _, _)
   return 3
 end
 

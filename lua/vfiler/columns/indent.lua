@@ -26,16 +26,23 @@ function IndentColumn.new()
   })
 end
 
-function IndentColumn:get_text(item, width)
+function IndentColumn:to_text(item, width)
   local indent = item.level - 1
   if indent <= 0 then
-    return '', 0
+    return {
+      string = '',
+      width = 0,
+    }
   end
   local text = (' '):rep((indent * 2) - 1) .. IndentColumn.configs.icon
-  return self:surround_text('indent', text), vim.fn.strwidth(text)
+  return {
+    string = text,
+    width = vim.fn.strwidth(text),
+    syntax = 'indent',
+  }
 end
 
-function IndentColumn:get_width(items, width)
+function IndentColumn:get_width(items, width, winid)
   if not items then
     return 0
   end

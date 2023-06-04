@@ -19,9 +19,12 @@ function SizeColumn.new()
   return self
 end
 
-function SizeColumn:get_text(item, width)
+function SizeColumn:to_text(item, width)
   if item.type == 'directory' then
-    return (' '):rep(self._width), self._width
+    return {
+      string = (' '):rep(self._width),
+      width = self._width,
+    }
   end
 
   local byte_unit = 'B '
@@ -50,11 +53,14 @@ function SizeColumn:get_text(item, width)
       format = '%1.4f'
     end
   end
-  local text = format:format(size) .. ' ' .. byte_unit
-  return self:surround_text('size', text), self._width
+  return {
+    string = format:format(size) .. ' ' .. byte_unit,
+    width = self._width,
+    syntax = 'size',
+  }
 end
 
-function SizeColumn:get_width(items, width)
+function SizeColumn:get_width(items, width, winid)
   return self._width
 end
 

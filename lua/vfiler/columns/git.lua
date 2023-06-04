@@ -99,7 +99,7 @@ function GitColumn.new()
   })
 end
 
-function GitColumn:get_text(item, width)
+function GitColumn:to_text(item, width)
   local gitstatus = item.gitstatus
   local status = ''
   if gitstatus and (gitstatus.us ~= ' ' or gitstatus.them ~= ' ') then
@@ -110,10 +110,14 @@ function GitColumn:get_text(item, width)
   else
     status = (' '):rep(COLUMN_WIDTH)
   end
-  return self:surround_text('status', status), COLUMN_WIDTH
+  return {
+    string = status,
+    width = COLUMN_WIDTH,
+    syntax = 'status',
+  }
 end
 
-function GitColumn:get_width(items, width)
+function GitColumn:get_width(items, width, winid)
   return COLUMN_WIDTH
 end
 

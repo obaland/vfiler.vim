@@ -291,9 +291,9 @@ function View:redraw()
     return
   elseif cache.winid ~= winid then
     -- set window options
+    cache.winid = winid
     vim.set_win_options(winid, self._winoptions)
     self:_apply_syntaxes()
-    cache.winid = winid
   end
 
   -- auto resize window
@@ -492,6 +492,7 @@ function View:_clear_cache()
 end
 
 function View:_create_column_props(width)
+  local winid = self._cache.winid
   local columns = self._columns.list
   local props = {}
   local variable_columns = {}
@@ -505,7 +506,7 @@ function View:_create_column_props(width)
       -- calculate later
       table.insert(variable_columns, { index = i, object = column })
     else
-      cwidth = column:get_width(self._items, rest_width)
+      cwidth = column:get_width(self._items, rest_width, winid)
     end
     table.insert(props, { width = cwidth })
     rest_width = rest_width - cwidth
@@ -516,7 +517,7 @@ function View:_create_column_props(width)
     local width_by_columns = math.floor(rest_width / #variable_columns)
     for _, column in ipairs(variable_columns) do
       props[column.index].width =
-        column.object:get_width(self._items, width_by_columns)
+        column.object:get_width(self._items, width_by_columns, winid)
     end
   end
 
@@ -573,6 +574,7 @@ end
 
 ---@param item table
 function View:_to_line(item)
+  local winid = self._cache.winid
   local col = 0
   local texts = {}
   for i, column in ipairs(self._columns.list) do
@@ -583,7 +585,7 @@ function View:_to_line(item)
       cwidth = cwidth + (prop.start_col - col)
     end
 
-    local text, width = column:get_text(item, cwidth)
+    local text, width = column:get_text(item, cwidth, winid)
     col = col + width
 
     if column.stretch then

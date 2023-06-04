@@ -72,11 +72,20 @@ function Column.new(syntaxes)
   return self
 end
 
-function Column:get_text(item, width)
-  return '', 0
+function Column:get_text(item, width, winid)
+  local text = self:to_text(item, width)
+  -- Surround it with text for syntax.
+  local string = text.string
+  if text.syntax then
+    local mark = self._marks[text.syntax]
+    if mark and vim.get_win_option(winid, 'conceallevel') > 1 then
+      string = mark.start_mark .. string .. mark.end_mark
+    end
+  end
+  return string, text.width
 end
 
-function Column:get_width(items, width)
+function Column:get_width(items, width, winid)
   return 0
 end
 
@@ -84,12 +93,12 @@ function Column:highlights()
   return self._hi_commands
 end
 
-function Column:surround_text(name, text)
-  local mark = self._marks[name]
-  if (not mark) or vim.get_win_option(0, 'conceallevel') < 2 then
-    return text
-  end
-  return mark.start_mark .. text .. mark.end_mark
+function Column:to_text(item, width)
+  return {
+    string = '',
+    width = 0,
+    syntax = nil,
+  }
 end
 
 function Column:syntaxes()
@@ -118,6 +127,14 @@ function Column:_initialize(syntaxes)
       table.insert(self._syn_commands, command)
     end
   end
+end
+
+function Column:_surround_text(syntax, text, winid)
+  local mark = self._marks[syntax]
+  if (not mark) or vim.get_win_option(winid, 'conceallevel') < 2 then
+    return text
+  end
+  return mark.start_mark .. text .. mark.end_mark
 end
 
 return Column

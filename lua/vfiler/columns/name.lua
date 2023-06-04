@@ -61,7 +61,7 @@ function NameColumn.new()
   return self
 end
 
-function NameColumn:get_text(item, width)
+function NameColumn:to_text(item, width)
   local syntax
   if item.selected then
     syntax = 'selected'
@@ -79,10 +79,14 @@ function NameColumn:get_text(item, width)
     name = name .. '/'
   end
   local text = core.string.truncate(name, width, '..', math.floor(width / 2))
-  return self:surround_text(syntax, text), vim.fn.strwidth(text)
+  return {
+    string = text,
+    width = vim.fn.strwidth(text),
+    syntax = syntax,
+  }
 end
 
-function NameColumn:get_width(items, width)
+function NameColumn:get_width(items, width, winid)
   if self.max_width <= 0 then
     return math.max(width, self.min_width)
   end

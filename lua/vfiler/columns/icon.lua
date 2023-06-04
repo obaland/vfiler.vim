@@ -71,22 +71,26 @@ function IconColumn.new()
   })
 end
 
-function IconColumn:get_text(item, width)
-  local iname
+function IconColumn:to_text(item, width)
+  local syntax
   if item.selected then
-    iname = 'selected'
+    syntax = 'selected'
   elseif item.type == 'directory' then
-    iname = item.opened and 'opened' or 'closed'
+    syntax = item.opened and 'opened' or 'closed'
   else
-    iname = 'file'
+    syntax = 'file'
   end
-  local icon = IconColumn.configs.icons[iname]
+  local icon = IconColumn.configs.icons[syntax]
   -- padding spaces
   local text = icon .. (' '):rep(icon_width - vim.fn.strwidth(icon))
-  return self:surround_text(iname, text), vim.fn.strwidth(text)
+  return {
+    string = text,
+    width = vim.fn.strwidth(text),
+    syntax = syntax,
+  }
 end
 
-function IconColumn:get_width(items, width)
+function IconColumn:get_width(items, width, winid)
   return icon_width
 end
 

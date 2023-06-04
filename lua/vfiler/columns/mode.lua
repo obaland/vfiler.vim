@@ -55,7 +55,7 @@ function ModeColumn.new()
   })
 end
 
-function ModeColumn:get_text(item, width)
+function ModeColumn:to_text(item, width)
   local syntax
   if item.name:sub(1, 1) == '.' then
     syntax = 'hidden'
@@ -73,11 +73,14 @@ function ModeColumn:get_text(item, width)
   elseif item.type == 'directory' then
     mode = 'd'
   end
-  local text = mode .. item.mode:sub(1, 3)
-  return self:surround_text(syntax, text), 4
+  return {
+    string = mode .. item.mode:sub(1, 3),
+    width = 4,
+    syntax = syntax,
+  }
 end
 
-function ModeColumn:get_width(items, width)
+function ModeColumn:get_width(items, width, winid)
   return 4
 end
 
