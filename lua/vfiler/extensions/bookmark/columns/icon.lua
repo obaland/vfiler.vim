@@ -65,7 +65,7 @@ function IconColumn.new()
   return self
 end
 
-function IconColumn:get_text(item, width)
+function IconColumn:to_text(item, width)
   local key
   if item.type == 'category' then
     key = item.opened and 'opened' or 'closed'
@@ -73,11 +73,14 @@ function IconColumn:get_text(item, width)
     key = item.type
   end
   local icon = self.configs[key]
-  local text = icon .. (' '):rep(self.icon_width - vim.fn.strwidth(icon))
-  return self:surround_text(item.type, text), self.icon_width
+  return {
+    string = icon .. (' '):rep(self.icon_width - vim.fn.strwidth(icon)),
+    width = self.icon_width,
+    syntax = item.type,
+  }
 end
 
-function IconColumn:get_width(items)
+function IconColumn:get_width(items, width, winid)
   return self.icon_width
 end
 

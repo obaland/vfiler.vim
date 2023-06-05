@@ -56,12 +56,15 @@ function NameColumn.new()
   })
 end
 
-function NameColumn:get_text(item, width)
-  local syntax = item.link and 'link' or item.type
-  return self:surround_text(syntax, item.name), vim.fn.strwidth(item.name)
+function NameColumn:to_text(item, width)
+  return {
+    string = item.name,
+    width = vim.fn.strwidth(item.name),
+    syntax = item.link and 'link' or item.type,
+  }
 end
 
-function NameColumn:get_width(items)
+function NameColumn:get_width(items, width, winid)
   local max_width = 0
   for _, item in ipairs(items) do
     max_width = math.max(max_width, vim.fn.strwidth(item.name))

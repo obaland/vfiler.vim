@@ -41,13 +41,16 @@ function PathColumn.new()
   })
 end
 
-function PathColumn:get_text(item)
-  local syntax = core.path.exists(item.path) and 'path' or 'notexist'
+function PathColumn:to_text(item, width)
   local text = item.path and to_text(item) or ''
-  return self:surround_text(syntax, text), vim.fn.strwidth(text)
+  return {
+    string = text,
+    width = vim.fn.strwidth(text),
+    syntax = core.path.exists(item.path) and 'path' or 'notexist',
+  }
 end
 
-function PathColumn:get_width(items)
+function PathColumn:get_width(items, width, winid)
   local max = 0
   for _, item in ipairs(items) do
     max = math.max(max, vim.fn.strwidth(to_text(item)))
