@@ -42,7 +42,7 @@ function IndentColumn:to_text(item, width)
   }
 end
 
-function IndentColumn:get_width(items, width, width)
+function IndentColumn:get_width(items, width, winid)
   -- "1" is white space for indent
   return 1 + vim.fn.strwidth(self.configs.icon)
 end
