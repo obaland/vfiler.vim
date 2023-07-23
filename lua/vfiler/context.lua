@@ -257,7 +257,7 @@ function Context:reload()
     return
   end
   local job = self:_reload_gitstatus_job(root_path)
-  for dir in walk_directories(self) do
+  for dir in walk_directories(self.root) do
     if dir.opened then
       if vim.fn.getftime(dir.path) > dir.time then
         dir:open()
