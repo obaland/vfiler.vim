@@ -47,6 +47,66 @@ function ItemAttribute.new(name)
 end
 
 ------------------------------------------------------------------------------
+-- History class
+------------------------------------------------------------------------------
+local History = {}
+History.__index = History
+
+function History.new(max_size)
+  return setmetatable({
+    _current_index = 1,
+    _max_size = max_size,
+    _history = {},
+  }, History)
+end
+
+function History:copy()
+  local new = History.new(self._max_size)
+  new._current_index = self._current_index
+  new._history = core.table.copy(self._history)
+  return new
+end
+
+--- Save the path in the directory history
+---@param path string
+function History:save(path)
+  local last_item = self:_last_item()
+  if path == last_item then
+    -- This case happnes when reload action
+    return
+  end
+  self._history[self._current_index] = path
+  self._current_index = self._current_index + 1
+  if self._current_index > self._max_size then
+    self._current_index = 1
+  end
+end
+
+--- Get the directory history
+function History:items()
+  local history = {}
+  for i = 1, #self._history do
+    local index = self._current_index - i
+    if index <= 0 then
+      index = index + #self._history
+    end
+    table.insert(history, self._history[index])
+  end
+  return history
+end
+
+function History:_last_item()
+  if #self._history == 0 then
+    return nil
+  end
+  local index = self._current_index - 1
+  if index == 0 then
+    index = #self._history
+  end
+  return self._history[index]
+end
+
+------------------------------------------------------------------------------
 -- Session class
 ------------------------------------------------------------------------------
 local Session = {}
@@ -54,6 +114,7 @@ Session.__index = Session
 
 local shared_attributes = {}
 local shared_drives = {}
+local shared_history = History.new(100)
 
 function Session.new(type)
   local attributes
@@ -70,10 +131,18 @@ function Session.new(type)
     drives = {}
   end
 
+  local history
+  if type == 'share' then
+    history = shared_history
+  else
+    history = History.new(100)
+  end
+
   return setmetatable({
     _type = type,
     _attributes = attributes,
     _drives = drives,
+    _history = history,
   }, Session)
 end
 
@@ -97,6 +166,7 @@ function Session:copy()
   local new = Session.new(self._type)
   if new._type ~= 'share' then
     new._drives = core.table.copy(self._drives)
+    new._history = self._history:copy()
   end
 
   if new._type == 'buffer' then
@@ -122,6 +192,7 @@ function Session:save(root, path)
 end
 
 function Session:load(root)
+  self._history:save(root.path)
   if not self._attributes then
     return nil
   end
@@ -139,6 +210,10 @@ function Session:get_path_in_drive(drive)
     return nil
   end
   return dirpath
+end
+
+function Session:directory_history()
+  return self._history:items()
 end
 
 ------------------------------------------------------------------------------
@@ -305,6 +380,11 @@ function Context:update(context)
   self.mappings = core.table.copy(context.mappings)
   self.events = core.table.copy(context.events)
   self._git_enabled = self:_check_git_enabled()
+end
+
+--- Get directory history
+function Context:directory_history()
+  return self._session:directory_history()
 end
 
 function Context:_check_git_enabled()
