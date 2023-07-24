@@ -61,7 +61,7 @@ end
 
 function Category:find_item(name)
   for _, child in ipairs(self.children) do
-    if not child.type == 'category' and child.name == name then
+    if child.type ~= 'category' and child.name == name then
       return child
     end
   end
