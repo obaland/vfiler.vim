@@ -48,6 +48,23 @@ function M.jump_to_directory(vfiler, context, view)
   api.cd(vfiler, context, view, dirpath)
 end
 
+function M.jump_to_history_directory(vfiler, context, view)
+  local history = context:directory_history()
+  if #history == 0 then
+    return
+  end
+
+  local Menu = require('vfiler/extensions/menu')
+  local menu = Menu.new(vfiler, 'Select History Directory', {
+    initial_items = history,
+
+    on_selected = function(filer, ctx, v, path)
+      api.cd(filer, ctx, v, path)
+    end,
+  })
+  api.start_extension(vfiler, context, view, menu)
+end
+
 function M.jump_to_home(vfiler, context, view)
   local dirpath = vim.fn.expand('~')
   api.cd(vfiler, context, view, dirpath)

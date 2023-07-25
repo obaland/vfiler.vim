@@ -597,6 +597,9 @@ Jump to root directory.
 #### jump_to_directory
 Jump to specified directory.
 
+#### jump_to_history_directory
+Jump to specified history directory.
+
 ---
 
 ### Action to select
