@@ -819,6 +819,11 @@ jump_to_root                           Jump to root directory.
 jump_to_directory                      Jump to specified directory.
 
 
+                                            *vfiler-jump_to_history_directory*
+
+jump_to_history_directory              Jump to specified history directory.
+
+
 ------------------------------------------------------------------------------
 
 ACTION TO SELECT ~
