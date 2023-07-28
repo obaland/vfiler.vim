@@ -13,6 +13,63 @@ function LnumIndex.new(level, prev_sibling, next_sibling)
   }, LnumIndex)
 end
 
+local ItemContainer = {}
+ItemContainer.__index = ItemContainer
+
+function ItemContainer.new(options)
+  return setmetatable({
+    list = {},
+    table = {},
+    lnum_indexes = {},
+    _show_hidden_files = options.show_hidden_files,
+    _gitstatus = options.gitstatus,
+    _sort_compare = options.sort_compare,
+  }, ItemContainer)
+end
+
+function ItemContainer:insert(item, lnum_index)
+  table.insert(self.list, item)
+  table.insert(self.lnum_indexes, lnum_index)
+  self.table[item.path] = {
+    index = #self.list,
+    item = item,
+  }
+end
+
+function ItemContainer:insert_recursively(item)
+  -- Override gitstatus of items
+  item.gitstatus = self._gitstatus[item.path]
+
+  local children = item.children
+  if not children then
+    return
+  end
+
+  table.sort(children, self._sort_compare)
+  local prev_sibling
+  for i, child in ipairs(children) do
+    local hidden = child.name:sub(1, 1) == '.'
+    if self._show_hidden_files or not hidden then
+      local index = LnumIndex.new(child.level, prev_sibling)
+      self:insert(child, index)
+      prev_sibling = #self.list
+
+      -- recursive
+      self:insert_recursively(child)
+      if i ~= #children then
+        index.next_sibling = prev_sibling + (#self.list - prev_sibling) + 1
+      end
+    end
+  end
+end
+
+function ItemContainer:length()
+  if not self.list then
+    return 0
+  end
+  return #self.list
+end
+
 local function new_window(layout)
   local window
   if layout == 'floating' then
@@ -45,7 +102,7 @@ local function create_columns(columns)
   end
   return {
     list = list,
-    tbl = tbl,
+    table = tbl,
   }
 end
 
@@ -106,7 +163,6 @@ View.__index = View
 function View.new(options)
   local self = setmetatable({
     _buffer = nil,
-    _gitstatus = nil,
     _window = nil,
     _winconfig = {},
     _winoptions = {
@@ -145,20 +201,16 @@ end
 ---@param context table
 function View:draw(context)
   -- flatten hierarchical items into a list
-  self._items = {}
-  self._lnum_indexes = {}
-  if self._header then
-    table.insert(self._items, context.root)
-    table.insert(self._lnum_indexes, LnumIndex.new(context.root.level))
-  end
-
   local options = context.options
-  self._gitstatus = context.gitstatus
-  self:_flatten_items(
-    context.root,
-    sort.get(options.sort),
-    options.show_hidden_files
-  )
+  self._items = ItemContainer.new({
+    show_hidden_files = options.show_hidden_files,
+    gitstatus = context.gitstatus,
+    sort_compare = sort.get(options.sort),
+  })
+  if self._header then
+    self._items:insert(context.root, LnumIndex.new(context.root.level))
+  end
+  self._items:insert_recursively(context.root)
   self:redraw()
 end
 
@@ -169,32 +221,31 @@ function View:get_item(lnum)
     return nil
   end
   lnum = lnum or vim.fn.line('.')
-  return self._items[lnum]
+  return self._items.list[lnum]
 end
 
 --- Checked to see if it has the specified column.
 ---@param name string
 function View:has_column(name)
-  return self._columns.tbl[name] ~= nil
+  return self._columns.table[name] ~= nil
 end
 
 --- Find the index of the item in the view buffer for the specified path
 ---@param path string
 function View:indexof(path)
-  for i, item in ipairs(self._items) do
-    if item.path == path then
-      return i
-    end
+  local item = self._items.table[path]
+  if not item then
+    return 0
   end
-  return 0
+  return item.index
 end
 
 --- Get the index of the first sibling item
 function View:indexof_first_sibling(lnum)
-  local level = self._lnum_indexes[lnum].level
+  local level = self._items.lnum_indexes[lnum].level
   local top_lnum = self:top_lnum()
   for i = lnum - 1, top_lnum, -1 do
-    local index = self._lnum_indexes[i]
+    local index = self._items.lnum_indexes[i]
     if index.level == level and not index.prev_sibling then
       return i
     end
@@ -204,20 +255,19 @@ end
 
 --- Get the index of the last sibling item
 function View:indexof_last_sibling(lnum)
-  local level = self._lnum_indexes[lnum].level
-  local lines = #self._items
-  for i = lnum + 1, #self._lnum_indexes do
-    local index = self._lnum_indexes[i]
+  local level = self._items.lnum_indexes[lnum].level
+  for i = lnum + 1, self._items:length() do
+    local index = self._items.lnum_indexes[i]
     if index.level == level and not index.next_sibling then
       return i
     end
   end
-  return lines
+  return self._items:length()
 end
 
 --- Get the index of the next sibling item
 function View:indexof_next_sibling(lnum)
-  local next = self._lnum_indexes[lnum].next_sibling
+  local next = self._items.lnum_indexes[lnum].next_sibling
   if next then
     return next
   end
@@ -226,7 +276,7 @@ end
 
 --- Get the index of the previous sibiling item
 function View:indexof_prev_sibling(lnum)
-  local prev = self._lnum_indexes[lnum].prev_sibling
+  local prev = self._items.lnum_indexes[lnum].prev_sibling
   if prev then
     return prev
   end
@@ -245,10 +295,7 @@ end
 
 --- Get the number of line in the view buffer
 function View:num_lines()
-  if not self._items then
-    return 0
-  end
-  return #self._items
+  return self._items:length()
 end
 
 --- Open the view buffer for the current window
@@ -318,10 +365,10 @@ function View:redraw()
   -- create text lines
   local lines = vim.list({})
   if self._header then
-    table.insert(lines, self:_to_header(self._items[1]))
+    table.insert(lines, self:_to_header(self._items.list[1]))
   end
-  for i = self:top_lnum(), #self._items do
-    table.insert(lines, self:_to_line(self._items[i]))
+  for i = self:top_lnum(), self._items:length() do
+    table.insert(lines, self:_to_line(self._items.list[i]))
   end
 
   -- set buffer lines
@@ -394,7 +441,7 @@ end
 --- Get the currently selected items
 function View:selected_items()
   local selected = {}
-  for _, item in ipairs(self._items) do
+  for _, item in ipairs(self._items.list) do
     if item.selected then
       table.insert(selected, item)
     end
@@ -424,7 +471,7 @@ function View:walk_items()
     return nil
   end
   local function _walk_items()
-    for _, item in ipairs(self._items) do
+    for _, item in ipairs(self._items.list) do
       coroutine.yield(item)
     end
   end
@@ -453,7 +500,7 @@ function View:_apply_syntaxes()
   local syn_commands = {}
   local hi_commands = {}
 
-  for _, column in pairs(self._columns.tbl) do
+  for _, column in pairs(self._columns.table) do
     local syntaxes = column:syntaxes()
     if syntaxes then
       core.list.extend(syn_commands, syntaxes)
@@ -505,7 +552,7 @@ function View:_create_column_props(width)
       -- calculate later
       table.insert(variable_columns, { index = i, object = column })
     else
-      cwidth = column:get_width(self._items, rest_width, winid)
+      cwidth = column:get_width(self._items.list, rest_width, winid)
     end
     table.insert(props, { width = cwidth })
     rest_width = rest_width - cwidth
@@ -516,7 +563,7 @@ function View:_create_column_props(width)
     local width_by_columns = math.floor(rest_width / #variable_columns)
     for _, column in ipairs(variable_columns) do
       props[column.index].width =
-        column.object:get_width(self._items, width_by_columns, winid)
+        column.object:get_width(self._items.list, width_by_columns, winid)
     end
   end
 
@@ -527,36 +574,6 @@ function View:_create_column_props(width)
     start_col = prop.end_col + 1 -- "1" is space between columns
   end
   return props
-end
-
-function View:_flatten_items(item, sort_compare, show_hidden_files)
-  -- Override gitstatus of items
-  item.gitstatus = self._gitstatus[item.path]
-
-  local children = item.children
-  if not children then
-    return
-  end
-
-  table.sort(children, sort_compare)
-  local prev_sibling
-  for i, child in ipairs(children) do
-    local hidden = child.name:sub(1, 1) == '.'
-    if show_hidden_files or not hidden then
-      local index = LnumIndex.new(child.level, prev_sibling)
-
-      table.insert(self._items, child)
-      table.insert(self._lnum_indexes, index)
-      prev_sibling = #self._items
-
-      -- recursive flattening
-      self:_flatten_items(child, sort_compare, show_hidden_files)
-
-      if i ~= #children then
-        index.next_sibling = prev_sibling + (#self._items - prev_sibling) + 1
-      end
-    end
-  end
 end
 
 function View:_resize()
