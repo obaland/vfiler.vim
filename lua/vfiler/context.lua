@@ -331,7 +331,7 @@ function Context:reload()
     self:switch(root_path)
     return
   end
-  local job = self:_reload_gitstatus_job(root_path)
+  local job = self:_reload_gitstatus_async(root_path)
   for dir in walk_directories(self.root) do
     if dir.opened then
       if vim.fn.getftime(dir.path) > dir.time then
@@ -351,7 +351,7 @@ function Context:switch(dirpath)
   dirpath = core.path.normalize(dirpath)
 
   -- reload git status
-  local job = self:_reload_gitstatus_job(dirpath)
+  local job = self:_reload_gitstatus_async(dirpath)
   self.root = Directory.new(fs.stat(dirpath))
   self.root:open()
 
@@ -406,7 +406,7 @@ function Context:_initialize()
   }
 end
 
-function Context:_reload_gitstatus_job(dirpath)
+function Context:_reload_gitstatus_async(dirpath)
   if not self._git_enabled then
     return nil
   end
@@ -416,7 +416,7 @@ function Context:_reload_gitstatus_job(dirpath)
   if not self.gitroot then
     return nil
   end
-  return git.reload_status(self.gitroot, {
+  return git.reload_status_async(self.gitroot, {
     untracked = self.options.git.untracked,
     ignored = self.options.git.ignored,
   }, function(status)
