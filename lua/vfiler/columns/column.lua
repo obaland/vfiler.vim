@@ -131,7 +131,7 @@ end
 
 function Column:_surround_text(syntax, text, winid)
   local mark = self._marks[syntax]
-  if (not mark) or vim.get_win_option(winid, 'conceallevel') < 2 then
+  if not mark or vim.get_win_option(winid, 'conceallevel') < 2 then
     return text
   end
   return mark.start_mark .. text .. mark.end_mark

@@ -88,18 +88,6 @@ local function update_directory_statuses(rootpath, statuses)
   return statuses
 end
 
-local function update_dirstatus(dirstatus, status)
-  if status.us == '!' then
-    return
-  end
-  if status.us ~= ' ' and status.us ~= '?' then
-    dirstatus.us = '*'
-  end
-  if status.them ~= ' ' then
-    dirstatus.them = '*'
-  end
-end
-
 function M.get_toplevel(dirpath)
   local command = ('git -C "%s" rev-parse --show-toplevel'):format(dirpath)
   local path = core.system(command)
