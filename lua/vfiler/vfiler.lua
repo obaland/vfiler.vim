@@ -176,7 +176,7 @@ function VFiler.new(context)
   local self = setmetatable({
     _buffer = buffer,
     _context = context,
-    _view = View.new(context),
+    _view = View.new(context.options),
     _mappings = nil,
     _event = nil,
   }, VFiler)
@@ -314,7 +314,7 @@ function VFiler:update(context)
 
   -- set buffer options
   self._buffer:set_option('buflisted', context.options.listed)
-  self._view:reset(context)
+  self._view:reset(context.options)
 end
 
 --- Is the filer visible?

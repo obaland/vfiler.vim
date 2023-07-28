@@ -102,10 +102,11 @@ local View = {}
 View.__index = View
 
 --- Create a view object
----@param context table
-function View.new(context)
+---@param options table
+function View.new(options)
   local self = setmetatable({
     _buffer = nil,
+    _gitstatus = nil,
     _window = nil,
     _winconfig = {},
     _winoptions = {
@@ -122,7 +123,7 @@ function View.new(context)
       wrap = false,
     },
   }, View)
-  self:reset(context)
+  self:reset(options)
   return self
 end
 
@@ -152,13 +153,12 @@ function View:draw(context)
   end
 
   local options = context.options
+  self._gitstatus = context.gitstatus
   self:_flatten_items(
     context.root,
     sort.get(options.sort),
-    context.gitstatus,
     options.show_hidden_files
   )
-
   self:redraw()
 end
 
@@ -369,10 +369,9 @@ function View:redraw_line(lnum)
   })
 end
 
---- Reset from another context
----@param context table
-function View:reset(context)
-  local options = context.options
+--- Reset from another options
+---@param options table
+function View:reset(options)
   self._columns = create_columns(options.columns)
   if not self._columns then
     return nil
@@ -530,9 +529,9 @@ function View:_create_column_props(width)
   return props
 end
 
-function View:_flatten_items(item, sort_compare, gitstatus, show_hidden_files)
+function View:_flatten_items(item, sort_compare, show_hidden_files)
   -- Override gitstatus of items
-  item.gitstatus = gitstatus[item.path]
+  item.gitstatus = self._gitstatus[item.path]
 
   local children = item.children
   if not children then
@@ -551,7 +550,7 @@ function View:_flatten_items(item, sort_compare, gitstatus, show_hidden_files)
       prev_sibling = #self._items
 
       -- recursive flattening
-      self:_flatten_items(child, sort_compare, gitstatus, show_hidden_files)
+      self:_flatten_items(child, sort_compare, show_hidden_files)
 
       if i ~= #children then
         index.next_sibling = prev_sibling + (#self._items - prev_sibling) + 1
