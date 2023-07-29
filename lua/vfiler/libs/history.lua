@@ -8,7 +8,8 @@ History.__index = History
 function History.new(max_size)
   return setmetatable({
     _current_index = 1,
-    _max_size = max_size,
+    -- plus one is for current directory
+    _max_size = max_size + 1,
     _history = {},
   }, History)
 end
@@ -34,7 +35,8 @@ end
 --- Get the directory history
 function History:items()
   local history = {}
-  for i = 1, #self._history do
+  -- start 2 in order to exclude the current directory
+  for i = 2, #self._history do
     local index = self._current_index - i
     if index <= 0 then
       index = index + #self._history

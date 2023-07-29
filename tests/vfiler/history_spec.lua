@@ -4,20 +4,24 @@ describe('History', function()
   describe('Save', function()
     it('for empty', function()
       local history = History.new(5)
-      history:save('path')
+
+      history:save('path1')
+      history:save('current')
       local items = history:items()
+
       assert.equal(#items, 1)
-      assert.equal(items[1], 'path')
+      assert.equal(items[1], 'path1')
     end)
 
     it('until full', function()
       local history = History.new(5)
+
       history:save('path1')
       history:save('path2')
       history:save('path3')
       history:save('path4')
       history:save('path5')
-
+      history:save('current')
       local items = history:items()
 
       assert.equal(#items, 5)
@@ -36,6 +40,7 @@ describe('History', function()
         history:save('path3')
 
         history:save('path1')
+        history:save('current')
         local items = history:items()
 
         assert.equal(#items, 3)
@@ -51,6 +56,7 @@ describe('History', function()
         history:save('path3')
 
         history:save('path3')
+        history:save('current')
         local items = history:items()
 
         assert.equal(#items, 3)
@@ -68,6 +74,7 @@ describe('History', function()
         history:save('path5')
 
         history:save('path1')
+        history:save('current')
         local items = history:items()
 
         assert.equal(#items, 5)
@@ -87,6 +94,7 @@ describe('History', function()
         history:save('path5')
 
         history:save('path3')
+        history:save('current')
         local items = history:items()
 
         assert.equal(#items, 5)
@@ -106,6 +114,7 @@ describe('History', function()
         history:save('path5')
 
         history:save('path5')
+        history:save('current')
         local items = history:items()
 
         assert.equal(#items, 5)
@@ -128,6 +137,7 @@ describe('History', function()
         history:save('path8')
 
         history:save('path4')
+        history:save('current')
         local items = history:items()
 
         assert.equal(#items, 5)
@@ -150,6 +160,7 @@ describe('History', function()
         history:save('path8')
 
         history:save('path6')
+        history:save('current')
         local items = history:items()
 
         assert.equal(#items, 5)
@@ -172,6 +183,7 @@ describe('History', function()
         history:save('path8')
 
         history:save('path8')
+        history:save('current')
         local items = history:items()
 
         assert.equal(#items, 5)
