@@ -24,7 +24,9 @@ describe('select actions', function()
     it(u.vfiler.desc('toggle_select_all', vfiler), function()
       vfiler:do_action(a.toggle_select_all)
       for item in vfiler._view:walk_items() do
-        assert.is_true(item.selected)
+        if item ~= vfiler._context.root then
+          assert.is_true(item.selected)
+        end
       end
     end)
   end)

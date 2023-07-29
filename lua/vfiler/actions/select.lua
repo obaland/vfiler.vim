@@ -18,7 +18,9 @@ end
 
 function M.toggle_select_all(vfiler, context, view)
   for item in view:walk_items() do
-    item.selected = not item.selected
+    if item ~= context.root then
+      item.selected = not item.selected
+    end
   end
   view:redraw()
 end
