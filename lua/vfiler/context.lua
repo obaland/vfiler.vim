@@ -4,6 +4,7 @@ local git = require('vfiler/libs/git')
 local vim = require('vfiler/libs/vim')
 
 local Directory = require('vfiler/items/directory')
+local History = require('vfiler/libs/history')
 
 ------------------------------------------------------------------------------
 -- ItemAttribute class
@@ -44,66 +45,6 @@ function ItemAttribute.new(name)
     opened_attributes = {},
     selected_names = {},
   }, ItemAttribute)
-end
-
-------------------------------------------------------------------------------
--- History class
-------------------------------------------------------------------------------
-local History = {}
-History.__index = History
-
-function History.new(max_size)
-  return setmetatable({
-    _current_index = 1,
-    _max_size = max_size,
-    _history = {},
-  }, History)
-end
-
-function History:copy()
-  local new = History.new(self._max_size)
-  new._current_index = self._current_index
-  new._history = core.table.copy(self._history)
-  return new
-end
-
---- Save the path in the directory history
----@param path string
-function History:save(path)
-  local last_item = self:_last_item()
-  if path == last_item then
-    -- This case happnes when reload action
-    return
-  end
-  self._history[self._current_index] = path
-  self._current_index = self._current_index + 1
-  if self._current_index > self._max_size then
-    self._current_index = 1
-  end
-end
-
---- Get the directory history
-function History:items()
-  local history = {}
-  for i = 1, #self._history do
-    local index = self._current_index - i
-    if index <= 0 then
-      index = index + #self._history
-    end
-    table.insert(history, self._history[index])
-  end
-  return history
-end
-
-function History:_last_item()
-  if #self._history == 0 then
-    return nil
-  end
-  local index = self._current_index - 1
-  if index == 0 then
-    index = #self._history
-  end
-  return self._history[index]
 end
 
 ------------------------------------------------------------------------------
