@@ -86,7 +86,7 @@ M.set('extension', function(item1, item2)
 
   local ext1 = vim.fn.fnamemodify(item1.name, ':e')
   local ext2 = vim.fn.fnamemodify(item2.name, ':e')
-  if #ext1 == 0 and #ext2 == 0 then
+  if (#ext1 == 0 and #ext2 == 0) or (ext1:lower() == ext2:lower()) then
     return M.compare_string(item1.name, item2.name)
   end
   return M.compare_string(ext1, ext2)
