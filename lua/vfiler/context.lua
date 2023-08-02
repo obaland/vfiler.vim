@@ -276,6 +276,7 @@ function Context:reload()
   for dir in walk_directories(self.root) do
     if dir.opened then
       if vim.fn.getftime(dir.path) > dir.time then
+        dir:update()
         dir:open()
       end
     end
