@@ -98,7 +98,7 @@ function Directory:open(recursive)
   self.opened = true
 end
 
-function Directory:update_stat()
+function Directory:update()
   local stat = fs.stat(self.path)
   if not stat then
     return
