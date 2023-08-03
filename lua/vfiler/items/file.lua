@@ -30,4 +30,8 @@ function File:move(destpath)
   return nil
 end
 
+function File:reload()
+  self:_set_stat(fs.stat(self.path))
+end
+
 return File

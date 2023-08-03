@@ -1,4 +1,4 @@
-local api = require('vfiler/actions/api')
+local utils = require('vfiler/actions/utilities')
 local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
 
@@ -31,7 +31,7 @@ end
 
 function M.change_to_parent(vfiler, context, view)
   local current_path = context.root.path
-  api.cd(vfiler, context, view, context:parent_path())
+  utils.cd(vfiler, context, view, context:parent_path())
   view:move_cursor(current_path)
 end
 
@@ -45,7 +45,7 @@ function M.jump_to_directory(vfiler, context, view)
     core.message.error('Not exists the "%s" path.', dirpath)
     return
   end
-  api.cd(vfiler, context, view, dirpath)
+  utils.cd(vfiler, context, view, dirpath)
 end
 
 function M.jump_to_history_directory(vfiler, context, view)
@@ -59,20 +59,20 @@ function M.jump_to_history_directory(vfiler, context, view)
     initial_items = history,
 
     on_selected = function(filer, ctx, v, path)
-      api.cd(filer, ctx, v, path)
+      utils.cd(filer, ctx, v, path)
     end,
   })
-  api.start_extension(vfiler, context, view, menu)
+  utils.start_extension(vfiler, context, view, menu)
 end
 
 function M.jump_to_home(vfiler, context, view)
   local dirpath = vim.fn.expand('~')
-  api.cd(vfiler, context, view, dirpath)
+  utils.cd(vfiler, context, view, dirpath)
 end
 
 function M.jump_to_root(vfiler, context, view)
   local dirpath = core.path.root(context.root.path)
-  api.cd(vfiler, context, view, dirpath)
+  utils.cd(vfiler, context, view, dirpath)
 end
 
 function M.close_tree(vfiler, context, view)
@@ -90,7 +90,7 @@ function M.close_tree_or_cd(vfiler, context, view)
   local level = item and item.level or 0
   if level == 0 or (level <= 1 and not item.opened) then
     local path = context.root.path
-    api.cd(vfiler, context, view, context:parent_path())
+    utils.cd(vfiler, context, view, context:parent_path())
     view:move_cursor(path)
   else
     M.close_tree(vfiler, context, view)
@@ -151,7 +151,7 @@ function M.switch_to_drive(vfiler, context, view)
       v:move_cursor(focus_path)
     end,
   })
-  api.start_extension(vfiler, context, view, menu)
+  utils.start_extension(vfiler, context, view, menu)
 end
 
 return M

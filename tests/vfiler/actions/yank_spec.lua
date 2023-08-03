@@ -1,5 +1,5 @@
 local a = require('vfiler/actions/yank')
-local u = require('tests/utility')
+local u = require('tests/utilities')
 local core = require('vfiler/libs/core')
 local cursor = require('vfiler/actions/cursor')
 

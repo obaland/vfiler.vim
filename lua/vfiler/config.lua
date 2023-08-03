@@ -1,6 +1,5 @@
 local action = require('vfiler/action')
 local core = require('vfiler/libs/core')
-local event = require('vfiler/actions/event')
 local vim = require('vfiler/libs/vim')
 
 local M = {}
@@ -95,14 +94,20 @@ M.configs = {
   },
 
   events = {
-    vfiler = {
+    vfiler_buffer = {
       {
         event = { 'BufEnter', 'FocusGained', 'VimResized' },
         action = action.reload_all,
       },
       {
         event = { 'BufLeave', 'TabLeave' },
-        action = event.leave,
+        action = function(vfiler, context, view)
+          -- For floating windows, close the window,
+          -- including the buffer, as this will lead to problems.
+          if view:type() == 'floating' then
+            vfiler:wipeout()
+          end
+        end,
       },
     },
 

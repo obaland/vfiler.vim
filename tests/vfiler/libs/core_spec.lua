@@ -374,12 +374,12 @@ describe('core.autocmd', function()
     basic = {
       event = 'BufEnter',
       cmd = ':echo',
-      expected = 'autocmd! BufEnter :echo',
+      expected = 'autocmd! BufEnter * :echo',
     },
     events = {
       event = { 'BufEnter', 'BufLeave' },
       cmd = ':echo',
-      expected = 'autocmd! BufEnter,BufLeave :echo',
+      expected = 'autocmd! BufEnter,BufLeave * :echo',
     },
     options_buffer1 = {
       event = 'BufEnter',
@@ -411,7 +411,7 @@ describe('core.autocmd', function()
       options = {
         buffer = {},
       },
-      expected = 'autocmd! BufEnter :echo',
+      expected = nil,
     },
     options_pattern = {
       event = 'BufEnter',
@@ -446,7 +446,7 @@ describe('core.autocmd', function()
         nested = true,
         once = true,
       },
-      expected = 'autocmd! BufEnter ++once ++nested :echo',
+      expected = 'autocmd! BufEnter * ++once ++nested :echo',
     },
   }
 

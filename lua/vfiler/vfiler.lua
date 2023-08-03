@@ -1,8 +1,7 @@
 local core = require('vfiler/libs/core')
+local event = require('vfiler/events/event')
 local status = require('vfiler/status')
 local vim = require('vfiler/libs/vim')
-
-local Event = require('vfiler/event')
 
 local vfiler_objects = {}
 
@@ -117,10 +116,8 @@ function VFiler.foreach(action, ...)
     return
   end
   for _, filer in ipairs(VFiler.get_visible()) do
-    filer:focus()
     filer:do_action(action, ...)
   end
-  current:focus()
 end
 
 --- Get the filer from the buffer number
@@ -164,7 +161,7 @@ function VFiler.get_visible_in_tabpage(tabpage)
   return visibilities
 end
 
---- Create a filer obuject
+--- Create a filer object
 ---@param context table
 function VFiler.new(context)
   -- create buffer
@@ -178,7 +175,6 @@ function VFiler.new(context)
     _context = context,
     _view = View.new(context.options),
     _mappings = nil,
-    _event = nil,
   }, VFiler)
 
   -- add vfiler resource
@@ -319,7 +315,7 @@ end
 
 --- Is the filer visible?
 function VFiler:visible()
-  return self._view:winnr() >= 0
+  return self._view:winid() > 0
 end
 
 --- Wipeout filer
@@ -330,6 +326,7 @@ function VFiler:wipeout()
   if bufnr <= 0 then
     return
   end
+  self:_unregister_events()
   self._buffer:wipeout()
   vfiler_objects[bufnr] = nil
 end
@@ -342,14 +339,24 @@ function VFiler:_define_mappings()
 end
 
 function VFiler:_register_events()
-  self._event = Event.new({
-    events = self._context.events,
-    bufnr = self._buffer.number,
-    args = self,
-    callback = function(action, args)
-      args:do_action(action)
-    end,
-  })
+  for group, elist in pairs(self._context.events) do
+    local events = {}
+    for _, e in ipairs(elist) do
+      table.insert(events, {
+        event = e.event,
+        callback = function(_, _, _)
+          self:do_action(e.action)
+        end,
+      })
+    end
+    event.register(group, events, self._buffer.number)
+  end
+end
+
+function VFiler:_unregister_events()
+  for group, _ in pairs(self._context.events) do
+    event._unregister_events(group, self._buffer.number)
+  end
 end
 
 return VFiler

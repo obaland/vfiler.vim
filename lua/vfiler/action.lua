@@ -13,6 +13,7 @@ local action_modules = {
   'yank',
 }
 
+-- Load each action APIs.
 local M = setmetatable({}, {
   __index = function(t, key)
     for _, name in ipairs(action_modules) do

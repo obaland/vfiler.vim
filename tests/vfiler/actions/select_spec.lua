@@ -1,5 +1,5 @@
 local a = require('vfiler/actions/select')
-local u = require('tests/utility')
+local u = require('tests/utilities')
 
 describe('select actions', function()
   u.randomseed()

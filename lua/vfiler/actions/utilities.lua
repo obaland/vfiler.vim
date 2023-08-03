@@ -122,9 +122,7 @@ local function open_file(vfiler, context, view, path, layout)
   local dest_winid = vim.fn.win_getid()
   --if layout ~= 'tab' and dest_winid ~= view:winid() then
   if dest_winid ~= view:winid() then
-    vfiler:focus()
     view:redraw()
-    core.window.move(dest_winid)
   end
 end
 

@@ -1,8 +1,7 @@
 local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
+local event = require('vfiler/events/event')
 local vim = require('vfiler/libs/vim')
-
-local Event = require('vfiler/event')
 
 local extensions = {}
 
@@ -273,14 +272,18 @@ function Extension:start()
   self._mappings = define(configs.mappings)
 
   -- register events
-  self._event = Event.new({
-    events = configs.events,
-    bufnr = self._buffer.number,
-    args = self,
-    callback = function(action, args)
-      args:do_action(action)
-    end,
-  })
+  for group, elist in pairs(configs.events) do
+    local events = {}
+    for _, e in ipairs(elist) do
+      table.insert(events, {
+        event = e.event,
+        callback = function(_, _, _)
+          self:do_action(e.action)
+        end,
+      })
+    end
+    event.register(group, events, self._buffer.number)
+  end
 
   -- draw line texts and syntax
   self:_on_draw(self._buffer, lines)

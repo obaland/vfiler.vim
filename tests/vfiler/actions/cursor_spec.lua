@@ -1,5 +1,5 @@
 local a = require('vfiler/actions/cursor')
-local u = require('tests/utility')
+local u = require('tests/utilities')
 
 describe('cursor actions', function()
   local vfiler = u.vfiler.start(u.vfiler.generate_options())

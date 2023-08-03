@@ -1,5 +1,5 @@
 local a = require('vfiler/actions/view')
-local u = require('tests/utility')
+local u = require('tests/utilities')
 
 local function find(view, target)
   for item in view:walk_items() do
@@ -38,7 +38,6 @@ describe('view actions', function()
     it(u.vfiler.desc('toggle_sort', vfiler), function()
       vfiler:do_action(a.toggle_sort)
       assert.is_equal('Name', context.options.sort)
-      -- TODO:
 
       vfiler:do_action(a.toggle_sort)
       assert.is_equal('name', context.options.sort)

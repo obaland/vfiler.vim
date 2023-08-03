@@ -98,16 +98,6 @@ function Directory:open(recursive)
   self.opened = true
 end
 
-function Directory:update()
-  local stat = fs.stat(self.path)
-  if not stat then
-    return
-  end
-  self.size = stat.size
-  self.time = stat.time
-  self.mode = stat.mode
-end
-
 function Directory:_add(item)
   item.parent = self
   item.level = self.level + 1

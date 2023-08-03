@@ -5,19 +5,13 @@ local Item = {}
 Item.__index = Item
 
 function Item.new(stat)
-  return setmetatable({
+  local self = setmetatable({
     gitstatus = nil,
     level = 0,
-    name = stat.name,
     parent = nil,
-    path = stat.path,
     selected = false,
-    size = stat.size,
-    time = stat.time,
-    type = stat.type,
-    mode = stat.mode,
-    link = stat.link,
   }, Item)
+  return self:_set_stat(stat)
 end
 
 function Item:delete()
@@ -38,6 +32,14 @@ function Item:rename(name)
   self.name = name
   self.path = newpath
   return true
+end
+
+function Item:update()
+  local stat = fs.stat(self.path)
+  if not stat then
+    return
+  end
+  self:_set_stat(stat)
 end
 
 --- Remove from parent tree
@@ -64,6 +66,17 @@ function Item:_move(destpath)
   end
   self:_become_orphan()
   return true
+end
+
+function Item:_set_stat(stat)
+  self.name = stat.name
+  self.path = stat.path
+  self.size = stat.size
+  self.time = stat.time
+  self.type = stat.type
+  self.mode = stat.mode
+  self.link = stat.link
+  return self
 end
 
 return Item

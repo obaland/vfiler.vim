@@ -230,6 +230,16 @@ function View:has_column(name)
   return self._columns.table[name] ~= nil
 end
 
+--- Find the item of the item in the view buffer for the specified path
+---@param path string
+function View:itemof(path)
+  local index = self:indexof(path)
+  if index == 0 then
+    return nil
+  end
+  return self._items.list[index]
+end
+
 --- Find the index of the item in the view buffer for the specified path
 ---@param path string
 function View:indexof(path)
@@ -238,6 +248,16 @@ function View:indexof(path)
     return 0
   end
   return item.index
+end
+
+--- Find the line of the item in the view buffer for the specified path
+---@param path string
+function View:lineof(path)
+  local index = self:indexof(path)
+  if index == 0 then
+    return 0
+  end
+  return index + (self:top_lnum() - 1)
 end
 
 --- Get the index of the first sibling item
@@ -321,20 +341,21 @@ end
 --- Redraw the current contents
 function View:redraw()
   local buffer = self._buffer
-  if not buffer or (buffer.number ~= vim.fn.bufnr()) then
-    -- for debug
-    --core.message.warning(
-    --  'Cannot draw because the buffer is different. (%d != %d)',
-    --  buffer.number,
-    --  vim.fn.bufnr()
-    --)
-    return
-  end
+  -- NOTE: for debugging.
+  --if not buffer or (buffer.number ~= vim.fn.bufnr()) then
+  --  core.message.warning(
+  --    'Cannot draw because the buffer is different. (%d != %d)',
+  --    buffer.number,
+  --    vim.fn.bufnr()
+  --  )
+  --  return
+  --end
 
   local cache = self._cache
   local winid = self:winid()
   if winid < 0 then
-    core.message.warning('The buffer is invisible and cannot be drawn.')
+    -- NOTE: for debugging.
+    --core.message.warning('The buffer is invisible and cannot be drawn.')
     return
   elseif cache.winid ~= winid then
     -- set window options
@@ -481,11 +502,6 @@ end
 -- Get the width value
 function View:width()
   return self._cache.win_width
-end
-
---- Get the window number of the view
-function View:winnr()
-  return vim.fn.bufwinnr(self._buffer.number)
 end
 
 --- Get the window ID of the view

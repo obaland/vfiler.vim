@@ -1,4 +1,4 @@
-local api = require('vfiler/actions/api')
+local utils = require('vfiler/actions/utilities')
 local buffer = require('vfiler/actions/buffer')
 local clipboard = require('vfiler/clipboard')
 local cmdline = require('vfiler/libs/cmdline')
@@ -58,7 +58,7 @@ local function rename_files(vfiler, context, view, targets)
       end
     end,
   })
-  api.start_extension(vfiler, context, view, rename)
+  utils.start_extension(vfiler, context, view, rename)
 end
 
 local function rename_one_file(vfiler, context, view, target)

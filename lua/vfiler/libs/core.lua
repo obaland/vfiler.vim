@@ -361,9 +361,12 @@ function M.autocmd.create(event, cmd, options)
         table.insert(commands, '<buffer=abuf>')
       else
         M.message.error('Unknown "buffer" option.')
+        return nil
       end
     elseif options.pattern then
       table.insert(commands, options.pattern)
+    else
+      table.insert(commands, '*')
     end
 
     if options.once then
@@ -372,6 +375,8 @@ function M.autocmd.create(event, cmd, options)
     if options.nested then
       table.insert(commands, '++nested')
     end
+  else
+    table.insert(commands, '*')
   end
 
   table.insert(commands, cmd)

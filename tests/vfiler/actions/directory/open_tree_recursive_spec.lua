@@ -1,5 +1,5 @@
 local a = require('vfiler/actions/directory')
-local u = require('tests/utility')
+local u = require('tests/utilities')
 
 local configs = {
   options = u.vfiler.generate_options(),

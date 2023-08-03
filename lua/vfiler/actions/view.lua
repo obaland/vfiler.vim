@@ -1,4 +1,4 @@
-local api = require('vfiler/actions/api')
+local utils = require('vfiler/actions/utilities')
 local sort = require('vfiler/sort')
 
 local M = {}
@@ -20,7 +20,7 @@ function M.change_sort(vfiler, context, view)
       v:move_cursor(item.path)
     end,
   })
-  api.start_extension(vfiler, context, view, menu)
+  utils.start_extension(vfiler, context, view, menu)
 end
 
 function M.toggle_show_hidden(vfiler, context, view)

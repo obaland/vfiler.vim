@@ -1,5 +1,6 @@
 local config = require('vfiler/config')
 local core = require('vfiler/libs/core')
+local event = require('vfiler/event')
 local vim = require('vfiler/libs/vim')
 
 local VFiler = require('vfiler/vfiler')
@@ -68,7 +69,9 @@ function M.start(dirpath, configs)
   local merged_configs = core.table.copy(config.configs)
   core.table.merge(merged_configs, configs or {})
 
+  -- Preparation before starting
   VFiler.cleanup()
+  event.start()
 
   -- Correction of option values
   local options = merged_configs.options
