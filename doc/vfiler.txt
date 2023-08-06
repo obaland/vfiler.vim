@@ -970,6 +970,16 @@ toggle_preview                         Toggle the preview window for the item
                                        in the current cursor.
 
 
+                                                  *vfiler-scroll_down_preview*
+
+scroll_down_preview                    Scroll down in preview window.
+
+
+                                                    *vfiler-scroll_up_preview*
+
+scroll_up_preview                      Scroll up in preview window.
+
+
 ------------------------------------------------------------------------------
 
 ACTION TO VIEW ~
