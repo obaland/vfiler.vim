@@ -213,7 +213,7 @@ function M.path.normalize(path)
   if path == '/' then
     return '/'
   end
-  return M.path.escape(vim.fn.fnamemodify(path, ':p'))
+  return M.path.escape(vim.fn.fnamemodify(path, ':p')):gsub('/+', '/')
 end
 
 function M.path.parent(path)
