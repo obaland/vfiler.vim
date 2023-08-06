@@ -207,4 +207,14 @@ function Preview:close()
   self.opened = false
 end
 
+function Preview:scroll_down()
+  -- \x04 is <C-D>
+  vim.fn.win_execute(self._window:id(), 'normal! \x04', 'silent')
+end
+
+function Preview:scroll_up()
+  -- \x15 is <C-U>
+  vim.fn.win_execute(self._window:id(), 'normal! \x15', 'silent')
+end
+
 return Preview

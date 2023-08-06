@@ -57,4 +57,22 @@ function M.toggle_preview(vfiler, context, view)
   utils.open_preview(vfiler, context, view)
 end
 
+function M.scroll_down_preview(vfiler, context, view)
+  local in_preview = context.in_preview
+  local preview = in_preview.preview
+  if not preview then
+    return
+  end
+  preview:scroll_down()
+end
+
+function M.scroll_up_preview(vfiler, context, view)
+  local in_preview = context.in_preview
+  local preview = in_preview.preview
+  if not preview then
+    return
+  end
+  preview:scroll_up()
+end
+
 return M

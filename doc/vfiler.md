@@ -689,6 +689,12 @@ Toggle the automatic preview window.
 #### toggle_preview
 Toggle the preview window for the item in the current cursor.
 
+#### scroll_down_preview
+Scroll down in preview window.
+
+#### scroll_up_preview
+Scroll up in preview window.
+
 ---
 
 ### Action to view
