@@ -7,6 +7,7 @@ M.choice = {
   YES = '&Yes',
   NO = '&No',
   CANCEL = '&Cancel',
+  RENAME = '&Rename',
 }
 
 function M.clear_prompt()
@@ -82,6 +83,14 @@ function M.util.confirm_overwrite(name)
   return M.confirm(
     ('"%s" already exists. Overwrite?'):format(name),
     { M.choice.YES, M.choice.NO },
+    1
+  )
+end
+
+function M.util.confirm_overwrite_or_rename(name)
+  return M.confirm(
+    ('"%s" already exists. Overwrite?'):format(name),
+    { M.choice.YES, M.choice.NO, M.choice.RENAME },
     1
   )
 end

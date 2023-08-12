@@ -4,6 +4,20 @@ local vim = require('vfiler/libs/vim')
 
 local current_functor = nil
 
+local function input_new_name(name, destdir_path)
+  while true do
+    local new_name = cmdline.input('New name - ' .. name, name, 'file')
+    if #new_name == 0 then
+      return ''
+    end
+    local destpath = core.path.join(destdir_path, new_name)
+    if not core.path.exists(destpath) then
+      return destpath
+    end
+    core.message.info('"%s" already exists', new_name)
+  end
+end
+
 local PasteFunctor = {}
 PasteFunctor.__index = PasteFunctor
 
@@ -20,7 +34,15 @@ function PasteFunctor:paste(destdir)
     local skipped = false
     local destpath = core.path.join(destdir.path, item.name)
     if core.path.exists(destpath) then
-      if cmdline.util.confirm_overwrite(item.name) ~= cmdline.choice.YES then
+      local choice = cmdline.util.confirm_overwrite_or_rename(item.name)
+      if choice == cmdline.choice.RENAME then
+        local new_destpath = input_new_name(item.name, destdir.path)
+        if #new_destpath ~= 0 then
+          destpath = new_destpath
+        else
+          skipped = true
+        end
+      elseif choice ~= cmdline.choice.YES then
         skipped = true
       end
     end
