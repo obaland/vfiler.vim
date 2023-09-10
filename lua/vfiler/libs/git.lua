@@ -39,7 +39,7 @@ local function parse_git_status(rootpath, result)
   local splitted = vim.list.from(vim.fn.split(rpath, ' -> '))
   rpath = splitted[#splitted]
   -- Removing: extra characters
-  rpath = rpath:gsub('^"', ''):gsub('^"', '')
+  rpath = rpath:gsub('^"', ''):gsub('"$', '')
   return core.path.join(rootpath, rpath),
     { us = status:sub(1, 1), them = status:sub(2, 2) }
 end
