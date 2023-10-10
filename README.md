@@ -21,7 +21,7 @@
 
 vfiler.vim requires Neovim(0.5.0+) or Vim8.2+ with [if\_lua](https://vimhelp.org/if_lua.txt.html#if_lua.txt).
 
-## Instalattion
+## Installation
 
 Using [vim-plug](https://github.com/junegunn/vim-plug)
 ```vim
