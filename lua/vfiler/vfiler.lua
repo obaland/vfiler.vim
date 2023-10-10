@@ -355,7 +355,7 @@ end
 
 function VFiler:_unregister_events()
   for group, _ in pairs(self._context.events) do
-    event._unregister_events(group, self._buffer.number)
+    event.unregister(group, self._buffer.number)
   end
 end
 
