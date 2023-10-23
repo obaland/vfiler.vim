@@ -125,10 +125,10 @@ local function open_file(vfiler, context, view, path, layout)
 
   local dest_winid = vim.fn.win_getid()
   --if layout ~= 'tab' and dest_winid ~= view:winid() then
-  -- TODO:
-  --if dest_winid ~= view:winid() then
-  --  view:redraw()
-  --end
+  local winid = view:winid()
+  if winid > 0 and dest_winid ~= winid then
+    view:redraw()
+  end
 end
 
 local function choose_file(vfiler, context, view, path)

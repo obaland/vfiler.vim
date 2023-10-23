@@ -40,8 +40,7 @@ function Floating:set_title(title)
     self._title.name = title
   else
     -- create
-    local buffer = Buffer.new('vfiler-title:' .. title)
-    buffer:set_options({
+    local buffer = Buffer.new('vfiler-title:' .. title, {
       bufhidden = 'wipe',
       buflisted = false,
       buftype = 'nofile',

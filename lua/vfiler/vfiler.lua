@@ -10,8 +10,7 @@ VFiler.__index = VFiler
 
 local function new_buffer(bufname, context)
   local Buffer = require('vfiler/buffer')
-  local buffer = Buffer.new(bufname)
-  buffer:set_options({
+  local buffer = Buffer.new(bufname, {
     bufhidden = 'hide',
     buflisted = context.options.buflisted,
     buftype = 'nofile',

@@ -15,8 +15,11 @@ function Buffer.is_vfiler_buffer(bufnr)
   return vim.fn.getbufvar(bufnr, 'vfiler') == 'vfiler'
 end
 
-function Buffer.new(name)
+function Buffer.new(name, options)
   local number = vim.fn.bufadd(name)
+  if options then
+    vim.set_buf_options(number, options)
+  end
   if vim.fn.bufloaded(number) ~= 1 then
     -- NOTE: In the case of vim, an extra message is visible, so execute
     -- it with "silent".
