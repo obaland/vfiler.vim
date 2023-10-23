@@ -99,6 +99,10 @@ local function choose_window(winid)
 end
 
 local function open_file(vfiler, context, view, path, layout)
+  -- TODO:
+  if view:type() == 'floating' then
+    vfiler:quit()
+  end
   if layout ~= 'none' then
     core.window.open(layout)
   end
@@ -121,9 +125,10 @@ local function open_file(vfiler, context, view, path, layout)
 
   local dest_winid = vim.fn.win_getid()
   --if layout ~= 'tab' and dest_winid ~= view:winid() then
-  if dest_winid ~= view:winid() then
-    view:redraw()
-  end
+  -- TODO:
+  --if dest_winid ~= view:winid() then
+  --  view:redraw()
+  --end
 end
 
 local function choose_file(vfiler, context, view, path)
