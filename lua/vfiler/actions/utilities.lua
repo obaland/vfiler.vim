@@ -99,7 +99,6 @@ local function choose_window(winid)
 end
 
 local function open_file(vfiler, context, view, path, layout)
-  -- TODO:
   if view:type() == 'floating' then
     vfiler:quit()
   end
@@ -124,7 +123,6 @@ local function open_file(vfiler, context, view, path, layout)
   end
 
   local dest_winid = vim.fn.win_getid()
-  --if layout ~= 'tab' and dest_winid ~= view:winid() then
   local winid = view:winid()
   if winid > 0 and dest_winid ~= winid then
     view:redraw()
@@ -136,7 +134,7 @@ local function choose_file(vfiler, context, view, path)
   if not winid then
     return
   elseif winid < 0 then
-    core.window.open('right')
+    core.window.open('right', '')
   else
     -- for example, dare to raise the autocmd event and close
     -- the preview window.
