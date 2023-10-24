@@ -88,18 +88,12 @@ describe('filesystem $shell:' .. vim.o.shell, function()
         '%test#file',
       }
       local result
-      setup(function()
-        if not core.path.is_directory(destdir) then
-          result = fs.create_directory(destdir)
-          assert.is_true(result)
-          assert.is_true(core.path.is_directory(destdir))
-        end
-      end)
-      teardown(function()
-        result = fs.delete(destdir)
+      -- Setup
+      if not core.path.is_directory(destdir) then
+        result = fs.create_directory(destdir)
         assert.is_true(result)
-        assert.is_false(core.path.is_directory(destdir))
-      end)
+        assert.is_true(core.path.is_directory(destdir))
+      end
 
       for _, path in ipairs(filepaths) do
         it(path .. ' -> ' .. destdir, function()
@@ -118,6 +112,11 @@ describe('filesystem $shell:' .. vim.o.shell, function()
           assert.is_false(core.path.filereadable(path))
         end)
       end
+
+      -- Teardown
+      result = fs.delete(destdir)
+      assert.is_true(result)
+      assert.is_false(core.path.is_directory(destdir))
     end)
 
     describe('move file', function()
@@ -133,18 +132,12 @@ describe('filesystem $shell:' .. vim.o.shell, function()
       }
 
       local result
-      setup(function()
-        if not core.path.is_directory(destdir) then
-          result = fs.create_directory(destdir)
-          assert.is_true(result)
-          assert.is_true(core.path.is_directory(destdir))
-        end
-      end)
-      teardown(function()
-        result = fs.delete(destdir)
+      -- Setup
+      if not core.path.is_directory(destdir) then
+        result = fs.create_directory(destdir)
         assert.is_true(result)
-        assert.is_false(core.path.is_directory(destdir))
-      end)
+        assert.is_true(core.path.is_directory(destdir))
+      end
 
       for _, path in ipairs(filepaths) do
         it(path .. ' -> ' .. destdir, function()
@@ -159,6 +152,11 @@ describe('filesystem $shell:' .. vim.o.shell, function()
           assert.is_false(core.path.filereadable(path))
         end)
       end
+
+      -- Teardown
+      result = fs.delete(destdir)
+      assert.is_true(result)
+      assert.is_false(core.path.is_directory(destdir))
     end)
 
     describe('copy directory', function()
@@ -174,23 +172,19 @@ describe('filesystem $shell:' .. vim.o.shell, function()
         '%test#file',
       }
 
-      -- Prepare
       local result
-      it('create:' .. srcdir, function()
-        if not core.path.is_directory(srcdir) then
-          result = fs.create_directory(srcdir)
-          assert.is_true(result)
-          assert.is_true(core.path.is_directory(srcdir))
-        end
-      end)
+      -- Setup
+      if not core.path.is_directory(srcdir) then
+        result = fs.create_directory(srcdir)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(srcdir))
+      end
 
-      it('create:' .. destdir, function()
-        if not core.path.is_directory(destdir) then
-          result = fs.create_directory(destdir)
-          assert.is_true(result)
-          assert.is_true(core.path.is_directory(destdir))
-        end
-      end)
+      if not core.path.is_directory(destdir) then
+        result = fs.create_directory(destdir)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(destdir))
+      end
 
       for _, path in ipairs(filepaths) do
         local filepath = core.path.join(srcdir, path)
@@ -213,18 +207,14 @@ describe('filesystem $shell:' .. vim.o.shell, function()
         end
       end)
 
-      -- Post
-      it('delete:' .. srcdir, function()
-        result = fs.delete(srcdir)
-        assert.is_true(result)
-        assert.is_false(core.path.is_directory(srcdir))
-      end)
+      -- Teardown
+      result = fs.delete(srcdir)
+      assert.is_true(result)
+      assert.is_false(core.path.is_directory(srcdir))
 
-      it('delete:' .. destdir, function()
-        result = fs.delete(destdir)
-        assert.is_true(result)
-        assert.is_false(core.path.is_directory(destdir))
-      end)
+      result = fs.delete(destdir)
+      assert.is_true(result)
+      assert.is_false(core.path.is_directory(destdir))
     end)
 
     describe('move directory', function()
@@ -240,31 +230,18 @@ describe('filesystem $shell:' .. vim.o.shell, function()
         '%test#file',
       }
 
-      -- Prepare
       local result
-      setup(function()
-        if not core.path.is_directory(srcdir) then
-          result = fs.create_directory(srcdir)
-          assert.is_true(result)
-          assert.is_true(core.path.is_directory(srcdir))
-        end
-        if not core.path.is_directory(destdir) then
-          result = fs.create_directory(destdir)
-          assert.is_true(result)
-          assert.is_true(core.path.is_directory(destdir))
-        end
-      end)
-
-      teardown(function()
-        if core.path.exists(srcdir) then
-          result = fs.delete(srcdir)
-          assert.is_true(result)
-          assert.is_false(core.path.is_directory(srcdir))
-        end
-        result = fs.delete(destdir)
+      -- Setup
+      if not core.path.is_directory(srcdir) then
+        result = fs.create_directory(srcdir)
         assert.is_true(result)
-        assert.is_false(core.path.is_directory(destdir))
-      end)
+        assert.is_true(core.path.is_directory(srcdir))
+      end
+      if not core.path.is_directory(destdir) then
+        result = fs.create_directory(destdir)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(destdir))
+      end
 
       for _, path in ipairs(filepaths) do
         local filepath = core.path.join(srcdir, path)
@@ -288,6 +265,16 @@ describe('filesystem $shell:' .. vim.o.shell, function()
           assert.is_true(core.path.filereadable(movedpath))
         end
       end)
+
+      --Teardown
+      if core.path.exists(srcdir) then
+        result = fs.delete(srcdir)
+        assert.is_true(result)
+        assert.is_false(core.path.is_directory(srcdir))
+      end
+      result = fs.delete(destdir)
+      assert.is_true(result)
+      assert.is_false(core.path.is_directory(destdir))
     end)
   end
 end)
