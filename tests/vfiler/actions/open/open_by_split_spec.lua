@@ -12,11 +12,19 @@ describe('open actions', function()
     }
     configs.options.layout = layout
     local vfiler = u.vfiler.start(configs)
+    assert.is_not_nil(vfiler)
 
-    local message = ('open by split (%s)'):format(layout)
+    local view = vfiler._view
+    assert.is_not_nil(view)
+    local lnum, target
+    repeat
+      lnum = u.int.random(2, view:num_lines())
+      target = view:get_item(lnum)
+    until target
+    core.cursor.move(lnum)
+
+    local message = ('open by split [layout:%s] (%s)'):format(layout, target.path)
     it(u.vfiler.desc(message, vfiler), function()
-      local view = vfiler._view
-      core.cursor.move(u.int.random(2, view:num_lines()))
       vfiler:do_action(a.open_by_split)
     end)
     vfiler:quit(true)
