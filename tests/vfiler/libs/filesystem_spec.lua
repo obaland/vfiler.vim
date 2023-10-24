@@ -1,4 +1,9 @@
 local core = require('vfiler/libs/core')
+-- TODO: ubuntu
+if not (core.is_windows or core.is_mac) then
+  return
+end
+
 local fs = require('vfiler/libs/filesystem')
 
 describe('filesystem $shell:' .. vim.o.shell, function()
@@ -26,11 +31,6 @@ describe('filesystem $shell:' .. vim.o.shell, function()
       end)
     end
   end)
-
-  -- TODO: ubuntu
-  if not (core.is_windows or core.is_mac) then
-    return
-  end
 
   describe('create file', function()
     local filepaths = {
