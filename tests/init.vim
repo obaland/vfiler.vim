@@ -1,5 +1,5 @@
 set rtp+=./
-set rtp+=../plenary.nvim/
+set rtp+=../../nvim-lua/plenary.nvim/
 
 set shellslash
 set noswapfile
