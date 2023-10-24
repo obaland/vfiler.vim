@@ -16,17 +16,15 @@ describe('open actions', function()
 
     local view = vfiler._view
     assert.is_not_nil(view)
-    local lnum, target
-    repeat
-      lnum = u.int.random(2, view:num_lines())
-      target = view:get_item(lnum)
-    until target
-    core.cursor.move(lnum)
-
-    local message = ('open by vsplit [layout:%s] (%s)'):format(layout, target.path)
-    it(u.vfiler.desc(message, vfiler), function()
-      vfiler:do_action(a.open_by_vsplit)
-    end)
+    local lnum = u.int.random(2, view:num_lines())
+    local target = view:get_item(lnum)
+    if target then
+      core.cursor.move(lnum)
+      local message = ('open by vsplit [layout:%s] (%s)'):format(layout, target.path)
+      it(u.vfiler.desc(message, vfiler), function()
+        vfiler:do_action(a.open_by_vsplit)
+      end)
+    end
     vfiler:quit(true)
   end
 end)

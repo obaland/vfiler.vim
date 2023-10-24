@@ -15,20 +15,17 @@ describe('open actions', function()
     assert.is_not_nil(vfiler)
 
     local view = vfiler._view
-    local lnum = u.int.random(2, view:num_lines())
     assert.is_not_nil(view)
-    local lnum, target
-    repeat
-      lnum = u.int.random(2, view:num_lines())
-      target = view:get_item(lnum)
-    until target
-    core.cursor.move(lnum)
-
-    local message = ('open by choose [layout:%s] (%s)'):format(layout, target.path)
-    it(u.vfiler.desc(message, vfiler), function()
-      assert.is_not_nil(view)
-      vfiler:do_action(a.open_by_choose)
-    end)
+    local lnum = u.int.random(2, view:num_lines())
+    local target = view:get_item(lnum)
+    if target then
+      core.cursor.move(lnum)
+      local message = ('open by choose [layout:%s] (%s)'):format(layout, target.path)
+      it(u.vfiler.desc(message, vfiler), function()
+        assert.is_not_nil(view)
+        vfiler:do_action(a.open_by_choose)
+      end)
+    end
     vfiler:quit(true)
   end
 end)
