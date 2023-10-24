@@ -114,9 +114,11 @@ describe('filesystem $shell:' .. vim.o.shell, function()
       end
 
       -- Teardown
-      result = fs.delete(destdir)
-      assert.is_true(result)
-      assert.is_false(core.path.is_directory(destdir))
+      if core.path.exists(destdir) then
+        result = fs.delete(destdir)
+        assert.is_true(result)
+        assert.is_false(core.path.is_directory(destdir))
+      end
     end)
 
     describe('move file', function()
@@ -154,9 +156,11 @@ describe('filesystem $shell:' .. vim.o.shell, function()
       end
 
       -- Teardown
-      result = fs.delete(destdir)
-      assert.is_true(result)
-      assert.is_false(core.path.is_directory(destdir))
+      if core.path.exists(destdir) then
+        result = fs.delete(destdir)
+        assert.is_true(result)
+        assert.is_false(core.path.is_directory(destdir))
+      end
     end)
 
     describe('copy directory', function()
@@ -208,13 +212,17 @@ describe('filesystem $shell:' .. vim.o.shell, function()
       end)
 
       -- Teardown
-      result = fs.delete(srcdir)
-      assert.is_true(result)
-      assert.is_false(core.path.is_directory(srcdir))
+      if core.path.exists(srcdir) then
+        result = fs.delete(srcdir)
+        assert.is_true(result)
+        assert.is_false(core.path.is_directory(srcdir))
+      end
 
-      result = fs.delete(destdir)
-      assert.is_true(result)
-      assert.is_false(core.path.is_directory(destdir))
+      if core.path.exists(destdir) then
+        result = fs.delete(destdir)
+        assert.is_true(result)
+        assert.is_false(core.path.is_directory(destdir))
+      end
     end)
 
     describe('move directory', function()
@@ -272,9 +280,11 @@ describe('filesystem $shell:' .. vim.o.shell, function()
         assert.is_true(result)
         assert.is_false(core.path.is_directory(srcdir))
       end
-      result = fs.delete(destdir)
-      assert.is_true(result)
-      assert.is_false(core.path.is_directory(destdir))
+      if core.path.exists(destdir) then
+        result = fs.delete(destdir)
+        assert.is_true(result)
+        assert.is_false(core.path.is_directory(destdir))
+      end
     end)
   end
 end)
