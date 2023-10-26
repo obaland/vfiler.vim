@@ -30,7 +30,7 @@ local function get_stat(path, name, stat, link)
   return {
     path = path,
     name = name,
-    size = stat.size,
+    size = (stat.type == 'directory') and 0 or stat.size,
     time = stat.mtime.sec,
     mode = to_mode_string(stat.mode),
     type = stat.type,
@@ -69,7 +69,7 @@ function M.scandir(dirpath)
       uv.fs_stat(path, function(_, stat)
         if stat then
           table.insert(stats, {
-            path = stat.type == 'directory' and path .. '/' or path,
+            path = (stat.type == 'directory') and path .. '/' or path,
             name = name,
             stat = stat,
             link = type == 'link',

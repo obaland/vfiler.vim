@@ -17,8 +17,7 @@ describe('filesystem $shell:' .. vim.o.shell, function()
         assert.is_equal(core.path.normalize(path), stat.path)
         assert.is_equal(vim.fn.getfperm(path), stat.mode)
         assert.is_equal(vim.fn.getftime(path), stat.time)
-        -- TODO: different for each platform
-        --assert.is_equal(vim.fn.getfsize(path), stat.size)
+        assert.is_equal(vim.fn.getfsize(path), stat.size)
 
         if core.path.is_directory(path) then
           assert.is_equal('directory', stat.type)
