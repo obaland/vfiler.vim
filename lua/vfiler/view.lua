@@ -220,7 +220,7 @@ function View:get_item(lnum)
   if not self._items then
     return nil
   end
-  lnum = lnum or vim.fn.line('.')
+  lnum = lnum or vim.fn.line('.', self:winid())
   return self._items.list[lnum]
 end
 
