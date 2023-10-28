@@ -36,7 +36,7 @@ function M.change_to_parent(vfiler, context, view)
 end
 
 function M.jump_to_directory(vfiler, context, view)
-  local dirpath = cmdline.input('Jump to?', '', 'dir')
+  local dirpath = cmdline.input('Jump to?', context.root.path, 'dir')
   if #dirpath == 0 then
     return
   end
