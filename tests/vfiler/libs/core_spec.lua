@@ -272,6 +272,8 @@ describe('core.math', function()
       { v = 10, min = 5, max = 20, expected = 10 },
       { v = 4, min = 5, max = 20, expected = 5 },
       { v = 21, min = 5, max = 20, expected = 20 },
+      { v = 10, min = 20, max = 5, expected = 20 },
+      { v = 21, min = 20, max = 5, expected = 20 },
       { v = -4, min = -5, max = 20, expected = -4 },
       { v = -6, min = -5, max = 20, expected = -5 },
       { v = -6, min = -8, max = -5, expected = -6 },

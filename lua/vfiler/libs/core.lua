@@ -539,7 +539,7 @@ M.math = {}
 
 -- Within the max and min between
 function M.math.within(v, min, max)
-  return math.min(math.max(v, min), max)
+  return math.max(math.min(v, max), min)
 end
 
 --- Returns "integer" if the argument is an integer,
