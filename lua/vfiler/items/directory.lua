@@ -86,14 +86,18 @@ end
 
 function Directory:open(recursive)
   self.children = {}
-  for stat in fs.scandir(self.path) do
+  local children = {}
+  fs.scandir(self.path, function(stat)
     local item = new_item(stat)
     if item then
       self:_add(item)
       if recursive and item.type == 'directory' then
-        item:open(recursive)
+        table.insert(children, item)
       end
     end
+  end)
+  for _, child in ipairs(children) do
+    child:open(recursive)
   end
   self.opened = true
 end

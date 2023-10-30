@@ -30,26 +30,23 @@ function M.stat(path)
   }
 end
 
-function M.scandir(dirpath)
+function M.scandir(dirpath, callback)
   local dicts = vim.fn.readdirex(dirpath)
-  local function scandir()
-    for dict in dicts() do
-      local path = core.path.join(dirpath, dict.name)
-      local type, link = get_ftype(dict.type)
-      if type then
-        coroutine.yield({
-          path = type == 'directory' and path .. '/' or path,
-          name = dict.name,
-          size = dict.size,
-          time = dict.time,
-          mode = dict.perm,
-          type = type,
-          link = link,
-        })
-      end
+  for dict in dicts() do
+    local path = core.path.join(dirpath, dict.name)
+    local type, link = get_ftype(dict.type)
+    if type and callback then
+      callback({
+        path = type == 'directory' and path .. '/' or path,
+        name = dict.name,
+        size = dict.size,
+        time = dict.time,
+        mode = dict.perm,
+        type = type,
+        link = link,
+      })
     end
   end
-  return coroutine.wrap(scandir)
 end
 
 return M
