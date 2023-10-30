@@ -66,12 +66,14 @@ function M.scandir(dirpath, callback)
     local path = core.path.join(dirpath, name)
     uv.fs_stat(path, function(_, stat)
       if stat and callback then
-        callback(get_stat(
-          (stat.type == 'directory') and path .. '/' or path,
-          name,
-          stat,
-          type == 'link'
-        ))
+        callback(
+          get_stat(
+            (stat.type == 'directory') and path .. '/' or path,
+            name,
+            stat,
+            type == 'link'
+          )
+        )
       end
       done = done + 1
     end)
