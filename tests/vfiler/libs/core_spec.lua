@@ -98,6 +98,9 @@ describe('core.path', function()
     local dataset = {
       { input = 'C:/usr/bin', expected = 'C:/usr/bin' },
       { input = 'C:/usr\\bin', expected = 'C:/usr/bin' },
+      { input = '\\\\unc\\foo', expected = '\\\\unc/foo' },
+      { input = '\\\\unc\\foo\\', expected = '\\\\unc/foo/' },
+      { input = '\\\\unc\\foo/', expected = '\\\\unc/foo/' },
     }
     for _, data in ipairs(dataset) do
       it(data.input, function()
@@ -232,6 +235,9 @@ describe('core.path', function()
         { input = 'C:/usr/bin/foo', expected = 'C:/' },
         { input = 'D:/usr/bin/foo/', expected = 'D:/' },
         { input = 'C:/', expected = 'C:/' },
+        { input = '\\\\unc\\foo', expected = '\\\\unc/' },
+        { input = '\\\\unc\\foo/', expected = '\\\\unc/' },
+        { input = '\\\\unc/foo', expected = '\\\\unc/' },
       }
     else
       dataset = {

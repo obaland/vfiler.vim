@@ -171,8 +171,11 @@ end
 M.path = {}
 
 function M.path.escape(path)
-  local replaced = path:gsub('\\', '/')
-  return replaced
+  -- for UNC path
+  if path:match('^\\') then
+    return '\\\\' .. path:sub(3):gsub('\\', '/')
+  end
+  return path:gsub('\\', '/')
 end
 
 function M.path.exists(path)
@@ -225,11 +228,12 @@ end
 function M.path.root(path)
   local root = ''
   if M.is_windows then
-    if path:match('^//') then
+    path = M.path.normalize(path)
+    if path:match('^\\') then
       -- for UNC path
-      root = path:match('^//[^/]*/[^/]*')
+      root = path:match('^\\\\%a+')
     else
-      root = (M.path.normalize(path)):match('^%a+:')
+      root = path:match('^%a+:')
     end
   end
   return root .. '/'
