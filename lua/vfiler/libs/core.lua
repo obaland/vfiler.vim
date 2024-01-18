@@ -171,10 +171,6 @@ end
 M.path = {}
 
 function M.path.escape(path)
-  -- for UNC path
-  if path:match('^\\') then
-    return '\\\\' .. path:sub(3):gsub('\\', '/')
-  end
   return path:gsub('\\', '/')
 end
 
@@ -216,22 +212,39 @@ function M.path.normalize(path)
   if path == '/' then
     return '/'
   end
-  return M.path.escape(vim.fn.fnamemodify(path, ':p')):gsub('/+', '/')
+  path = M.path.escape(vim.fn.fnamemodify(path, ':p'))
+  -- for UNC path
+  if path:sub(1, 2) == '//' then
+    return '//' .. path:sub(3):gsub('/+', '/')
+  end
+  return path:gsub('/+', '/')
 end
 
 function M.path.parent(path)
+  if path:sub(1, 2) == '//' then
+    -- for UNC path
+    local seps = 0
+    for _ in path:sub(3):gmatch('/') do
+      seps = seps + 1
+    end
+    if seps < 2 then
+      return M.path.normalize(path)
+    elseif seps == 2 then
+      -- example: //unc/foo/
+      return M.path.normalize(vim.fn.fnamemodify(path, ':h'))
+    end
+  end
   local mods = path:sub(-1) == '/' and ':h:h' or ':h'
-  local parent = vim.fn.fnamemodify(path, mods)
-  return M.path.normalize(parent)
+  return M.path.normalize(vim.fn.fnamemodify(path, mods))
 end
 
 function M.path.root(path)
   local root = ''
   if M.is_windows then
     path = M.path.normalize(path)
-    if path:match('^\\') then
+    if path:sub(1, 2) == '//' then
       -- for UNC path
-      root = path:match('^\\\\%a+')
+      root = path:match('^//%a+')
     else
       root = path:match('^%a+:')
     end
