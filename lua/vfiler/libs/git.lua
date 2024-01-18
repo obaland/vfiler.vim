@@ -91,7 +91,7 @@ end
 function M.get_toplevel(dirpath)
   local command = ('git -C "%s" rev-parse --show-toplevel'):format(dirpath)
   local path = core.system(command)
-  if (not path or #path == 0) or path:match('^fatal') then
+  if (not path or #path == 0) or path:match('fatal:%s') then
     return nil
   end
   return core.path.normalize(path:sub(0, -2))
