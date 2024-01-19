@@ -190,6 +190,10 @@ function M.path.is_directory(path)
   return vim.fn.isdirectory(path) == 1
 end
 
+function M.path.is_unc(path)
+  return (path:match('^//') or path:match('^\\\\')) and true or false
+end
+
 function M.path.join(path, name)
   path = M.path.escape(path)
   if path:sub(#path, #path) ~= '/' then
@@ -213,20 +217,17 @@ function M.path.normalize(path)
     return '/'
   end
   path = M.path.escape(vim.fn.fnamemodify(path, ':p'))
-  -- for UNC path
-  if path:sub(1, 2) == '//' then
+  if M.path.is_unc(path) then
+    -- for UNC path
     return '//' .. path:sub(3):gsub('/+', '/')
   end
   return path:gsub('/+', '/')
 end
 
 function M.path.parent(path)
-  if path:sub(1, 2) == '//' then
+  if M.path.is_unc(path) then
     -- for UNC path
-    local seps = 0
-    for _ in path:sub(3):gmatch('/') do
-      seps = seps + 1
-    end
+    local seps = M.string.count_char(path:sub(3), '/')
     if seps < 2 then
       return M.path.normalize(path)
     elseif seps == 2 then
@@ -242,7 +243,7 @@ function M.path.root(path)
   local root = ''
   if M.is_windows then
     path = M.path.normalize(path)
-    if path:sub(1, 2) == '//' then
+    if M.path.is_unc(path) then
       -- for UNC path
       root = path:match('^//%a+')
     else
@@ -429,6 +430,10 @@ local function truncate(str, width)
     end
   end
   return str:sub(1, width)
+end
+
+function M.string.count_char(s, c)
+  return #vim.fn.split(s, c, 1) - 1
 end
 
 function M.string.is_keycode(s)

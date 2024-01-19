@@ -5,6 +5,22 @@ local eq = function(excepted, actual)
 end
 
 describe('core.string', function()
+  describe('count_char', function()
+    local count_char = core.string.count_char
+    local dataset = {
+      { str = 'abcdefg abccba', char = 'c', expected = 3 },
+      { str = '/foo/bar', char = '/', expected = 2 },
+      { str = '/foo/bar/', char = '/', expected = 3 },
+      { str = '\\\\unc\\foo', char = '\\', expected = 3 },
+      { str = '\\\\unc\\foo\\', char = '\\', expected = 4 },
+    }
+    for _, data in ipairs(dataset) do
+      it(data.input, function()
+        eq(data.expected, count_char(data.str, data.char))
+      end)
+    end
+  end)
+
   describe('truncate (end)', function()
     local truncate = core.string.truncate
     local string = 'abcdefghijklmnopqrstuvwxyz'
@@ -149,6 +165,23 @@ describe('core.path', function()
     for _, data in ipairs(dataset) do
       it(data.input, function()
         eq(data.expected, is_directory(data.input))
+      end)
+    end
+  end)
+
+  describe('is_unc', function()
+    local is_unc = core.path.is_unc
+    local dataset = {
+      { input = 'C:/foo/bar', expected = false },
+      { input = 'C:\\foo\\bar', expected = false },
+      { input = '/usr/lib', expected = false },
+      { input = '\\\\unc\\foo', expected = true },
+      { input = '\\unc\\foo', expected = false },
+      { input = '//unc/foo', expected = true },
+    }
+    for _, data in ipairs(dataset) do
+      it(data.input, function()
+        eq(data.expected, is_unc(data.input))
       end)
     end
   end)
