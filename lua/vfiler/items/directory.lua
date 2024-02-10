@@ -93,25 +93,7 @@ end
 
 function Directory:open(recursive)
   local child_directories = self.child_directories or {}
-  self.children = {}
-  self.child_directories = {}
-  local children = {}
-  fs.scandir(self.path, function(stat)
-    local item = new_item(stat)
-    if item then
-      self:_add(item)
-      if item.type == 'directory' then
-        local old_dir_item = child_directories[item.name]
-        if recursive or (old_dir_item and old_dir_item.opened) then
-          table.insert(children, item)
-        end
-      end
-    end
-  end)
-  for _, child in ipairs(children) do
-    child:open(recursive)
-  end
-  self.opened = true
+  self:_open(recursive, child_directories)
 end
 
 function Directory:_add(item)
@@ -137,6 +119,30 @@ function Directory:_remove(item)
       self.child_directories[item.name] = nil
     end
   end
+end
+
+function Directory:_open(recursive, child_directories)
+  self.children = {}
+  self.child_directories = {}
+  local children = {}
+  fs.scandir(self.path, function(stat)
+    local item = new_item(stat)
+    if item then
+      self:_add(item)
+      if item.type == 'directory' then
+        local old_dir_item = child_directories[item.name]
+        if recursive or (old_dir_item and old_dir_item.opened) then
+          table.insert(children, {item, old_dir_item})
+        end
+      end
+    end
+  end)
+  for _, child in ipairs(children) do
+    local item = child[1]
+    local old_item = child[2]
+    item:_open(recursive, (old_item and old_item.child_directories) or {})
+  end
+  self.opened = true
 end
 
 return Directory
