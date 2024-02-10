@@ -15,7 +15,11 @@ function Item.new(stat)
 end
 
 function Item:delete()
-  if not fs.delete(self.path) then
+  local path = self.path
+  if self.link and self.type == 'directory' and path:match('/$') then
+    path = path:sub(1, #path - 1)
+  end
+  if not fs.delete(path) then
     core.message.error('"%s" Cannot delete.', self.name)
     return false
   end
