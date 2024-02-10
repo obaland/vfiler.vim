@@ -132,7 +132,7 @@ function Directory:_open(recursive, child_directories)
       if item.type == 'directory' then
         local old_dir_item = child_directories[item.name]
         if recursive or (old_dir_item and old_dir_item.opened) then
-          table.insert(children, {item, old_dir_item})
+          table.insert(children, { item, old_dir_item })
         end
       end
     end
