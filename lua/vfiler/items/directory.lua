@@ -32,6 +32,7 @@ function Directory.new(stat)
   local Item = require('vfiler/items/item')
   local self = core.inherit(Directory, Item, stat)
   self.children = nil
+  self.child_directories = nil
   self.opened = false
   return self
 end
@@ -39,13 +40,19 @@ end
 function Directory:add(item)
   if not self.children then
     self.children = {}
+    self.child_directories = {}
   end
   self:_remove(item)
   self:_add(item)
 end
 
+function Directory:remove(item)
+  self:_remove(item)
+end
+
 function Directory:close()
   self.children = nil
+  self.child_directories = nil
   self.opened = false
 end
 
@@ -85,14 +92,19 @@ function Directory:move(destpath)
 end
 
 function Directory:open(recursive)
+  local child_directories = self.child_directories or {}
   self.children = {}
+  self.child_directories = {}
   local children = {}
   fs.scandir(self.path, function(stat)
     local item = new_item(stat)
     if item then
       self:_add(item)
-      if recursive and item.type == 'directory' then
-        table.insert(children, item)
+      if item.type == 'directory' then
+        local old_dir_item = child_directories[item.name]
+        if recursive or (old_dir_item and old_dir_item.opened) then
+          table.insert(children, item)
+        end
       end
     end
   end)
@@ -106,6 +118,9 @@ function Directory:_add(item)
   item.parent = self
   item.level = self.level + 1
   table.insert(self.children, item)
+  if item.type == 'directory' then
+    self.child_directories[item.name] = item
+  end
 end
 
 function Directory:_remove(item)
@@ -118,6 +133,9 @@ function Directory:_remove(item)
   end
   if pos then
     table.remove(self.children, pos)
+    if item.type == 'directory' then
+      self.child_directories[item.name] = nil
+    end
   end
 end
 
