@@ -52,13 +52,7 @@ function Item:_become_orphan()
     return
   end
 
-  local children = self.parent.children
-  for i, child in ipairs(children) do
-    if child.path == self.path then
-      table.remove(children, i)
-      break
-    end
-  end
+  self.parent:remove(self)
 end
 
 function Item:_move(destpath)
