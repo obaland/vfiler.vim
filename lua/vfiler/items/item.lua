@@ -15,11 +15,7 @@ function Item.new(stat)
 end
 
 function Item:delete()
-  local path = self.path
-  if self.link and self.type == 'directory' and path:match('/$') then
-    path = path:sub(1, #path - 1)
-  end
-  if not fs.delete(path) then
+  if not fs.delete(self:_get_path()) then
     core.message.error('"%s" Cannot delete.', self.name)
     return false
   end
@@ -29,7 +25,7 @@ end
 
 function Item:rename(name)
   local newpath = core.path.join(self.parent.path, name)
-  if not fs.move(self.path, newpath) then
+  if not fs.move(self:_get_path(), newpath) then
     core.message.error('Failed to rename.')
     return false
   end
@@ -39,7 +35,7 @@ function Item:rename(name)
 end
 
 function Item:update()
-  local stat = fs.stat(self.path)
+  local stat = fs.stat(self:_get_path())
   if not stat then
     return
   end
@@ -55,11 +51,20 @@ function Item:_become_orphan()
   self.parent:remove(self)
 end
 
+function Item:_get_path()
+  local path = self.path
+  if self.link and self.type == 'directory' and path:match('/$') then
+    return path:sub(1, #path - 1)
+  end
+  return path
+end
+
 function Item:_move(destpath)
-  if not fs.move(self.path, destpath) then
+  local path = self:_get_path()
+  if not fs.move(path, destpath) then
     return false
   end
-  if not core.path.exists(destpath) and core.path.exists(self.path) then
+  if not core.path.exists(destpath) and core.path.exists(path) then
     return false
   end
   self:_become_orphan()

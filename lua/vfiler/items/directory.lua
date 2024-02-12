@@ -9,7 +9,7 @@ local function new_item(stat)
   local item
   if stat.type == 'directory' then
     item = Directory.new(stat)
-  elseif stat.type == 'file' then
+  elseif stat.type == 'file' or stat.type == 'link' then
     item = File.new(stat)
   else
     core.message.warning('Unknown "%s" file type. (%s)', stat.type, stat.path)
@@ -57,7 +57,7 @@ function Directory:close()
 end
 
 function Directory:copy(destpath)
-  fs.copy_directory(self.path, destpath)
+  fs.copy_directory(self:_get_path(), destpath)
   if not core.path.exists(destpath) then
     return nil
   end
