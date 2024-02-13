@@ -266,9 +266,10 @@ function Context:perform_auto_cd()
 end
 
 -- Reload the current directory path
-function Context:reload()
+---@param reload_all_dir boolean
+function Context:reload(reload_all_dir)
   local root_path = self.root.path
-  if vim.fn.getftime(root_path) > self.root.time then
+  if reload_all_dir or vim.fn.getftime(root_path) > self.root.time then
     self:switch(root_path)
     return
   end

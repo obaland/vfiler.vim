@@ -10,6 +10,12 @@ local M = {}
 -- Control buffer
 ------------------------------------------------------------------------------
 
+local function reload(context, view, reload_all_dir)
+  context:save(view:get_item().path)
+  context:reload(reload_all_dir)
+  view:draw(context)
+end
+
 function M.quit(vfiler, context, view)
   if context.options.quit then
     utils.close_preview(vfiler, context, view)
@@ -27,13 +33,19 @@ function M.redraw(vfiler, context, view)
 end
 
 function M.reload(vfiler, context, view)
-  context:save(view:get_item().path)
-  context:reload()
-  view:draw(context)
+  reload(context, view, false)
 end
 
 function M.reload_all(vfiler, context, view)
   VFiler.foreach(M.reload)
+end
+
+function M.reload_all_dir(vfiler, context, view)
+  reload(context, view, true)
+end
+
+function M.reload_all_dir_all(vfiler, context, view)
+  VFiler.foreach(M.reload_all_dir)
 end
 
 function M.switch_to_filer(vfiler, context, view)
