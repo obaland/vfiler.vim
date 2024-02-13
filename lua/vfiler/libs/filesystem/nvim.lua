@@ -45,7 +45,10 @@ function M.stat(path)
   end
   local link = stat.type == 'link'
   if link then
-    stat = uv.fs_stat(path)
+    local real_stat = uv.fs_stat(path)
+    if real_stat then
+      stat = real_stat
+    end
   end
   return get_stat(core.path.normalize(path), core.path.name(path), stat, link)
 end
@@ -74,8 +77,17 @@ function M.scandir(dirpath, callback)
             type == 'link'
           )
         )
+        done = done + 1
+      elseif type == 'link' then
+        uv.fs_lstat(path, function(_, lstat)
+          if lstat and callback then
+            callback(get_stat(path, name, lstat, true))
+          end
+          done = done + 1
+        end)
+      else
+        done = done + 1
       end
-      done = done + 1
     end)
   end
   vim.fn.wait(-1, function()
