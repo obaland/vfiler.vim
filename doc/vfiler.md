@@ -728,6 +728,11 @@ Switches to other drive(Windows) or mount point(Mac/Linux).
 #### reload
 Reload the `vfiler.vim` buffer.
 
+#### reload_all_dir
+Reload the `vfiler.vim` buffer.<br>
+The difference between `reload` and `reload_all_dir`is the former reload only the items in directories that have been updated,<br>
+while the latter reload also the items in all directories.
+
 #### quit
 Quit the `vfiler.vim` buffer.
 
