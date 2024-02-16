@@ -53,6 +53,10 @@ end
 
 function Item:_get_path()
   local path = self.path
+  -- NOTE:
+  -- Remove the '/' suffix in the case of symbolic links so that
+  -- rename/copy/move/delete of the directory referenced by the symbolic link
+  -- will be performed on the symbolic link itself, not the directory.
   if self.link and self.type == 'directory' and path:match('/$') then
     return path:sub(1, #path - 1)
   end
