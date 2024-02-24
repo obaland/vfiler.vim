@@ -46,17 +46,20 @@ function Rename:check()
       core.message.error('Blank line. (%d)', lnum)
       return false
     end
+
+    local item = self:get_item(lnum)
+    local dirpath = item.parent.path
+    local path = core.path.join(dirpath, line)
+
     -- Check for duplicate lines
     for i = lnum + 1, #lines do
-      if line == lines[i] then
+      local other_item = self:get_item(i)
+      if path == core.path.join(other_item.parent.path, lines[i]) then
         core.message.error('Duplicated names. (line: %d and %d)', lnum, i)
         return false
       end
     end
     -- Check for duplicate path
-    local item = self:get_item(lnum)
-    local dirpath = item.parent.path
-    local path = core.path.join(dirpath, line)
     local exists = false
     if line ~= item.name then
       if item.type == 'directory' then
