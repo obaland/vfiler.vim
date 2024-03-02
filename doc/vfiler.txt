@@ -1118,6 +1118,43 @@ EXAMPLE
     }
 <
 
+                                               *vfiler-hook.read_preview_file*
+
+hook.read_preview_file                 Sets the function to be hooked when
+                                       reading a preview file.</br> This hook
+                                       function is used to customize preview
+                                       contents.</br> This function shall
+                                       return lines of preview content and the
+                                       content filetype.</br> If the returned
+                                       filetype is `nil`, actual filetype is
+                                       detected from the content.
+
+
+
+- Type: `function`
+
+
+EXAMPLE
+
+>
+    require('vfiler/action').setup {
+      hook = {
+        -- Read contents for specific preview file.
+        read_preview_file = function(path, default_read_func)
+          local ext = vim.fn.fnamemodify(path, ":e")
+          if ext == 'zip' and vim.fn.executable('unzip') then
+            -- For zip files, show archived path list
+            local lines = vim.fn.systemlist('unzip -l ' .. vim.fn.shellescape(path))
+            return lines, 'text'
+          else
+            -- For other files, show contents as is
+            return default_read_func(path)
+          end
+        end,
+      }
+    }
+<
+
 ==============================================================================
 4. About                                                        *vfiler-about*
 
