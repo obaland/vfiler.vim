@@ -193,7 +193,13 @@ function M.open_preview(vfiler, context, view)
   if item.type == 'directory' then
     preview:close()
   else
-    preview:open(item.path)
+    local hook = config.configs.hook.read_preview_file
+    if type(hook) ~= 'function' then
+      hook = function(path, read_func)
+        return read_func(path)
+      end
+    end
+    preview:open(item.path, hook)
   end
   return true
 end
