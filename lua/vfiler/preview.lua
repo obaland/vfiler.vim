@@ -79,6 +79,23 @@ local function set_floating_size(winid, default)
   return options
 end
 
+---@param path string
+---@return table? lines file contents
+---@return nil
+local function default_read_file(path)
+  local lines = vim.list({})
+  local file = io.open(path, 'r')
+  if file then
+    for line in file:lines() do
+      table.insert(lines, line)
+    end
+    file:close()
+    return lines, nil
+  else
+    return nil, nil
+  end
+end
+
 function Preview.new(options)
   local window, woptions = new_window(options)
   return setmetatable({
@@ -90,7 +107,9 @@ function Preview.new(options)
   }, Preview)
 end
 
-function Preview:open(path)
+---@param path string
+---@param read_file_hook function
+function Preview:open(path, read_file_hook)
   local window = self._window
   local options
   if window:type() == 'window' then
@@ -101,19 +120,16 @@ function Preview:open(path)
 
   local warning_syntax = 'vfilerPreviewWarning'
   local win_commands = {
-    'filetype detect',
     core.syntax.clear(warning_syntax),
   }
 
   -- read file
   local filename = core.path.name(path)
-  local lines = vim.list({})
-  local file = io.open(path, 'r')
-  if file then
-    for line in file:lines() do
-      table.insert(lines, line)
+  local ok, lines, filetype = pcall(read_file_hook, path, default_read_file)
+  if ok then
+    if filetype == nil then
+      table.insert(win_commands, 'filetype detect')
     end
-    file:close()
   else
     -- warning message & syntax
     table.insert(
@@ -130,7 +146,8 @@ function Preview:open(path)
       core.highlight.link(warning_syntax, 'WarningMsg')
     )
     local message = ('"%s" could not be opened.'):format(filename)
-    table.insert(lines, message)
+    filetype = nil
+    lines = { message }
   end
 
   local Buffer = require('vfiler/buffer')
@@ -152,6 +169,9 @@ function Preview:open(path)
         undofile = false,
         undolevels = 0,
       })
+      if filetype ~= nil then
+        buffer:set_option('filetype', filetype)
+      end
       buffer:set_lines(lines)
     end,
     finally = function()

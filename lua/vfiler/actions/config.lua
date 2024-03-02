@@ -8,6 +8,9 @@ M.configs = {
     filter_choose_window = function(winids)
       return winids
     end,
+    read_preview_file = function(path, default_read_func)
+      return default_read_func(path)
+    end,
   },
 }
 
