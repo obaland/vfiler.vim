@@ -6,21 +6,21 @@
 
 let s:jobs = {}
 
-function! s:on_err(id, job, message)
+function! s:on_err(id, job, message) abort
   call luaeval(
         \ 'require("vfiler/libs/async/jobs/job_vim")._on_error(_A.id, _A.message)',
         \ { 'id': a:id, 'message': a:message }
         \ )
 endfunction
 
-function! s:on_out(id, job, message)
+function! s:on_out(id, job, message) abort
   call luaeval(
         \ 'require("vfiler/libs/async/jobs/job_vim")._on_received(_A.id, _A.message)',
         \ { 'id': a:id, 'message': a:message }
         \ )
 endfunction
 
-function! s:on_exit(id, job, code)
+function! s:on_exit(id, job, code) abort
   call luaeval(
         \ 'require("vfiler/libs/async/jobs/job_vim")._on_completed(_A.id, _A.code)',
         \ { 'id': a:id, 'code': a:code }

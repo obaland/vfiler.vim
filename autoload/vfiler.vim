@@ -14,11 +14,11 @@ function! vfiler#complete(arglead, cmdline, cursorpos) abort
   return map(getcompletion(a:arglead, 'dir'), {-> escape(v:val, ' ')})
 endfunction
 
-function! vfiler#start(path)
+function! vfiler#start(path) abort
   call luaeval('require("vfiler").start(_A)', a:path)
 endfunction
 
-function! vfiler#start_command(args)
+function! vfiler#start_command(args) abort
   call luaeval('require("vfiler").start_command(_A)', a:args)
 endfunction
 
