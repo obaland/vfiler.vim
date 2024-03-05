@@ -10,7 +10,7 @@ describe('select actions', function()
     it(u.vfiler.desc('toggle_select', vfiler), function()
       vfiler:do_action(a.toggle_select)
       local current = view:get_item()
-      assert.is_not_nil(current, 'line: ' .. vim.fn.line('.'))
+      assert.is_not_nil(current)
       assert.is_true(current.selected)
     end)
 

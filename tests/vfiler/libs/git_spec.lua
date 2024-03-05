@@ -1,4 +1,3 @@
-local core = require('vfiler/libs/core')
 local git = require('vfiler/libs/git')
 
 describe('git', function()
@@ -13,31 +12,30 @@ describe('git', function()
   end)
 
   describe('reload_status_file', function()
-    local options = {}
     local path = vim.fn.fnamemodify('./README.md', ':p')
-    local status
 
     it('default', function()
-      status = git.reload_status_file(rootpath, path, options)
+      local options = {}
+      git.reload_status_file(rootpath, path, options)
     end)
     it('untracked option', function()
-      options = {
-        untracked = ture,
+      local options = {
+        untracked = true,
       }
-      status = git.reload_status_file(rootpath, path, options)
+      git.reload_status_file(rootpath, path, options)
     end)
     it('ignored option', function()
-      options = {
-        ignored = ture,
+      local options = {
+        ignored = true,
       }
-      status = git.reload_status_file(rootpath, path, options)
+      git.reload_status_file(rootpath, path, options)
     end)
     it('untracked and ignored options', function()
-      options = {
-        untracked = ture,
-        ignored = ture,
+      local options = {
+        untracked = true,
+        ignored = true,
       }
-      status = git.reload_status_file(rootpath, path, options)
+      git.reload_status_file(rootpath, path, options)
     end)
   end)
 
@@ -52,10 +50,10 @@ describe('git', function()
     end)
 
     it('untracked option', function()
-      options = {
-        untracked = ture,
+      local options = {
+        untracked = true,
       }
-      job = git.reload_status_async(rootpath, options, function(status)
+      local job = git.reload_status_async(rootpath, options, function(status)
         assert.is_not_nil(status)
       end)
       assert.is_not_nil(job)
@@ -63,10 +61,10 @@ describe('git', function()
     end)
 
     it('ignored option', function()
-      options = {
-        ignored = ture,
+      local options = {
+        ignored = true,
       }
-      job = git.reload_status_async(rootpath, options, function(status)
+      local job = git.reload_status_async(rootpath, options, function(status)
         assert.is_not_nil(status)
       end)
       assert.is_not_nil(job)
@@ -74,11 +72,11 @@ describe('git', function()
     end)
 
     it('untracked and ignored options', function()
-      options = {
-        untracked = ture,
-        ignored = ture,
+      local options = {
+        untracked = true,
+        ignored = true,
       }
-      job = git.reload_status_async(rootpath, options, function(status)
+      local job = git.reload_status_async(rootpath, options, function(status)
         assert.is_not_nil(status)
       end)
       assert.is_not_nil(job)
