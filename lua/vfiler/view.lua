@@ -307,10 +307,13 @@ end
 function View:move_cursor(path)
   local lnum = self:indexof(path)
   -- Skip header line
-  core.cursor.move(math.max(lnum, self:top_lnum()))
-  -- Correspondence to show the header line
-  -- when moving to the beginning of the line.
-  vim.fn.execute('normal zb', 'silent')
+  local line = math.max(lnum, self:top_lnum())
+  core.cursor.move(line)
+  if self._header and line == 2 then
+    -- Correspondence to show the header line
+    -- when moving to the beginning of the line.
+    vim.fn.execute('normal! zb', 'silent')
+  end
 end
 
 --- Get the number of line in the view buffer
