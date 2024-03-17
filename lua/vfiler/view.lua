@@ -482,8 +482,16 @@ function View:top_lnum()
 end
 
 --- Get the window type
+---@return string: window type string literal
+--- 'window': Normal window
+--- 'floating': Float window
+--- 'popup': Popup window
+--- 'none': No window
 function View:type()
-  return self._window:type()
+  if self._window then
+    return self._window:type()
+  end
+  return 'none'
 end
 
 --- Walk view items
