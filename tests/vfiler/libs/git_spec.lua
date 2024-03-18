@@ -5,9 +5,18 @@ describe('git', function()
 
   describe('get_toplevel', function()
     it('root:' .. rootpath, function()
-      -- TODO:
-      --local path = git.get_toplevel(rootpath)
-      --assert.is_not_nil(path)
+      local path = git.get_toplevel(rootpath)
+      assert.is_not_nil(path)
+    end)
+  end)
+
+  describe('get_toplevel_async', function()
+    it('root:' .. rootpath, function()
+      local job = git.get_toplevel_async(rootpath, function(path)
+        assert.is_not_nil(path)
+      end)
+      assert.is_not_nil(job)
+      job:wait()
     end)
   end)
 
