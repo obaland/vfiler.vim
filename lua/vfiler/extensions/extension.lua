@@ -109,12 +109,8 @@ end
 
 local function new_window(options)
   local window
-  if options.floating then
-    if core.is_nvim then
-      window = require('vfiler/windows/floating')
-    else
-      window = require('vfiler/windows/popup')
-    end
+  if core.is_nvim and options.floating then
+    window = require('vfiler/windows/floating')
   else
     window = require('vfiler/windows/window')
   end
