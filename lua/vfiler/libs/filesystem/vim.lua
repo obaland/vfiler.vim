@@ -4,7 +4,12 @@ local M = {}
 
 local function get_ftype(ftype)
   local type
-  if ftype == 'dir' or ftype == 'linkd' or ftype == 'junction' then
+  if
+    ftype == 'dir'
+    or ftype == 'linkd'
+    or ftype == 'junction'
+    or ftype == 'reparse'
+  then
     type = 'directory'
   elseif ftype == 'link' then
     type = 'file'
