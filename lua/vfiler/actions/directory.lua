@@ -149,6 +149,13 @@ function M.switch_to_drive(vfiler, context, view)
       local focus_path = ctx:switch_drive(drive)
       v:draw(ctx)
       v:move_cursor(focus_path)
+
+      -- Reload git status
+      if v:has_column('git') then
+        ctx:reload_git_async(function(c)
+          view:redraw_git(c)
+        end)
+      end
     end,
   })
   utils.start_extension(vfiler, context, view, menu)

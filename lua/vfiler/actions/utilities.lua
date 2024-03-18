@@ -167,6 +167,13 @@ function M.cd(vfiler, context, view, dirpath)
   local path = context:switch(dirpath)
   view:draw(context)
   view:move_cursor(path)
+
+  -- Reload git status
+  if view:has_column('git') then
+    context:reload_git_async(function(ctx)
+      view:redraw_git(ctx)
+    end)
+  end
 end
 
 function M.close_preview(vfiler, context, view)

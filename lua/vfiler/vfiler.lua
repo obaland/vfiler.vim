@@ -282,6 +282,13 @@ function VFiler:start(dirpath, filepath)
   end
   self:draw()
   self._view:move_cursor(path)
+
+  -- Reload git status
+  if self._view:has_column('git') then
+    self._context:reload_git_async(function(ctx)
+      self._view:redraw_git(ctx)
+    end)
+  end
 end
 
 --- Get current status string

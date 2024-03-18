@@ -93,13 +93,15 @@ function Buffer:set_lines(lines)
 end
 
 function Buffer:set_option(option, value)
-  assert(self.number >= 0)
-  vim.set_buf_option(self.number, option, value)
+  if self.number >= 0 then
+    vim.set_buf_option(self.number, option, value)
+  end
 end
 
 function Buffer:set_options(options)
-  assert(self.number >= 0)
-  vim.set_buf_options(self.number, options)
+  if self.number >= 0 then
+    vim.set_buf_options(self.number, options)
+  end
 end
 
 function Buffer:undefine_mappings(mappings)

@@ -70,6 +70,16 @@ function ItemContainer:length()
   return #self.list
 end
 
+function ItemContainer:update_git(gitstatus)
+  self._gitstatus = gitstatus
+  for path, status in pairs(gitstatus) do
+    local target = self.table[path]
+    if target then
+      target.item.gitstatus = status
+    end
+  end
+end
+
 local function new_window(layout)
   local window
   if layout == 'floating' then
@@ -414,6 +424,12 @@ function View:redraw()
   if self._window:type() == 'floating' then
     self._window:set_title(self._buffer:name())
   end
+end
+
+--- Redraw the git status
+function View:redraw_git(context)
+  self._items:update_git(context.gitstatus)
+  self:redraw()
 end
 
 --- Redraw the contents of the specified line number
