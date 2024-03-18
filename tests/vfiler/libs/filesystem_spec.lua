@@ -1,9 +1,4 @@
 local core = require('vfiler/libs/core')
--- TODO: ubuntu
-if not (core.is_windows or core.is_mac) then
-  return
-end
-
 local fs = require('vfiler/libs/filesystem')
 
 describe('filesystem $shell:' .. vim.o.shell, function()
@@ -48,7 +43,7 @@ describe('filesystem $shell:' .. vim.o.shell, function()
         assert.is_true(result)
         assert.is_true(core.path.filereadable(path))
 
-        result = fs.delete(path)
+        result = fs.delete_file(path)
         assert.is_true(result)
         assert.is_false(core.path.filereadable(path))
       end)
@@ -71,7 +66,7 @@ describe('filesystem $shell:' .. vim.o.shell, function()
         assert.is_true(result)
         assert.is_true(core.path.is_directory(path))
 
-        result = fs.delete(path)
+        result = fs.delete_directory(path)
         assert.is_true(result)
         assert.is_false(core.path.is_directory(path))
       end)
@@ -109,7 +104,7 @@ describe('filesystem $shell:' .. vim.o.shell, function()
         assert.is_true(core.path.filereadable(destpath))
         assert.is_true(core.path.filereadable(path))
 
-        result = fs.delete(path)
+        result = fs.delete_file(path)
         assert.is_true(result)
         assert.is_false(core.path.filereadable(path))
       end)
@@ -117,7 +112,7 @@ describe('filesystem $shell:' .. vim.o.shell, function()
 
     -- Teardown
     if core.path.exists(destdir) then
-      result = fs.delete(destdir)
+      result = fs.delete_directory(destdir)
       assert.is_true(result)
       assert.is_false(core.path.is_directory(destdir))
     end
@@ -159,7 +154,7 @@ describe('filesystem $shell:' .. vim.o.shell, function()
 
     -- Teardown
     if core.path.exists(destdir) then
-      result = fs.delete(destdir)
+      result = fs.delete_directory(destdir)
       assert.is_true(result)
       assert.is_false(core.path.is_directory(destdir))
     end
@@ -215,13 +210,13 @@ describe('filesystem $shell:' .. vim.o.shell, function()
 
     -- Teardown
     if core.path.exists(srcdir) then
-      result = fs.delete(srcdir)
+      result = fs.delete_directory(srcdir)
       assert.is_true(result)
       assert.is_false(core.path.is_directory(srcdir))
     end
 
     if core.path.exists(destdir) then
-      result = fs.delete(destdir)
+      result = fs.delete_directory(destdir)
       assert.is_true(result)
       assert.is_false(core.path.is_directory(destdir))
     end
@@ -276,16 +271,111 @@ describe('filesystem $shell:' .. vim.o.shell, function()
       end
     end)
 
-    --Teardown
+    -- Teardown
     if core.path.exists(srcdir) then
-      result = fs.delete(srcdir)
+      result = fs.delete_directory(srcdir)
       assert.is_true(result)
       assert.is_false(core.path.is_directory(srcdir))
     end
     if core.path.exists(destdir) then
-      result = fs.delete(destdir)
+      result = fs.delete_directory(destdir)
       assert.is_true(result)
       assert.is_false(core.path.is_directory(destdir))
     end
   end)
+
+  -- NOTE: Except Windows
+  if not core.is_windows then
+    describe('link file', function()
+      local filepaths = {
+        'testfile',
+        '#testfile',
+        'test#file',
+        '%testfile',
+        'test%file',
+        '#test%file',
+        '%test#file',
+      }
+
+      for _, path in ipairs(filepaths) do
+        local result = fs.create_file(path)
+        assert.is_true(result)
+        assert.is_true(core.path.filereadable(path))
+
+        -- Create symbolic link file
+        local linkpath = path .. '_ln'
+        it('create link file:' .. path .. ' -> ' .. linkpath, function()
+          core.system(('ln -s "%s" "%s"'):format(path, linkpath))
+          assert.is_true(core.path.filereadable(linkpath))
+        end)
+
+        -- Delete symbolic link file
+        it('delete link file:' .. linkpath, function()
+          result = fs.delete_file(linkpath)
+          assert.is_true(result)
+          assert.is_false(core.path.filereadable(linkpath))
+          assert.is_true(core.path.filereadable(path))
+        end)
+
+        -- Teardown
+        result = fs.delete_file(path)
+        assert.is_true(result)
+        assert.is_false(core.path.filereadable(path))
+      end
+    end)
+
+    describe('link directory', function()
+      local dirpaths = {
+        'testdir',
+        '#testdir',
+        'test#dir',
+        '%testdir',
+        'test%dir',
+        '#test%dir',
+        '%test#dir',
+      }
+      local filepaths = {
+        'testfile',
+        '#testfile',
+        'test#file',
+        '%testfile',
+        'test%file',
+        '#test%file',
+        '%test#file',
+      }
+      for _, dirpath in ipairs(dirpaths) do
+        local result = fs.create_directory(dirpath)
+        assert.is_true(result)
+        assert.is_true(core.path.is_directory(dirpath))
+
+        -- Create files in directory
+        for _, filepath in ipairs(filepaths) do
+          local path = core.path.join(dirpath, filepath)
+          result = fs.create_file(path)
+          assert.is_true(result)
+          assert.is_true(core.path.filereadable(path))
+        end
+
+        -- Create symbolic link file
+        local linkpath = dirpath .. '_ln'
+        it('create link file:' .. dirpath .. ' -> ' .. linkpath, function()
+          core.system(('ln -s "%s" "%s"'):format(dirpath, linkpath))
+          assert.is_true(core.path.is_directory(linkpath))
+        end)
+
+        -- Delete symbolic link file
+        it('delete link file:' .. linkpath, function()
+          result = fs.delete_file(linkpath)
+          assert.is_true(result)
+          assert.is_false(core.path.filereadable(linkpath))
+          assert.is_true(core.path.is_directory(dirpath))
+        end)
+
+        -- Teardown
+        result = fs.delete_directory(dirpath)
+        assert.is_true(result)
+        assert.is_false(core.path.is_directory(dirpath))
+      end
+    end)
+  end
 end)

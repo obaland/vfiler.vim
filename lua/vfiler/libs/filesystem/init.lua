@@ -62,8 +62,12 @@ function M.create_directory(path)
   return vim.fn.mkdir(path) == 1
 end
 
-function M.delete(path)
+function M.delete_directory(path)
   return vim.fn.delete(path, 'rf') == 0
+end
+
+function M.delete_file(path)
+  return vim.fn.delete(path) == 0
 end
 
 function M.execute(path)

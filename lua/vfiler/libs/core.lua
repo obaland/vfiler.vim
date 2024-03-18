@@ -50,8 +50,6 @@ function M.system(expr)
     function()
       if M.is_windows then
         vim.set_option('shell', 'cmd.exe')
-      else
-        vim.set_option('shell', '$SHELL')
       end
       result = vim.fn.system(expr)
     end,

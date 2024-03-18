@@ -15,8 +15,13 @@ function Item.new(stat)
 end
 
 function Item:delete()
-  if not fs.delete(self:_get_path()) then
-    core.message.error('"%s" Cannot delete.', self.name)
+  if self.link or self.type == 'file' then
+    if not fs.delete_file(vim.fn.trim(self.path, '/', 2)) then
+      core.message.error('"%s" Cannot delete file.', self.name)
+      return false
+    end
+  elseif not fs.delete_directory(self.path) then
+    core.message.error('"%s" Cannot delete directory.', self.name)
     return false
   end
   self:_become_orphan()
@@ -47,20 +52,18 @@ function Item:_become_orphan()
   if not self.parent then
     return
   end
-
   self.parent:remove(self)
 end
 
 function Item:_get_path()
-  local path = self.path
   -- NOTE:
   -- Remove the '/' suffix in the case of symbolic links so that
   -- rename/copy/move/delete of the directory referenced by the symbolic link
   -- will be performed on the symbolic link itself, not the directory.
-  if self.link and self.type == 'directory' and path:match('/$') then
-    return path:sub(1, #path - 1)
+  if self.link and self.type == 'directory' then
+    return vim.fn.trim(self.path, '/', 2)
   end
-  return path
+  return self.path
 end
 
 function Item:_move(destpath)
