@@ -3,6 +3,7 @@ local fs = require('vfiler/libs/filesystem')
 local vim = require('vfiler/libs/vim')
 
 local Directory = require('vfiler/items/directory')
+local Git = require('vfiler/git')
 local History = require('vfiler/libs/history')
 
 ------------------------------------------------------------------------------
@@ -187,8 +188,8 @@ function Context.new(configs)
   self.options = core.table.copy(configs.options)
   self.events = core.table.copy(configs.events)
   self.mappings = core.table.copy(configs.mappings)
+  self.git = Git.new(self.options.git)
   self._session = Session.new(self.options.session)
-  self._git_enabled = self:_check_git_enabled()
   return self
 end
 
@@ -282,34 +283,6 @@ function Context:reload(reload_all_dir)
   end
 end
 
--- Reload git in the current directory path asynchronously
-function Context:reload_git_async(callback)
-  -- Stop previus job
-  if self._git_job then
-    self._git_job:stop()
-    self._git_job = nil
-  end
-  if not self._git_enabled then
-    return
-  end
-
-  local git = require('vfiler/libs/git')
-  local opts = self.options.git
-  git.get_toplevel_async(self.root.path, function(toplevel_path)
-    if not toplevel_path then
-      return
-    end
-    self._git_job = git.reload_status_async(toplevel_path, {
-      untracked = opts.untracked,
-      ignored = opts.ignored,
-    }, function(status)
-      self.gitstatus = status
-      callback(self)
-      self._git_job = nil
-    end)
-  end)
-end
-
 --- Switch the context to the specified directory path
 ---@param dirpath string
 function Context:switch(dirpath)
@@ -338,7 +311,6 @@ function Context:update(context)
   self.options = core.table.copy(context.options)
   self.mappings = core.table.copy(context.mappings)
   self.events = core.table.copy(context.events)
-  self._git_enabled = self:_check_git_enabled()
 end
 
 --- Get directory history
@@ -346,18 +318,10 @@ function Context:directory_history()
   return self._session:directory_history()
 end
 
-function Context:_check_git_enabled()
-  if not self.options.git.enabled or vim.fn.executable('git') ~= 1 then
-    return false
-  end
-  return self.options.columns:match('git%w*') ~= nil
-end
-
 function Context:_initialize()
   self.extension = nil
   self.linked = nil
   self.root = nil
-  self.gitstatus = {}
   self.in_preview = {
     preview = nil,
     once = false,

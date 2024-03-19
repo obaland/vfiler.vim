@@ -272,10 +272,11 @@ end
 ---@param dirpath string
 ---@param filepath string
 function VFiler:start(dirpath, filepath)
-  local path = self._context:switch(dirpath)
+  local context = self._context
+  local path = context:switch(dirpath)
   -- Find the specified path
   if filepath then
-    local item = self._context:open_tree(filepath)
+    local item = context:open_tree(filepath)
     if item then
       path = item.path
     end
@@ -285,8 +286,8 @@ function VFiler:start(dirpath, filepath)
 
   -- Reload git status
   if self._view:has_column('git') then
-    self._context:reload_git_async(function(ctx)
-      self._view:redraw_git(ctx)
+    context.git:reload_async(context.root.path, function()
+      self._view:redraw_git(context)
     end)
   end
 end

@@ -22,7 +22,6 @@ function ItemContainer.new(options)
     table = {},
     lnum_indexes = {},
     _show_hidden_files = options.show_hidden_files,
-    _gitstatus = options.gitstatus,
     _sort_compare = options.sort_compare,
   }, ItemContainer)
 end
@@ -36,9 +35,9 @@ function ItemContainer:insert(item, lnum_index)
   }
 end
 
-function ItemContainer:insert_recursively(item)
+function ItemContainer:insert_recursively(item, git)
   -- Override gitstatus of items
-  item.gitstatus = self._gitstatus[item.path]
+  item.gitstatus = git:get_status(item.path)
 
   local children = item.children
   if not children then
@@ -55,7 +54,7 @@ function ItemContainer:insert_recursively(item)
       prev_sibling = #self.list
 
       -- recursive
-      self:insert_recursively(child)
+      self:insert_recursively(child, git)
       if i ~= #children then
         index.next_sibling = prev_sibling + (#self.list - prev_sibling) + 1
       end
@@ -70,9 +69,8 @@ function ItemContainer:length()
   return #self.list
 end
 
-function ItemContainer:update_git(gitstatus)
-  self._gitstatus = gitstatus
-  for path, status in pairs(gitstatus) do
+function ItemContainer:update_git(git)
+  for path, status in git:walk_status() do
     local target = self.table[path]
     if target then
       target.item.gitstatus = status
@@ -214,13 +212,12 @@ function View:draw(context)
   local options = context.options
   self._items = ItemContainer.new({
     show_hidden_files = options.show_hidden_files,
-    gitstatus = context.gitstatus,
     sort_compare = sort.get(options.sort),
   })
   if self._header then
     self._items:insert(context.root, LnumIndex.new(context.root.level))
   end
-  self._items:insert_recursively(context.root)
+  self._items:insert_recursively(context.root, context.git)
   self:redraw()
 end
 
@@ -428,7 +425,7 @@ end
 
 --- Redraw the git status
 function View:redraw_git(context)
-  self._items:update_git(context.gitstatus)
+  self._items:update_git(context.git)
   self:redraw()
 end
 

@@ -170,8 +170,8 @@ function M.cd(vfiler, context, view, dirpath)
 
   -- Reload git status
   if view:has_column('git') then
-    context:reload_git_async(function(ctx)
-      view:redraw_git(ctx)
+    context.git:reload_async(context.root.path, function()
+      view:redraw_git(context)
     end)
   end
 end
@@ -226,6 +226,36 @@ function M.open_file(vfiler, context, view, path, layout)
     open_file(vfiler, context, view, path, layout)
   end
   context:perform_auto_cd()
+end
+
+function M.open_tree(_, context, view, recursive)
+  local lnum = vim.fn.line('.')
+  local item = view:get_item(lnum)
+  if item.type ~= 'directory' or item.opened then
+    return
+  end
+  item:open(recursive)
+  view:draw(context)
+  lnum = lnum + 1
+  core.cursor.move(lnum)
+  context:save(view:get_item(lnum).path)
+
+  -- Reload git status
+  if view:has_column('git') then
+    context.git:reload_async(item.path, function()
+      view:redraw_git(context)
+    end)
+  end
+end
+
+--- Reload git status
+function M.reload_git_status(_, context, view, dirpath)
+  if not view:has_column('git') then
+    return
+  end
+  context.git:reload_async(dirpath, function()
+    view:redraw_git(context)
+  end)
 end
 
 function M.start_extension(vfiler, context, view, extension)

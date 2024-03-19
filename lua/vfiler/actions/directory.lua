@@ -98,29 +98,11 @@ function M.close_tree_or_cd(vfiler, context, view)
 end
 
 function M.open_tree(vfiler, context, view)
-  local lnum = vim.fn.line('.')
-  local item = view:get_item(lnum)
-  if item.type ~= 'directory' or item.opened then
-    return
-  end
-  item:open()
-  view:draw(context)
-  lnum = lnum + 1
-  core.cursor.move(lnum)
-  context:save(view:get_item(lnum).path)
+  utils.open_tree(vfiler, context, view, false)
 end
 
 function M.open_tree_recursive(vfiler, context, view)
-  local lnum = vim.fn.line('.')
-  local item = view:get_item(lnum)
-  if item.type ~= 'directory' or item.opened then
-    return
-  end
-  item:open(true)
-  view:draw(context)
-  lnum = lnum + 1
-  core.cursor.move(lnum)
-  context:save(view:get_item(lnum).path)
+  utils.open_tree(vfiler, context, view, true)
 end
 
 function M.switch_to_drive(vfiler, context, view)
@@ -150,12 +132,7 @@ function M.switch_to_drive(vfiler, context, view)
       v:draw(ctx)
       v:move_cursor(focus_path)
 
-      -- Reload git status
-      if v:has_column('git') then
-        ctx:reload_git_async(function(c)
-          view:redraw_git(c)
-        end)
-      end
+      utils.reload_git_status(filer, ctx, v, ctx.root.path)
     end,
   })
   utils.start_extension(vfiler, context, view, menu)

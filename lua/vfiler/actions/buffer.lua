@@ -15,12 +15,7 @@ local function reload(context, view, reload_all_dir)
   context:reload(reload_all_dir)
   view:draw(context)
 
-  -- Reload git status
-  if view:has_column('git') then
-    context:reload_git_async(function(ctx)
-      view:redraw_git(ctx)
-    end)
-  end
+  utils.reload_git_status(nil, context, view, context.root.path)
 end
 
 function M.quit(vfiler, context, view)
