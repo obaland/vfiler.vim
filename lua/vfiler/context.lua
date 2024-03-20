@@ -3,7 +3,6 @@ local fs = require('vfiler/libs/filesystem')
 local vim = require('vfiler/libs/vim')
 
 local Directory = require('vfiler/items/directory')
-local Git = require('vfiler/git')
 local History = require('vfiler/libs/history')
 
 ------------------------------------------------------------------------------
@@ -188,7 +187,6 @@ function Context.new(configs)
   self.options = core.table.copy(configs.options)
   self.events = core.table.copy(configs.events)
   self.mappings = core.table.copy(configs.mappings)
-  self.git = Git.new(self.options.git)
   self._session = Session.new(self.options.session)
   return self
 end

@@ -167,13 +167,9 @@ function M.cd(vfiler, context, view, dirpath)
   local path = context:switch(dirpath)
   view:draw(context)
   view:move_cursor(path)
-
-  -- Reload git status
-  if view:has_column('git') then
-    context.git:reload_async(context.root.path, function()
-      view:redraw_git(context)
-    end)
-  end
+  view:reload_git_async(context.root.path, function(v)
+    v:redraw()
+  end)
 end
 
 function M.close_preview(vfiler, context, view)
@@ -239,22 +235,8 @@ function M.open_tree(_, context, view, recursive)
   lnum = lnum + 1
   core.cursor.move(lnum)
   context:save(view:get_item(lnum).path)
-
-  -- Reload git status
-  if view:has_column('git') then
-    context.git:reload_async(item.path, function()
-      view:redraw_git(context)
-    end)
-  end
-end
-
---- Reload git status
-function M.reload_git_status(_, context, view, dirpath)
-  if not view:has_column('git') then
-    return
-  end
-  context.git:reload_async(dirpath, function()
-    view:redraw_git(context)
+  view:reload_git_async(item.path, function(v)
+    v:redraw()
   end)
 end
 

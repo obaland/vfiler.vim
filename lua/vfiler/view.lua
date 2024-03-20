@@ -70,11 +70,8 @@ function ItemContainer:length()
 end
 
 function ItemContainer:update_git(git)
-  for path, status in git:walk_status() do
-    local target = self.table[path]
-    if target then
-      target.item.gitstatus = status
-    end
+  for _, item in ipairs(self.list) do
+    item.gitstatus = git:get_status(item.path)
   end
 end
 
@@ -217,7 +214,7 @@ function View:draw(context)
   if self._header then
     self._items:insert(context.root, LnumIndex.new(context.root.level))
   end
-  self._items:insert_recursively(context.root, context.git)
+  self._items:insert_recursively(context.root, self._git)
   self:redraw()
 end
 
@@ -423,15 +420,10 @@ function View:redraw()
   end
 end
 
---- Redraw the git status
-function View:redraw_git(context)
-  self._items:update_git(context.git)
-  self:redraw()
-end
-
 --- Redraw the contents of the specified line number
 function View:redraw_line(lnum)
   local item = self:get_item(lnum)
+  assert(item)
   local line
   if self._header and lnum == 1 then
     line = self:_to_header(item)
@@ -462,9 +454,25 @@ function View:reset(options)
   end
 
   self._auto_resize = options.auto_resize
+  self._git = require('vfiler/git').new(options.git)
   self._header = options.header
   self._win_config = to_win_config(options)
   self:_clear_cache()
+end
+
+--- Asynchronously reload git status that contains
+--- the specified directory path.
+--- NOTE: If no git column is set, do nothing.
+---@param dirpath string
+---@param callback function
+function View:reload_git_async(dirpath, callback)
+  if not self:has_column('git') then
+    return
+  end
+  self._git:reload_async(dirpath, function(toplevel, status)
+    self._items:update_git(self._git)
+    callback(self, toplevel, status)
+  end)
 end
 
 --- Set size
