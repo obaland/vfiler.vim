@@ -1,11 +1,6 @@
 local Job = {}
 Job.__index = Job
 
-local function on_error(job, message)
-  -- for debug
-  error(message)
-end
-
 function Job.new()
   return setmetatable({
     _id = 0,
@@ -19,8 +14,8 @@ function Job:start(command, options)
   local jobopts = {
     on_stderr = function(channel, datas, name)
       local message = table.concat(datas)
-      if #message > 0 then
-        on_error(self, message)
+      if options.on_error then
+        options.on_error(self, message)
       end
     end,
   }
@@ -45,6 +40,10 @@ function Job:start(command, options)
   end
   if options.on_completed then
     jobopts.on_exit = function(id, code, event)
+      if self._id == 0 then
+        return
+      end
+
       if options.on_received and data_buffer ~= '' then
         options.on_received(self, data_buffer)
       end

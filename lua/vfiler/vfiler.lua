@@ -272,16 +272,21 @@ end
 ---@param dirpath string
 ---@param filepath string
 function VFiler:start(dirpath, filepath)
-  local path = self._context:switch(dirpath)
+  local context = self._context
+  local path = context:switch(dirpath)
   -- Find the specified path
   if filepath then
-    local item = self._context:open_tree(filepath)
+    local item = context:open_tree(filepath)
     if item then
       path = item.path
     end
   end
   self:draw()
   self._view:move_cursor(path)
+
+  self._view:reload_git_async(context.root.path, function(view)
+    view:redraw()
+  end)
 end
 
 --- Get current status string

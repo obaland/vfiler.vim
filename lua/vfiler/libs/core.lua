@@ -102,7 +102,7 @@ function M.window.move(winid, autocmd)
 end
 
 ---@param layout string
----@param file string
+---@param file? string
 function M.window.open(layout, file)
   local command = open_layout_commands[layout]
   if not command then

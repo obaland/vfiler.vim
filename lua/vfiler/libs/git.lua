@@ -32,6 +32,16 @@ local function create_status_commands(rootpath, path, options)
   return commands
 end
 
+local function create_toplevel_commands(dirpath)
+  return {
+    'git',
+    '-C',
+    dirpath,
+    'rev-parse',
+    '--show-toplevel',
+  }
+end
+
 local function parse_git_status(rootpath, result)
   local status = result:sub(1, 2)
   local rpath = result:sub(4, -1)
@@ -42,6 +52,13 @@ local function parse_git_status(rootpath, result)
   rpath = rpath:gsub('^"', ''):gsub('"$', '')
   return core.path.join(rootpath, rpath),
     { us = status:sub(1, 1), them = status:sub(2, 2) }
+end
+
+local function parse_toplevel_path(result)
+  if (not result or #result == 0) or result:match('fatal:%s') then
+    return nil
+  end
+  return core.path.normalize(result:sub(0, -1))
 end
 
 local function update_directory_statuses(rootpath, statuses)
@@ -89,12 +106,25 @@ local function update_directory_statuses(rootpath, statuses)
 end
 
 function M.get_toplevel(dirpath)
-  local command = ('git -C "%s" rev-parse --show-toplevel'):format(dirpath)
-  local path = core.system(command)
-  if (not path or #path == 0) or path:match('fatal:%s') then
-    return nil
-  end
-  return core.path.normalize(path:sub(0, -2))
+  local commands = create_toplevel_commands('"' .. dirpath .. '"')
+  local result = core.system(table.concat(commands, ' '))
+  return parse_toplevel_path(vim.fn.trim(result, ''))
+end
+
+function M.get_toplevel_async(dirpath, on_completed)
+  local commands = create_toplevel_commands(dirpath)
+  local toplevel_path
+  local job = Job.new()
+  job:start(commands, {
+    on_received = function(_, result)
+      toplevel_path = parse_toplevel_path(result)
+    end,
+
+    on_completed = function(_, code)
+      on_completed(toplevel_path)
+    end,
+  })
+  return job
 end
 
 function M.reload_status_async(rootpath, options, on_completed)
@@ -102,12 +132,12 @@ function M.reload_status_async(rootpath, options, on_completed)
   local gitstatus = {}
   local job = Job.new()
   job:start(commands, {
-    on_received = function(self, result)
+    on_received = function(_, result)
       local path, status = parse_git_status(rootpath, result)
       gitstatus[path] = status
     end,
 
-    on_completed = function(self, code)
+    on_completed = function(_, code)
       update_directory_statuses(rootpath, gitstatus)
       on_completed(gitstatus)
     end,

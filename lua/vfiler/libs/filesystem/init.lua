@@ -104,6 +104,15 @@ function M.execute(path)
   core.system(expr)
 end
 
+--- The last modification time of the file path.
+--- The result is a number,
+--- this value is the number of seconds since January 1, 1970.
+---@param path string
+---@return number
+function M.ftime(path)
+  return vim.fn.getftime(path)
+end
+
 function M.move(src, dest)
   -- NOTE: with the Lua function, an error will occur if the file is large.
   --os.rename(M.string.shellescape(src), M.string.shellescape(dest))

@@ -167,6 +167,9 @@ function M.cd(vfiler, context, view, dirpath)
   local path = context:switch(dirpath)
   view:draw(context)
   view:move_cursor(path)
+  view:reload_git_async(context.root.path, function(v)
+    v:redraw()
+  end)
 end
 
 function M.close_preview(vfiler, context, view)
@@ -219,6 +222,22 @@ function M.open_file(vfiler, context, view, path, layout)
     open_file(vfiler, context, view, path, layout)
   end
   context:perform_auto_cd()
+end
+
+function M.open_tree(_, context, view, recursive)
+  local lnum = vim.fn.line('.')
+  local item = view:get_item(lnum)
+  if item.type ~= 'directory' or item.opened then
+    return
+  end
+  item:open(recursive)
+  view:draw(context)
+  lnum = lnum + 1
+  core.cursor.move(lnum)
+  context:save(view:get_item(lnum).path)
+  view:reload_git_async(item.path, function(v)
+    v:redraw()
+  end)
 end
 
 function M.start_extension(vfiler, context, view, extension)

@@ -10,7 +10,11 @@ local job_stop = vim.fn['vfiler#job#stop']
 local job_wait = vim.fn['vfiler#job#wait']
 
 function Job._on_error(id, message)
-  error(message)
+  local job = jobs[id]
+  if not (job and job._on_received) then
+    return
+  end
+  job._on_error(job, message)
 end
 
 function Job._on_received(id, message)
@@ -55,6 +59,9 @@ function Job:start(command, options)
   end
   if options.on_completed then
     self._on_completed = options.on_completed
+  end
+  if options.on_error then
+    self._on_error = options.on_error
   end
   if type(command) == 'table' then
     command = vim.list(command)

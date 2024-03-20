@@ -22,7 +22,6 @@ function ItemContainer.new(options)
     table = {},
     lnum_indexes = {},
     _show_hidden_files = options.show_hidden_files,
-    _gitstatus = options.gitstatus,
     _sort_compare = options.sort_compare,
   }, ItemContainer)
 end
@@ -36,9 +35,9 @@ function ItemContainer:insert(item, lnum_index)
   }
 end
 
-function ItemContainer:insert_recursively(item)
+function ItemContainer:insert_recursively(item, git)
   -- Override gitstatus of items
-  item.gitstatus = self._gitstatus[item.path]
+  item.gitstatus = git:get_status(item.path)
 
   local children = item.children
   if not children then
@@ -55,7 +54,7 @@ function ItemContainer:insert_recursively(item)
       prev_sibling = #self.list
 
       -- recursive
-      self:insert_recursively(child)
+      self:insert_recursively(child, git)
       if i ~= #children then
         index.next_sibling = prev_sibling + (#self.list - prev_sibling) + 1
       end
@@ -68,6 +67,12 @@ function ItemContainer:length()
     return 0
   end
   return #self.list
+end
+
+function ItemContainer:update_git(git)
+  for _, item in ipairs(self.list) do
+    item.gitstatus = git:get_status(item.path)
+  end
 end
 
 local function new_window(layout)
@@ -204,13 +209,12 @@ function View:draw(context)
   local options = context.options
   self._items = ItemContainer.new({
     show_hidden_files = options.show_hidden_files,
-    gitstatus = context.gitstatus,
     sort_compare = sort.get(options.sort),
   })
   if self._header then
     self._items:insert(context.root, LnumIndex.new(context.root.level))
   end
-  self._items:insert_recursively(context.root)
+  self._items:insert_recursively(context.root, self._git)
   self:redraw()
 end
 
@@ -419,6 +423,7 @@ end
 --- Redraw the contents of the specified line number
 function View:redraw_line(lnum)
   local item = self:get_item(lnum)
+  assert(item)
   local line
   if self._header and lnum == 1 then
     line = self:_to_header(item)
@@ -449,9 +454,25 @@ function View:reset(options)
   end
 
   self._auto_resize = options.auto_resize
+  self._git = require('vfiler/git').new(options.git)
   self._header = options.header
   self._win_config = to_win_config(options)
   self:_clear_cache()
+end
+
+--- Asynchronously reload git status that contains
+--- the specified directory path.
+--- NOTE: If no git column is set, do nothing.
+---@param dirpath string
+---@param callback function
+function View:reload_git_async(dirpath, callback)
+  if not self:has_column('git') then
+    return
+  end
+  self._git:reload_async(dirpath, function(toplevel, status)
+    self._items:update_git(self._git)
+    callback(self, toplevel, status)
+  end)
 end
 
 --- Set size

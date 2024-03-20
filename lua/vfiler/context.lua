@@ -1,6 +1,5 @@
 local core = require('vfiler/libs/core')
 local fs = require('vfiler/libs/filesystem')
-local git = require('vfiler/libs/git')
 local vim = require('vfiler/libs/vim')
 
 local Directory = require('vfiler/items/directory')
@@ -189,7 +188,6 @@ function Context.new(configs)
   self.events = core.table.copy(configs.events)
   self.mappings = core.table.copy(configs.mappings)
   self._session = Session.new(self.options.session)
-  self._git_enabled = self:_check_git_enabled()
   return self
 end
 
@@ -273,7 +271,6 @@ function Context:reload(reload_all_dir)
     self:switch(root_path)
     return
   end
-  local job = self:_reload_gitstatus_async(root_path)
   for dir in walk_directories(self.root) do
     if dir.opened then
       if vim.fn.getftime(dir.path) > dir.time then
@@ -282,26 +279,16 @@ function Context:reload(reload_all_dir)
       end
     end
   end
-
-  if job then
-    job:wait()
-  end
 end
 
 --- Switch the context to the specified directory path
 ---@param dirpath string
 function Context:switch(dirpath)
   dirpath = core.path.normalize(dirpath)
-
-  -- reload git status
-  local job = self:_reload_gitstatus_async(dirpath)
   self.root = Directory.new(fs.stat(dirpath))
   self.root:open()
 
   local path = self._session:load(self.root)
-  if job then
-    job:wait()
-  end
   self:perform_auto_cd()
   return path
 end
@@ -322,7 +309,6 @@ function Context:update(context)
   self.options = core.table.copy(context.options)
   self.mappings = core.table.copy(context.mappings)
   self.events = core.table.copy(context.events)
-  self._git_enabled = self:_check_git_enabled()
 end
 
 --- Get directory history
@@ -330,41 +316,14 @@ function Context:directory_history()
   return self._session:directory_history()
 end
 
-function Context:_check_git_enabled()
-  if not self.options.git.enabled or vim.fn.executable('git') ~= 1 then
-    return false
-  end
-  return self.options.columns:match('git%w*') ~= nil
-end
-
 function Context:_initialize()
   self.extension = nil
   self.linked = nil
   self.root = nil
-  self.gitroot = nil
-  self.gitstatus = {}
   self.in_preview = {
     preview = nil,
     once = false,
   }
-end
-
-function Context:_reload_gitstatus_async(dirpath)
-  if not self._git_enabled then
-    return nil
-  end
-  if not (self.gitroot and dirpath:match(self.gitroot)) then
-    self.gitroot = git.get_toplevel(dirpath)
-  end
-  if not self.gitroot then
-    return nil
-  end
-  return git.reload_status_async(self.gitroot, {
-    untracked = self.options.git.untracked,
-    ignored = self.options.git.ignored,
-  }, function(status)
-    self.gitstatus = status
-  end)
 end
 
 return Context
