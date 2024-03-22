@@ -1,4 +1,3 @@
-local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
 local function escape_key(key)
