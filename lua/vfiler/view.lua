@@ -111,6 +111,33 @@ local function create_columns(columns)
   }
 end
 
+--- Since vim changes the view width depending on the options,
+--- check the options that affect the view width to obtain
+--- the appropriate view width.
+---@param winid number
+---@param winwidth number
+---@return number
+local function get_view_width(winid, winwidth)
+  local view_width = winwidth
+
+  local number = vim.get_win_flag_option(winid, 'number')
+  local relativenumber = vim.get_win_flag_option(winid, 'relativenumber')
+  if number or relativenumber then
+    view_width = view_width - vim.get_win_option(winid, 'numberwidth')
+  end
+
+  local signcolumn = vim.get_win_option(winid, 'signcolumn')
+  if
+    signcolumn == 'yes'
+    or (signcolumn == 'auto' and #vim.fn.sign_getplaced() > 0)
+  then
+    view_width = view_width - 2
+  end
+
+  -- padding end column
+  return view_width - 1
+end
+
 local function get_window_size(layout, wvalue, hvalue)
   local width, height
   if layout == 'floating' or layout == 'right' or layout == 'left' then
@@ -168,6 +195,7 @@ View.__index = View
 function View.new(options)
   local self = setmetatable({
     _buffer = nil,
+    _git = require('vfiler/git').new(options.git),
     _window = nil,
     _winconfig = {},
     _winoptions = {
@@ -179,9 +207,10 @@ function View.new(options)
       list = false,
       number = false,
       relativenumber = false,
-      signcolumn = 'no',
       spell = false,
       wrap = false,
+      -- NOTE: Do not explicitly set `signcolumn` in vim, as it will redraw.
+      --signcolumn = 'no',
     },
   }, View)
   self:reset(options)
@@ -377,13 +406,7 @@ function View:redraw()
   end
 
   local winwidth = vim.fn.winwidth(winid)
-  local view_width = winwidth - 1 -- padding end column
-  local number = vim.get_win_flag_option(winid, 'number')
-  local relativenumber = vim.get_win_flag_option(winid, 'relativenumber')
-  if number or relativenumber then
-    view_width = view_width - vim.get_win_option(winid, 'numberwidth')
-  end
-
+  local view_width = get_view_width(winid, winwidth)
   if cache.view_width ~= view_width or not cache.column_props then
     cache.column_props = self:_create_column_props(view_width)
     cache.view_width = view_width
@@ -454,14 +477,14 @@ function View:reset(options)
   end
 
   self._auto_resize = options.auto_resize
-  self._git = require('vfiler/git').new(options.git)
+  self._git:reset(options.git)
   self._header = options.header
   self._win_config = to_win_config(options)
   self:_clear_cache()
 end
 
---- Asynchronously reload git status that contains
---- the specified directory path.
+--- Reloads asynchronously the status of each file under the git repository
+--  containing the specified directory path.
 --- NOTE: If no git column is set, do nothing.
 ---@param dirpath string
 ---@param callback function

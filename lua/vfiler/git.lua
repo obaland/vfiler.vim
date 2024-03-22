@@ -1,3 +1,4 @@
+local core = require('vfiler/libs/core')
 local fs = require('vfiler/libs/filesystem')
 local git = require('vfiler/libs/git')
 local vim = require('vfiler/libs/vim')
@@ -8,13 +9,13 @@ Git.__index = Git
 --- Create a git object
 ---@param options table
 function Git.new(options)
-  return setmetatable({
-    _options = options,
+  local self = setmetatable({
     _jobs = {},
     _status_reports = {},
     _status_cache = {},
-    _git_executable = vim.fn.executable('git') == 1,
   }, Git)
+  self:reset(options)
+  return self
 end
 
 --- Update git status
@@ -56,6 +57,13 @@ function Git:reload_async(dirpath, callback)
       end
     )
   end)
+end
+
+--- Reset from another options
+---@param options table
+function Git:reset(options)
+  self._options = core.table.copy(options)
+  self._git_executable = vim.fn.executable('git') == 1
 end
 
 --- Get the git status of the file
