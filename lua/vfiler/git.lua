@@ -45,18 +45,14 @@ function Git:status_async(dirpath, callback)
       job:stop()
     end
 
-    self._jobs[root] = git.status_async(
-      root,
-      self._options,
-      function(status)
-        self._status_reports[root] = {
-          time = vim.fn.localtime(),
-          status = status,
-        }
-        callback(self, root, status)
-        self._jobs[root] = nil
-      end
-    )
+    self._jobs[root] = git.status_async(root, self._options, function(status)
+      self._status_reports[root] = {
+        time = vim.fn.localtime(),
+        status = status,
+      }
+      callback(self, root, status)
+      self._jobs[root] = nil
+    end)
   end)
 end
 
