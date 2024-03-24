@@ -6,14 +6,14 @@ local M = {}
 -- Default configs
 M.configs = {
   enabled = true,
-  --events = {
-  --  vfiler = {
-  --    {
-  --      event = { 'BufWritePost' },
-  --      callback = git.update_file,
-  --    },
-  --  },
-  --},
+  events = {
+    vfiler = {
+      --{
+      --  event = { 'BufWritePost' },
+      --  callback = git.update_file,
+      --},
+    },
+  },
 }
 
 --- Setup vfiler global events.
