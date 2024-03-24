@@ -105,29 +105,43 @@ local function update_directory_statuses(rootpath, statuses)
   return statuses
 end
 
-function M.get_toplevel(dirpath)
+--- Obtains the root directory path of the repository containing
+--- the specified directory.
+---@param dirpath string
+---@return string?
+function M.root(dirpath)
   local commands = create_toplevel_commands('"' .. dirpath .. '"')
   local result = core.system(table.concat(commands, ' '))
   return parse_toplevel_path(vim.fn.trim(result, ''))
 end
 
-function M.get_toplevel_async(dirpath, on_completed)
+--- Asynchronously obtains the root directory path of the repository
+--- containing the specified directory.
+---@param dirpath string
+---@param callback function
+---@return table
+function M.root_async(dirpath, callback)
   local commands = create_toplevel_commands(dirpath)
-  local toplevel_path
+  local rootpath
   local job = Job.new()
   job:start(commands, {
     on_received = function(_, result)
-      toplevel_path = parse_toplevel_path(result)
+      rootpath = parse_toplevel_path(result)
     end,
 
     on_completed = function(_, code)
-      on_completed(toplevel_path)
+      callback(rootpath)
     end,
   })
   return job
 end
 
-function M.reload_status_async(rootpath, options, on_completed)
+--- Get the status of all files in the repository asynchronously.
+---@param rootpath string
+---@param options table
+---@param callback function
+---@return table
+function M.status_async(rootpath, options, callback)
   local commands = create_status_commands(rootpath, nil, options)
   local gitstatus = {}
   local job = Job.new()
@@ -139,13 +153,18 @@ function M.reload_status_async(rootpath, options, on_completed)
 
     on_completed = function(_, code)
       update_directory_statuses(rootpath, gitstatus)
-      on_completed(gitstatus)
+      callback(gitstatus)
     end,
   })
   return job
 end
 
-function M.reload_status_file(rootpath, path, options)
+--- Get the status of a file in the repository.
+---@param rootpath string
+---@param path string
+---@param options table
+---@return table?
+function M.status_file(rootpath, path, options)
   local commands = create_status_commands(
     '"' .. rootpath .. '"',
     '"' .. path .. '"',

@@ -14,7 +14,7 @@ local function reload(context, view, reload_all_dir)
   context:save(view:get_item().path)
   context:reload(reload_all_dir)
   view:draw(context)
-  view:reload_git_async(context.root.path, function(v)
+  view:git_status_async(context.root.path, function(v)
     v:redraw()
   end)
 end

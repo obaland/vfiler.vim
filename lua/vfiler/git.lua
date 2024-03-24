@@ -18,42 +18,43 @@ function Git.new(options)
   return self
 end
 
---- Update git status
+--- Asynchronously retrieve the status of all files in the repository
+--- containing the specified directory.
 ---@param dirpath string
 ---@param callback function
-function Git:reload_async(dirpath, callback)
+function Git:status_async(dirpath, callback)
   if not (self._git_executable and self._options.enabled) then
     return
   end
 
-  git.get_toplevel_async(dirpath, function(toplevel)
-    if not toplevel then
+  git.root_async(dirpath, function(root)
+    if not root then
       return
     end
 
     -- Update when the git status acquisition date/time is newer than
     -- the modification date/time of the target directory.
-    local report = self._status_reports[toplevel]
+    local report = self._status_reports[root]
     if report and report.time > fs.ftime(dirpath) then
       return
     end
 
     -- Stop previous job
-    local job = self._jobs[toplevel]
+    local job = self._jobs[root]
     if job then
       job:stop()
     end
 
-    self._jobs[toplevel] = git.reload_status_async(
-      toplevel,
+    self._jobs[root] = git.status_async(
+      root,
       self._options,
       function(status)
-        self._status_reports[toplevel] = {
+        self._status_reports[root] = {
           time = vim.fn.localtime(),
           status = status,
         }
-        callback(self, toplevel, status)
-        self._jobs[toplevel] = nil
+        callback(self, root, status)
+        self._jobs[root] = nil
       end
     )
   end)
@@ -69,7 +70,7 @@ end
 --- Get the git status of the file
 ---@param path string
 ---@return table?
-function Git:get_status(path)
+function Git:status(path)
   local status = self._status_cache[path]
   if status then
     return status

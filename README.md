@@ -2,7 +2,7 @@
   <img src="https://github.com/obaland/contents/blob/main/vfiler.vim/logo.png?raw=true" alt="vfiler-logo" width=75% height=auto>
 </p>
 
-# File explorer plugin for Vim/Neovim
+# File explorer plugin for Neovim/Vim
 
 [![CI](https://github.com/obaland/vfiler.vim/actions/workflows/ci.yml/badge.svg)](https://github.com/obaland/vfiler.vim/actions/workflows/ci.yml)
 [![Lint](https://github.com/obaland/vfiler.vim/actions/workflows/lint.yml/badge.svg)](https://github.com/obaland/vfiler.vim/actions/workflows/lint.yml)

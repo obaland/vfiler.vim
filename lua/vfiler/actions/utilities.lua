@@ -167,7 +167,7 @@ function M.cd(vfiler, context, view, dirpath)
   local path = context:switch(dirpath)
   view:draw(context)
   view:move_cursor(path)
-  view:reload_git_async(context.root.path, function(v)
+  view:git_status_async(context.root.path, function(v)
     v:redraw()
   end)
 end
@@ -235,7 +235,7 @@ function M.open_tree(_, context, view, recursive)
   lnum = lnum + 1
   core.cursor.move(lnum)
   context:save(view:get_item(lnum).path)
-  view:reload_git_async(item.path, function(v)
+  view:git_status_async(item.path, function(v)
     v:redraw()
   end)
 end

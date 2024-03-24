@@ -2,6 +2,9 @@ local core = require('vfiler/libs/core')
 local sort = require('vfiler/sort')
 local vim = require('vfiler/libs/vim')
 
+local View = {}
+View.__index = View
+
 local LnumIndex = {}
 LnumIndex.__index = LnumIndex
 
@@ -37,7 +40,7 @@ end
 
 function ItemContainer:insert_recursively(item, git)
   -- Override gitstatus of items
-  item.gitstatus = git:get_status(item.path)
+  item.gitstatus = git:status(item.path)
 
   local children = item.children
   if not children then
@@ -71,7 +74,7 @@ end
 
 function ItemContainer:update_git(git)
   for _, item in ipairs(self.list) do
-    item.gitstatus = git:get_status(item.path)
+    item.gitstatus = git:status(item.path)
   end
 end
 
@@ -186,9 +189,6 @@ local function to_win_config(options)
     winblend = options.blend,
   }
 end
-
-local View = {}
-View.__index = View
 
 --- Create a view object
 ---@param options table
@@ -488,13 +488,13 @@ end
 --- NOTE: If no git column is set, do nothing.
 ---@param dirpath string
 ---@param callback function
-function View:reload_git_async(dirpath, callback)
+function View:git_status_async(dirpath, callback)
   if not self:has_column('git') then
     return
   end
-  self._git:reload_async(dirpath, function(toplevel, status)
+  self._git:status_async(dirpath, function(root, status)
     self._items:update_git(self._git)
-    callback(self, toplevel, status)
+    callback(self, root, status)
   end)
 end
 

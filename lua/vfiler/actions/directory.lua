@@ -131,7 +131,7 @@ function M.switch_to_drive(vfiler, context, view)
       local focus_path = ctx:switch_drive(drive)
       v:draw(ctx)
       v:move_cursor(focus_path)
-      v:reload_git_async(ctx.root.path, function()
+      v:git_status_async(ctx.root.path, function()
         v:redraw()
       end)
     end,

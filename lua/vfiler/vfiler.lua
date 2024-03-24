@@ -284,7 +284,7 @@ function VFiler:start(dirpath, filepath)
   self:draw()
   self._view:move_cursor(path)
 
-  self._view:reload_git_async(context.root.path, function(view)
+  self._view:git_status_async(context.root.path, function(view)
     view:redraw()
   end)
 end
