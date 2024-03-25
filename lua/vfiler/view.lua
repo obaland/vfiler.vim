@@ -492,8 +492,8 @@ function View:git_status_async(dirpath, callback)
   if not self:has_column('git') then
     return
   end
-  self._git:status_async(dirpath, function(root, status)
-    self._items:update_git(self._git)
+  self._git:status_async(dirpath, function(git, root, status)
+    self._items:update_git(git)
     callback(self, root, status)
   end)
 end

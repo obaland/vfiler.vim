@@ -1,5 +1,4 @@
 local core = require('vfiler/libs/core')
-local fs = require('vfiler/libs/filesystem')
 local git = require('vfiler/libs/git')
 local vim = require('vfiler/libs/vim')
 
@@ -11,7 +10,7 @@ Git.__index = Git
 function Git.new(options)
   local self = setmetatable({
     _jobs = {},
-    _status_reports = {},
+    _statuses = {},
     _status_cache = {},
   }, Git)
   self:reset(options)
@@ -32,13 +31,6 @@ function Git:status_async(dirpath, callback)
       return
     end
 
-    -- Update when the git status acquisition date/time is newer than
-    -- the modification date/time of the target directory.
-    local report = self._status_reports[root]
-    if report and report.time > fs.ftime(dirpath) then
-      return
-    end
-
     -- Stop previous job
     local job = self._jobs[root]
     if job then
@@ -46,10 +38,7 @@ function Git:status_async(dirpath, callback)
     end
 
     self._jobs[root] = git.status_async(root, self._options, function(status)
-      self._status_reports[root] = {
-        time = vim.fn.localtime(),
-        status = status,
-      }
+      self._statuses[root] = status
       callback(self, root, status)
       self._jobs[root] = nil
     end)
@@ -67,14 +56,14 @@ end
 ---@param path string
 ---@return table?
 function Git:status(path)
-  local status = self._status_cache[path]
-  if status then
-    return status
+  local cached = self._status_cache[path]
+  if cached then
+    return cached
   end
-  for toplevel, report in pairs(self._status_reports) do
-    if toplevel == path:sub(1, #toplevel) then
-      self._status_cache = report.status
-      return report.status[path]
+  for root, status in pairs(self._statuses) do
+    if root == path:sub(1, #root) then
+      self._status_cache = status
+      return status[path]
     end
   end
   return nil
@@ -83,14 +72,12 @@ end
 --- Iterator to walk each status
 ---@return function?
 function Git:walk_status()
-  if not self._status_reports then
+  if not self._statuses then
     return nil
   end
   local function _walk()
-    for _, report in pairs(self._status_reports) do
-      for path, status in pairs(report.status) do
-        coroutine.yield(path, status)
-      end
+    for path, status in pairs(self._statuses) do
+      coroutine.yield(path, status)
     end
   end
   return coroutine.wrap(_walk)

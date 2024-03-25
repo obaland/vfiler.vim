@@ -5,6 +5,8 @@ local vim = require('vfiler/libs/vim')
 
 local VFiler = require('vfiler/vfiler')
 
+local M = {}
+
 local function open(configs, dirpath)
   local options = configs.options
 
@@ -43,8 +45,6 @@ local function toggle(configs, dirpath)
   end
   return open(configs, dirpath)
 end
-
-local M = {}
 
 --- Start vfiler from command line arguments
 ---@param args string: command line argumets

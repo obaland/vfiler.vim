@@ -1,17 +1,17 @@
 local core = require('vfiler/libs/core')
---local git = require('vfiler/events/git')
+local git = require('vfiler/events/git')
 
 local M = {}
 
--- Default configs
+-- Default vfiler global event configs
 M.configs = {
   enabled = true,
   events = {
     vfiler = {
-      --{
-      --  event = { 'BufWritePost' },
-      --  callback = git.update_file,
-      --},
+      {
+        event = { 'BufWritePost' },
+        callback = git.update_file,
+      },
     },
   },
 }
