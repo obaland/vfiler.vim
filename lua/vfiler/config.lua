@@ -101,7 +101,7 @@ M.configs = {
       },
       {
         event = { 'BufLeave', 'TabLeave' },
-        action = function(vfiler, context, view)
+        action = function(vfiler, _, view)
           -- For floating windows, close the window,
           -- including the buffer, as this will lead to problems.
           if view:type() == 'floating' then
@@ -152,16 +152,10 @@ local function error(message)
   core.message.error('Argument error - %s', message)
 end
 
-local function normalize(value)
+local function normalize_string(value)
   if type(value) ~= 'string' then
     return value
   end
-
-  local number = tonumber(value)
-  if number then
-    return number
-  end
-
   if not core.is_windows then
     value = value:gsub('\\', '/')
   end
@@ -191,7 +185,14 @@ end
 local function parse_option(arg)
   local key, value = arg:match('^%-([%-%w]+)=(.+)')
   if key then
-    value = normalize(value)
+    if type(value) == 'string' then
+      local number = tonumber(value)
+      if number then
+        value = number
+      else
+        value = normalize_string(value)
+      end
+    end
   else
     key = arg:match('^%-no%-(%g+)')
     if key then
@@ -260,6 +261,8 @@ end
 
 --- Parse command line arguments strings
 ---@param str_args string
+---@return table?
+---@return string?
 function M.parse_options(str_args)
   local options = core.table.copy(M.configs.options)
   if not str_args or #str_args == 0 then
@@ -281,7 +284,7 @@ function M.parse_options(str_args)
         return nil
       end
       -- escaped space
-      path = normalize(arg:gsub([[\ ]], ' '))
+      path = normalize_string(arg:gsub([[\ ]], ' '))
     end
   end
   return options, path
@@ -289,6 +292,7 @@ end
 
 --- Setup vfiler configs
 ---@param configs table
+---@return table
 function M.setup(configs)
   core.table.merge(M.configs, configs)
   return M.configs

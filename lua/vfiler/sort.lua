@@ -9,7 +9,9 @@ local function to_desc_name(type)
   return (type:sub(1, 1)):upper() .. type:sub(2)
 end
 
+--- Get sort type comparison function.
 ---@param type string
+---@return function?: Return `nil` if sort type is not set.
 function M.get(type)
   local compare = M.compares[type]
 
@@ -20,8 +22,9 @@ function M.get(type)
   return compare
 end
 
--- @param type    string
--- @param compare function
+--- Set specific information about the sorting.
+---@param type string
+---@param compare function
 function M.set(type, compare)
   M.compares[type] = compare
   -- set descending order at the same time
@@ -31,6 +34,8 @@ function M.set(type, compare)
   end
 end
 
+--- Obtain sort type in list format.
+---@return table
 function M.types()
   local types = {}
   for type, _ in pairs(M.compares) do
@@ -53,7 +58,11 @@ function M.types()
   return types
 end
 
-function M.compare_string(str1, str2)
+------------------------------------------------------------------------------
+-- default sort collection
+------------------------------------------------------------------------------
+
+local function compare_string(str1, str2)
   local length = math.min(#str1, #str2)
   for i = 1, length do
     local word1 = (str1:sub(i, i)):lower()
@@ -68,10 +77,6 @@ function M.compare_string(str1, str2)
   return (#str1 - #str2) < 0
 end
 
-------------------------------------------------------------------------------
--- default sort collection
-------------------------------------------------------------------------------
-
 -- extension ascending
 M.set('extension', function(item1, item2)
   local is_dir1 = item1.type == 'directory'
@@ -81,15 +86,15 @@ M.set('extension', function(item1, item2)
   elseif not is_dir1 and is_dir2 then
     return false
   elseif is_dir1 and is_dir2 then
-    return M.compare_string(item1.name, item2.name)
+    return compare_string(item1.name, item2.name)
   end
 
   local ext1 = vim.fn.fnamemodify(item1.name, ':e')
   local ext2 = vim.fn.fnamemodify(item2.name, ':e')
   if (#ext1 == 0 and #ext2 == 0) or (ext1:lower() == ext2:lower()) then
-    return M.compare_string(item1.name, item2.name)
+    return compare_string(item1.name, item2.name)
   end
-  return M.compare_string(ext1, ext2)
+  return compare_string(ext1, ext2)
 end)
 
 -- name ascending
@@ -101,7 +106,7 @@ M.set('name', function(item1, item2)
   elseif not is_dir1 and is_dir2 then
     return false
   end
-  return M.compare_string(item1.name, item2.name)
+  return compare_string(item1.name, item2.name)
 end)
 
 -- size ascending

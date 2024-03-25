@@ -48,6 +48,7 @@ end
 
 --- Start vfiler from command line arguments
 ---@param args string: command line argumets
+---@return boolean
 function M.start_command(args)
   local options, dirpath = config.parse_options(args)
   if not options then
@@ -57,6 +58,9 @@ function M.start_command(args)
 end
 
 --- Start vfiler
+---@param dirpath? string
+---@param configs? table
+---@return boolean
 function M.start(dirpath, configs)
   if not dirpath or #dirpath <= 0 then
     dirpath = vim.fn.getcwd()
@@ -90,7 +94,7 @@ end
 
 --- Get current status
 ---@param bufnr number: buffer number.
---     If "0" is specified, status on the current buffer is returned.
+--     If `0` is specified, status on the current buffer is returned.
 ---@return table
 function M.status(bufnr)
   local number = (not bufnr or bufnr == 0) and vim.fn.bufnr() or bufnr
