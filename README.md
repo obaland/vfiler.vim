@@ -116,5 +116,5 @@ I am hoping to continually improve it as far as time permits.<br>
 Welcome your requests and suggestions, so please [create an issue](https://github.com/obaland/vfiler.vim/issues/new).
 
 ## License
-Paddington is licensed under the MIT license.
+`vfiler.vim` is licensed under the MIT license.<br>
 Copyright © 2018, obaland
