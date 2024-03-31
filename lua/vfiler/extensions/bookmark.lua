@@ -9,14 +9,38 @@ local Item = require('vfiler/extensions/bookmark/items/item')
 local DIRPATH = core.path.normalize('~/vimfiles/vfiler')
 local FILENAME = 'bookmark.json'
 
-local columns = {
-  require('vfiler/extensions/bookmark/columns/indent').new(),
-  require('vfiler/extensions/bookmark/columns/icon').new(),
-  require('vfiler/extensions/bookmark/columns/name').new(),
-  require('vfiler/extensions/bookmark/columns/path').new(),
+local default_columns = {
+  indent = require('vfiler/extensions/bookmark/columns/indent').new(),
+  icon = require('vfiler/extensions/bookmark/columns/icon').new(),
+  name = require('vfiler/extensions/bookmark/columns/name').new(),
+  path = require('vfiler/extensions/bookmark/columns/path').new(),
 }
 
 local current_category_names = {}
+
+--- Create column objects
+---@return table
+local function create_columns()
+  local columns = {}
+  table.insert(columns, default_columns.indent)
+  -- NOTE: If `vfiler-columns-devicons` exists, it takes precedence.
+  local ok, _ = pcall(require, 'vfiler/columns/devicons')
+  if ok then
+    local icon = require('vfiler/extensions/bookmark/columns/icon').new({
+      file = '',
+      directory = '',
+      closed = '',
+      opened = '',
+      unknown = '',
+    })
+    table.insert(columns, icon)
+  else
+    table.insert(columns, default_columns.icon)
+  end
+  table.insert(columns, default_columns.name)
+  table.insert(columns, default_columns.path)
+  return columns
+end
 
 local function write_json(json)
   if not core.path.is_directory(DIRPATH) then
@@ -35,6 +59,10 @@ local function read_json()
     return Category.new_root()
   end
   local file = io.open(path, 'r')
+  if not file then
+    core.message.error(('Cannot open bookmark file. (%s)'):format(path))
+    return Category.new_root()
+  end
   local json = file:read('a')
   file:close()
 
@@ -46,29 +74,11 @@ local function read_json()
   return root
 end
 
-local function get_line(item, column_widths)
-  local texts = {}
-  local expected_width = 0
-  local text_width = 0
-  for i, column in ipairs(columns) do
-    local text, width = column:get_text(item)
-    text_width = text_width + width
-    expected_width = expected_width + column_widths[i]
-    if column.stretch then
-      local diff = expected_width - text_width
-      if diff > 0 then
-        text = text .. (' '):rep(diff)
-        text_width = text_width + diff
-      end
-    end
-    table.insert(texts, text)
-  end
-  -- margin at the right edge (+1)
-  return table.concat(texts, ' '), text_width + (#columns - 1) + 1
-end
-
 local Bookmark = {}
 
+--- Completion function for command definition.
+---@param arglead string
+---@return table
 function Bookmark.complete(arglead)
   local list = {}
   for _, name in ipairs(current_category_names) do
@@ -82,11 +92,13 @@ function Bookmark.complete(arglead)
   return list
 end
 
+--- Add bookmark process.
+---@param item Item
 function Bookmark.add(item)
   local root = read_json()
   local completion = 'customlist,vfiler#bookmark#complete'
-  local category_name = cmdline.input('Category name?', 'defualt', completion)
-  if not category_name or #category_name == 0 then
+  local category_name = cmdline.input('Category name?', '', completion)
+  if not category_name then
     return
   end
 
@@ -95,10 +107,15 @@ function Bookmark.add(item)
     return
   end
 
-  local category = root:find_category(category_name)
-  if not category then
-    category = Category.new(category_name)
-    root:add(category)
+  local category = root
+  if #category_name > 0 then
+    local find = root:find_category(category_name)
+    if find then
+      category = find
+    else
+      category = Category.new(category_name)
+      root:add(category)
+    end
   end
 
   if category:find_item(name) then
@@ -110,12 +127,21 @@ function Bookmark.add(item)
   local bookmark_item = Item.new(name, item.path)
   category:add(bookmark_item)
   write_json(root:to_json())
-  core.message.info(
-    'Add bookmark - %s/%s (%s)',
-    category.name,
-    item.name,
-    item.path
-  )
+
+  if #category_name > 0 then
+    core.message.info(
+      'Add bookmark - %s/%s (%s)',
+      category.name,
+      item.name,
+      item.path
+    )
+  else
+    core.message.info(
+      'Add bookmark - %s (%s)',
+      item.name,
+      item.path
+    )
+  end
 end
 
 function Bookmark.new(filer, options)
@@ -127,7 +153,7 @@ function Bookmark.new(filer, options)
   end
 
   local Extension = require('vfiler/extensions/extension')
-  return core.inherit(
+  local self = core.inherit(
     Bookmark,
     Extension,
     filer,
@@ -135,6 +161,8 @@ function Bookmark.new(filer, options)
     configs,
     options
   )
+  self._columns = create_columns()
+  return self
 end
 
 function Bookmark:change_category(item)
@@ -148,28 +176,30 @@ function Bookmark:change_category(item)
     return
   end
 
-  local category = self._root:find_category(category_name)
-  if not category then
-    category = Category.new(category_name)
-    self._root:add(category)
+  if #category_name > 0 then
+    local category = self._root:find_category(category_name)
+    if not category then
+      category = Category.new(category_name)
+      self._root:add(category)
+    end
+    item:delete()
+    category:add(item)
+  else
+    item:delete()
+    self._root:add(item)
   end
-  item:delete()
-  category:add(item)
   self:update()
 end
 
 function Bookmark:update()
   local root = Category.new_root()
-  for _, category in ipairs(self._root.children) do
-    if #category.children > 0 then
-      local found = root:find_category(category.name)
-      if found then
-        for _, item in ipairs(category.children) do
-          found:add(item)
-        end
-      else
-        root:add(category)
+  for _, item in ipairs(self._root.children) do
+    if item.type == 'category' then
+      if item.children and #item.children > 0 then
+        root:add(item)
       end
+    else
+      root:add(item)
     end
   end
   self._root = root
@@ -199,24 +229,29 @@ function Bookmark:_on_initialize(configs)
   return self:_on_update(configs)
 end
 
-function Bookmark:_on_update(configs)
+function Bookmark:_on_update(_)
+  self._list = {}
   local items = {}
-  for _, category in ipairs(self._root.children) do
-    table.insert(items, category)
-    if category.opened then
-      for _, item in ipairs(category.children) do
-        table.insert(items, item)
+  for _, item in ipairs(self._root.children) do
+    table.insert(self._list, item)
+    table.insert(items, item)
+    if item.children then
+      for _, child in ipairs(item.children) do
+        table.insert(self._list, child)
+        if item.opened then
+          table.insert(items, child)
+        end
       end
     end
   end
   return items
 end
 
-function Bookmark:_on_opened(winid, buffer, items, configs)
+function Bookmark:_on_opened(winid, _, _, _)
   -- syntaxes and highlights
   local syntaxes = {}
   local highlights = {}
-  for _, column in pairs(columns) do
+  for _, column in pairs(self._columns) do
     local commands = column:syntaxes()
     if commands then
       core.list.extend(syntaxes, commands)
@@ -232,33 +267,41 @@ function Bookmark:_on_opened(winid, buffer, items, configs)
   return 2 -- initial lnum
 end
 
-function Bookmark:_get_lines(items)
-  -- calculate the width of each column.
-  local column_widths = {}
-  for _, column in ipairs(columns) do
-    local cwidth = 0
-    for _, category in ipairs(self._root.children) do
-      cwidth = math.max(cwidth, column:get_width(category.children))
+function Bookmark:_get_line(item, column_widths)
+  local texts = {}
+  local expected_width = 0
+  local text_width = 0
+  for i, column in ipairs(self._columns) do
+    local text, width = column:get_text(item)
+    text_width = text_width + width
+    expected_width = expected_width + column_widths[i]
+    if column.stretch then
+      local diff = expected_width - text_width
+      if diff > 0 then
+        text = text .. (' '):rep(diff)
+        text_width = text_width + diff
+      end
     end
+    table.insert(texts, text)
+  end
+  -- margin at the right edge (+1)
+  return table.concat(texts, ' '), text_width + (#self._columns - 1) + 1
+end
+
+function Bookmark:_get_lines(items)
+  -- Calculate the width of each column.
+  local column_widths = {}
+  for _, column in ipairs(self._columns) do
+    local cwidth = column:get_width(self._list)
     table.insert(column_widths, cwidth)
   end
 
   local width = 0
   local lines = vim.list({})
   for _, item in ipairs(items) do
-    if item.type == 'category' then
-      local category = item
-      local line, text_width = get_line(category, column_widths)
-      table.insert(lines, line)
-      width = math.max(width, text_width)
-      if category.opened then
-        for _, bookmark_item in ipairs(category.children) do
-          line, text_width = get_line(bookmark_item, column_widths)
-          table.insert(lines, line)
-          width = math.max(width, text_width)
-        end
-      end
-    end
+    local line, text_width = self:_get_line(item, column_widths)
+    table.insert(lines, line)
+    width = math.max(width, text_width)
   end
   return lines, width
 end

@@ -47,20 +47,22 @@ local function to_window_options(options, name, win_size, content_size)
     local floating = options.floating
     local minwidth = floating.minwidth or 1
     local minheight = floating.minheight or 1
+    local maxwidth = floating.maxwidth or content_size.width
+    local maxheight = floating.maxheight or content_size.height
 
     woptions.width = winvalue(
       floating.width,
       win_size.width,
       content_size.width,
       minwidth,
-      win_size.width
+      maxwidth
     )
     woptions.height = winvalue(
       floating.height,
       win_size.height,
       content_size.height,
       minheight,
-      win_size.height
+      maxheight
     )
   elseif options.top or options.bottom then
     layout = options.top and 'top' or 'bottom'
@@ -184,7 +186,7 @@ function Extension:do_action(action)
 end
 
 --- Get the item in the specified line number
----@param lnum number
+---@param lnum number?
 function Extension:get_item(lnum)
   lnum = lnum or vim.fn.line('.')
   return self._items[lnum]

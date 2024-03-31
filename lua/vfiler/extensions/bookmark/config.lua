@@ -36,6 +36,8 @@ if core.is_nvim then
   M.configs.options.floating = {
     width = 'auto',
     height = 'auto',
+    maxwidth = 128,
+    maxheight = 32,
     minwidth = 4,
     minheight = 1,
     relative = true,

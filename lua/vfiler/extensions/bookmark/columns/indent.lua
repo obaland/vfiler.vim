@@ -27,7 +27,7 @@ function IndentColumn.new()
 end
 
 function IndentColumn:to_text(item, width)
-  local indent = item.level - 1
+  local indent = item.level - 2
   if indent <= 0 then
     return {
       string = '',

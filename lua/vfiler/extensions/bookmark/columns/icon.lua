@@ -15,7 +15,7 @@ function IconColumn.setup(configs)
   core.table.merge(IconColumn.configs, configs)
 end
 
-function IconColumn.new()
+function IconColumn.new(configs)
   local end_mark = '/>c'
 
   local Column = require('vfiler/columns/column')
@@ -59,7 +59,8 @@ function IconColumn.new()
   })
 
   self.icon_width = 0
-  for _, icon in pairs(IconColumn.configs) do
+  self._configs = core.table.copy(configs or IconColumn.configs)
+  for _, icon in pairs(self._configs) do
     self.icon_width = math.max(self.icon_width, vim.fn.strwidth(icon))
   end
   return self
@@ -72,7 +73,7 @@ function IconColumn:to_text(item, width)
   else
     key = item.type
   end
-  local icon = self.configs[key]
+  local icon = self._configs[key]
   return {
     string = icon .. (' '):rep(self.icon_width - vim.fn.strwidth(icon)),
     width = self.icon_width,

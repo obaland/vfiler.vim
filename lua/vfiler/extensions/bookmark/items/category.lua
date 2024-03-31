@@ -1,3 +1,4 @@
+local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
 local Item = require('vfiler/extensions/bookmark/items/item')
@@ -5,19 +6,38 @@ local Item = require('vfiler/extensions/bookmark/items/item')
 local Category = {}
 Category.__index = Category
 
-function Category.new_root()
-  return Category.new('root')
+local function compare(item1, item2)
+  local is_category1 = item1.type == 'category'
+  local is_category2 = item2.type == 'category'
+  if is_category1 and not is_category2 then
+    return true
+  elseif not is_category1 and is_category2 then
+    return false
+  end
+  return core.string.compare(item1.name, item2.name)
 end
 
-function Category.new(name)
+function Category.new_root()
+  return Category.new('', 1)
+end
+
+function Category.new(name, level)
   return setmetatable({
     children = {},
     name = name,
-    level = 1,
+    level = level or 1,
     opened = true,
     parent = nil,
     type = 'category',
   }, Category)
+end
+
+function Category.from_dict(dict, level)
+  local category = Category.new(dict.name, level)
+  for _, item in ipairs(dict.items) do
+    category:add(Item.from_dict(item))
+  end
+  return category
 end
 
 function Category.from_json(json)
@@ -25,17 +45,14 @@ function Category.from_json(json)
   if not document.bookmarks then
     return nil
   end
-  local root = Category.new('root')
-  for _, category_dict in ipairs(document.bookmarks) do
-    local category = Category.new(category_dict.name)
-    if category_dict.items then
-      for _, item_dict in ipairs(category_dict.items) do
-        local item = Item.new(item_dict.name, item_dict.path)
-        category:add(item)
-      end
-    end
-    if #category.children > 0 then
-      root:add(category)
+  local root = Category.new_root()
+  for _, element in ipairs(document.bookmarks) do
+    if element.items then
+      -- Category
+      root:add(Category.from_dict(element, root.level + 1))
+    else
+      -- Item
+      root:add(Item.from_dict(element))
     end
   end
   return root
@@ -43,7 +60,9 @@ end
 
 function Category:add(item)
   item.parent = self
+  item.level = self.level + 1
   table.insert(self.children, item)
+  table.sort(self.children, compare)
 end
 
 function Category:delete()
@@ -85,26 +104,19 @@ function Category:close()
   self.opened = false
 end
 
-function Category:to_json(path)
-  local document = vim.dict({
-    bookmarks = vim.list(),
-  })
-  for _, category in ipairs(self.children) do
-    local category_dict = vim.dict({
-      name = category.name,
-    })
-    local items = vim.list()
-    for _, item in ipairs(category.children) do
-      local item_dict = vim.dict({
-        name = item.name,
-        path = item.path,
-      })
-      table.insert(items, item_dict)
-    end
-    if #items > 0 then
-      category_dict.items = items
-    end
-    table.insert(document.bookmarks, category_dict)
+function Category:to_dict()
+  local dict = { name = self.name }
+  dict.items = {}
+  for _, item in ipairs(self.children) do
+    table.insert(dict.items, item:to_dict())
+  end
+  return dict
+end
+
+function Category:to_json()
+  local document = { bookmarks = {} }
+  for _, item in ipairs(self.children) do
+    table.insert(document.bookmarks, item:to_dict())
   end
   return vim.fn.json_encode(document)
 end
