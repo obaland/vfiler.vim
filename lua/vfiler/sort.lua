@@ -62,21 +62,6 @@ end
 -- default sort collection
 ------------------------------------------------------------------------------
 
-local function compare_string(str1, str2)
-  local length = math.min(#str1, #str2)
-  for i = 1, length do
-    local word1 = (str1:sub(i, i)):lower()
-    local word2 = (str2:sub(i, i)):lower()
-
-    if word1 < word2 then
-      return true
-    elseif word1 > word2 then
-      return false
-    end
-  end
-  return (#str1 - #str2) < 0
-end
-
 -- extension ascending
 M.set('extension', function(item1, item2)
   local is_dir1 = item1.type == 'directory'
@@ -86,15 +71,15 @@ M.set('extension', function(item1, item2)
   elseif not is_dir1 and is_dir2 then
     return false
   elseif is_dir1 and is_dir2 then
-    return compare_string(item1.name, item2.name)
+    return core.string.compare(item1.name, item2.name)
   end
 
   local ext1 = vim.fn.fnamemodify(item1.name, ':e')
   local ext2 = vim.fn.fnamemodify(item2.name, ':e')
   if (#ext1 == 0 and #ext2 == 0) or (ext1:lower() == ext2:lower()) then
-    return compare_string(item1.name, item2.name)
+    return core.string.compare(item1.name, item2.name)
   end
-  return compare_string(ext1, ext2)
+  return core.string.compare(ext1, ext2)
 end)
 
 -- name ascending
@@ -106,7 +91,7 @@ M.set('name', function(item1, item2)
   elseif not is_dir1 and is_dir2 then
     return false
   end
-  return compare_string(item1.name, item2.name)
+  return core.string.compare(item1.name, item2.name)
 end)
 
 -- size ascending

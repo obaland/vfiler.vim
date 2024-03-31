@@ -430,6 +430,21 @@ local function truncate(str, width)
   return str:sub(1, width)
 end
 
+function M.string.compare(str1, str2)
+  local length = math.min(#str1, #str2)
+  for i = 1, length do
+    local word1 = (str1:sub(i, i)):lower()
+    local word2 = (str2:sub(i, i)):lower()
+
+    if word1 < word2 then
+      return true
+    elseif word1 > word2 then
+      return false
+    end
+  end
+  return (#str1 - #str2) < 0
+end
+
 function M.string.count_char(s, c)
   return #vim.fn.split(s, c, 1) - 1
 end

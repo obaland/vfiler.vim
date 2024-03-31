@@ -5,6 +5,23 @@ local eq = function(excepted, actual)
 end
 
 describe('core.string', function()
+  describe('compare', function()
+    local compare = core.string.compare
+    local dataset = {
+      { str1 = 'abcde', str2 = 'edcba', expected = true },
+      { str1 = 'ABCDE', str2 = 'edcba', expected = true },
+      { str1 = 'edcba', str2 = 'abcde', expected = false },
+      { str1 = 'edcba', str2 = 'ABCDE', expected = false },
+      { str1 = 'abcde', str2 = 'abcdeb', expected = true },
+      { str1 = 'abcdeb', str2 = 'abcde', expected = false },
+    }
+    for _, data in ipairs(dataset) do
+      it(('compare %s - %s'):format(data.str1, data.str2), function()
+        eq(data.expected, compare(data.str1, data.str2))
+      end)
+    end
+  end)
+
   describe('count_char', function()
     local count_char = core.string.count_char
     local dataset = {
