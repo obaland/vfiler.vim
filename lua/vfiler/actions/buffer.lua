@@ -11,7 +11,10 @@ local M = {}
 ------------------------------------------------------------------------------
 
 local function reload(context, view, reload_all_dir)
-  context:save(view:get_item().path)
+  local item = view:get_item()
+  if item then
+    context:save(item.path)
+  end
   context:reload(reload_all_dir)
   view:draw(context)
   view:git_status_async(context.root.path, function(v)
