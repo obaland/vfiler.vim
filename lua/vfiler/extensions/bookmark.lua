@@ -136,11 +136,7 @@ function Bookmark.add(item)
       item.path
     )
   else
-    core.message.info(
-      'Add bookmark - %s (%s)',
-      item.name,
-      item.path
-    )
+    core.message.info('Add bookmark - %s (%s)', item.name, item.path)
   end
 end
 
@@ -153,14 +149,8 @@ function Bookmark.new(filer, options)
   end
 
   local Extension = require('vfiler/extensions/extension')
-  local self = core.inherit(
-    Bookmark,
-    Extension,
-    filer,
-    'Bookmark',
-    configs,
-    options
-  )
+  local self
+    = core.inherit(Bookmark, Extension, filer, 'Bookmark', configs, options)
   self._columns = create_columns()
   return self
 end
