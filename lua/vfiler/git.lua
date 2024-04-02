@@ -39,7 +39,6 @@ function Git:status_async(dirpath, callback)
 
     self._status_cache = {}
     self._jobs[root] = git.status_async(root, self._options, function(status)
-      vim.nvim.print(status)
       self._statuses[root] = status
       callback(self, root, status)
       self._jobs[root] = nil
