@@ -39,6 +39,7 @@ function Git:status_async(dirpath, callback)
 
     self._status_cache = {}
     self._jobs[root] = git.status_async(root, self._options, function(status)
+      vim.nvim.print(status)
       self._statuses[root] = status
       callback(self, root, status)
       self._jobs[root] = nil
@@ -57,14 +58,15 @@ end
 ---@param path string
 ---@return table?
 function Git:status(path)
-  local cached = self._status_cache[path]
+  local resolved = core.path.normalize(vim.fn.resolve(path))
+  local cached = self._status_cache[resolved]
   if cached then
     return cached
   end
   for root, status in pairs(self._statuses) do
-    if root == path:sub(1, #root) then
+    if root == resolved:sub(1, #root) then
       self._status_cache = status
-      return status[path]
+      return status[resolved]
     end
   end
   return nil
