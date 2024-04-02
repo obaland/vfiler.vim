@@ -1,8 +1,6 @@
 local utils = require('vfiler/actions/utilities')
 local vim = require('vfiler/libs/vim')
 
-local Preview = require('vfiler/preview')
-
 local M = {}
 
 function M.close_preview(vfiler, context, view)
@@ -38,7 +36,7 @@ function M.toggle_auto_preview(vfiler, context, view)
   end
 
   if not preview then
-    in_preview.preview = Preview.new(context.options.preview)
+    in_preview.preview = require('vfiler/preview').new(context.options.preview)
   end
   in_preview.once = false
   utils.open_preview(vfiler, context, view)
@@ -51,7 +49,7 @@ function M.toggle_preview(vfiler, context, view)
     return
   end
   if not in_preview.preview then
-    in_preview.preview = Preview.new(context.options.preview)
+    in_preview.preview = require('vfiler/preview').new(context.options.preview)
     in_preview.once = true
   end
   utils.open_preview(vfiler, context, view)

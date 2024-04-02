@@ -1,6 +1,5 @@
 local core = require('vfiler/libs/core')
 local event = require('vfiler/events/event')
-local status = require('vfiler/status')
 local vim = require('vfiler/libs/vim')
 
 local vfiler_objects = {}
@@ -291,7 +290,7 @@ end
 
 --- Get current status string
 function VFiler:status()
-  return status.status(self._context, self._view)
+  return require('vfiler/status').status(self._context, self._view)
 end
 
 --- Unlink filer

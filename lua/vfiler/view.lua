@@ -1,5 +1,4 @@
 local core = require('vfiler/libs/core')
-local sort = require('vfiler/sort')
 local vim = require('vfiler/libs/vim')
 
 local View = {}
@@ -238,7 +237,7 @@ function View:draw(context)
   local options = context.options
   self._items = ItemContainer.new({
     show_hidden_files = options.show_hidden_files,
-    sort_compare = sort.get(options.sort),
+    sort_compare = require('vfiler/sort').get(options.sort),
   })
   if self._header then
     self._items:insert(context.root, LnumIndex.new(context.root.level))
