@@ -52,7 +52,7 @@ end
 ---@param path string
 function Context:open_tree(path)
   path = core.path.normalize(path)
-  local s, e = path:find(self.root.path)
+  local s, e = path:find(self.root.path, 1, true)
   if not s then
     return nil
   end
