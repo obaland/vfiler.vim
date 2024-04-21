@@ -111,7 +111,7 @@ function Rename:_on_opened(winid, bufnr, items, configs)
   }
   -- Create "NotChanged" syntax for each line
   for i, item in ipairs(items) do
-    local pattern = ([[^\%%%dl%s$]]):format(i, item.name)
+    local pattern = ([[^\%%%dl\V%s\$]]):format(i, item.name)
     table.insert(
       syntaxes,
       core.syntax.create(group_notchanged, {
