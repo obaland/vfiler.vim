@@ -134,24 +134,37 @@ end
 ------------------------------------------------------------------------------
 M.message = {}
 
+---@param msg string
+---@return string
+local function escape_quote(msg)
+  local result, _ = msg:gsub([[']], [['']])
+  return result
+end
+
 ---print error message
 function M.message.error(format, ...)
   local msg = format:format(...)
   vim.command(
-    ([[echohl ErrorMsg | echomsg '[vfiler]: %s' | echohl None]]):format(msg)
+    ([[echohl ErrorMsg | echomsg '[vfiler]: %s' | echohl None]]):format(
+      escape_quote(msg)
+    )
   )
 end
 
 ---print information message
 function M.message.info(format, ...)
-  vim.command(([[echo '[vfiler]: %s']]):format(format:format(...)))
+  vim.command(
+    ([[echo '[vfiler]: %s']]):format(escape_quote(format:format(...)))
+  )
 end
 
 ---print warning message
 function M.message.warning(format, ...)
   local msg = format:format(...)
   vim.command(
-    ([[echohl WarningMsg | echomsg '[vfiler]: %s' | echohl None]]):format(msg)
+    ([[echohl WarningMsg | echomsg '[vfiler]: %s' | echohl None]]):format(
+      escape_quote(msg)
+    )
   )
 end
 
@@ -159,7 +172,9 @@ end
 function M.message.question(format, ...)
   local msg = format:format(...)
   vim.command(
-    ([[echohl Question | echo '[vfiler]: %s' | echohl None]]):format(msg)
+    ([[echohl Question | echo '[vfiler]: %s' | echohl None]]):format(
+      escape_quote(msg)
+    )
   )
 end
 
