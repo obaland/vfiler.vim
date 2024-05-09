@@ -193,7 +193,7 @@ function M.open_preview(vfiler, context, view)
 
   preview.line = vim.fn.line('.')
   local item = view:get_item(preview.line)
-  if item.type == 'directory' then
+  if item.type ~= 'file' then
     preview:close()
   else
     local hook = config.configs.hook.read_preview_file

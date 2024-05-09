@@ -52,6 +52,24 @@ function NameColumn.new()
       },
       highlight = 'vfilerHidden',
     },
+    {
+      group = 'vfilerName_Socket',
+      name = 'socket',
+      region = {
+        start_mark = 'n.=</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerSocket',
+    },
+    {
+      group = 'vfilerName_Fifo',
+      name = 'fifo',
+      region = {
+        start_mark = 'n.|</',
+        end_mark = end_mark,
+      },
+      highlight = 'vfilerFifo',
+    },
   })
   self.variable = true
   self.stretch = true

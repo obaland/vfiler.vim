@@ -9,7 +9,12 @@ local function new_item(stat)
   local item
   if stat.type == 'directory' then
     item = Directory.new(stat)
-  elseif stat.type == 'file' or stat.type == 'link' then
+  elseif
+    stat.type == 'file'
+    or stat.type == 'link'
+    or stat.type == 'fifo'
+    or stat.type == 'socket'
+  then
     item = File.new(stat)
   else
     core.message.warning('Unknown "%s" file type. (%s)', stat.type, stat.path)
