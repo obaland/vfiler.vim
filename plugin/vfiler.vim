@@ -27,6 +27,8 @@ highlight default link vfilerFile              None
 highlight default link vfilerHeader            Statement
 highlight default link vfilerHidden            Comment
 highlight default link vfilerLink              Constant
+highlight default link vfilerFifo              Debug
+highlight default link vfilerSocket            Error
 highlight default link vfilerSelected          Title
 highlight default link vfilerSize              Statement
 highlight default link vfilerTime              None
