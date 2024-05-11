@@ -97,6 +97,7 @@ There are also some extension plugins for vfiler.vim.<br>
 Please use it as you like.
 - [obaland/vfiler-column-devicons](https://github.com/obaland/vfiler-column-devicons)
 - [obaland/vfiler-fzf](https://github.com/obaland/vfiler-fzf)
+- [obaland/vfiler-action-yanktree](https://github.com/obaland/vfiler-action-yanktree)
 
 ## Screenshots
 ### Basic (with [devicons](https://github.com/obaland/vfiler-column-devicons))
