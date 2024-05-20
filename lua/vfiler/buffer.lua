@@ -1,13 +1,5 @@
 local vim = require('vfiler/libs/vim')
 
-local function escape_key(key)
-  local capture = key:match('^<(.+)>$')
-  if capture then
-    key = '[' .. capture .. ']'
-  end
-  return key
-end
-
 local Buffer = {}
 Buffer.__index = Buffer
 
@@ -67,13 +59,13 @@ function Buffer:define_mappings(mappings, funcstr)
 
   local keymaps = {}
   for key, func in pairs(mappings) do
-    local escaped = escape_key(key)
+    local escaped = key:gsub('<', '<lt>')
     local rhs = ([[:lua %s(%d, '%s')<CR>]]):format(
       funcstr,
       self.number,
       vim.fn.escape(escaped, '\\')
     )
-    keymaps[escaped] = func
+    keymaps[key] = func
     vim.set_buf_keymap(self.number, 'n', key, rhs, options)
   end
   return keymaps
