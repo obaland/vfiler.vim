@@ -19,7 +19,7 @@
 
 ## Requirements
 
-vfiler.vim requires Neovim(0.5.0+) or Vim8.2+ with [if\_lua](https://vimhelp.org/if_lua.txt.html#if_lua.txt).
+vfiler.vim requires Neovim(0.8.0+) or Vim8.2+ with [if\_lua](https://vimhelp.org/if_lua.txt.html#if_lua.txt).
 
 ## Installation
 
