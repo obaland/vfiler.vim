@@ -51,15 +51,31 @@ function Floating:set_title(title)
     local winid = api.nvim_open_win(buffer.number, false, config)
 
     -- set options
-    api.nvim_win_set_option(
-      winid,
+    api.nvim_set_option_value(
       'winhighlight',
-      'Normal:vfilerFloatingWindowTitle'
+      'Normal:vfilerFloatingWindowTitle',
+      { scope = 'local', win = winid }
     )
-    api.nvim_win_set_option(winid, 'cursorline', false)
-    api.nvim_win_set_option(winid, 'number', false)
-    api.nvim_win_set_option(winid, 'relativenumber', false)
-    api.nvim_win_set_option(winid, 'signcolumn', 'no')
+    api.nvim_set_option_value(
+      'cursorline',
+      false,
+      { scope = 'local', win = winid }
+    )
+    api.nvim_set_option_value(
+      'number',
+      false,
+      { scope = 'local', win = winid }
+    )
+    api.nvim_set_option_value(
+      'relativenumber',
+      false,
+      { scope = 'local', win = winid }
+    )
+    api.nvim_set_option_value(
+      'signcolumn',
+      'no',
+      { scope = 'local', win = winid }
+    )
 
     -- set title name
     core.try({
@@ -107,7 +123,11 @@ function Floating:_on_open(buffer, config)
   self._config.noautocmd = true
   local enter = config.focusable ~= nil and config.focusable or true
   self._winid = api.nvim_open_win(buffer.number, enter, self._config)
-  api.nvim_win_set_option(self._winid, 'winhighlight', 'Normal:Normal')
+  api.nvim_set_option_value(
+    'winhighlight',
+    'Normal:Normal',
+    { scope = 'local', win = self._winid }
+  )
 
   local cmd = (':lua require("vfiler/windows/floating")._try_close(%d)'):format(
     self._winid
@@ -124,6 +144,11 @@ end
 function Floating:_on_update(winid, buffer, config)
   if buffer.number ~= api.nvim_win_get_buf(winid) then
     api.nvim_win_set_buf(winid, buffer.number)
+    api.nvim_set_option_value(
+      'winhighlight',
+      'Normal:Normal',
+      { scope = 'local', win = self._winid }
+    )
   end
   self._config = self:_to_win_config(config)
   api.nvim_win_set_config(winid, self._config)
