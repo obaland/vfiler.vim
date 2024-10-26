@@ -87,6 +87,54 @@ require('vfiler/config').setup {
 
 require('vfiler').start()
 ```
+#### Start by vim script:
+```vim
+let cfg = ":lua require('vfiler/config').setup {\n" .
+            \   "options = {\n" .
+            \     "auto_cd = true,\n" .
+            \     "auto_resize = true,\n" .
+            \     "keep = true,\n" .
+            \     "layout = 'left',\n" .
+            \     "name = 'explorer',\n" .
+            \     "width = 30,\n" .
+            \     "columns = 'indent,icon,name',\n" .
+            \   "},\n" .
+            \ "}\n"
+call execute(cfg)
+
+:VFiler
+```
+or
+```vim
+lua << EOF
+require('vfiler/config').setup {
+  options = {
+    auto_cd = true,
+    auto_resize = true,
+    keep = true,
+    layout = 'left',
+    name = 'explorer',
+    width = 30,
+    columns = 'indent,icon,name',
+  },
+}
+EOF
+
+:VFiler
+```
+Note:
+For Vim users, if you are using vim-plug, the setup scrpt should be put after "plug#end()"
+```vim
+call plug#begin()
+Plug 'obaland/vfiler.vim'
+call plug#end()
+"setup begin here
+lua << EOF
+require('vfiler/config').setup {
+-- ...
+}
+EOF
+```
 
 ### More details
 vfiler.vim has various other customization mechanisms.<br>
