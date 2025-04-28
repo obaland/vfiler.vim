@@ -150,7 +150,7 @@ local function edit_file(vfiler, context, view, path)
     -- change the action if the "keep" option is enabled
     choose_file(vfiler, context, view, path)
   else
-    core.window.open('none', path)
+    open_file(vfiler, context, view, path, 'none')
   end
 end
 
