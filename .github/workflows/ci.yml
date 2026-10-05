@@ -2,24 +2,38 @@ name: CI
 
 on: [push, pull_request, workflow_dispatch]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   unit_tests:
-    name: unit tests
+    name: unit tests (${{ matrix.os }}, ${{ matrix.version }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - macos-latest
-          - ubuntu-latest
-          - windows-latest
-        version:
-          - stable
-          - v0.8.0
+        os: [macos-latest, ubuntu-latest, windows-latest]
+        version: [stable, v0.8.0]
+        exclude:
+          - os: macos-latest
+            version: v0.8.0
+        include:
+          # Neovim 0.8.0 only provides an x86_64 macOS binary.
+          - os: macos-15-intel
+            version: v0.8.0
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: rhysd/action-setup-vim@v1
-        id: vim
         with:
           neovim: true
           version: ${{ matrix.version }}

@@ -2,28 +2,41 @@ name: Lint
 
 on: [push, pull_request, workflow_dispatch]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   luacheck:
     name: Luacheck
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - name: Prepare
         run: |
-          sudo apt update
-          sudo apt install -y luarocks
-          sudo luarocks install luacheck
-
+          sudo apt-get update
+          sudo apt-get install --yes luarocks
+          luarocks install --local luacheck
+          echo "$HOME/.luarocks/bin" >> "$GITHUB_PATH"
       - name: Lint
-        run: sudo make lint
-  
+        run: make lint
+
   stylua:
     name: stylua
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: JohnnyMorganz/stylua-action@v1
+      - uses: actions/checkout@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
+      - uses: JohnnyMorganz/stylua-action@v5
+        with:
+          token: ${{ github.token }}
+          version: latest
           args: --color always --check lua/
