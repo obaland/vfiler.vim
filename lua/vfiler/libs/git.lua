@@ -51,7 +51,7 @@ local function parse_git_status(rootpath, result)
   -- Removing: extra characters
   rpath = rpath:gsub('^"', ''):gsub('"$', '')
   return core.path.join(rootpath, rpath),
-    { us = status:sub(1, 1), them = status:sub(2, 2) }
+  { us = status:sub(1, 1), them = status:sub(2, 2) }
 end
 
 local function parse_toplevel_path(result)
@@ -99,7 +99,6 @@ local function update_directory_statuses(rootpath, statuses)
           them = status.them,
         }
       end
-      --path = core.path.parent(path)
       cur = core.path.parent(path)
     end
   end
@@ -126,14 +125,14 @@ function M.root_async(dirpath, callback)
   local rootpath
   local job = Job.new()
   job:start(commands, {
-    on_received = function(_, result)
-      rootpath = parse_toplevel_path(result)
-    end,
+      on_received = function(_, result)
+        rootpath = parse_toplevel_path(result)
+      end,
 
-    on_completed = function(_, code)
-      callback(rootpath)
-    end,
-  })
+      on_completed = function(_, code)
+        callback(rootpath)
+      end,
+    })
   return job
 end
 
@@ -147,16 +146,16 @@ function M.status_async(rootpath, options, callback)
   local gitstatus = {}
   local job = Job.new()
   job:start(commands, {
-    on_received = function(_, result)
-      local path, status = parse_git_status(rootpath, result)
-      gitstatus[path] = status
-    end,
+      on_received = function(_, result)
+        local path, status = parse_git_status(rootpath, result)
+        gitstatus[path] = status
+      end,
 
-    on_completed = function(_, code)
-      update_directory_statuses(rootpath, gitstatus)
-      callback(gitstatus)
-    end,
-  })
+      on_completed = function(_, code)
+        update_directory_statuses(rootpath, gitstatus)
+        callback(gitstatus)
+      end,
+    })
   return job
 end
 
@@ -170,7 +169,7 @@ function M.status_file(rootpath, path, options)
     '"' .. rootpath .. '"',
     '"' .. path .. '"',
     options
-  )
+    )
   local result = core.system(table.concat(commands, ' '))
   if #result == 0 then
     return nil
