@@ -89,18 +89,18 @@ local function update_directory_statuses(rootpath, statuses)
   end
 
   for path, status in pairs(dirs) do
+    local cur = path
     while rootpath ~= path do
-      local dirstatus = statuses[path]
+      local dirstatus = statuses[cur]
       if dirstatus then
         update(dirstatus, status)
       else
-        statuses[path] = {
+        statuses[cur] = {
           us = status.us,
           them = status.them,
         }
       end
-      --path = core.path.parent(path)
-      cur = core.path.parent(path)
+      cur = core.path.parent(cur)
     end
   end
   return statuses
