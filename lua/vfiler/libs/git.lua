@@ -100,11 +100,7 @@ local function update_directory_statuses(rootpath, statuses)
           them = status.them,
         }
       end
-<<<<<<< HEAD
       cur = core.path.parent(cur)
-=======
-      cur = core.path.parent(path)
->>>>>>> 7f472e21d1347124313a86154a8ac44008a5b52f
     end
   end
   return statuses
