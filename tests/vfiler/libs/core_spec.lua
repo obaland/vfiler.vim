@@ -428,8 +428,13 @@ describe('core.autocmd', function()
   end)
   it('delete group', function()
     local name = 'vfiler_augroup'
-    local command = core.autocmd.delete_group(name)
-    eq('augroup! vfiler_augroup', command)
+    local commands = core.autocmd.delete_group(name)
+    assert.are.same({
+      'augroup vfiler_augroup',
+      'autocmd!',
+      'augroup END',
+      'augroup! vfiler_augroup',
+    }, commands)
   end)
 
   local create_patterns = {

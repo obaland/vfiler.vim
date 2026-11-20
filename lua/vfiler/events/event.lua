@@ -36,7 +36,7 @@ function M.register(group, events, bufnr)
   local group_name = get_group_name(group, bufnr)
 
   -- Delete previously registered events, and re-register.
-  core.autocmd.delete_group(group_name)
+  vim.commands(core.autocmd.delete_group(group_name))
 
   local commands = { core.autocmd.start_group(group_name) }
   local this_module = 'require("vfiler/events/event")'
@@ -82,7 +82,7 @@ end
 function M.unregister(group, bufnr)
   bufnr = bufnr or 0
   local group_name = get_group_name(group, bufnr)
-  core.autocmd.delete_group(group_name)
+  vim.commands(core.autocmd.delete_group(group_name))
   local registered = registered_events[bufnr]
   if registered then
     registered[group] = nil
@@ -95,7 +95,9 @@ function M.clear(bufnr)
     return
   end
   for group, _ in pairs(registered) do
-    core.autocmd.delete_group(get_group_name(group, bufnr))
+    vim.commands(
+      core.autocmd.delete_group(get_group_name(group, bufnr))
+    )
   end
   registered_events[bufnr] = nil
 end

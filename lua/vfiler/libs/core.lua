@@ -363,11 +363,16 @@ function M.autocmd.end_group()
   return 'augroup END'
 end
 
---- Generate commands for delete "autocmd".
+--- Generate commands to clear and delete an autocmd group.
 ---@param name string
----@return string
+---@return string[]
 function M.autocmd.delete_group(name)
-  return 'augroup! ' .. name
+  return {
+    M.autocmd.start_group(name),
+    'autocmd!',
+    M.autocmd.end_group(),
+    'augroup! ' .. name,
+  }
 end
 
 --- Generate commands that define automatic commands.
