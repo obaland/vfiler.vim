@@ -1,6 +1,6 @@
 local core = require('vfiler/libs/core')
 local a = require('vfiler/actions/directory')
-local u = require('tests/utilities')
+local u = require('tests/helper/utilities')
 
 local configs = {
   options = u.vfiler.generate_options(),

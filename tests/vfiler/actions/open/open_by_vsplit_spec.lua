@@ -1,6 +1,6 @@
 local core = require('vfiler/libs/core')
 local a = require('vfiler/actions/open')
-local u = require('tests/utilities')
+local u = require('tests/helper/utilities')
 
 describe('open actions', function()
   local layouts = {

@@ -1,4 +1,4 @@
-local u = require('tests/utilities')
+local u = require('tests/helper/utilities')
 local Buffer = require('vfiler/buffer')
 local VFiler = require('vfiler/vfiler')
 

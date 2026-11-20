@@ -1,5 +1,5 @@
 local core = require('vfiler/libs/core')
-local u = require('tests/utilities')
+local u = require('tests/helper/utilities')
 
 describe('view', function()
   local root = vim.fn.fnamemodify('./', ':p')

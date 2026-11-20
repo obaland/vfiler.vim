@@ -1,6 +1,6 @@
 test:
-	nvim --headless --noplugin -u tests/init.vim \
-		-c "PlenaryBustedDirectory tests/vfiler { minimal_init = './tests/init.vim', sequential = true }"
+	nvim --headless --noplugin -u NONE -i NONE -n \
+		-c "luafile tests/run.lua" -c "cquit 1"
 
 lint:
 	luacheck lua
