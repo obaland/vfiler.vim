@@ -5,6 +5,62 @@ local Job = require('vfiler/libs/async/job')
 
 local M = {}
 
+local path_escapes = {
+  a = '\a',
+  b = '\b',
+  t = '\t',
+  n = '\n',
+  v = '\v',
+  f = '\f',
+  r = '\r',
+  ['"'] = '"',
+  ['\\'] = '\\',
+}
+
+-- Decode Git's C-style quoted paths, including octal UTF-8 bytes.
+local function unquote_path(path)
+  if path:sub(1, 1) ~= '"' then
+    return path
+  end
+  local decoded = {}
+  local i = 2
+  while i < #path do
+    local char = path:sub(i, i)
+    if char == '\\' then
+      local escape = path:sub(i + 1, i + 1)
+      if escape:match('[0-7]') then
+        char = string.char(tonumber(path:sub(i + 1, i + 3), 8))
+        i = i + 4
+      else
+        char = path_escapes[escape]
+        i = i + 2
+      end
+    else
+      i = i + 1
+    end
+    table.insert(decoded, char)
+  end
+  return table.concat(decoded)
+end
+
+-- The rename separator is meaningful only outside quoted filenames.
+local function renamed_path(paths)
+  local quoted, escaped = false, false
+  for i = 1, #paths do
+    local char = paths:sub(i, i)
+    if escaped then
+      escaped = false
+    elseif quoted and char == '\\' then
+      escaped = true
+    elseif char == '"' then
+      quoted = not quoted
+    elseif not quoted and paths:sub(i, i + 3) == ' -> ' then
+      return paths:sub(i + 4)
+    end
+  end
+  return paths
+end
+
 local function create_status_commands(rootpath, path, options)
   local commands = {
     'git',
@@ -43,14 +99,16 @@ local function create_toplevel_commands(dirpath)
 end
 
 local function parse_git_status(rootpath, result)
+  result = result:gsub('[\r\n]+$', '')
   local status = result:sub(1, 2)
-  local rpath = result:sub(4, -1)
-  -- for renamed
-  local splitted = vim.list.from(vim.fn.split(rpath, ' -> '))
-  rpath = splitted[#splitted]
-  -- Removing: extra characters
-  rpath = rpath:gsub('^"', ''):gsub('"$', '')
-  return core.path.join(rootpath, rpath),
+  local rpath = result:sub(4)
+  if status:find('[RC]') then
+    rpath = renamed_path(rpath)
+  end
+
+  rpath = unquote_path(rpath)
+  local separator = rootpath:sub(-1) == '/' and '' or '/'
+  return rootpath .. separator .. rpath,
     { us = status:sub(1, 1), them = status:sub(2, 2) }
 end
 
