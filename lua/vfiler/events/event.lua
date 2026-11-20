@@ -95,9 +95,7 @@ function M.clear(bufnr)
     return
   end
   for group, _ in pairs(registered) do
-    vim.commands(
-      core.autocmd.delete_group(get_group_name(group, bufnr))
-    )
+    vim.commands(core.autocmd.delete_group(get_group_name(group, bufnr)))
   end
   registered_events[bufnr] = nil
 end
