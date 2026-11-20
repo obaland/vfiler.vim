@@ -141,9 +141,9 @@ else
   local function del_keymap(mode, lhs, buffer)
     local command
     if mode == '!' then
-      command = 'map!'
+      command = 'unmap!'
     else
-      command = mode .. 'map'
+      command = mode .. 'unmap'
     end
     if buffer then
       command = command .. ' <buffer>'
