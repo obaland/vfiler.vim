@@ -64,14 +64,14 @@ end
 local function rename_one_file(vfiler, context, view, target)
   local name = target.name
   local rename = cmdline.input('New file name - ' .. name, name, 'file')
-  if #rename == 0 then
-    -- canceled
+  if #rename == 0 or rename == name then
+    -- canceled or unchanged
     return
   end
 
   -- Check overwrite
   local filepath = core.path.join(target.parent.path, rename)
-  if core.path.exists(filepath) == 1 then
+  if core.path.exists(filepath) then
     if cmdline.util.confirm_overwrite(rename) ~= cmdline.choice.YES then
       return
     end
