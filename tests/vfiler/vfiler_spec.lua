@@ -1,5 +1,6 @@
 local u = require('tests/utilities')
 local Buffer = require('vfiler/buffer')
+local VFiler = require('vfiler/vfiler')
 
 describe('vfiler', function()
   describe('Start', function()
@@ -97,6 +98,108 @@ describe('vfiler', function()
       assert.is_not_nil(options.height)
 
       vfiler:quit()
+    end)
+  end)
+
+  describe('cleanup', function()
+    local root, created
+
+    local function start(new)
+      assert.is_true(require('vfiler').start(root, {
+        options = {
+          name = 'cleanup-test',
+          new = new or false,
+          layout = 'none',
+          columns = 'name',
+          session = 'none',
+          git = { enabled = false },
+        },
+      }))
+      local filer = VFiler.get(vim.fn.bufnr())
+      assert.is_not_nil(filer)
+      local known = false
+      for _, object in ipairs(created) do
+        known = known or object == filer
+      end
+      if not known then
+        table.insert(created, filer)
+      end
+      return filer, filer._buffer.number
+    end
+
+    before_each(function()
+      created = {}
+      root = vim.fn.tempname()
+      vim.fn.mkdir(root, 'p')
+    end)
+
+    after_each(function()
+      for i = #created, 1, -1 do
+        created[i]:wipeout()
+      end
+      vim.fn.delete(root, 'rf')
+    end)
+
+    it('retains a loaded visible filer', function()
+      local filer, bufnr = start()
+      VFiler.cleanup()
+      assert.is_true(VFiler.exists(bufnr))
+      assert.are.equal(filer, VFiler.get(bufnr))
+      assert.are.equal(1, vim.fn.bufloaded(bufnr))
+    end)
+
+    it('retains and reuses a loaded hidden filer', function()
+      local filer, bufnr = start()
+      vim.cmd('enew')
+      assert.are.equal(-1, vim.fn.bufwinid(bufnr))
+      assert.are.equal(1, vim.fn.bufloaded(bufnr))
+      VFiler.cleanup()
+      assert.are.equal(filer, VFiler.get(bufnr))
+      local reopened, reopened_bufnr = start()
+      assert.are.equal(filer, reopened)
+      assert.are.equal(bufnr, reopened_bufnr)
+    end)
+
+    it('removes wiped buffers without wiping them again', function()
+      local _, bufnr = start()
+      vim.cmd('bwipeout! ' .. bufnr)
+      assert.are.equal(0, vim.fn.bufexists(bufnr))
+      VFiler.cleanup()
+      assert.is_false(VFiler.exists(bufnr))
+      assert.is_nil(VFiler.get(bufnr))
+    end)
+
+    it('wipes unloaded buffers and removes their entries', function()
+      local _, bufnr = start()
+      vim.cmd('enew')
+      vim.cmd('bunload! ' .. bufnr)
+      assert.are.equal(1, vim.fn.bufexists(bufnr))
+      assert.are.equal(0, vim.fn.bufloaded(bufnr))
+      VFiler.cleanup()
+      assert.are.equal(0, vim.fn.bufexists(bufnr))
+      assert.is_false(VFiler.exists(bufnr))
+      assert.is_nil(VFiler.get(bufnr))
+    end)
+
+    it('starts again after an external buffer wipe', function()
+      local old, bufnr = start()
+      vim.cmd('bwipeout! ' .. bufnr)
+      local restarted, new_bufnr = start()
+      assert.is_false(VFiler.exists(bufnr))
+      assert.is_not.equal(old, restarted)
+      assert.is_not.equal(bufnr, new_bufnr)
+      assert.are.equal(restarted, VFiler.get(new_bufnr))
+      assert.are.equal(1, vim.fn.bufloaded(new_bufnr))
+    end)
+
+    it('removes stale entries while preserving a valid filer', function()
+      local _, stale_bufnr = start(true)
+      local kept, kept_bufnr = start(true)
+      vim.cmd('bwipeout! ' .. stale_bufnr)
+      VFiler.cleanup()
+      assert.is_false(VFiler.exists(stale_bufnr))
+      assert.are.equal(kept, VFiler.get(kept_bufnr))
+      assert.are.equal(1, vim.fn.bufloaded(kept_bufnr))
     end)
   end)
 end)

@@ -48,10 +48,12 @@ end
 function VFiler.cleanup()
   local valid_filers = {}
   for bufnr, vfiler in pairs(vfiler_objects) do
-    local exists = vim.fn.bufexists(bufnr) and vim.fn.bufloaded(bufnr)
-    if exists then
+    local exists = vim.fn.bufexists(bufnr) == 1
+    local loaded = vim.fn.bufloaded(bufnr) == 1
+
+    if exists and loaded then
       valid_filers[bufnr] = vfiler
-    else
+    elseif exists then
       vim.command('bwipeout ' .. bufnr)
     end
   end
