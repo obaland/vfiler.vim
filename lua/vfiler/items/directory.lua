@@ -129,7 +129,23 @@ function Directory:_remove(item)
   end
 end
 
-function Directory:_open(recursive, child_directories)
+function Directory:_open(recursive, child_directories, ancestors)
+  -- Prevent recursive cycles by tracking resolved paths on the current branch.
+  -- Remove each path after visiting its children so sibling links to the same
+  -- directory can still be expanded.
+  local realpath
+  if recursive then
+    ancestors = ancestors or {}
+    realpath = core.path.normalize(vim.fn.resolve(self.path))
+    if core.is_windows then
+      realpath = realpath:lower()
+    end
+    if ancestors[realpath] then
+      return
+    end
+    ancestors[realpath] = true
+  end
+
   self.children = {}
   self.child_directories = {}
   local children = {}
@@ -145,10 +161,19 @@ function Directory:_open(recursive, child_directories)
       end
     end
   end)
+
   for _, child in ipairs(children) do
     local item = child[1]
     local old_item = child[2]
-    item:_open(recursive, (old_item and old_item.child_directories) or {})
+    item:_open(
+      recursive,
+      (old_item and old_item.child_directories) or {},
+      ancestors
+    )
+  end
+
+  if recursive then
+    ancestors[realpath] = nil
   end
   self.opened = true
 end
