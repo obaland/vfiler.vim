@@ -43,6 +43,9 @@ if core.is_windows then
   end
 else
   function M.copy_directory(src, dest)
+    if core.path.is_directory(dest) and vim.fn.getftype(src) == 'dir' then
+      src = core.path.join(src, '.')
+    end
     core.system(('cp -fR %s %s'):format(escape(src), escape(dest)))
     return vim.v.shell_error == 0
   end

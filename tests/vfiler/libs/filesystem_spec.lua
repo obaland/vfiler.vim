@@ -220,6 +220,130 @@ describe('filesystem $shell:' .. vim.o.shell, function()
       assert.is_true(result)
       assert.is_false(core.path.is_directory(destdir))
     end
+
+    describe('contents', function()
+      local root, source, destination
+
+      local function write(path, content)
+        assert.are.equal(0, vim.fn.writefile({ content }, path))
+      end
+
+      before_each(function()
+        root = vim.fn.tempname()
+        vim.fn.mkdir(root, 'p')
+        source = core.path.join(root, 'source')
+        destination = core.path.join(root, 'destination')
+        vim.fn.mkdir(source, 'p')
+        write(source .. '/shared.txt', 'NEW')
+        write(source .. '/added.txt', 'ADDED')
+        write(source .. '/.hidden', 'HIDDEN')
+        vim.fn.mkdir(source .. '/empty', 'p')
+      end)
+
+      after_each(function()
+        vim.fn.delete(root, 'rf')
+      end)
+
+      local function assert_contents()
+        assert.are.same(
+          { 'NEW' },
+          vim.fn.readfile(destination .. '/shared.txt')
+        )
+        assert.are.same(
+          { 'ADDED' },
+          vim.fn.readfile(destination .. '/added.txt')
+        )
+        assert.are.same(
+          { 'HIDDEN' },
+          vim.fn.readfile(destination .. '/.hidden')
+        )
+        assert.are.equal(1, vim.fn.isdirectory(destination .. '/empty'))
+        local nested = core.path.join(destination, core.path.name(source))
+        assert.are.equal(0, vim.fn.isdirectory(nested))
+        assert.are.same(
+          { 'NEW' },
+          vim.fn.readfile(source .. '/shared.txt')
+        )
+      end
+
+      local function prepare_destination()
+        vim.fn.mkdir(destination, 'p')
+        write(destination .. '/shared.txt', 'OLD DESTINATION')
+        write(destination .. '/keep.txt', 'KEEP')
+      end
+
+      it('copies contents to a new destination', function()
+        assert.is_true(fs.copy_directory(source, destination))
+        assert_contents()
+      end)
+
+      it('merges into an existing destination', function()
+        prepare_destination()
+        assert.is_true(fs.copy_directory(source, destination))
+        assert_contents()
+        assert.are.same(
+          { 'KEEP' },
+          vim.fn.readfile(destination .. '/keep.txt')
+        )
+      end)
+
+      it('merges a source with a trailing separator', function()
+        prepare_destination()
+        assert.is_true(fs.copy_directory(source .. '/', destination))
+        assert_contents()
+      end)
+
+      it('merges paths with spaces and special characters', function()
+        local renamed = core.path.join(root, "source #%'")
+        assert.are.equal(0, vim.fn.rename(source, renamed))
+        source = renamed
+        destination = core.path.join(root, "destination #%'")
+        prepare_destination()
+        assert.is_true(fs.copy_directory(source, destination))
+        assert_contents()
+      end)
+
+      it('keeps contents when the source is missing', function()
+        prepare_destination()
+        assert.are.equal(0, vim.fn.delete(source, 'rf'))
+        assert.is_false(fs.copy_directory(source, destination))
+        assert.are.same(
+          { 'OLD DESTINATION' },
+          vim.fn.readfile(destination .. '/shared.txt')
+        )
+        assert.are.same(
+          { 'KEEP' },
+          vim.fn.readfile(destination .. '/keep.txt')
+        )
+      end)
+
+      if not core.is_windows then
+        it('copies a directory symlink as a symlink', function()
+          local link = core.path.join(root, 'source-link')
+          vim.fn.system({ 'ln', '-s', source, link })
+          assert.are.equal(0, vim.v.shell_error)
+          assert.is_true(fs.copy_directory(link, destination))
+          assert.are.equal('link', vim.fn.getftype(destination))
+          assert.are.equal(source, vim.fn.resolve(destination))
+        end)
+
+        it('preserves child symlinks when merging', function()
+          local link = source .. '/child-link'
+          vim.fn.system({ 'ln', '-s', source .. '/shared.txt', link })
+          assert.are.equal(0, vim.v.shell_error)
+          prepare_destination()
+          assert.is_true(fs.copy_directory(source, destination))
+          assert.are.equal(
+            'link',
+            vim.fn.getftype(destination .. '/child-link')
+          )
+          assert.are.same(
+            { 'NEW' },
+            vim.fn.readfile(destination .. '/child-link')
+          )
+        end)
+      end
+    end)
   end)
 
   describe('move directory', function()
