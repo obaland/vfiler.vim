@@ -19,7 +19,7 @@ local function to_mode_string(mode)
   -- mask the file type field
   mode = mode % 512
   local s = ''
-  while mode > 0 do
+  for _ = 1, 3 do
     s = perm_patterns[(mode % 8) + 1] .. s
     mode = math.modf(mode / 8)
   end

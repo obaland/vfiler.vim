@@ -26,6 +26,92 @@ describe('filesystem $shell:' .. vim.o.shell, function()
     end
   end)
 
+  if not core.is_windows then
+    describe('permission modes', function()
+      local root, filepath, directory
+
+      local modes = {
+        { name = '000', value = '---------' },
+        { name = '001', value = '--------x' },
+        { name = '007', value = '------rwx' },
+        { name = '010', value = '-----x---' },
+        { name = '040', value = '---r-----' },
+        { name = '077', value = '---rwxrwx' },
+        { name = '100', value = '--x------' },
+        { name = '600', value = 'rw-------' },
+        { name = '644', value = 'rw-r--r--' },
+        { name = '755', value = 'rwxr-xr-x' },
+        { name = '777', value = 'rwxrwxrwx' },
+      }
+
+      before_each(function()
+        root = vim.fn.tempname()
+        filepath = core.path.join(root, 'file')
+        directory = core.path.join(root, 'directory')
+        vim.fn.mkdir(root, 'p')
+        vim.fn.mkdir(directory)
+        vim.fn.writefile({ 'CONTENT' }, filepath)
+      end)
+
+      after_each(function()
+        -- Restore owner access before deleting restricted directories.
+        vim.fn.setfperm(filepath, 'rw-------')
+        vim.fn.setfperm(directory, 'rwx------')
+        vim.fn.delete(root, 'rf')
+      end)
+
+      local function assert_mode(stat, expected)
+        assert.is_not_nil(stat)
+        assert.are.equal(expected, stat.mode)
+        assert.are.equal(9, #stat.mode)
+      end
+
+      for _, mode in ipairs(modes) do
+        it('reads nine-character file mode ' .. mode.name, function()
+          assert.are.equal(1, vim.fn.setfperm(filepath, mode.value))
+
+          assert_mode(fs.stat(filepath), mode.value)
+        end)
+
+        it('reads nine-character directory mode ' .. mode.name, function()
+          assert.are.equal(1, vim.fn.setfperm(directory, mode.value))
+
+          assert_mode(fs.stat(directory), mode.value)
+        end)
+
+        it('scans file and directory mode ' .. mode.name, function()
+          assert.are.equal(1, vim.fn.setfperm(filepath, mode.value))
+          assert.are.equal(1, vim.fn.setfperm(directory, mode.value))
+          local entries = {}
+
+          fs.scandir(root, function(stat)
+            entries[stat.name] = stat
+          end)
+
+          assert_mode(entries.file, mode.value)
+          assert_mode(entries.directory, mode.value)
+        end)
+      end
+
+      it('keeps other and owner execute permissions separate', function()
+        assert.are.equal(1, vim.fn.setfperm(filepath, '--------x'))
+        local stat = fs.stat(filepath)
+        local column = require('vfiler/columns/mode').new()
+
+        local text = column:to_text({
+          name = 'file',
+          type = stat.type,
+          mode = stat.mode,
+          link = stat.link,
+        }, 4)
+
+        assert.are.equal('----', text.string)
+        assert.are.equal('file', text.syntax)
+        assert.are.equal(4, text.width)
+      end)
+    end)
+  end
+
   describe('create file', function()
     local filepaths = {
       'testfile',
