@@ -193,7 +193,7 @@ function M.open_preview(vfiler, context, view)
 
   preview.line = vim.fn.line('.')
   local item = view:get_item(preview.line)
-  if item.type ~= 'file' then
+  if not item or item.type ~= 'file' then
     preview:close()
   else
     local hook = config.configs.hook.read_preview_file
@@ -227,14 +227,14 @@ end
 function M.open_tree(_, context, view, recursive)
   local lnum = vim.fn.line('.')
   local item = view:get_item(lnum)
-  if item.type ~= 'directory' or item.opened then
+  if not item or item.type ~= 'directory' or item.opened then
     return
   end
   item:open(recursive)
   view:draw(context)
   lnum = lnum + 1
   core.cursor.move(lnum)
-  context:save(view:get_item(lnum).path)
+  context:save((view:get_item(lnum) or item).path)
   view:git_status_async(item.path, function(v)
     v:redraw()
   end)

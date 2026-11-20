@@ -16,7 +16,7 @@ function M.change_sort(vfiler, context, view)
       local item = v:get_item()
       c.options.sort = sort_type
       v:draw(c)
-      v:move_cursor(item.path)
+      v:move_cursor(item and item.path)
     end,
   })
   utils.start_extension(vfiler, context, view, menu)

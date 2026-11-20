@@ -294,7 +294,12 @@ end
 
 --- Get the index of the first sibling item
 function View:indexof_first_sibling(lnum)
-  local level = self._items.lnum_indexes[lnum].level
+  local current = self._items.lnum_indexes[lnum]
+  if not current then
+    return lnum
+  end
+  local level = current.level
+
   local top_lnum = self:top_lnum()
   for i = lnum - 1, top_lnum, -1 do
     local index = self._items.lnum_indexes[i]
@@ -307,7 +312,12 @@ end
 
 --- Get the index of the last sibling item
 function View:indexof_last_sibling(lnum)
-  local level = self._items.lnum_indexes[lnum].level
+  local current = self._items.lnum_indexes[lnum]
+  if not current then
+    return lnum
+  end
+  local level = current.level
+
   for i = lnum + 1, self._items:length() do
     local index = self._items.lnum_indexes[i]
     if index.level == level and not index.next_sibling then
@@ -319,7 +329,8 @@ end
 
 --- Get the index of the next sibling item
 function View:indexof_next_sibling(lnum)
-  local next = self._items.lnum_indexes[lnum].next_sibling
+  local current = self._items.lnum_indexes[lnum]
+  local next = current and current.next_sibling
   if next then
     return next
   end
@@ -328,7 +339,8 @@ end
 
 --- Get the index of the previous sibiling item
 function View:indexof_prev_sibling(lnum)
-  local prev = self._items.lnum_indexes[lnum].prev_sibling
+  local current = self._items.lnum_indexes[lnum]
+  local prev = current and current.prev_sibling
   if prev then
     return prev
   end

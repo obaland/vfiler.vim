@@ -9,6 +9,15 @@ local VFiler = require('vfiler/vfiler')
 
 local M = {}
 
+local function resolve_destination_directory(context, view)
+  local item = view:get_item()
+  if not item then
+    -- Empty views still allow creating and pasting items into the root.
+    return context.root
+  end
+  return item.opened and item or item.parent
+end
+
 local function create_files(dest, contents, create)
   local created = {}
   for _, name in ipairs(contents) do
@@ -210,8 +219,7 @@ function M.move_to_filer(vfiler, context, view)
 end
 
 function M.new_directory(vfiler, context, view)
-  local item = view:get_item()
-  local dir = item.opened and item or item.parent
+  local dir = resolve_destination_directory(context, view)
 
   local function create_directory(dest, name, filepath)
     if core.path.is_directory(filepath) then
@@ -239,16 +247,7 @@ function M.new_directory(vfiler, context, view)
 end
 
 function M.new_file(vfiler, context, view)
-  local item = view:get_item()
-  local dir
-  if not item then
-    -- If there is no header line and the current root directory is empty.
-    dir = context.root
-  elseif item.opened then
-    dir = item
-  else
-    dir = item.parent
-  end
+  local dir = resolve_destination_directory(context, view)
 
   local function create_file(dest, name, filepath)
     if core.path.filereadable(filepath) then
@@ -282,8 +281,7 @@ function M.paste(vfiler, context, view)
     return
   end
 
-  local item = view:get_item()
-  local dest = item.opened and item or item.parent
+  local dest = resolve_destination_directory(context, view)
   cb:paste(dest)
   VFiler.foreach(buffer.reload)
 end

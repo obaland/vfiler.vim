@@ -77,8 +77,11 @@ end
 
 function M.close_tree(vfiler, context, view)
   local item = view:get_item()
-  local target = item.opened and item or item.parent
+  if not item then
+    return
+  end
 
+  local target = item.opened and item or item.parent
   target:close()
   view:draw(context)
   view:move_cursor(target.path)
@@ -127,7 +130,10 @@ function M.switch_to_drive(vfiler, context, view)
         drive = core.path.join(get_mount_path(), drive)
       end
 
-      ctx:save(v:get_item().path)
+      local item = v:get_item()
+      if item then
+        ctx:save(item.path)
+      end
       local focus_path = ctx:switch_drive(drive)
       v:draw(ctx)
       v:move_cursor(focus_path)

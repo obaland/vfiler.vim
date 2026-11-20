@@ -3,8 +3,13 @@ local utils = require('vfiler/actions/utilities')
 local M = {}
 
 function M.add_bookmark(vfiler, context, view)
+  local item = view:get_item()
+  if not item then
+    return
+  end
+
   local Bookmark = require('vfiler/extensions/bookmark')
-  Bookmark.add(view:get_item())
+  Bookmark.add(item)
 end
 
 function M.list_bookmark(vfiler, context, view)
