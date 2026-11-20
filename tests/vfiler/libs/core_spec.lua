@@ -32,7 +32,7 @@ describe('core.string', function()
       { str = '\\\\unc\\foo\\', char = '\\', expected = 4 },
     }
     for _, data in ipairs(dataset) do
-      it(data.input, function()
+      it(('counts %q in %q'):format(data.char, data.str), function()
         eq(data.expected, count_char(data.str, data.char))
       end)
     end

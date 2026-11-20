@@ -1,5 +1,5 @@
 local a = require('vfiler/actions/view')
-local u = require('tests/utilities')
+local u = require('tests/helper/utilities')
 
 local function find(view, target)
   for item in view:walk_items() do

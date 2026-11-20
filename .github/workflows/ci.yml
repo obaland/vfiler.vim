@@ -37,9 +37,6 @@ jobs:
         with:
           neovim: true
           version: ${{ matrix.version }}
-      - name: Prepare
-        run: |
-          git clone --depth 1 https://github.com/nvim-lua/plenary.nvim ../../nvim-lua/plenary.nvim
       - name: Run tests
         run: |
           nvim --version

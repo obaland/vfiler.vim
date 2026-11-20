@@ -1,5 +1,5 @@
 local a = require('vfiler/actions/buffer')
-local u = require('tests/utilities')
+local u = require('tests/helper/utilities')
 local VFiler = require('vfiler/vfiler')
 
 local configs = {
