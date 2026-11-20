@@ -260,4 +260,23 @@ function M.win_executes(window, cmds, silent)
   end
 end
 
+------------------------------------------------------------------------------
+-- Window
+------------------------------------------------------------------------------
+if is_nvim then
+  function M.win_is_valid(winid)
+    if winid <= 0 then
+      return false
+    end
+    return vim.api.nvim_win_is_valid(winid)
+  end
+else
+  function M.win_is_valid(winid)
+    if winid <= 0 then
+      return false
+    end
+    return vim.fn.win_gettype(winid) ~= 'unknown'
+  end
+end
+
 return M

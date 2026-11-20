@@ -400,9 +400,8 @@ function View:redraw()
 
   local cache = self._cache
   local winid = self:winid()
-  if winid < 0 then
-    -- NOTE: for debugging.
-    --core.message.warning('The buffer is invisible and cannot be drawn.')
+
+  if not vim.win_is_valid(winid) then
     return
   elseif cache.winid ~= winid then
     -- set window options

@@ -170,10 +170,12 @@ describe('git', function()
       vim.fn.delete(temp, 'rf')
     end)
 
+    local arrow = core.is_windows and ' → ' or ' -> '
+    local arrow_name = 'a' .. arrow .. 'b.txt'
     local names = {
       'plain.txt',
       '日本語.txt',
-      'a -> b.txt',
+      arrow_name,
       'space name.txt',
       '資料/日本語.txt',
     }
@@ -218,12 +220,14 @@ describe('git', function()
     end)
 
     it('reads a renamed file with Japanese names and arrows', function()
-      write('旧 -> 名前.txt')
+      local old = '旧' .. arrow .. '名前.txt'
+      local new = '新' .. arrow .. '名前.txt'
+      write(old)
       commit()
-      run({ 'mv', '--', '旧 -> 名前.txt', '新 -> 名前.txt' })
+      run({ 'mv', '--', old, new })
       local result = statuses()
-      assert_status(result, '新 -> 名前.txt', 'R', ' ')
-      assert.is_nil(result[path('旧 -> 名前.txt')])
+      assert_status(result, new, 'R', ' ')
+      assert.is_nil(result[path(old)])
     end)
 
     it('reads an ordinary rename', function()
@@ -262,7 +266,7 @@ describe('git', function()
       assert_status(result, '資料/', ' ', '*')
     end)
 
-    for _, name in ipairs({ 'plain.txt', '日本語.txt', 'a -> b.txt' }) do
+    for _, name in ipairs({ 'plain.txt', '日本語.txt', arrow_name }) do
       it('keeps synchronous status working for ' .. name, function()
         write(name)
         assert_status(git.status_file(root, path(name), {

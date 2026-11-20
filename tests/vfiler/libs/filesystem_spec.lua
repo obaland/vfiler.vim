@@ -410,7 +410,7 @@ describe('filesystem $shell:' .. vim.o.shell, function()
           assert.are.equal(0, vim.v.shell_error)
           assert.is_true(fs.copy_directory(link, destination))
           assert.are.equal('link', vim.fn.getftype(destination))
-          assert.are.equal(source, vim.fn.resolve(destination))
+          assert.are.equal(vim.fn.resolve(source), vim.fn.resolve(destination))
         end)
 
         it('preserves child symlinks when merging', function()
