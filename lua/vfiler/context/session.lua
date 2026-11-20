@@ -80,7 +80,7 @@ end
 function Session._open(root, attribute)
   for _, child in ipairs(root.children) do
     local opened = attribute.opened_attributes[child.name]
-    if opened then
+    if opened and child.type == 'directory' then
       child:open()
       Session._open(child, opened)
     end
