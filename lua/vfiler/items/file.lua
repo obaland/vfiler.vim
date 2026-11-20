@@ -16,11 +16,14 @@ function File.new(stat)
 end
 
 function File:copy(destpath)
-  fs.copy_file(self.path, destpath)
-  if not core.path.exists(destpath) then
+  if not fs.copy_file(self.path, destpath) then
     return nil
   end
-  return File.new(fs.stat(destpath))
+  local stat = fs.stat(destpath)
+  if not stat then
+    return nil
+  end
+  return File.new(stat)
 end
 
 function File:move(destpath)

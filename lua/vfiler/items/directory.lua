@@ -62,11 +62,14 @@ function Directory:close()
 end
 
 function Directory:copy(destpath)
-  fs.copy_directory(self:_get_path(), destpath)
-  if not core.path.exists(destpath) then
+  if not fs.copy_directory(self:_get_path(), destpath) then
     return nil
   end
-  return Directory.new(fs.stat(destpath))
+  local stat = fs.stat(destpath)
+  if not stat then
+    return nil
+  end
+  return Directory.new(stat)
 end
 
 function Directory:create_directory(name)
