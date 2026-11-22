@@ -481,7 +481,7 @@ function View:redraw(lnums)
     for i = self:top_lnum(), #items do
       table.insert(lines, self:_to_line(items[i], conceallevel, texts))
     end
-   end
+  end
 
   -- set buffer lines
   --local saved_view = vim.fn.winsaveview()

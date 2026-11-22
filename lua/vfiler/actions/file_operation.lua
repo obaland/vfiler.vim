@@ -20,6 +20,10 @@ local function resolve_destination_directory(context, view)
 end
 
 local function directory_key(path)
+  if core.is_windows then
+    -- Resolve DOS short directory names when normalizing the path.
+    path = core.path.join(path, '.')
+  end
   local key = core.path.normalize(path):gsub('/+$', '') .. '/'
   if core.is_windows or core.is_mac then
     key = vim.fn.tolower(key)

@@ -66,7 +66,7 @@ describe('window picker statuslines', function()
     vim.wo[second].statusline = 'second window'
     vim.o.laststatus = 0
 
-    dir = vim.fn.tempname()
+    dir = vim.fn.resolve(vim.fn.tempname())
     assert.are.equal(1, vim.fn.mkdir(dir))
     path = core.path.join(dir, 'picked.txt')
     assert.are.equal(0, vim.fn.writefile({ 'picked' }, path))

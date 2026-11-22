@@ -39,7 +39,7 @@ describe('Git', function()
     before_each(function()
       local dir = vim.fn.tempname()
       assert.equal(1, vim.fn.mkdir(dir .. '/nested', 'p'))
-      root = core.path.normalize(dir)
+      root = core.path.normalize(vim.fn.resolve(dir))
       nested = root .. 'nested/'
       assert.equal(0, vim.fn.writefile({}, nested .. 'tracked.txt'))
       git = Git.new({ enabled = true })
@@ -99,7 +99,7 @@ describe('Git', function()
     end
 
     before_each(function()
-      root = core.path.normalize(vim.fn.tempname())
+      root = core.path.normalize(vim.fn.resolve(vim.fn.tempname()))
       git = Git.new({ enabled = true })
       git._git_executable = true
       jobs = {}

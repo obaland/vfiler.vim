@@ -111,7 +111,8 @@ local function parse_git_status(result)
     rpath = renamed_path(rpath)
   end
 
-  return unquote_path(rpath), { us = status:sub(1, 1), them = status:sub(2, 2) }
+  return unquote_path(rpath),
+    { us = status:sub(1, 1), them = status:sub(2, 2) }
 end
 
 local function parse_toplevel_path(result)

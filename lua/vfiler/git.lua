@@ -166,5 +166,4 @@ function Git:_start_status(root, request)
   end
 end
 
-
 return Git

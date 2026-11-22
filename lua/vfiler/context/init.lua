@@ -8,22 +8,6 @@ local Session = require('vfiler/context/session')
 local Context = {}
 Context.__index = Context
 
-local function walk_directories(root)
-  local function walk(item)
-    if item.children then
-      for _, child in ipairs(item.children) do
-        if child.type == 'directory' then
-          walk(child)
-          coroutine.yield(child)
-        end
-      end
-    end
-  end
-  return coroutine.wrap(function()
-    walk(root)
-  end)
-end
-
 local function reload_opened_directories(directory)
   if not directory.child_directories then
     return
