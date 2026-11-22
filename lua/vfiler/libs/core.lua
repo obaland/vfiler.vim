@@ -441,11 +441,8 @@ local function strwidthpart_reverse(str, strwidth, width)
 end
 
 local function truncate(str, width)
-  local bytes = { str:byte(1, #str) }
-  for _, byte in ipairs(bytes) do
-    if (0 > byte) or (byte > 127) then
-      return strwidthpart(str, width)
-    end
+  if str:find('[\128-\255]') then
+    return strwidthpart(str, width)
   end
   return str:sub(1, width)
 end
@@ -486,10 +483,13 @@ function M.string.split(str, pattern)
   return vim.list.from(vim.fn.split(str, pattern))
 end
 
-function M.string.truncate(str, width, sep, footer_width)
+local function truncate_text(str, width, sep, footer_width)
+  if type(str) == 'string' and #str <= width and not str:find('[^ -~]') then
+    return str, #str
+  end
   local strwidth = vim.fn.strwidth(str)
   if strwidth <= width then
-    return str
+    return str, strwidth
   end
   footer_width = footer_width or 0
   local header_width = width - vim.fn.strwidth(sep) - footer_width
@@ -498,6 +498,16 @@ function M.string.truncate(str, width, sep, footer_width)
     .. sep
     .. strwidthpart_reverse(replaced, strwidth, footer_width)
   return truncate(result, width)
+end
+
+function M.string.truncate(str, width, sep, footer_width)
+  return (truncate_text(str, width, sep, footer_width))
+end
+
+--- Truncate the string and return its display width.
+function M.string.truncate_with_width(str, width, sep, footer_width)
+  local text, display_width = truncate_text(str, width, sep, footer_width)
+  return text, display_width or vim.fn.strwidth(text)
 end
 
 -- Escape because of the vim pattern

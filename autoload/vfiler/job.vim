@@ -33,7 +33,12 @@ function! vfiler#job#start(id, command) abort
         \ 'out_cb': function('s:on_out', [ a:id ]),
         \ 'exit_cb': function('s:on_exit', [ a:id ]),
         \ }
-  let s:jobs[a:id] = job_start(a:command, l:options)
+  let l:job = job_start(a:command, l:options)
+  if job_status(l:job) ==# 'fail'
+    return 0
+  endif
+  let s:jobs[a:id] = l:job
+  return 1
 endfunction
 
 function! vfiler#job#stop(id) abort

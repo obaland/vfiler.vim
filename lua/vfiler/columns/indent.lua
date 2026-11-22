@@ -1,7 +1,7 @@
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
-local IndentColumn = {}
+local IndentColumn = { partial_redraw = true }
 
 IndentColumn.configs = {
   icon = '|',

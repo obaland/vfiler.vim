@@ -1,7 +1,7 @@
 local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
-local IconColumn = {}
+local IconColumn = { partial_redraw = true }
 
 IconColumn.configs = {
   icons = {
@@ -80,12 +80,20 @@ function IconColumn:to_text(item, width)
   else
     syntax = 'file'
   end
-  local icon = IconColumn.configs.icons[syntax]
-  -- padding spaces
-  local text = icon .. (' '):rep(icon_width - vim.fn.strwidth(icon))
+  local text = IconColumn.configs.icons[syntax]
+  local display_width
+  if type(text) == 'string' and not text:find('[^ -~]') then
+    display_width = #text
+  else
+    display_width = vim.fn.strwidth(text)
+  end
+  if display_width < icon_width then
+    text = text .. (' '):rep(icon_width - display_width)
+    display_width = icon_width
+  end
   return {
     string = text,
-    width = vim.fn.strwidth(text),
+    width = display_width,
     syntax = syntax,
   }
 end

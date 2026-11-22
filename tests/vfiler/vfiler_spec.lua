@@ -1,3 +1,4 @@
+local core = require('vfiler/libs/core')
 local u = require('tests/helper/utilities')
 local Buffer = require('vfiler/buffer')
 local VFiler = require('vfiler/vfiler')
@@ -30,6 +31,55 @@ describe('vfiler', function()
       assert.equal(bufnr, vim.fn.bufnr())
       assert.is_true(Buffer.is_vfiler_buffer(bufnr))
       vfiler:quit(true)
+    end)
+  end)
+
+  describe('start at a nested path', function()
+    local dir, filer, parent, child, file
+
+    before_each(function()
+      dir = core.path.normalize(vim.fn.tempname())
+      parent = dir .. '/parent/'
+      child = parent .. 'child/'
+      file = child .. 'target.txt'
+      assert.equal(1, vim.fn.mkdir(child, 'p'))
+      assert.equal(0, vim.fn.writefile({}, dir .. '/sibling.txt'))
+      assert.equal(0, vim.fn.writefile({}, parent .. 'sibling.txt'))
+      assert.equal(0, vim.fn.writefile({}, child .. 'sibling.txt'))
+      assert.equal(0, vim.fn.writefile({}, file))
+      assert.is_true(require('vfiler').start(dir, {
+        options = {
+          columns = 'name',
+          layout = 'right',
+          new = true,
+          session = 'none',
+        },
+      }))
+      filer = VFiler.get(vim.fn.bufnr())
+    end)
+
+    after_each(function()
+      if filer then
+        filer:wipeout()
+        filer = nil
+      end
+      vim.fn.delete(dir, 'rf')
+    end)
+
+    it('opens the ancestor directories and selects the target file', function()
+      filer:start(dir, file)
+      local view = filer._view
+      assert.is_true(view:itemof(parent).opened)
+      assert.is_true(view:itemof(child).opened)
+      assert.equal(file, view:get_item().path)
+    end)
+
+    it('selects a target directory without expanding it', function()
+      filer:start(dir, child)
+      local view = filer._view
+      assert.is_true(view:itemof(parent).opened)
+      assert.equal(child, view:get_item().path)
+      assert.is_false(view:get_item().opened)
     end)
   end)
 

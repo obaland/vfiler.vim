@@ -1,6 +1,6 @@
 local core = require('vfiler/libs/core')
 
-local GitColumn = {}
+local GitColumn = { partial_redraw = true }
 
 local COLUMN_WIDTH = 4
 

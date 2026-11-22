@@ -3,6 +3,7 @@ local fs = require('vfiler/libs/filesystem')
 
 local Directory = require('vfiler/items/directory')
 local File = require('vfiler/items/file')
+local Item = require('vfiler/items/item')
 
 local function describe_copy(item_class, item_type, copy_name)
   describe('copy', function()
@@ -96,6 +97,51 @@ end
 
 describe('item', function()
   local root = vim.fn.fnamemodify('./', ':p')
+
+  describe('construction', function()
+    it('initializes independent files with the base and file methods', function()
+      local stat = {
+        name = 'file.txt',
+        path = core.path.join(root, 'file.txt'),
+        type = 'file',
+        size = 42,
+        time = 1000000000,
+        mode = 'rw-r--r--',
+        link = false,
+      }
+      local first, second = File.new(stat), File.new(stat)
+
+      first.selected = true
+      first.level = 2
+
+      assert.are.equal(Item.update, second.update)
+      assert.are.equal(File.reload, second.reload)
+      assert.are.equal(stat.path, second.path)
+      assert.are.equal(stat.size, second.size)
+      assert.are.equal(0, second.level)
+      assert.is_false(second.selected)
+      assert.is_nil(second.parent)
+    end)
+
+    it('keeps each directory child list independent', function()
+      local stat = fs.stat(root)
+      local first, second = Directory.new(stat), Directory.new(stat)
+      local child = Directory.new(fs.stat(core.path.join(root, 'doc')))
+
+      first:add(child)
+
+      assert.are.equal(Item.delete, first.delete)
+      assert.are.equal(Directory.open, first.open)
+      assert.are.equal(first, child.parent)
+      assert.are.equal(1, child.level)
+      assert.are.equal(1, #first.children)
+      assert.are.equal(child, first.children[1])
+      assert.are.equal(child, first.child_directories[child.name])
+      assert.is_nil(second.children)
+      assert.is_nil(second.child_directories)
+      assert.is_false(second.opened)
+    end)
+  end)
 
   describe('directory', function()
     describe_copy(Directory, 'directory', 'copy_directory')

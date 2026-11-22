@@ -1,6 +1,6 @@
 local core = require('vfiler/libs/core')
 
-local TypeColumn = {}
+local TypeColumn = { partial_redraw = true }
 
 function TypeColumn.new()
   local end_mark = '/>t'

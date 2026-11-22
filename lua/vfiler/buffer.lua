@@ -79,9 +79,11 @@ function Buffer:set_line(lnum, line)
   vim.fn.setbufline(self.number, lnum, line)
 end
 
-function Buffer:set_lines(lines)
-  vim.fn.setbufline(self.number, 1, lines)
-  vim.fn.deletebufline(self.number, #lines + 1, '$')
+function Buffer:set_lines(lines, lnum)
+  vim.fn.setbufline(self.number, lnum or 1, lines)
+  if not lnum then
+    vim.fn.deletebufline(self.number, #lines + 1, '$')
+  end
 end
 
 function Buffer:set_option(option, value)

@@ -72,13 +72,16 @@ function Column.new(syntaxes)
   return self
 end
 
-function Column:get_text(item, width, winid)
+function Column:get_text(item, width, winid, conceallevel)
   local text = self:to_text(item, width)
   -- Surround it with text for syntax.
   local string = text.string
   if text.syntax then
     local mark = self._marks[text.syntax]
-    if mark and vim.get_win_option(winid, 'conceallevel') > 1 then
+    if
+      mark
+      and (conceallevel or vim.get_win_option(winid, 'conceallevel')) > 1
+    then
       string = mark.start_mark .. string .. mark.end_mark
     end
   end
@@ -91,6 +94,10 @@ end
 
 function Column:highlights()
   return self._hi_commands
+end
+
+function Column:needs_redraw()
+  return not self.partial_redraw
 end
 
 function Column:to_text(item, width)

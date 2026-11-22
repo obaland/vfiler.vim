@@ -24,6 +24,24 @@ local function walk_directories(root)
   end)
 end
 
+local function reload_opened_directories(directory)
+  if not directory.child_directories then
+    return
+  end
+
+  for _, child in pairs(directory.child_directories) do
+    if child.opened then
+      if vim.fn.getftime(child.path) > child.time then
+        child:update()
+        -- Opening refreshes the entries expanded subtree.
+        child:open()
+      else
+        reload_opened_directories(child)
+      end
+    end
+  end
+end
+
 --- Create a context object
 ---@param configs table
 function Context.new(configs)
@@ -63,22 +81,24 @@ function Context:open_tree(path)
   end
   local directory = self.root
   for i, name in ipairs(names) do
-    for _, child in pairs(directory.children) do
-      if name == child.name then
-        if child.type == 'directory' then
-          if i == #names then
-            return child
-          else
-            if not child.opened then
-              child:open()
-            end
-            directory = child
-            break
-          end
-        else
-          return child
+    local child_directories = directory.child_directories
+    local child = child_directories and child_directories[name]
+    if not child then
+      for _, item in pairs(directory.children) do
+        if name == item.name then
+          child = item
+          break
         end
       end
+    end
+    if child then
+      if child.type ~= 'directory' or i == #names then
+        return child
+      end
+      if not child.opened then
+        child:open()
+      end
+      directory = child
     end
   end
   return nil
@@ -116,14 +136,7 @@ function Context:reload(reload_all_dir)
     self:switch(root_path)
     return
   end
-  for dir in walk_directories(self.root) do
-    if dir.opened then
-      if vim.fn.getftime(dir.path) > dir.time then
-        dir:update()
-        dir:open()
-      end
-    end
-  end
+  reload_opened_directories(self.root)
 end
 
 --- Switch the context to the specified directory path

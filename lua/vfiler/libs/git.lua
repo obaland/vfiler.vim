@@ -25,18 +25,23 @@ local function unquote_path(path)
   local decoded = {}
   local i = 2
   while i < #path do
-    local char = path:sub(i, i)
-    if char == '\\' then
-      local escape = path:sub(i + 1, i + 1)
-      if escape:match('[0-7]') then
-        char = string.char(tonumber(path:sub(i + 1, i + 3), 8))
-        i = i + 4
-      else
-        char = path_escapes[escape]
-        i = i + 2
-      end
+    local pos = path:find('\\', i, true)
+    if not pos or pos == #path then
+      table.insert(decoded, path:sub(i, -2))
+      break
+    end
+    if pos > i then
+      table.insert(decoded, path:sub(i, pos - 1))
+    end
+
+    local escape = path:sub(pos + 1, pos + 1)
+    local char
+    if escape:match('[0-7]') then
+      char = string.char(tonumber(path:sub(pos + 1, pos + 3), 8))
+      i = pos + 4
     else
-      i = i + 1
+      char = path_escapes[escape]
+      i = pos + 2
     end
     table.insert(decoded, char)
   end
@@ -98,7 +103,7 @@ local function create_toplevel_commands(dirpath)
   }
 end
 
-local function parse_git_status(rootpath, result)
+local function parse_git_status(result)
   result = result:gsub('[\r\n]+$', '')
   local status = result:sub(1, 2)
   local rpath = result:sub(4)
@@ -106,10 +111,7 @@ local function parse_git_status(rootpath, result)
     rpath = renamed_path(rpath)
   end
 
-  rpath = unquote_path(rpath)
-  local separator = rootpath:sub(-1) == '/' and '' or '/'
-  return rootpath .. separator .. rpath,
-    { us = status:sub(1, 1), them = status:sub(2, 2) }
+  return unquote_path(rpath), { us = status:sub(1, 1), them = status:sub(2, 2) }
 end
 
 local function parse_toplevel_path(result)
@@ -146,6 +148,7 @@ local function update_directory_statuses(rootpath, statuses)
     update(dirstatus, status)
   end
 
+  local parents = {}
   for path, status in pairs(dirs) do
     local cur = path
     while rootpath ~= cur do
@@ -158,7 +161,12 @@ local function update_directory_statuses(rootpath, statuses)
           them = status.them,
         }
       end
-      cur = core.path.parent(cur)
+      local parent = parents[cur]
+      if not parent then
+        parent = core.path.parent(cur)
+        parents[cur] = parent
+      end
+      cur = parent
     end
   end
   return statuses
@@ -178,12 +186,12 @@ end
 --- containing the specified directory.
 ---@param dirpath string
 ---@param callback function
----@return table
+---@return table?
 function M.root_async(dirpath, callback)
   local commands = create_toplevel_commands(dirpath)
   local rootpath
   local job = Job.new()
-  job:start(commands, {
+  local started = job:start(commands, {
     on_received = function(_, result)
       rootpath = parse_toplevel_path(result)
     end,
@@ -192,22 +200,23 @@ function M.root_async(dirpath, callback)
       callback(rootpath)
     end,
   })
-  return job
+  return started and job or nil
 end
 
 --- Get the status of all files in the repository asynchronously.
 ---@param rootpath string
 ---@param options table
 ---@param callback function
----@return table
+---@return table?
 function M.status_async(rootpath, options, callback)
   local commands = create_status_commands(rootpath, nil, options)
+  local prefix = rootpath:sub(-1) == '/' and rootpath or rootpath .. '/'
   local gitstatus = {}
   local job = Job.new()
-  job:start(commands, {
+  local started = job:start(commands, {
     on_received = function(_, result)
-      local path, status = parse_git_status(rootpath, result)
-      gitstatus[path] = status
+      local path, status = parse_git_status(result)
+      gitstatus[prefix .. path] = status
     end,
 
     on_completed = function(_, code)
@@ -215,7 +224,7 @@ function M.status_async(rootpath, options, callback)
       callback(gitstatus)
     end,
   })
-  return job
+  return started and job or nil
 end
 
 --- Get the status of a file in the repository.
@@ -235,7 +244,7 @@ function M.status_file(rootpath, path, options)
   end
 
   local gitstatus = {}
-  local _, status = parse_git_status(rootpath, result)
+  local _, status = parse_git_status(result)
   gitstatus[path] = status
   update_directory_statuses(rootpath, gitstatus)
   return gitstatus

@@ -1,6 +1,6 @@
 local core = require('vfiler/libs/core')
 
-local ModeColumn = {}
+local ModeColumn = { partial_redraw = true }
 
 function ModeColumn.new()
   local end_mark = '/>m'

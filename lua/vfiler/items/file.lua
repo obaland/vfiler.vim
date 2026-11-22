@@ -1,7 +1,8 @@
-local core = require('vfiler/libs/core')
 local fs = require('vfiler/libs/filesystem')
 
-local File = {}
+local Item = require('vfiler/items/item')
+local File = setmetatable({}, { __index = Item })
+local file_metatable = { __index = File }
 
 function File.create(path)
   if not fs.create_file(path) then
@@ -11,8 +12,7 @@ function File.create(path)
 end
 
 function File.new(stat)
-  local Item = require('vfiler/items/item')
-  return core.inherit(File, Item, stat)
+  return Item.new(stat, file_metatable)
 end
 
 function File:copy(destpath)

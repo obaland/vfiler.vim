@@ -40,4 +40,21 @@ jobs:
       - name: Run tests
         run: |
           nvim --version
-          make test
+          make test-nvim
+
+  vim_tests:
+    name: Vim unit tests (Ubuntu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Install Vim with Lua
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes vim-nox
+      - name: Run Vim tests
+        run: |
+          vim.nox --version
+          make test-vim VIM_BIN=vim.nox

@@ -18,6 +18,26 @@ local function input_new_name(name, destdir_path)
   end
 end
 
+local function add_transfer_parents(parents, destdir, item, new, moved_from)
+  if
+    not parents
+    or not new
+    or item.type ~= 'file'
+    or item.link
+    or new.type ~= 'file'
+    or new.link
+  then
+    return nil
+  end
+
+  parents[destdir.path] = true
+  parents[core.path.parent(new.path)] = true
+  if moved_from then
+    parents[core.path.parent(moved_from)] = true
+  end
+  return parents
+end
+
 local PasteFunctor = {}
 PasteFunctor.__index = PasteFunctor
 
@@ -29,7 +49,7 @@ function PasteFunctor.new(items, clear_after_paste)
 end
 
 function PasteFunctor:paste(destdir)
-  local pasted = {}
+  local pasted, parents = {}, {}
   for _, item in ipairs(self._items) do
     local skipped = false
     local destpath = core.path.join(destdir.path, item.name)
@@ -47,7 +67,8 @@ function PasteFunctor:paste(destdir)
       end
     end
     if not skipped then
-      local new = self._on_paste(item, destpath)
+      local new, moved_from = self._on_paste(item, destpath)
+      parents = add_transfer_parents(parents, destdir, item, new, moved_from)
       if new then
         destdir:add(new)
         table.insert(pasted, new)
@@ -61,9 +82,9 @@ function PasteFunctor:paste(destdir)
       current_functor = nil
     end
   else
-    return false
+    return false, parents
   end
-  return true
+  return true, parents
 end
 
 local M = {}
@@ -99,12 +120,13 @@ local function new_move_functor(items, clear_after_paste)
   local functor = PasteFunctor.new(items, clear_after_paste)
 
   functor._on_paste = function(item, destpath)
+    local moved_from = item.path
     local new = item:move(destpath)
     if not new then
       core.message.error('Failed to move "%s"', item.name)
       return nil
     end
-    return new
+    return new, moved_from
   end
 
   functor._on_completed = function(pasted_items, destdir)
@@ -128,7 +150,7 @@ end
 
 function M.copy(items, destdir)
   local functor = new_copy_functor(items, false)
-  functor:paste(destdir)
+  return functor:paste(destdir)
 end
 
 function M.copy_to_clipboard(items)
@@ -141,7 +163,7 @@ end
 
 function M.move(items, destdir)
   local functor = new_move_functor(items, false)
-  functor:paste(destdir)
+  return functor:paste(destdir)
 end
 
 function M.move_to_clipboard(items)

@@ -74,8 +74,8 @@ local function choose_window(winid)
       'statusline',
       get_key_status_string(vim.fn.winwidth(id), key)
     )
-    vim.command('redraw')
   end
+  vim.command('redraw')
 
   local key
   local prompt = ('choose (%s) ?'):format(table.concat(keys, '/'))
@@ -91,8 +91,8 @@ local function choose_window(winid)
   vim.set_option('laststatus', laststatus)
   for id, prev_statusline in pairs(prev_statuslines) do
     vim.set_win_option(id, 'statusline', prev_statusline)
-    vim.command('redraw')
   end
+  vim.command('redraw')
   core.window.move(winid)
 
   return key == '<ESC>' and nil or winkeys[key]
@@ -175,13 +175,21 @@ end
 function M.close_preview(vfiler, context, view)
   local in_preview = context.in_preview
   local preview = in_preview.preview
-  if not (preview and preview.opened) then
+  if not preview then
     return false
   end
+
+  local opened = preview.opened
   preview:close()
+
+  if not opened then
+    return false
+  end
+
   if in_preview.once then
     in_preview.preview = nil
   end
+
   return true
 end
 

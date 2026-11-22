@@ -66,7 +66,13 @@ function Job:start(command, options)
   if type(command) == 'table' then
     command = vim.list(command)
   end
-  job_start(self._id, command)
+  local ok, started = pcall(job_start, self._id, command)
+  if not ok or started ~= 1 then
+    jobs[self._id] = nil
+    self._id = 0
+    return false
+  end
+  return true
 end
 
 function Job:stop()

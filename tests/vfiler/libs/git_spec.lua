@@ -177,6 +177,7 @@ describe('git', function()
       '日本語.txt',
       arrow_name,
       'space name.txt',
+      'report 日本語 123 summary.txt',
       '資料/日本語.txt',
     }
     if not core.is_windows then
@@ -187,6 +188,7 @@ describe('git', function()
         'back\\slash.txt',
         'literal\\346.txt',
         'trailing space.txt ',
+        'report 日本語\\346\t123 "quoted".txt',
       }) do
         table.insert(names, name)
       end
@@ -257,6 +259,25 @@ describe('git', function()
       }), '無視.txt', '!', '!')
     end)
 
+    it('uses absolute paths for both root and nested status entries', function()
+      write('root file.txt')
+      write('nested/資料.txt')
+      assert.are.same({
+        [path('root file.txt')] = { us = '?', them = '?' },
+        [path('nested/資料.txt')] = { us = '?', them = '?' },
+        [path('nested/')] = { us = ' ', them = '*' },
+      }, statuses())
+
+      local result = git.status_file(root, path('nested/資料.txt'), {
+        untracked = true,
+        ignored = false,
+      })
+      assert.are.same({
+        [path('nested/資料.txt')] = { us = '?', them = '?' },
+        [path('nested/')] = { us = ' ', them = '*' },
+      }, result)
+    end)
+
     it('aggregates changes under a Japanese directory', function()
       write('資料/日本語.txt')
       commit()
@@ -264,6 +285,27 @@ describe('git', function()
       local result = statuses()
       assert_status(result, '資料/日本語.txt', ' ', 'M')
       assert_status(result, '資料/', ' ', '*')
+    end)
+
+    it('aggregates staged and unstaged changes from sibling directories', function()
+      write('.gitignore', '*.log')
+      write('shared/deep/staged/file.txt')
+      write('shared/deep/unstaged/file.txt')
+      commit()
+
+      write('shared/deep/staged/file.txt', 'STAGED')
+      run({ 'add', '--', 'shared/deep/staged/file.txt' })
+      write('shared/deep/unstaged/file.txt', 'UNSTAGED')
+      write('shared/deep/ignored/file.log')
+
+      local result = statuses({ untracked = true, ignored = true })
+      assert_status(result, 'shared/deep/staged/', '*', ' ')
+      assert_status(result, 'shared/deep/unstaged/', ' ', '*')
+      assert_status(result, 'shared/deep/ignored/file.log', '!', '!')
+      assert_status(result, 'shared/deep/ignored/', ' ', ' ')
+      assert_status(result, 'shared/deep/', '*', '*')
+      assert_status(result, 'shared/', '*', '*')
+      assert.is_nil(result[root])
     end)
 
     for _, name in ipairs({ 'plain.txt', '日本語.txt', arrow_name }) do

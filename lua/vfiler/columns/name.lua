@@ -1,6 +1,6 @@
 local core = require('vfiler/libs/core')
 
-local NameColumn = {}
+local NameColumn = { partial_redraw = true }
 
 function NameColumn.new()
   local end_mark = '/>n'
@@ -96,10 +96,11 @@ function NameColumn:to_text(item, width)
   if item.type == 'directory' then
     name = name .. '/'
   end
-  local text = core.string.truncate(name, width, '..', math.floor(width / 2))
+  local text, display_width =
+    core.string.truncate_with_width(name, width, '..', math.floor(width / 2))
   return {
     string = text,
-    width = vim.fn.strwidth(text),
+    width = display_width,
     syntax = syntax,
   }
 end

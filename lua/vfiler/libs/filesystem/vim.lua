@@ -37,13 +37,18 @@ end
 
 function M.scandir(dirpath, callback)
   local dicts = vim.fn.readdirex(dirpath)
+  local prefix = core.path.join(dirpath, '')
   for dict in dicts() do
-    local path = core.path.join(dirpath, dict.name)
     local type, link = get_ftype(dict.type)
     if type and callback then
+      local name = dict.name
+      local path = prefix .. name
+      if name:find('\\', 1, true) then
+        path = core.path.join(dirpath, name)
+      end
       callback({
         path = type == 'directory' and path .. '/' or path,
-        name = dict.name,
+        name = name,
         size = dict.size,
         time = dict.time,
         mode = dict.perm,

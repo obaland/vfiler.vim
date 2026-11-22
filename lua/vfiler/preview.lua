@@ -83,14 +83,14 @@ end
 ---@return table? lines file contents
 ---@return nil
 local function default_read_file(path)
-  local lines = vim.list({})
+  local lines = {}
   local file = io.open(path, 'r')
   if file then
     for line in file:lines() do
       table.insert(lines, line)
     end
     file:close()
-    return lines, nil
+    return vim.list(lines), nil
   else
     return nil, nil
   end
@@ -101,15 +101,43 @@ function Preview.new(options)
   return setmetatable({
     _window = window,
     _options = woptions,
+    _delay = tonumber(options.delay) or 0,
     _winid = vim.fn.win_getid(),
     opened = false,
     line = 0,
   }, Preview)
 end
 
+function Preview:cancel_pending()
+  local timer = self._timer
+  self._timer = nil
+  if timer and not timer:is_closing() then
+    timer:close()
+  end
+end
+
+function Preview:defer_open(callback)
+  self:cancel_pending()
+  if not core.is_nvim or self._delay <= 0 then
+    callback()
+    return
+  end
+
+  local timer
+  timer = vim.nvim.defer_fn(function()
+    if self._timer == timer then
+      self._timer = nil
+      callback()
+    end
+  end, self._delay)
+  self._timer = timer
+end
+
 ---@param path string
 ---@param read_file_hook function
 function Preview:open(path, read_file_hook)
+  self:cancel_pending()
+
   local window = self._window
   local options
   if window:type() == 'window' then
@@ -172,7 +200,7 @@ function Preview:open(path, read_file_hook)
       if filetype ~= nil then
         buffer:set_option('filetype', filetype)
       end
-      buffer:set_lines(lines)
+      buffer:set_lines(vim.list(lines))
     end,
     finally = function()
       buffer:set_options({
@@ -221,6 +249,8 @@ function Preview:open(path, read_file_hook)
 end
 
 function Preview:close()
+  self:cancel_pending()
+
   if self.opened then
     self._window:close()
   end

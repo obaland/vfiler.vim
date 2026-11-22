@@ -1,18 +1,15 @@
 local core = require('vfiler/libs/core')
+local sort = require('vfiler/sort')
 local vim = require('vfiler/libs/vim')
 
 local View = {}
 View.__index = View
 
-local LnumIndex = {}
-LnumIndex.__index = LnumIndex
-
-function LnumIndex.new(level, prev_sibling, next_sibling)
-  return setmetatable({
+local function new_lnum_index(level, prev_sibling)
+  return {
     level = level,
     prev_sibling = prev_sibling,
-    next_sibling = next_sibling,
-  }, LnumIndex)
+  }
 end
 
 local ItemContainer = {}
@@ -21,7 +18,7 @@ ItemContainer.__index = ItemContainer
 function ItemContainer.new(options)
   return setmetatable({
     list = {},
-    table = {},
+    path_indexes = {},
     lnum_indexes = {},
     _show_hidden_files = options.show_hidden_files,
     _sort_compare = options.sort_compare,
@@ -29,34 +26,31 @@ function ItemContainer.new(options)
 end
 
 function ItemContainer:insert(item, lnum_index)
-  table.insert(self.list, item)
-  table.insert(self.lnum_indexes, lnum_index)
-  self.table[item.path] = {
-    index = #self.list,
-    item = item,
-  }
+  local index = #self.list + 1
+  self.list[index] = item
+  self.lnum_indexes[index] = lnum_index
+  self.path_indexes[item.path] = index
+  return index
 end
 
-function ItemContainer:insert_recursively(item, git)
-  -- Override gitstatus of items
-  item.gitstatus = git:status(item.path)
-
-  local children = item.children
+function ItemContainer:insert_recursively(children, git)
   if not children then
     return
   end
 
-  table.sort(children, self._sort_compare)
+  sort.apply(children, self._sort_compare)
   local prev_sibling
   for i, child in ipairs(children) do
     local hidden = child.name:sub(1, 1) == '.'
     if self._show_hidden_files or not hidden then
-      local index = LnumIndex.new(child.level, prev_sibling)
-      self:insert(child, index)
-      prev_sibling = #self.list
+      local index = new_lnum_index(child.level, prev_sibling)
+      prev_sibling = self:insert(child, index)
 
-      -- recursive
-      self:insert_recursively(child, git)
+      child.gitstatus = git and git:status(child.path)
+      local descendants = child.children
+      if descendants then
+        self:insert_recursively(descendants, git)
+      end
       if i ~= #children then
         index.next_sibling = prev_sibling + (#self.list - prev_sibling) + 1
       end
@@ -72,8 +66,9 @@ function ItemContainer:length()
 end
 
 function ItemContainer:update_git(git)
+  local has_status = git:has_status()
   for _, item in ipairs(self.list) do
-    item.gitstatus = git:status(item.path)
+    item.gitstatus = has_status and git:status(item.path) or nil
   end
 end
 
@@ -189,6 +184,18 @@ local function to_win_config(options)
   }
 end
 
+local function can_redraw_lines(columns, items, lnums, drawn_at)
+  if not drawn_at or #lnums == 0 or #lnums > 32 or #lnums * 2 >= #items then
+    return false
+  end
+  for _, column in pairs(columns) do
+    if not column.needs_redraw or column:needs_redraw(items, drawn_at) then
+      return false
+    end
+  end
+  return true
+end
+
 --- Create a view object
 ---@param options table
 function View.new(options)
@@ -224,6 +231,20 @@ function View:bufnr()
   return self._buffer.number
 end
 
+function View:clear_selection()
+  local lnums = {}
+  local top_lnum = self:top_lnum()
+  for lnum, item in ipairs(self._items.list) do
+    if item.selected then
+      item.selected = false
+      if lnum >= top_lnum then
+        table.insert(lnums, lnum)
+      end
+    end
+  end
+  self:redraw(lnums)
+end
+
 function View:close()
   if self._window and vim.fn.winnr('$') > 1 then
     self._window:close()
@@ -235,14 +256,20 @@ end
 function View:draw(context)
   -- flatten hierarchical items into a list
   local options = context.options
+  local root = context.root
   self._items = ItemContainer.new({
     show_hidden_files = options.show_hidden_files,
-    sort_compare = require('vfiler/sort').get(options.sort),
+    sort_compare = sort.get(options.sort),
   })
   if self._header then
-    self._items:insert(context.root, LnumIndex.new(context.root.level))
+    self._items:insert(root, new_lnum_index(root.level))
   end
-  self._items:insert_recursively(context.root, self._git)
+  local git
+  if self:has_column('git') and self._git:has_status() then
+    git = self._git
+  end
+  root.gitstatus = git and git:status(root.path)
+  self._items:insert_recursively(root.children, git)
   self:redraw()
 end
 
@@ -275,11 +302,7 @@ end
 --- Find the index of the item in the view buffer for the specified path
 ---@param path string
 function View:indexof(path)
-  local item = self._items.table[path]
-  if not item then
-    return 0
-  end
-  return item.index
+  return self._items.path_indexes[path] or 0
 end
 
 --- Find the line of the item in the view buffer for the specified path
@@ -386,7 +409,7 @@ function View:open(buffer, layout)
 end
 
 --- Redraw the current contents
-function View:redraw()
+function View:redraw(lnums)
   local buffer = self._buffer
   -- NOTE: for debugging.
   --if not buffer or (buffer.number ~= vim.fn.bufnr()) then
@@ -404,6 +427,7 @@ function View:redraw()
   if not vim.win_is_valid(winid) then
     return
   elseif cache.winid ~= winid then
+    lnums = nil
     -- set window options
     cache.winid = winid
     vim.set_win_options(winid, self._winoptions)
@@ -412,25 +436,52 @@ function View:redraw()
 
   -- auto resize window
   if self._auto_resize then
+    lnums = nil
     self:_resize()
   end
 
   local winwidth = vim.fn.winwidth(winid)
   local view_width = get_view_width(winid, winwidth)
   if cache.view_width ~= view_width or not cache.column_props then
+    lnums = nil
     cache.column_props = self:_create_column_props(view_width)
     cache.view_width = view_width
     cache.win_width = winwidth
   end
 
+  local items = self._items.list
+  local conceallevel = vim.get_win_option(winid, 'conceallevel')
+  local columns = self._columns.table
+  if lnums then
+    if
+      cache.conceallevel ~= conceallevel
+      or not can_redraw_lines(columns, items, lnums, cache.drawn_at)
+    then
+      lnums = nil
+    end
+  end
+
   -- create text lines
-  local lines = vim.list({})
-  if self._header then
-    table.insert(lines, self:_to_header(self._items.list[1]))
-  end
-  for i = self:top_lnum(), self._items:length() do
-    table.insert(lines, self:_to_line(self._items.list[i]))
-  end
+  local lines = {}
+  local texts = {}
+  local first_lnum = lnums and lnums[1]
+  if lnums then
+    for i, lnum in ipairs(lnums) do
+      if first_lnum and lnum ~= first_lnum + i - 1 then
+        first_lnum = nil
+      end
+      lines[i] = self:_to_line(items[lnum], conceallevel, texts)
+    end
+  else
+    cache.drawn_at = os.time()
+    cache.conceallevel = conceallevel
+    if self._header then
+      table.insert(lines, self:_to_header(items[1]))
+    end
+    for i = self:top_lnum(), #items do
+      table.insert(lines, self:_to_line(items[i], conceallevel, texts))
+    end
+   end
 
   -- set buffer lines
   --local saved_view = vim.fn.winsaveview()
@@ -438,7 +489,15 @@ function View:redraw()
     function()
       buffer:set_option('modifiable', true)
       buffer:set_option('readonly', false)
-      buffer:set_lines(lines)
+      if first_lnum and #lines > 1 then
+        buffer:set_lines(vim.list(lines), first_lnum)
+      elseif lnums then
+        for i, lnum in ipairs(lnums) do
+          buffer:set_line(lnum, lines[i])
+        end
+      else
+        buffer:set_lines(vim.list(lines))
+      end
     end,
     finally = function()
       buffer:set_option('modifiable', false)
@@ -461,7 +520,8 @@ function View:redraw_line(lnum)
   if self._header and lnum == 1 then
     line = self:_to_header(item)
   else
-    line = self:_to_line(item)
+    local conceallevel = vim.get_win_option(self:winid(), 'conceallevel')
+    line = self:_to_line(item, conceallevel)
   end
 
   local buffer = self._buffer
@@ -556,12 +616,20 @@ function View:walk_items()
   if not self._items then
     return nil
   end
-  local function _walk_items()
-    for _, item in ipairs(self._items.list) do
-      coroutine.yield(item)
+  local items
+  local index = 0
+  return function()
+    if not items then
+      assert(index == 0, 'item iterator is exhausted')
+      items = self._items.list
     end
+    index = index + 1
+    local item = items[index]
+    if item == nil then
+      items = nil
+    end
+    return item
   end
-  return coroutine.wrap(_walk_items)
 end
 
 -- Get the width value
@@ -670,10 +738,13 @@ function View:_to_header(item)
 end
 
 ---@param item table
-function View:_to_line(item)
+---@param conceallevel number
+---@param texts? table
+function View:_to_line(item, conceallevel, texts)
   local winid = self._cache.winid
   local col = 0
-  local texts = {}
+  local count = 0
+  texts = texts or {}
   for i, column in ipairs(self._columns.list) do
     local prop = self._cache.column_props[i]
 
@@ -682,7 +753,7 @@ function View:_to_line(item)
       cwidth = cwidth + (prop.start_col - col)
     end
 
-    local text, width = column:get_text(item, cwidth, winid)
+    local text, width = column:get_text(item, cwidth, winid, conceallevel)
     col = col + width
 
     if column.stretch then
@@ -700,10 +771,13 @@ function View:_to_line(item)
       break
     end
 
-    table.insert(texts, text)
+    if text ~= nil then
+      count = count + 1
+      texts[count] = text
+    end
     col = col + 1 -- "1" is space between columns
   end
-  return table.concat(texts, ' ')
+  return table.concat(texts, ' ', 1, count)
 end
 
 return View
