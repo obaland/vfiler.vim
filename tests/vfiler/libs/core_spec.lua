@@ -123,6 +123,33 @@ describe('core.string', function()
       eq('あいうえおかきくけ..しすせそたちつてと', actual)
     end)
   end)
+
+  describe('truncate_with_width', function()
+    local truncate = core.string.truncate_with_width
+    local ambiwidth = vim.o.ambiwidth
+
+    after_each(function()
+      vim.o.ambiwidth = ambiwidth
+    end)
+
+    it('keeps printable ASCII at the width limit', function()
+      local text, width = truncate(' .~-_', 5, '..', 0)
+      eq(' .~-_', text)
+      eq(5, width)
+    end)
+
+    it('uses the current ambiguous width for names that still fit', function()
+      vim.o.ambiwidth = 'single'
+      local text, width = truncate('a·b', 4, '..', 0)
+      eq('a·b', text)
+      eq(3, width)
+
+      vim.o.ambiwidth = 'double'
+      text, width = truncate('a·b', 4, '..', 0)
+      eq('a·b', text)
+      eq(4, width)
+    end)
+  end)
 end)
 
 describe('core.path', function()

@@ -4,14 +4,14 @@ local fs = require('vfiler/libs/filesystem')
 local Item = {}
 Item.__index = Item
 
-function Item.new(stat)
+function Item.new(stat, metatable)
   local self = setmetatable({
     gitstatus = nil,
     level = 0,
     parent = nil,
     selected = false,
-  }, Item)
-  return self:_set_stat(stat)
+  }, metatable or Item)
+  return Item._set_stat(self, stat)
 end
 
 function Item:delete()

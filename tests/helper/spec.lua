@@ -1,5 +1,55 @@
 local M = {}
 
+local function inspect(value, seen)
+  if type(value) == 'string' then
+    return ('%q'):format(value)
+  elseif type(value) ~= 'table' then
+    return tostring(value)
+  end
+
+  seen = seen or {}
+  if seen[value] then
+    return '<cycle>'
+  end
+  seen[value] = true
+  local fields = {}
+  for key, item in pairs(value) do
+    fields[#fields + 1] = ('[%s] = %s'):format(inspect(key, seen), inspect(item, seen))
+  end
+  table.sort(fields)
+  seen[value] = nil
+  return '{' .. table.concat(fields, ', ') .. '}'
+end
+
+local function deep_equal(expected, actual, seen)
+  if expected == actual then
+    return true
+  elseif type(expected) ~= 'table' or type(actual) ~= 'table' then
+    return false
+  end
+
+  seen = seen or {}
+  seen[expected] = seen[expected] or {}
+  if seen[expected][actual] then
+    return true
+  end
+  seen[expected][actual] = true
+  for key, value in pairs(expected) do
+    if not deep_equal(value, actual[key], seen) then
+      return false
+    end
+  end
+  for key in pairs(actual) do
+    if expected[key] == nil then
+      return false
+    end
+  end
+  return true
+end
+
+local format_value = vim.inspect or inspect
+local compare_values = vim.deep_equal or deep_equal
+
 -- Raise an assertion error at the call site with the expected and actual values.
 local function check(ok, relation, expected, actual, message)
   if ok then
@@ -7,8 +57,8 @@ local function check(ok, relation, expected, actual, message)
   end
   local detail = ('expected %s %s, got %s'):format(
     relation,
-    vim.inspect(expected),
-    vim.inspect(actual)
+    format_value(expected),
+    format_value(actual)
   )
   if message then
     detail = tostring(message) .. '\n' .. detail
@@ -28,7 +78,7 @@ end
 
 -- Compare values recursively for structural equality.
 local function same(expected, actual, message)
-  check(vim.deep_equal(expected, actual), 'equal to', expected, actual, message)
+  check(compare_values(expected, actual), 'equal to', expected, actual, message)
 end
 
 -- Reject nil while allowing false.
@@ -97,12 +147,6 @@ function M.run(path)
     })
   end
 
-  local chunk, err = loadfile(path)
-  if not chunk then
-    record_error(path, path, 0, err)
-    return result
-  end
-
   local scopes = {}
 
   -- Qualify a test or suite name with its parent suite name.
@@ -164,7 +208,7 @@ function M.run(path)
     end
   end
 
-  setfenv(chunk, setmetatable({
+  local env = setmetatable({
     assert = assertions,
     describe = describe,
     it = it,
@@ -176,7 +220,21 @@ function M.run(path)
     after_each = function(hook)
       table.insert(scopes[#scopes].after, hook)
     end,
-  }, { __index = _G }))
+  }, { __index = _G })
+
+  local chunk, err
+  if setfenv then
+    chunk, err = loadfile(path)
+    if chunk then
+      setfenv(chunk, env)
+    end
+  else
+    chunk, err = loadfile(path, 't', env)
+  end
+  if not chunk then
+    record_error(path, path, 0, err)
+    return result
+  end
 
   local ok, run_error = xpcall(chunk, traceback)
   if not ok then

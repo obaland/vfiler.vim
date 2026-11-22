@@ -50,7 +50,12 @@ function Job:start(command, options)
       options.on_completed(self, code)
     end
   end
-  self._id = vim.fn.jobstart(command, jobopts)
+  local ok, id = pcall(vim.fn.jobstart, command, jobopts)
+  if not ok or id <= 0 then
+    return false
+  end
+  self._id = id
+  return true
 end
 
 function Job:stop()

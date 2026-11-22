@@ -2,8 +2,10 @@ local core = require('vfiler/libs/core')
 local fs = require('vfiler/libs/filesystem')
 
 local File = require('vfiler/items/file')
+local Item = require('vfiler/items/item')
 
-local Directory = {}
+local Directory = setmetatable({}, { __index = Item })
+local directory_metatable = { __index = Directory }
 
 local function new_item(stat)
   local item
@@ -34,8 +36,7 @@ function Directory.create(dirpath)
 end
 
 function Directory.new(stat)
-  local Item = require('vfiler/items/item')
-  local self = core.inherit(Directory, Item, stat)
+  local self = Item.new(stat, directory_metatable)
   self.children = nil
   self.child_directories = nil
   self.opened = false

@@ -26,6 +26,152 @@ describe('filesystem $shell:' .. vim.o.shell, function()
     end
   end)
 
+  describe('scandir', function()
+    local root
+
+    before_each(function()
+      root = core.path.normalize(vim.fn.tempname())
+      assert.are.equal(1, vim.fn.mkdir(root, 'p'))
+    end)
+
+    after_each(function()
+      vim.fn.delete(root, 'rf')
+    end)
+
+    local function scan(path)
+      local entries, names = {}, {}
+      fs.scandir(path, function(stat)
+        entries[stat.name] = stat
+        table.insert(names, stat.name)
+      end)
+      table.sort(names)
+      return entries, names
+    end
+
+    it('returns every direct child once with its metadata', function()
+      local expected = { 'directory' }
+      local directory = core.path.join(root, 'directory')
+      assert.are.equal(1, vim.fn.mkdir(directory))
+      assert.are.equal(0, vim.fn.writefile({}, directory .. '/nested.txt'))
+      for i = 1, 513 do
+        local name = ('file-%03d.txt'):format(i)
+        local path = core.path.join(root, name)
+        assert.are.equal(0, vim.fn.writefile({ 'content' }, path, 'b'))
+        table.insert(expected, name)
+      end
+
+      local entries, names = scan(root)
+      assert.are.same(expected, names)
+      assert.are.equal('directory', entries.directory.type)
+      assert.are.equal(directory .. '/', entries.directory.path)
+      for i = 2, #expected do
+        local name = expected[i]
+        local path = core.path.join(root, name)
+        local stat = entries[name]
+        assert.are.equal(path, stat.path)
+        assert.are.equal('file', stat.type)
+        assert.are.equal(7, stat.size)
+        assert.are.equal(vim.fn.getftime(path), stat.time)
+        assert.are.equal(vim.fn.getfperm(path), stat.mode)
+        assert.is_false(stat.link)
+      end
+    end)
+
+    it('returns no entries for an empty directory', function()
+      local _, names = scan(root)
+      assert.are.same({}, names)
+    end)
+
+    it('reports the same paths with or without a trailing separator', function()
+      local directory = root .. '/space # %'
+      local name = '日本語 #%.txt'
+      local path = directory .. '/' .. name
+      assert.are.equal(1, vim.fn.mkdir(directory))
+      assert.are.equal(0, vim.fn.writefile({}, path))
+
+      for _, dirpath in ipairs({ directory, directory .. '/' }) do
+        local entries, names = scan(dirpath)
+        assert.are.same({ name }, names)
+        assert.are.equal(path, entries[name].path)
+      end
+    end)
+
+    it('keeps paths relative when scanning a relative directory', function()
+      local entries = scan('./lua/vfiler/')
+      assert.are.equal('./lua/vfiler/config.lua', entries['config.lua'].path)
+    end)
+
+    if not core.is_windows then
+      it('follows existing link targets and keeps dangling links', function()
+        local directory = core.path.join(root, 'directory')
+        local link = core.path.join(root, 'directory-link')
+        local dangling = core.path.join(root, 'dangling-link')
+        local missing = core.path.join(root, 'missing')
+        assert.are.equal(1, vim.fn.mkdir(directory))
+        vim.fn.system({ 'ln', '-s', directory, link })
+        assert.are.equal(0, vim.v.shell_error)
+        vim.fn.system({ 'ln', '-s', missing, dangling })
+        assert.are.equal(0, vim.v.shell_error)
+
+        local entries, names = scan(root)
+        local expected = { 'dangling-link', 'directory', 'directory-link' }
+        assert.are.same(expected, names)
+        assert.are.equal('directory', entries['directory-link'].type)
+        assert.are.equal(link .. '/', entries['directory-link'].path)
+        assert.is_true(entries['directory-link'].link)
+        assert.are.equal('link', entries['dangling-link'].type)
+        assert.are.equal(dangling, entries['dangling-link'].path)
+        assert.is_true(entries['dangling-link'].link)
+      end)
+    end
+  end)
+
+  describe('Vim scandir path handling', function()
+    local vimfs = require('vfiler/libs/filesystem/vim')
+    local readdirex = vim.fn.readdirex
+
+    after_each(function()
+      vim.fn.readdirex = readdirex
+    end)
+
+    local function scan(dirpath, names)
+      vim.fn.readdirex = function(path)
+        assert.equal(dirpath, path)
+        return function()
+          local index = 0
+          return function()
+            index = index + 1
+            return names[index]
+          end
+        end
+      end
+      local paths = {}
+      vimfs.scandir(dirpath, function(stat)
+        paths[stat.name] = stat.path
+      end)
+      return paths
+    end
+
+    it('keeps relative paths and the directory separator', function()
+      local entries = {
+        { name = '資料.txt', type = 'file' },
+        { name = 'child dir', type = 'dir' },
+      }
+      local expected = {
+        ['資料.txt'] = './parent # %/資料.txt',
+        ['child dir'] = './parent # %/child dir/',
+      }
+      assert.are.same(expected, scan('./parent # %', entries))
+      assert.are.same(expected, scan('./parent # %/', entries))
+    end)
+
+    it('preserves the existing path normalization for backslashes', function()
+      local name = [[literal\name.txt]]
+      local paths = scan('./parent', { { name = name, type = 'file' } })
+      assert.equal('./parent/literal/name.txt', paths[name])
+    end)
+  end)
+
   if not core.is_windows then
     describe('permission modes', function()
       local root, filepath, directory
@@ -92,6 +238,28 @@ describe('filesystem $shell:' .. vim.o.shell, function()
           assert_mode(entries.directory, mode.value)
         end)
       end
+
+      it('reports permission changes after reading the same path', function()
+        assert.are.equal(1, vim.fn.setfperm(filepath, 'rw-r--r--'))
+        assert.are.equal(1, vim.fn.setfperm(directory, 'rw-r--r--'))
+        assert_mode(fs.stat(filepath), 'rw-r--r--')
+        assert_mode(fs.stat(directory), 'rw-r--r--')
+
+        assert.are.equal(1, vim.fn.setfperm(filepath, 'rwxr-xr-x'))
+        local entries = {}
+        fs.scandir(root, function(stat)
+          entries[stat.name] = stat
+        end)
+
+        assert_mode(entries.file, 'rwxr-xr-x')
+        assert_mode(entries.directory, 'rw-r--r--')
+      end)
+
+      it('keeps nine permission characters for a sticky directory', function()
+        assert(vim.loop.fs_chmod(directory, tonumber('1777', 8)))
+
+        assert_mode(fs.stat(directory), 'rwxrwxrwx')
+      end)
 
       it('keeps other and owner execute permissions separate', function()
         assert.are.equal(1, vim.fn.setfperm(filepath, '--------x'))

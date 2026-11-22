@@ -1,4 +1,3 @@
-local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 
 local M = {}
@@ -66,12 +65,19 @@ end
 function M.input_multiple(prompt, callback)
   local content = M.input(prompt .. ' (comma separated)')
   local splitted = vim.fn.split(content, [[\s*,\s*]])
-  if #splitted == 0 then
+  if #splitted == 0 or not callback then
     return
   end
-  if callback then
-    callback(core.list.unique(splitted))
+
+  local names = {}
+  local seen = {}
+  for _, name in ipairs(splitted) do
+    if not seen[name] then
+      seen[name] = true
+      table.insert(names, name)
+    end
   end
+  callback(names)
 end
 
 ------------------------------------------------------------------------------

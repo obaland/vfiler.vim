@@ -4,6 +4,7 @@ local clipboard = require('vfiler/clipboard')
 local cmdline = require('vfiler/libs/cmdline')
 local core = require('vfiler/libs/core')
 local fs = require('vfiler/libs/filesystem')
+local vim = require('vfiler/libs/vim')
 
 local VFiler = require('vfiler/vfiler')
 
@@ -16,6 +17,93 @@ local function resolve_destination_directory(context, view)
     return context.root
   end
   return item.opened and item or item.parent
+end
+
+local function directory_key(path)
+  if core.is_windows then
+    -- Resolve DOS short directory names when normalizing the path.
+    path = core.path.join(path, '.')
+  end
+  local key = core.path.normalize(path):gsub('/+$', '') .. '/'
+  if core.is_windows or core.is_mac then
+    key = vim.fn.tolower(key)
+  end
+  return key
+end
+
+local function contains_changed_directory(path, changed)
+  local key = directory_key(path)
+  for directory in pairs(changed) do
+    if directory:sub(1, #key) == key then
+      return true
+    end
+  end
+  return false
+end
+
+local function has_changed_link(directory, changed)
+  for _, child in pairs(directory.child_directories or {}) do
+    if child.opened then
+      if
+        child.link
+        and contains_changed_directory(vim.fn.resolve(child.path), changed)
+      then
+        return true
+      end
+      if has_changed_link(child, changed) then
+        return true
+      end
+    end
+  end
+  return false
+end
+
+local function reload_changed_directories(vfiler, parents)
+  if not parents then
+    VFiler.foreach(buffer.reload)
+    return
+  end
+
+  local changed = {}
+  for parent in pairs(parents) do
+    changed[directory_key(parent)] = true
+    changed[directory_key(vim.fn.resolve(parent))] = true
+  end
+
+  VFiler.foreach(function(filer, context, view)
+    local root = context.root
+    if
+      filer == vfiler
+      or view:has_column('git')
+      or contains_changed_directory(root.path, changed)
+      or contains_changed_directory(vim.fn.resolve(root.path), changed)
+      or has_changed_link(root, changed)
+    then
+      buffer.reload(filer, context, view)
+    end
+  end)
+end
+
+local function reload_after_create(vfiler, created)
+  local parents = {}
+  for _, item in ipairs(created) do
+    parents[core.path.parent(item.path)] = true
+    if item.link then
+      parents[core.path.parent(vim.fn.resolve(item.path))] = true
+    end
+  end
+  reload_changed_directories(vfiler, parents)
+end
+
+local function add_file_parents(parents, item, old_path)
+  if not parents or item.type ~= 'file' or item.link then
+    return nil
+  end
+  parents[core.path.parent(item.path)] = true
+  if old_path then
+    parents[core.path.parent(old_path)] = true
+  end
+  return parents
 end
 
 local function create_files(dest, contents, create)
@@ -48,12 +136,15 @@ local function rename_files(vfiler, context, view, targets)
     initial_items = targets,
     on_execute = function(filer, c, v, items, renames)
       local renamed = {}
+      local parents = {}
       local num_renamed = 0
       for i = 1, #items do
         local item = items[i]
         local rename = renames[i]
+        local old_path = item.path
 
         if item:rename(rename) then
+          parents = add_file_parents(parents, item, old_path)
           table.insert(renamed, item)
           num_renamed = num_renamed + 1
           item.selected = false
@@ -86,12 +177,13 @@ local function rename_one_file(vfiler, context, view, target)
     end
   end
 
+  local old_path = target.path
   if not target:rename(rename) then
     return
   end
 
   core.message.info('Renamed - "%s" -> "%s"', name, rename)
-  VFiler.foreach(buffer.reload)
+  reload_changed_directories(vfiler, add_file_parents({}, target, old_path))
 end
 
 function M.copy(vfiler, context, view)
@@ -127,13 +219,13 @@ function M.copy_to_filer(vfiler, context, view)
   end
 
   -- Copy to linked filer
-  clipboard.copy(selected, linked:get_root_item())
+  local _, parents = clipboard.copy(selected, linked:get_root_item())
 
   -- clear selected mark
   for _, item in ipairs(selected) do
     item.selected = false
   end
-  VFiler.foreach(buffer.reload)
+  reload_changed_directories(vfiler, parents)
 end
 
 function M.delete(vfiler, context, view)
@@ -156,8 +248,10 @@ function M.delete(vfiler, context, view)
 
   -- delete files
   local deleted = {}
+  local parents = {}
   for _, item in ipairs(selected) do
     if item:delete() then
+      parents = add_file_parents(parents, item)
       table.insert(deleted, item)
     end
   end
@@ -169,7 +263,7 @@ function M.delete(vfiler, context, view)
   else
     core.message.info('Deleted - %d files', #deleted)
   end
-  VFiler.foreach(buffer.reload)
+  reload_changed_directories(vfiler, parents)
 end
 
 function M.execute_file(vfiler, context, view)
@@ -214,8 +308,8 @@ function M.move_to_filer(vfiler, context, view)
   end
 
   -- Move to linked filer
-  clipboard.move(selected, linked:get_root_item())
-  VFiler.foreach(buffer.reload)
+  local _, parents = clipboard.move(selected, linked:get_root_item())
+  reload_changed_directories(vfiler, parents)
 end
 
 function M.new_directory(vfiler, context, view)
@@ -239,7 +333,7 @@ function M.new_directory(vfiler, context, view)
   cmdline.input_multiple('New directory names?', function(contents)
     local created = create_files(dir, contents, create_directory)
     if created then
-      VFiler.foreach(buffer.reload)
+      reload_after_create(vfiler, created)
       -- move the cursor to the created item path
       view:move_cursor(created[1].path)
     end
@@ -267,7 +361,7 @@ function M.new_file(vfiler, context, view)
   cmdline.input_multiple('New file names?', function(contents)
     local created = create_files(dir, contents, create_file)
     if created then
-      VFiler.foreach(buffer.reload)
+      reload_after_create(vfiler, created)
       -- move the cursor to the created item path
       view:move_cursor(created[1].path)
     end
@@ -282,8 +376,8 @@ function M.paste(vfiler, context, view)
   end
 
   local dest = resolve_destination_directory(context, view)
-  cb:paste(dest)
-  VFiler.foreach(buffer.reload)
+  local _, parents = cb:paste(dest)
+  reload_changed_directories(vfiler, parents)
 end
 
 function M.rename(vfiler, context, view)

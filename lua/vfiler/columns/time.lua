@@ -1,6 +1,18 @@
 local core = require('vfiler/libs/core')
 
-local TimeColumn = {}
+local TimeColumn = { partial_redraw = true }
+
+local DAY = 86400
+local WEEK = 604800
+
+local function age_syntax(age)
+  if age < DAY then
+    return 'today'
+  elseif age < WEEK then
+    return 'week'
+  end
+  return 'other'
+end
 
 function TimeColumn.new()
   local end_mark = '/>e'
@@ -39,17 +51,31 @@ function TimeColumn.new()
   return self
 end
 
-function TimeColumn:to_text(item, width)
-  local syntax = 'other'
-  local difftime = os.difftime(os.time(), item.time)
-  if difftime < 86400 then
-    -- 1day (60 * 60 * 24 = 86400)
-    syntax = 'today'
-  elseif difftime < 604800 then
-    -- 1week (86400 * 7 = 604800)
-    syntax = 'week'
+function TimeColumn:needs_redraw(items, drawn_at)
+  local now = os.time()
+  if now == drawn_at then
+    return false
   end
 
+  local first = math.min(now, drawn_at)
+  local last = math.max(now, drawn_at)
+  local day_start, day_end = first - DAY, last - DAY
+  local week_start, week_end = first - WEEK, last - WEEK
+
+  for _, item in ipairs(items) do
+    local time = item.time
+    if
+      (day_start < time and time <= day_end)
+      or (week_start < time and time <= week_end)
+    then
+      return true
+    end
+  end
+  return false
+end
+
+function TimeColumn:to_text(item, width)
+  local syntax = age_syntax(os.difftime(os.time(), item.time))
   local text = os.date(self.format, item.time)
   return {
     string = text,

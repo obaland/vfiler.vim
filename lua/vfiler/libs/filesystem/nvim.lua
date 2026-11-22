@@ -2,6 +2,8 @@ local core = require('vfiler/libs/core')
 local vim = require('vfiler/libs/vim')
 local uv = vim.nvim.loop
 
+local MAX_PENDING_STATS = 512
+
 local perm_patterns = {
   '---',
   '--x',
@@ -14,15 +16,22 @@ local perm_patterns = {
 }
 
 local M = {}
+local mode_cache = {}
 
 local function to_mode_string(mode)
-  -- mask the file type field
-  mode = mode % 512
+  local permissions = mode % 512
+  local cached = mode_cache[permissions]
+  if cached then
+    return cached
+  end
+
+  mode = permissions
   local s = ''
   for _ = 1, 3 do
     s = perm_patterns[(mode % 8) + 1] .. s
     mode = math.modf(mode / 8)
   end
+  mode_cache[permissions] = s
   return s
 end
 
@@ -58,15 +67,23 @@ function M.scandir(dirpath, callback)
   if not fd then
     return nil
   end
-  local fcount = 0
-  local done = 0
+
+  local prefix = core.path.join(dirpath, '')
+  local pending = 0
+  local function stats_done()
+    return pending == 0
+  end
+
   while true do
     local name, type = uv.fs_scandir_next(fd)
     if not name then
       break
     end
-    fcount = fcount + 1
-    local path = core.path.join(dirpath, name)
+    pending = pending + 1
+    local path = prefix .. name
+    if name:find('\\', 1, true) then
+      path = core.path.join(dirpath, name)
+    end
     uv.fs_stat(path, function(_, stat)
       if stat and callback then
         callback(
@@ -77,22 +94,29 @@ function M.scandir(dirpath, callback)
             type == 'link'
           )
         )
-        done = done + 1
+        pending = pending - 1
       elseif type == 'link' then
         uv.fs_lstat(path, function(_, lstat)
           if lstat and callback then
             callback(get_stat(path, name, lstat, true))
           end
-          done = done + 1
+          pending = pending - 1
         end)
       else
-        done = done + 1
+        pending = pending - 1
       end
     end)
+
+    if pending == MAX_PENDING_STATS then
+      if vim.fn.wait(-1, stats_done, 1) ~= 0 then
+        return
+      end
+    end
   end
-  vim.fn.wait(-1, function()
-    return fcount == done
-  end, 1)
+
+  if pending > 0 then
+    vim.fn.wait(-1, stats_done, 1)
+  end
 end
 
 return M

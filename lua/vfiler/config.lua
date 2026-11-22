@@ -35,6 +35,7 @@ M.configs = {
       untracked = true,
     },
     preview = {
+      delay = 50,
       layout = 'floating',
       width = 0,
       height = 0,

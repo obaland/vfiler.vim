@@ -1,6 +1,8 @@
 local core = require('vfiler/libs/core')
 
-local SizeColumn = {}
+local SizeColumn = { partial_redraw = true }
+
+local byte_units = { 'KB', 'MB', 'GB', 'TB', 'PB' }
 
 function SizeColumn.new()
   local Column = require('vfiler/columns/column')
@@ -32,7 +34,6 @@ function SizeColumn:to_text(item, width)
   local format = '%6d'
 
   if size >= 1024 then
-    local byte_units = { 'KB', 'MB', 'GB', 'TB', 'PB' }
     size = size / 1024.0
     for _, unit in ipairs(byte_units) do
       if size < 1024.0 then

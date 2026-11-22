@@ -1,10 +1,7 @@
 local M = {}
 
 function M.clear_selected_all(vfiler, context, view)
-  for _, item in ipairs(view:selected_items()) do
-    item.selected = false
-  end
-  view:redraw()
+  view:clear_selection()
 end
 
 function M.toggle_select(vfiler, context, view)

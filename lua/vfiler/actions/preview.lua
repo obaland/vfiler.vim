@@ -15,14 +15,39 @@ function M.preview_cursor_moved(vfiler, context, view)
   end
 
   local line = vim.fn.line('.')
-  if preview.line ~= line then
-    if in_preview.once then
-      utils.close_preview(vfiler, context, view)
-    else
+  if preview.line == line then
+    preview:cancel_pending()
+    return
+  end
+
+  if in_preview.once then
+    utils.close_preview(vfiler, context, view)
+    preview.line = line
+    return
+  end
+
+  local item = view:get_item(line)
+  if not (item and item.type == 'file') then
+    utils.open_preview(vfiler, context, view)
+    return
+  end
+
+  local path = item.path
+  preview:defer_open(function()
+    if
+      in_preview.preview ~= preview
+      or in_preview.once
+      or vim.fn.win_getid() ~= view:winid()
+      or vim.fn.line('.') ~= line
+    then
+      return
+    end
+
+    local current = view:get_item(line)
+    if current and current.path == path then
       utils.open_preview(vfiler, context, view)
     end
-    preview.line = line
-  end
+  end)
 end
 
 function M.toggle_auto_preview(vfiler, context, view)
